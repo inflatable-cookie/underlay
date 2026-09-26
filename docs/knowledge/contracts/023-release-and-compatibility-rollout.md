@@ -1,0 +1,326 @@
+# Contract: Release and Compatibility Rollout
+
+Status: active
+Owner: repo maintainers
+Depends on: `001-working-rules.md`, `022-testing-posture-and-shared-harnesses.md`, `024-new-app-bootstrap-and-bring-up.md`, `027-api-canonical-path-cutovers-and-compatibility-retirement.md`, `111-consumer-template-adoption-and-exception-policy.md`
+
+## Purpose
+
+Define how shared Underlay changes should roll through the consumer fleet.
+
+This contract covers:
+
+- when a shared change needs an explicit rollout plan
+- compatibility alias and deprecation-window posture at the fleet level
+- cross-repo rollout order
+- released Git-tag consumer pins, hold-back, upgrade, and rollback
+- release-note and upgrade-note expectations
+- proof required before a compatibility surface can be retired
+
+It does not redefine API path cutover mechanics. That stays in `027`.
+It does not redefine workspace topology or bootstrap. That stays in `024`.
+
+## Sources of Truth
+
+Shared release and upgrade guidance:
+
+- [`024-new-app-bootstrap-and-bring-up.md`](024-new-app-bootstrap-and-bring-up.md)
+- [`docs/guides/030-underlay-integration.md`](../../guides/030-underlay-integration.md)
+- [`docs/guides/040-rust-backend.md`](../../guides/040-rust-backend.md)
+- [`docs/guides/190-upgrade-compatibility.md`](../../guides/190-upgrade-compatibility.md)
+- [`docs/guides/200-project-sync.md`](../../guides/200-project-sync.md)
+- [`docs/guides/code/190-upgrade-compatibility/feature-upgrade-note-template.md`](../../guides/code/190-upgrade-compatibility/feature-upgrade-note-template.md)
+- [`docs/guides/code/190-upgrade-compatibility/release-log-upgrade-block-template.md`](../../guides/code/190-upgrade-compatibility/release-log-upgrade-block-template.md)
+
+Prior rollout and retirement evidence:
+
+- the `g01` roll-up in Git history (consumer-upgrade communication evidence)
+- the `g05` roll-up in Git history (Rust runtime contract audit evidence)
+- [`027-api-canonical-path-cutovers-and-compatibility-retirement.md`](027-api-canonical-path-cutovers-and-compatibility-retirement.md)
+- [`111-consumer-template-adoption-and-exception-policy.md`](111-consumer-template-adoption-and-exception-policy.md)
+
+Consumer fleet evidence:
+
+- `underlay-reference`
+- `acowtancy`
+- `compli-me`
+- `contact-patch`
+- `songsprout`
+
+If these diverge, the contract plus the clearest modern rollout posture win.
+
+## Contract Goal
+
+Underlay should make cross-repo rollout boring.
+
+A normal shared change should not leave teams guessing:
+
+- whether a compatibility alias is needed
+- whether the change is additive, deprecating, or breaking
+- which repo should move first
+- how long an old surface may stay live
+- what proof is required before retirement
+
+The goal is one declared fleet-rollout posture instead of case-by-case
+judgment.
+
+## Scope Boundary
+
+In scope:
+
+- shared TS, Svelte, Rust, config, migration, and docs changes that affect
+  consumer apps
+- compatibility windows
+- released Git-tag consumer pins, hold-back, upgrade, and rollback
+- release and upgrade-note expectations
+- rollout order across Underlay and the five consumer repos
+- retirement proof for deprecated shared surfaces
+
+Out of scope:
+
+- app-internal release process
+- registry-publishing mechanics
+- CI implementation details
+- one-off emergency fixes that do not change consumer obligations
+- workspace topology and bootstrap; those stay in `024`
+
+## Shared Boundary
+
+### Rollout-plan trigger rule
+
+A change needs an explicit rollout plan when it alters:
+
+- public APIs
+- public exports or import paths
+- configuration keys or required env/config structure
+- migrations or database bring-up posture
+- recommended integration patterns
+- shared page, workflow, or runtime ownership rules
+
+Rules:
+
+- do not treat consumer rollout planning as optional follow-up work
+- add `Consumer Upgrade Impact` in the active roadmap batch
+- ship the upgrade note or compatibility note in the same batch
+
+### Impact classification rule
+
+Every consumer-affecting shared change must be classified as one of:
+
+- `additive`
+- `deprecation`
+- `breaking`
+
+Rules:
+
+- use `additive` when adoption is optional and no existing caller breaks
+- use `deprecation` when the old surface still works temporarily but has a
+  declared replacement and sunset plan
+- use `breaking` when consumers must change code or config to stay working
+
+### Compatibility window rule
+
+Compatibility windows are allowed only when they buy real fleet safety.
+
+Allowed reasons:
+
+- server and client cannot cut over atomically
+- multiple consumer repos need staged adoption
+- config or migration transitions need dual-read, dual-route, or warning-first
+  posture
+
+Rules:
+
+- compatibility windows must be explicit, not implied
+- write concrete dates when a deprecation window or sunset exists
+- do not keep aliases or compatibility exports indefinitely because they are
+  convenient
+- do not stack multiple overlapping generations of fallback surface
+
+### Cross-repo rollout order rule
+
+Default rollout order:
+
+1. land the shared Underlay change
+2. add compatibility posture if needed
+3. cut and validate an Underlay release tag
+4. repoint the clearest reference consumer to that tag
+5. repoint the remaining affected consumers
+6. update docs and inventories to treat the new surface as primary
+7. retire the old surface once consumer proof exists
+
+Rules:
+
+- prefer `underlay-reference` as the first consumer proof when the change fits
+  the reference app
+- use the most directly affected live app first when the proof is not a good
+  fit for `underlay-reference`
+- do not retire a surface before the live callers have already moved
+- do not bump a consumer pin until the Underlay release tag exists and has
+  been validated
+- a consumer cannot pin an unreleased shared commit, branch, or local checkout
+
+### Release-note rule
+
+Every consumer-affecting shared batch must ship release-facing upgrade notes.
+
+Minimum output:
+
+- impact class
+- exact consumer actions
+- deprecation window or cutoff date when relevant
+- validation commands
+- links to the changed guides, contracts, roadmap, or logs
+
+Rules:
+
+- use the existing upgrade templates instead of ad hoc rollout prose
+- keep the compact release-log block brief and link out when the rollout has
+  more than one step
+- keep recurring fleet policy in the guide layer, not only in logs
+
+### Validation-before-retirement rule
+
+Do not retire a compatibility surface until the replacement is already proved.
+
+Minimum proof:
+
+- the active callers already use the replacement path, export, config key, or
+  template
+- the owning repo batch ran the normal validation commands
+- the roadmap or inventory records the retirement
+
+Stronger proof when the change is broad:
+
+- one reference consumer proof
+- one additional live consumer proof
+- explicit upgrade note showing the replacement steps
+
+### Mutation-first and narrow-first rule
+
+Prefer retiring the safest narrow compatibility surface first.
+
+Typical order:
+
+- admin-only writes before mixed reads
+- exports/import paths before larger product-flow changes
+- thin shell retirements before inner workflow redesigns
+
+Rules:
+
+- keep retirements narrow and legible
+- do not mix path, payload, auth, config, and product-flow redesign into one
+  opaque batch unless the redesign is truly intentional
+
+## Release Posture And Consumer Pin
+
+The root JavaScript package is npm-private (`package.json` has
+`private: true`). Underlay distributes both language surfaces to consumers
+through immutable Git tags. The independently versioned Nightfire repository
+follows the same private Git-tag model for both
+`@inflatable-cookie/nightfire` and Rust crate `nightfire`; neither requires
+registry publication and neither remains an Underlay implementation.
+
+The synchronized Rust workspace and JavaScript package versions follow the
+release process and semantic versioning. Roadmap generation numbers never
+determine package versions.
+
+Consumers depend on Underlay as a released Git tag on both language surfaces.
+The only committed JavaScript form is:
+
+```json
+"@inflatable-cookie/underlay": "git+ssh://git@github.com/inflatable-cookie/underlay.git#vX.Y.Z"
+```
+
+The only committed standalone Nightfire form is:
+
+```json
+"@inflatable-cookie/nightfire": "git+ssh://git@github.com/inflatable-cookie/nightfire.git#vX.Y.Z"
+```
+
+The committed standalone Nightfire Cargo form is:
+
+```toml
+nightfire = { git = "ssh://git@github.com/inflatable-cookie/nightfire.git", tag = "vX.Y.Z" }
+```
+
+Consumers with a local package also named `nightfire` use an explicit key such
+as `nightfire-core` plus `package = "nightfire"`.
+
+The only committed Cargo form is:
+
+```toml
+underlay-core = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "vX.Y.Z" }
+```
+
+Rules:
+
+- pin one released Underlay tag on all Underlay declarations and one released
+  Nightfire tag on all Nightfire declarations in that consumer
+- a consumer cannot pin an unreleased shared commit, branch, or local checkout
+- holding a consumer back means retaining its previous proven tag
+- upgrading means changing every declared Underlay tag in the consumer root,
+  regenerating the root locks, and validating from that root
+- rollback means retaining or returning to a known-good released tag
+- committed Cargo `path` and JavaScript `file:` edges to Underlay are
+  unsupported
+- sibling Underlay checkouts remain read-only QA or tooling inputs, or
+  untracked local Cargo `[patch]` links. They must never become the committed
+  dependency shape
+- standalone Nightfire consumers pin a validated Nightfire tag directly;
+  they do not depend on Underlay merely to reach Nightfire
+- the historical `@inflatable-cookie/underlay/nightfire/*` exports are a
+  deprecation facade during `g12`; they resolve to the same released
+  Nightfire implementation and cannot become a fork
+- the historical Rust `underlay-nightfire` crate becomes a deprecation facade
+  during `g12`; it re-exports the same released `nightfire` implementation and
+  cannot remain a fork
+- retirement of that facade requires a caller inventory and consumer proof;
+  no removal date is guessed before the inventory exists
+
+Contract `024` owns the workspace and bootstrap rule that this pin posture
+implements. Do not treat a local sibling checkout as a supported application
+dependency.
+
+## When A Broad Rollout Plan Is Not Required
+
+An explicit fleet rollout plan is usually not required when the change is:
+
+- additive and unused by existing consumers
+- docs-only with no consumer obligation change
+- internal refactoring with no export, behavior, or integration drift
+- a local consumer fix with no shared-surface impact
+
+Rules:
+
+- still classify the change honestly
+- do not claim "internal only" when the public surface or recommended pattern
+  changed
+
+## What Good Looks Like
+
+Good outcomes:
+
+- roadmap batches name the impact class and rollout posture clearly
+- compatibility aliases are time-boxed and documented
+- shared changes move through a visible repo order instead of surprise breakage
+- consumers pin the same released Git tag on both language surfaces
+- hold-back and rollback stay on known released tags
+- retirements happen only after caller proof exists
+- release logs and upgrade notes tell consumers exactly what to do
+
+Bad outcomes:
+
+- treating npm `private: true` as unreleased
+- committed Cargo `path` or JavaScript `file:` Underlay edges
+- consumers pinning unreleased commits, branches, or local checkouts
+- shared breakage lands with no upgrade note
+- aliases stay live with no sunset or inventory
+- retirements happen before consumer callers are moved
+- broad shared changes are merged with only local-repo proof and no fleet read
+
+## Next Task
+
+Keep deprecated API retirement outside the doctor-error repair. Use this
+contract when caller proof is ready and the consumer migration, release, and
+sunset sequence can be planned together.

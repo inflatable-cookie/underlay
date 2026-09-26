@@ -5,9 +5,9 @@ is the checklist version of the pattern proven in acowtancy's Modules admin
 and now shared through Underlay. If a resource deviates from this page, it
 is wrong — fix the resource, not the checklist.
 
-Related: `docs/contracts/115-admin-resource-api-shapes.md`,
-`docs/contracts/116-canonical-collection-routes-and-query-profiles.md`,
-`docs/architecture/070-consumer-drift-prevention.md`,
+Related: `docs/knowledge/contracts/115-admin-resource-api-shapes.md`,
+`docs/knowledge/contracts/116-canonical-collection-routes-and-query-profiles.md`,
+`docs/knowledge/architecture/070-consumer-drift-prevention.md`,
 `docs/guides/192-config-model.md`.
 
 ## 1. List contract

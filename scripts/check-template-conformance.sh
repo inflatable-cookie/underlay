@@ -4,8 +4,8 @@
 #
 # Statically verifies that a consumer's SvelteKit admin app follows the
 # canonical Underlay admin template system
-# (docs/contracts/110-admin-template-system.md,
-#  docs/contracts/111-consumer-template-adoption-and-exception-policy.md).
+# (docs/knowledge/contracts/110-admin-template-system.md,
+#  docs/knowledge/contracts/111-consumer-template-adoption-and-exception-policy.md).
 #
 # Run from anywhere, against the admin app root (the directory that contains
 # src/routes — for repos where the admin app is a subpackage, pass the

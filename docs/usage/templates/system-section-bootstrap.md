@@ -414,4 +414,4 @@ pagination at 20 per page:
 - [Template System Overview](./000-template-system-overview.md)
 - [System Index Page](./system-index-page.md)
 - [Template API Reference](./template-api-reference.md)
-- [Admin Template System Contract](../../contracts/110-admin-template-system.md)
+- [Admin Template System Contract](../../knowledge/contracts/110-admin-template-system.md)

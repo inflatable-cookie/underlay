@@ -8,7 +8,7 @@ This is the lower-level pagination/runtime guide.
 It is not the same thing as the higher-level admin page-shape contract in:
 
 - [073-api-profiles-and-query-contract.md](./073-api-profiles-and-query-contract.md)
-- [../contracts/115-admin-resource-api-shapes.md](../contracts/115-admin-resource-api-shapes.md)
+- [../contracts/115-admin-resource-api-shapes.md](../knowledge/contracts/115-admin-resource-api-shapes.md)
 
 Naming split:
 

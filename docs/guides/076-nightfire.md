@@ -172,11 +172,11 @@ that stored payload.
 This is a deprecation rollout, not a breaking cutover. Existing Underlay paths
 still resolve to the released implementation. Facade retirement requires a
 fresh caller inventory and consumer proof under
-[`023-release-and-compatibility-rollout.md`](../contracts/023-release-and-compatibility-rollout.md).
+[`023-release-and-compatibility-rollout.md`](../knowledge/contracts/023-release-and-compatibility-rollout.md).
 
 ## See Also
 
-- [`070-nightfire-and-migration-systems.md`](../contracts/070-nightfire-and-migration-systems.md)
-- [`050-media-library-and-usage.md`](../contracts/050-media-library-and-usage.md)
+- [`070-nightfire-and-migration-systems.md`](../knowledge/contracts/070-nightfire-and-migration-systems.md)
+- [`050-media-library-and-usage.md`](../knowledge/contracts/050-media-library-and-usage.md)
 - [`075-validation.md`](./075-validation.md)
 - [`190-upgrade-compatibility.md`](./190-upgrade-compatibility.md)

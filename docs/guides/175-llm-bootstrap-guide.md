@@ -1,7 +1,7 @@
 # LLM Bootstrap Guide: From Zero to Working App
 
 This is the current guided bootstrap path for a new Underlay consumer. Contract
-[024](../contracts/024-new-app-bootstrap-and-bring-up.md) owns the guarantees;
+[024](../knowledge/contracts/024-new-app-bootstrap-and-bring-up.md) owns the guarantees;
 [020](./020-project-structure.md) owns the detailed workspace layout and root
 manifest.
 
@@ -297,4 +297,4 @@ as `@inflatable-cookie/underlay/client/*`,
 For the detailed layout, read [020-project-structure](./020-project-structure.md)
 and [030-underlay-integration](./030-underlay-integration.md). For the
 normative bootstrap and bring-up rules, read
-[contract 024](../contracts/024-new-app-bootstrap-and-bring-up.md).
+[contract 024](../knowledge/contracts/024-new-app-bootstrap-and-bring-up.md).

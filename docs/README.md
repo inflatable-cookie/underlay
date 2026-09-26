@@ -1,117 +1,37 @@
-# Underlay Documentation
+# Underlay — current state
 
-This is the documentation authority for Underlay as a reusable foundation repo.
+Underlay is the shared foundation other Inflatable Cookie apps build on:
+reusable Rust crates, a typed TypeScript client, retained Svelte workflow and
+template shells, and the guidance that keeps consumers coherent. The workspace
+is pre-1.0 (`0.9.x`), released as immutable Git tags; the latest is `v0.9.12`.
 
-Start here when you need to understand what Underlay is for, how to use it
-effectively, and which planning surfaces are active now.
+Right now the verified media primitive (released in `v0.9.7`) is being adopted
+across the five consumers, and the generic Nightfire system lives in its own
+repository, with Underlay keeping temporary compatibility facades over it.
 
-## Start Here
+## Knowledge (internal truth)
 
-- [vision/001-underlay-foundation-vision.md](./vision/001-underlay-foundation-vision.md)
-- [architecture/000-overview.md](./architecture/000-overview.md)
-- [guides/README.md](./guides/README.md) — how-to narrative layer
-- [usage/000-overview.md](./usage/000-overview.md) — admin template usage reference
-- [roadmaps/README.md](./roadmaps/README.md)
-- [logs/README.md](./logs/README.md)
+- Index: [knowledge/README.md](knowledge/README.md)
+- Vision: [knowledge/vision.md](knowledge/vision.md)
+- Architecture: [knowledge/architecture/](knowledge/architecture/000-overview.md)
+- Contracts, the normative layer: [knowledge/contracts/](knowledge/contracts/README.md)
+- Release: [knowledge/contracts/release.md](knowledge/contracts/release.md)
 
-## Documentation Structure
+## Product documentation (for consumers)
 
-### [Architecture](./architecture/)
-System architecture, design principles, and technical decisions.
+- [guides/](guides/README.md) — the narrative how-to layer
+- [usage/](usage/000-overview.md) — admin template usage reference
+- [patterns/](patterns/000-index.md) — reusable patterns
+- [sweeps/](sweeps/) — audit procedures run across consumer apps
 
-### [Contracts](./contracts/)
-The **normative layer** — interface contracts and API specifications. When docs
-disagree, contracts win.
+Contracts are normative and guides are narrative. A guide links to the contract
+that owns a guarantee; it never restates it.
 
-### [Guides](./guides/)
-The **narrative layer** — how-to documentation for building against Underlay
-(Rust backend, database, API handlers, auth, TypeScript client, media, admin
-components). This is the active narrative surface.
+## What's next
 
-### [Usage](./usage/)
-Admin **template usage reference** — per-template usage docs
-(`usage/templates/`: EntityListPage, EntityDetailPage, media/system pages) plus
-the migration/state-layout note. Reference material for the shared template
-system, not a parallel guide tree.
+See [plan.md](plan.md). Unresolved leads are in [triage/](triage/).
 
-### [Logs](./logs/)
-Decision logs, roadmap deltas, and project history.
+## Documentation boundary
 
-### [Patterns](./patterns/)
-Reusable patterns and best practices.
-
-### [Research](./research/)
-External system studies, comparative analysis, and evidence-based recommendations.
-
-The research section provides a durable place to study external systems, standards, and competitors without mixing raw research into architecture docs or execution roadmaps.
-
-Key files:
-- `README.md` - Research operating model and structure
-- `master-index.md` - Navigate from questions to relevant research artifacts
-- `research-to-implementation-playbook.md` - Workflow for carrying research into delivery
-- `quick-start-checklist.md` - Daily checklist for contributors
-
-See `research/README.md` for the full operating model.
-
-### [Roadmaps](./roadmaps/)
-Project roadmaps, milestones, and planning documents.
-
-### [Sweeps](./sweeps/)
-Systematic improvement sweeps across the codebase.
-
-### [Vision](./vision/)
-Project vision, goals, and strategic direction.
-
-## What To Use
-
-- `vision/` defines the long-horizon foundation boundary and success bar.
-- `roadmaps/` turns that direction into concrete Underlay delivery milestones.
-- `logs/` records meaningful batches and roadmap-linked evidence.
-- `contracts/` is the normative layer; `guides/` is the narrative how-to layer;
-  `usage/`, `architecture/`, and `patterns/` explain how to apply Underlay in
-  real consuming projects.
-- `research/` is where external evidence and comparison work should live before
-  it becomes architecture or roadmap scope.
-
-## Layer Boundary
-
-- **`contracts/` is normative; `guides/` is narrative.** New rules and
-  interface guarantees land in a contract; guides explain and demonstrate them.
-  Do not restate a contract's guarantees as an independent source of truth in a
-  guide — link to the contract. Where the same topic (e.g. auth) spans both,
-  the contract owns the guarantee and the guide owns the walkthrough.
-
-## Documentation Boundary
-
-Treat the active library-facing docs surface as:
-
-- repo-local links only for Underlay content
-- prose references only for sibling repositories or external reference apps
-- no absolute local filesystem paths
-
-Historical evidence surfaces such as archived logs, roadmap bodies, and
-research notes may retain raw local paths or sibling-repo file references when
-they are part of the frozen record. Do not copy that style back into active
-guides, architecture docs, contracts, or front-door READMEs.
-
-## Next Task
-
-Run `g11.002` consumer adoption from `v0.9.7`, Underlay Reference first. The
-g13 producer lane has released Underlay `v0.9.10` with corrected Poodle
-`0.4.2`; downstream adoption is owned by the consumer lanes.
-<!-- northstar:lifecycle:begin schema=northstar.lifecycle.projection.v2 digest=sha256:4b999c7bc68e27cd75d56041bd06844815bc1585bd9681af2bf554c3abe6fe21 -->
-| Generation | Disposition | Runway state |
-| --- | --- | --- |
-| g11 | open | planning_required |
-| g12 | open | planning_required |
-| g13 | open | planning_required |
-| Task | Status | Stage | Revision | Record digest |
-| --- | --- | --- | --- | --- |
-| g12.002 | complete | none | 8 | sha256:77d3fad9d4fddc202e121350453db1fd50b2da313f4e23ba365f3c4b84ba6a9c |
-| g12.003 | complete | none | 8 | sha256:05cbbdf87f96ef842b4e70b8b9a53a96423e20bb5fe64493fc848e35050a5cc5 |
-| g12.004 | complete | none | 8 | sha256:a9c141f6c2c3a6cc36fa2b8ad1d2004b0c8f1ccf532d3aa06693d6ec93fe724e |
-| g12.005 | complete | none | 8 | sha256:d326252feb63f5d07fe602e2a583cbaf38da80b35bb44e4b7792b770c56b4ade |
-| g12.006 | complete | none | 8 | sha256:986a78c855db6659cac21e162b6fde7f78d809ad5f75b4f7063a1d4d2bd1fa0c |
-| g13.001 | complete | none | 8 | sha256:e3c2120126b98eab06603171a71aa6eb247d7b5083e3b337ac300c3660b2a8b3 |
-| g13.002 | complete | none | 8 | sha256:27ebe07858d9d9e19b4774e67cdb633762cf2744a672ef74c99cdae746ff499a |
-<!-- northstar:lifecycle:end -->
+Active docs use repo-local links for Underlay content, prose references for
+sibling repositories, and no absolute local filesystem paths.

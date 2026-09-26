@@ -8,9 +8,9 @@ resource truly needs it.
 
 The durable contract lives in:
 
-- [../contracts/115-admin-resource-api-shapes.md](../contracts/115-admin-resource-api-shapes.md)
-- [../contracts/020-http-transport-and-server-boundary.md](../contracts/020-http-transport-and-server-boundary.md)
-- [../contracts/116-canonical-collection-routes-and-query-profiles.md](../contracts/116-canonical-collection-routes-and-query-profiles.md)
+- [../contracts/115-admin-resource-api-shapes.md](../knowledge/contracts/115-admin-resource-api-shapes.md)
+- [../contracts/020-http-transport-and-server-boundary.md](../knowledge/contracts/020-http-transport-and-server-boundary.md)
+- [../contracts/116-canonical-collection-routes-and-query-profiles.md](../knowledge/contracts/116-canonical-collection-routes-and-query-profiles.md)
 
 ## Policy Summary
 

@@ -26,7 +26,7 @@ tooling (`underlay-devtools`, `underlay-testing`).
   Write a manual `Debug` that redacts the secret field, as `DbConfig`,
   `JwtConfig`, and `GoogleOAuthConfig` already do.
 - Public API changes are consumer changes. Check
-  `docs/contracts/122-rust-public-api-inventory.md` for the crate's
+  `docs/knowledge/contracts/122-rust-public-api-inventory.md` for the crate's
   classification before altering a signature, trait, or visibility.
 
 ## Validation
@@ -60,7 +60,7 @@ Scope: Rust source, Cargo manifests, build files, tests, and directly related
 documentation under this directory.
 
 Use Northstar's strict everyday-authoring route for ordinary Rust work. Resolve
-the repository-owned profile and deviations under `docs/contracts/`; never
+the repository-owned profile and deviations under `docs/knowledge/contracts/`; never
 assume a universal MSRV. Re-enter at task start and coherent batch closeout.
 Preserve unrelated work. A quality audit, no-slop pass, or audit-and-fix request
 is explicit audit intent; never route it through everyday authoring.

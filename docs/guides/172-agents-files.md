@@ -114,23 +114,17 @@ When standardizing AGENTS across multiple Underlay-based apps:
 4. Move extra detail into README or dedicated docs.
 5. Keep AGENTS updates in sync during future refactors.
 
-## Roadmap Status Sync Protocol
+## Planning and Status
 
-When touching `docs/roadmaps/gNN/NNN-<slug>.md` task files, keep status
-metadata and the generation front door aligned in the same change.
-
-Rules:
-
-1. Every numbered task file should declare a top-level `Status: <value>` line near the title.
-2. Keep the generation README `Task Sequence` checkboxes aligned with each file's `Status:` value.
-3. Task files live directly under `docs/roadmaps/gNN/`; no milestone wrapper or nested `batch-cards/` hierarchy is supported.
-4. Run `effigy validate` after task status/front-door updates to ensure no unrelated regressions.
+Underlay uses lean Northstar: task status lives in Queue, never in repository
+files. Keep `docs/plan.md` to intent (what matters next and why), and don't add
+status lines or task files.
 
 ## Upgrade Documentation Protocol
 
 When active Underlay work changes consumer-visible behavior, APIs, configuration, migrations, or recommended integration patterns:
 
-1. Add a `Consumer Upgrade Impact` section to the active roadmap.
+1. State the consumer upgrade impact in the task brief.
 2. Update `docs/guides/190-upgrade-compatibility.md` or the linked subsystem upgrade note in the same batch.
-3. Include consumer upgrade notes in the delivery log for the batch.
+3. Include consumer upgrade notes in the release's `CHANGELOG.md` entry.
 4. Use the templates under `docs/guides/code/190-upgrade-compatibility/` instead of ad hoc rollout prose.

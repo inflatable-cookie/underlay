@@ -59,8 +59,8 @@ Northstar consumers should keep their profile in the committed manifest emitted
 by the Northstar starter; this generic example does not assume Northstar names.
 
 The profile grammar and ranking rules live in
-`docs/contracts/041-documentation-graph-profile-contract.md`; the architecture
-decision is `docs/architecture/024-repository-defined-documentation-graph.md`.
+`docs/knowledge/contracts/041-documentation-graph-profile-contract.md`; the architecture
+decision is `docs/knowledge/architecture/024-repository-defined-documentation-graph.md`.
 
 ## `[tasks]`
 

@@ -9,7 +9,7 @@ Underlay consumers use one layout: a **single Git repository** with `apps/*`,
 nested Git repositories, no submodules, no symlinked Underlay checkout, and no
 committed `file:` source dependencies.
 
-[Contract 024](../contracts/024-new-app-bootstrap-and-bring-up.md) owns the
+[Contract 024](../knowledge/contracts/024-new-app-bootstrap-and-bring-up.md) owns the
 normative topology, the exact root `package.json` shape, and the dependency
 rules. This guide shows how to build it.
 

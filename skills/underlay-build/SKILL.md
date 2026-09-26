@@ -210,8 +210,8 @@ section
 Use when updating an existing app to match a newer Underlay version or contract.
 
 **Opens:** `underlay/docs/guides/190-upgrade-compatibility.md`
-**Also read:** `underlay/docs/roadmaps/generation-index.md` for the current active
-generation and its consumer-upgrade notes
+**Also read:** `underlay/CHANGELOG.md` for the target tag's consumer-upgrade notes,
+and `underlay/docs/plan.md` for what is changing next
 
 ---
 
@@ -222,8 +222,8 @@ using this table. Read the file before implementing.
 
 | Topic | Primary Doc |
 |---|---|
-| Architecture overview | `docs/architecture/000-overview.md` |
-| New project quickstart | `docs/architecture/060-new-project-quickstart.md` |
+| Architecture overview | `docs/knowledge/architecture/000-overview.md` |
+| New project quickstart | `docs/knowledge/architecture/060-new-project-quickstart.md` |
 | Project structure | `docs/guides/020-project-structure.md` |
 | Underlay integration (linking) | `docs/guides/030-underlay-integration.md` |
 | Rust backend patterns | `docs/guides/040-rust-backend.md` |
@@ -332,8 +332,8 @@ path
 - **Pure Poodle UI work:** Use the Poodle docs/guides, not Underlay templates
 - **Non-Underlay projects:** This skill assumes `@inflatable-cookie/underlay` is a
 dependency
-- **Internal Underlay development:** Use `underlay/docs/contracts/` and
-`underlay/docs/roadmaps/` directly; this skill is for consumer apps
+- **Internal Underlay development:** Use `underlay/docs/knowledge/` and
+`underlay/docs/plan.md` directly; this skill is for consumer apps
 
 ---
 
@@ -341,5 +341,5 @@ dependency
 
 All docs live in the Underlay repo under `docs/`. If a link in this skill goes
 stale, use the doc lookup table to find the current location. The contracts in
-`docs/contracts/` are the durable authority; guides in `docs/usage/` and
+`docs/knowledge/contracts/` are the durable authority; guides in `docs/usage/` and
 `docs/guides/` are the living implementation reference.

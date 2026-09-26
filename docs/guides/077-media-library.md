@@ -47,7 +47,7 @@ only:
 
 Authoritative shared contract:
 
-- [050-media-library-and-usage.md](../contracts/050-media-library-and-usage.md)
+- [050-media-library-and-usage.md](../knowledge/contracts/050-media-library-and-usage.md)
 
 ## Quick Start
 

@@ -3,7 +3,7 @@
 # Underlay consumer security conformance checks.
 #
 # Statically verifies that a consumer repo follows the canonical Underlay
-# security shapes (docs/architecture/070-consumer-drift-prevention.md).
+# security shapes (docs/knowledge/architecture/070-consumer-drift-prevention.md).
 # Run from anywhere:
 #
 #   ../underlay/scripts/check-consumer-conformance.sh .

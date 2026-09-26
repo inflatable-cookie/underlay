@@ -98,4 +98,4 @@ pub use crate::postgres_scheduled::Notifier;
 
 ## Reference
 
-See `docs/roadmaps/archive/g01.md` for the initial splitting work record (017); per-file decisions remain in git history.
+See the `g01` roll-up in Git history for the initial splitting work record (017); per-file decisions remain in git history.

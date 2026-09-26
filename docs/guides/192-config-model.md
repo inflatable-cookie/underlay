@@ -1,10 +1,10 @@
 # 192 - Config Model (effigy dev environment, overlays, env/CORS)
 
 The canonical config model for Underlay and its consumers, as converged in
-the 2026-08 config convergence (`docs/logs/2026-08/03-104132-config-convergence.md`).
+the 2026-08 config convergence (the 2026-08-03 config convergence log in Git history).
 If a consumer deviates from this page, fix the consumer.
 
-Related: `docs/architecture/070-consumer-drift-prevention.md`,
+Related: `docs/knowledge/architecture/070-consumer-drift-prevention.md`,
 `docs/sweeps/021-consumer-security-convergence.md` §1,
 `docs/guides/191-admin-resource-checklist.md`.
 
