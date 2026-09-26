@@ -83,7 +83,7 @@ While Underlay is `0.x`, breaking changes raise the minor version.
   `BlobError::DestinationExists`. Oversized local reserved xattrs are
   unproven facts, not `head`/`exists` I/O errors. Existing v0.9.6 methods
   and third-party adapters remain source-compatible. See
-  `docs/contracts/040-storage-blob-and-media-systems.md`.
+  `docs/knowledge/contracts/040-storage-blob-and-media-systems.md`.
 
 ## [0.9.6] - 2026-09-02
 
@@ -102,7 +102,7 @@ While Underlay is `0.x`, breaking changes raise the minor version.
   `BlobError::Unsupported` until they do. Existing mutable upload/read/
   finalise APIs, including `finalise_upload_verified`, are unchanged and do
   not establish immutable publication. See
-  `docs/contracts/040-storage-blob-and-media-systems.md`.
+  `docs/knowledge/contracts/040-storage-blob-and-media-systems.md`.
 
 ## [0.9.5] - 2026-08-27
 

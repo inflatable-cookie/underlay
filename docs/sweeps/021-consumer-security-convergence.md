@@ -37,7 +37,7 @@ fleet-wide (app-specific vars are deprecated fallbacks via
 `underlay_observability::Environment::resolve`); the effigy dev stack
 injects `ENVIRONMENT=effigy` from the bundle's env schema; CORS is built
 only via `underlay_http::admin_cors_layer` (conformance check
-`cors-canonical`). See `docs/logs/2026-08/03-104132-config-convergence.md`.
+`cors-canonical`). See the 2026-08-03 config convergence log in Git history.
 
 ## 2. Dev seeds
 

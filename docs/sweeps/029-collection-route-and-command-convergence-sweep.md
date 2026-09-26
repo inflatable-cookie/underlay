@@ -9,7 +9,7 @@ This sweep verifies that resource-backed collection consumers converge on:
 It is the practical audit companion to:
 
 - [073-api-profiles-and-query-contract.md](../guides/073-api-profiles-and-query-contract.md)
-- [116-canonical-collection-routes-and-query-profiles.md](../contracts/116-canonical-collection-routes-and-query-profiles.md)
+- [116-canonical-collection-routes-and-query-profiles.md](../knowledge/contracts/116-canonical-collection-routes-and-query-profiles.md)
 
 ## Problem This Sweep Targets
 
@@ -35,7 +35,7 @@ is the hard boundary. Wrapper names are a softer judgment call.
 
 See:
 
-- [116-canonical-collection-routes-and-query-profiles.md](../contracts/116-canonical-collection-routes-and-query-profiles.md)
+- [116-canonical-collection-routes-and-query-profiles.md](../knowledge/contracts/116-canonical-collection-routes-and-query-profiles.md)
 
 ### Hard rules
 
@@ -329,4 +329,4 @@ When drift is found:
 - [073-api-profiles-and-query-contract.md](../guides/073-api-profiles-and-query-contract.md)
 - [080-typescript-client.md](../guides/080-typescript-client.md)
 - [100-frontend-web.md](../guides/100-frontend-web.md)
-- [116-canonical-collection-routes-and-query-profiles.md](../contracts/116-canonical-collection-routes-and-query-profiles.md)
+- [116-canonical-collection-routes-and-query-profiles.md](../knowledge/contracts/116-canonical-collection-routes-and-query-profiles.md)

@@ -1,7 +1,7 @@
 # LLM Pattern: Project Bootstrap
 
 Quick reference for bootstrapping a new Underlay workspace. Use
-[contract 024](../contracts/024-new-app-bootstrap-and-bring-up.md) as the
+[contract 024](../knowledge/contracts/024-new-app-bootstrap-and-bring-up.md) as the
 normative source and [guide 175](../guides/175-llm-bootstrap-guide.md) for the
 full walkthrough.
 
@@ -29,11 +29,11 @@ committed source-checkout dependency as an alternative.
 
 | Purpose | Reference |
 |---------|-----------|
-| Workspace topology and root manifest | `docs/contracts/024-new-app-bootstrap-and-bring-up.md` |
+| Workspace topology and root manifest | `docs/knowledge/contracts/024-new-app-bootstrap-and-bring-up.md` |
 | Directory layout and root AGENTS.md | `docs/guides/020-project-structure.md` |
 | Released Underlay integration | `docs/guides/030-underlay-integration.md` |
 | Rust backend | `apps/api/Cargo.toml` and `docs/guides/040-rust-backend.md` |
-| Database migrations | `apps/api/migrations/` and `docs/contracts/021-database-migration-and-schema-workflow.md` |
+| Database migrations | `apps/api/migrations/` and `docs/knowledge/contracts/021-database-migration-and-schema-workflow.md` |
 | TypeScript client | `packages/client/` and `docs/guides/080-typescript-client.md` |
 | Admin and front apps | `apps/admin/` and `apps/front/` |
 

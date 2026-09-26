@@ -422,7 +422,7 @@ impl TotpAuthService {
 
 ### Database Schema for TOTP
 
-Add to your auth schema (see `docs/architecture/050-auth-database-schema.md`):
+Add to your auth schema (see `docs/knowledge/architecture/050-auth-database-schema.md`):
 
 ```sql
 -- TOTP secrets are stored in auth_credentials with type = 'totp'

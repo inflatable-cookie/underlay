@@ -2,7 +2,7 @@
 
 This is Underlay's **narrative how-to layer** — the active front door for
 building against the foundation (backend, database, auth, API handlers,
-TypeScript client, media, admin components). Contracts (`docs/contracts/`) own
+TypeScript client, media, admin components). Contracts (`docs/knowledge/contracts/`) own
 the normative guarantees; these guides explain and demonstrate them. The admin
 **template usage reference** lives in [`docs/usage/`](../usage/000-overview.md).
 
@@ -31,7 +31,7 @@ UI guide translation status:
 Underlay consumers use one workspace shape: a **single Git repository** with
 `apps/*`, `packages/*`, and a root `docs/`. Polyrepo layouts are unsupported.
 
-[Contract 024](../contracts/024-new-app-bootstrap-and-bring-up.md) owns the
+[Contract 024](../knowledge/contracts/024-new-app-bootstrap-and-bring-up.md) owns the
 normative topology, the root `package.json` shape, and the dependency rules.
 These guides explain and demonstrate it; they do not restate the guarantees.
 
@@ -202,7 +202,7 @@ bootstrap fixture and converges on it in `g09.025`.
 
 When making architecture or implementation decisions that depend on external comparison or source-backed learning:
 
-- Check the [Research section](../research/) for evidence-based recommendations
+- Early research lives in Git history; see `docs/triage/` for leads that came out of it
 - Use `master-index.md` to navigate from questions to relevant artifacts
 - Follow the `research-to-implementation-playbook.md` to carry research into delivery
 

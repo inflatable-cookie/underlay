@@ -214,7 +214,7 @@ Sequence: `references/release-protocol.md`.
 | Topic | Guide |
 |-------|-------|
 | Agent + graph workflow | `docs/guides/076-code-graph-and-agent-workflows.md` |
-| Documentation graph profile | `docs/architecture/024-repository-defined-documentation-graph.md`, `docs/contracts/041-documentation-graph-profile-contract.md` |
+| Documentation graph profile | `docs/knowledge/architecture/024-repository-defined-documentation-graph.md`, `docs/knowledge/contracts/041-documentation-graph-profile-contract.md` |
 | Agent adoption | `docs/guides/047-agent-and-cross-repo-adoption.md` |
 | Rhai script steps | `docs/guides/061-rhai-script-steps-guide.md` |
 | Rhai host surface audit | `docs/guides/068-rhai-host-surface-audit.md` |

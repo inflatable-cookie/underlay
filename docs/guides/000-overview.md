@@ -25,7 +25,7 @@ Use this guide when creating a **new product** that:
 ## Architecture Diagram
 
 One Git repository owns the whole product workspace.
-[Contract 024](../contracts/024-new-app-bootstrap-and-bring-up.md) is the
+[Contract 024](../knowledge/contracts/024-new-app-bootstrap-and-bring-up.md) is the
 normative source for this topology.
 
 ```
@@ -206,7 +206,7 @@ shared UI package). Its physical layout has not converged on this contract yet;
 topology.
 
 For bootstrapping a new project, follow
-[contract 024](../contracts/024-new-app-bootstrap-and-bring-up.md), then
+[contract 024](../knowledge/contracts/024-new-app-bootstrap-and-bring-up.md), then
 [020-project-structure](./020-project-structure.md) and
 [030-underlay-integration](./030-underlay-integration.md).
 

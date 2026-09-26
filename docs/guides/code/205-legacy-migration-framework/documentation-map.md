@@ -22,10 +22,10 @@ Covered areas:
 
 Read in this order:
 
-1. `docs/roadmaps/archive/g01.md` (025 Universal Legacy Migration Foundation record)
-2. `docs/roadmaps/archive/g01.md` (026 Migration Bundles and OCI Distribution record)
-3. `docs/roadmaps/archive/g01.md` (027 Incremental Decision Memory and AI Reuse record)
-4. `docs/roadmaps/archive/g01.md` (028 Migration Operations and Hardening record)
+1. the `g01` roll-up in Git history (025 Universal Legacy Migration Foundation record)
+2. the `g01` roll-up in Git history (026 Migration Bundles and OCI Distribution record)
+3. the `g01` roll-up in Git history (027 Incremental Decision Memory and AI Reuse record)
+4. the `g01` roll-up in Git history (028 Migration Operations and Hardening record)
 5. `docs/guides/205-legacy-migration-framework.md`
 6. `docs/guides/code/205-legacy-migration-framework/migration-system-setup.md`
 7. `docs/guides/code/205-legacy-migration-framework/README.md`

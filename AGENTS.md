@@ -19,10 +19,10 @@ apps, and design for the general case rather than the caller in front of you.
 - Preserve the separation between `rust/`, `ts/`, `contracts/`, and `docs/`.
 - Prefer extracting stable patterns over adding one-off compatibility shims.
 - Treat the public Rust crate surface and the explicit TypeScript subpath
-  exports as consumer contracts. `docs/contracts/122-rust-public-api-inventory.md`
+  exports as consumer contracts. `docs/knowledge/contracts/122-rust-public-api-inventory.md`
   classifies which Rust APIs are stable, adapter-owned, or internal; check it
   before changing a signature, and follow
-  `docs/contracts/023-release-and-compatibility-rollout.md` when a change is
+  `docs/knowledge/contracts/023-release-and-compatibility-rollout.md` when a change is
   consumer-visible.
 - The workspace is pre-1.0 (`0.9.x`) with MSRV 1.95. Breaking changes take the
   minor version, not the major. Do not raise MSRV, change edition, or drop a
@@ -37,20 +37,23 @@ apps, and design for the general case rather than the caller in front of you.
     surfaces, or retained template behavior change, inspect the root and all
     affected child packages inside that consumer workspace.
 
-## Planning Authority
+## Knowledge and Planning
 
-These are routing rules, not prohibitions. Follow them so execution cannot
-outrun the plan.
+Underlay uses lean Northstar (`northstar-lean` skill). The repository holds
+knowledge and code; Queue holds tasks, briefs, status and outcomes. Never write
+task status, handoffs or delivery logs into the repository.
 
-- Treat `docs/roadmaps/README.md` and `docs/roadmaps/generation-index.md` as
-  the live queue authority when active shared-surface or consumer-normalization
-  work is in flight.
-- Treat numbered task files directly under the active generation
-  (`gNN/NNN-<slug>.md`, referenced as `gNN.NNN`) as the roadmap queue.
-  No milestone wrapper or nested `batch-cards/` hierarchy is supported.
-- Treat `docs/architecture/product-guardrails.md`,
-  `docs/contracts/001-working-rules.md`, and `docs/specs/` as the strict
-  control pack for the active lane.
+- `docs/README.md` — current state and the doc map.
+- `docs/knowledge/` — current truth, one owner per fact. Contracts are
+  normative; guides only explain them.
+- `docs/knowledge/retired.toml` — concepts that must not come back.
+- `docs/knowledge/questions.md` — open questions; check here before asking.
+- `docs/plan.md` — what matters next and why.
+- `docs/knowledge/contracts/release.md` — how a release is cut.
+
+When a change alters what is true, update the owning knowledge file in the same
+PR. An operator ruling given in conversation goes into its owning file before
+the thread ends.
 
 ## Effigy-First Execution
 
@@ -88,36 +91,11 @@ effigy test --plan       # when the test shape is what you need to know
 
 ## Documentation Rules
 
-- Put active planning in `docs/roadmaps/`.
-- Put execution evidence in `docs/logs/YYYY-MM/`.
-- Keep one log per meaningful update cycle or batch.
+- Consumer-facing product docs live in `docs/guides/`, `docs/usage/`,
+  `docs/patterns/` and `docs/sweeps/`; internal truth lives in
+  `docs/knowledge/`.
 - Do not leave compatibility shim docs behind when paths or sections change.
-
-## Source of Truth
-
-- `./README.md`
-- `./docs/README.md`
-- `./docs/vision/001-underlay-foundation-vision.md`
-- `./docs/architecture/000-overview.md`
-- `./docs/architecture/product-guardrails.md`
-- `./docs/contracts/001-working-rules.md`
-- `./docs/contracts/122-rust-public-api-inventory.md`
-- `./docs/guides/README.md`
-- `./docs/guides/000-overview.md`
-- `./docs/guides/172-agents-files.md`
-- `./docs/patterns/`
-- `./docs/sweeps/`
-- `./docs/roadmaps/README.md`
-- `./docs/roadmaps/generation-index.md`
-- `./docs/roadmaps/g11/README.md`
-- `./docs/roadmaps/g12/README.md`
-- `./docs/logs/README.md`
-
-## Internal Writing Style
-
-Use the repo-local style reference for internal work and normal replies:
-
-- `docs/policy/internal-writing-style.md`
+- Writing style: `docs/knowledge/contracts/writing-style.md`.
 
 <!-- BEGIN EFFIGY AGENT CONTRACT -->
 ## Effigy Agent Contract

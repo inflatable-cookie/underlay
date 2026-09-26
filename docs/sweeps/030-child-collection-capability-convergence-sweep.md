@@ -6,9 +6,9 @@ accumulating app-local wrappers forever.
 
 It is the practical audit companion to:
 
-- [110-admin-template-system.md](../contracts/110-admin-template-system.md)
-- [115-admin-resource-api-shapes.md](../contracts/115-admin-resource-api-shapes.md)
-- [116-canonical-collection-routes-and-query-profiles.md](../contracts/116-canonical-collection-routes-and-query-profiles.md)
+- [110-admin-template-system.md](../knowledge/contracts/110-admin-template-system.md)
+- [115-admin-resource-api-shapes.md](../knowledge/contracts/115-admin-resource-api-shapes.md)
+- [116-canonical-collection-routes-and-query-profiles.md](../knowledge/contracts/116-canonical-collection-routes-and-query-profiles.md)
 
 ## Problem This Sweep Targets
 
@@ -36,8 +36,8 @@ itself. The problem is unclear capability shape.
 
 See:
 
-- [110-admin-template-system.md](../contracts/110-admin-template-system.md)
-- [115-admin-resource-api-shapes.md](../contracts/115-admin-resource-api-shapes.md)
+- [110-admin-template-system.md](../knowledge/contracts/110-admin-template-system.md)
+- [115-admin-resource-api-shapes.md](../knowledge/contracts/115-admin-resource-api-shapes.md)
 
 ### Hard rules
 

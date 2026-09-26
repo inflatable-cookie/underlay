@@ -70,7 +70,7 @@ For admin page-shaped root lists and detail-tab child collections, use the
 paged list envelope from
 [073-api-profiles-and-query-contract.md](./073-api-profiles-and-query-contract.md)
 and
-[../contracts/115-admin-resource-api-shapes.md](../contracts/115-admin-resource-api-shapes.md):
+[../contracts/115-admin-resource-api-shapes.md](../knowledge/contracts/115-admin-resource-api-shapes.md):
 
 ```json
 {

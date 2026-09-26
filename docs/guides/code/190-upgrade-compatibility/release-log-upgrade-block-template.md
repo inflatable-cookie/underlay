@@ -1,6 +1,6 @@
 # Release Log Upgrade Block Template
 
-Use this compact block inside `docs/logs/YYYY-MM/*.md` when the batch changes consumer-visible behavior.
+Use this compact block inside the release's `CHANGELOG.md` entry when the batch changes consumer-visible behavior.
 
 ```md
 ## Consumer Upgrade Notes

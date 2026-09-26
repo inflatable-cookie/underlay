@@ -25,7 +25,7 @@ Underlay Git repository.
 
 Do not symlink Underlay into the workspace, add it as a Git submodule, vendor
 its source, or point a `file:` dependency at a sibling checkout.
-[Contract 024](../contracts/024-new-app-bootstrap-and-bring-up.md) owns this
+[Contract 024](../knowledge/contracts/024-new-app-bootstrap-and-bring-up.md) owns this
 rule.
 
 A sibling `../underlay` checkout is still useful for QA scripts and dev mounts —

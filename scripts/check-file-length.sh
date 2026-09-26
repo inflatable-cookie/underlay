@@ -42,7 +42,7 @@ fi
 if [[ -n "$failures" ]]; then
   echo "Fail — files exceeding ${FAIL_LINES} lines:"
   echo "$failures"
-  echo "Split large files per docs/roadmaps/g01/017-rust-module-splitting-roadmap.md"
+  echo "Split large files per docs/guides/041-rust-module-splitting.md"
   exit 1
 fi
 
