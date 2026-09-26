@@ -39,7 +39,7 @@ apps, and design for the general case rather than the caller in front of you.
 
 ## Knowledge and Planning
 
-Underlay uses lean Northstar (`northstar-lean` skill). The repository holds
+Underlay uses lean Northstar (`northstar` skill). The repository holds
 knowledge and code; Queue holds tasks, briefs, status and outcomes. Never write
 task status, handoffs or delivery logs into the repository.
 
@@ -58,7 +58,7 @@ the thread ends.
 ## Papercuts
 
 File small, recurring friction in Queue with `papercut.add` (see the
-`northstar-lean` skill). There is no `PAPERCUTS.md`.
+`northstar` skill). There is no `PAPERCUTS.md`.
 
 ## Effigy-First Execution
 
