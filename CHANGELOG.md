@@ -17,6 +17,17 @@ While Underlay is `0.x`, breaking changes raise the minor version.
   consumer Svelte check after the bump. Rollback: retain `v0.9.12` until
   ready to move. See
   `docs/knowledge/contracts/023-release-and-compatibility-rollout.md`.
+- Consume Nightfire `0.3.0`: npm `@inflatable-cookie/nightfire` at exactly
+  `0.3.0`, and the Rust `nightfire` crate from git tag `v0.3.0`. Nightfire's
+  only consumer-visible break is the Svelte peer `>=5.56.8 <6`, which
+  Underlay already declares. The install resolves one
+  `@inflatable-cookie/poodle-svelte` `0.4.4` copy. Historical Underlay
+  Nightfire facades stay in place.
+- Impact class: additive. Consumer action: take the next Underlay tag and
+  regenerate root locks. Validation: producer `effigy qa`; lock check that
+  `bun.lock` has one `poodle-svelte` `0.4.4` and Nightfire `0.3.0`, and
+  `Cargo.lock` has `nightfire` at `v0.3.0` only. Rollback: retain `v0.9.12`.
+
 
 ## [0.9.12] - 2026-09-19
 
