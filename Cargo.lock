@@ -3060,8 +3060,8 @@ dependencies = [
 
 [[package]]
 name = "nightfire"
-version = "0.3.0"
-source = "git+https://github.com/inflatable-cookie/nightfire.git?tag=v0.3.0#2d7933df26a7ba2bf5dd253c3778d66ed8dba68a"
+version = "0.3.1"
+source = "git+https://github.com/inflatable-cookie/nightfire.git?tag=v0.3.1#d40f6e4b4b195c0363255d3aa7e0f106a70f5d4f"
 dependencies = [
  "blake3",
  "serde",
