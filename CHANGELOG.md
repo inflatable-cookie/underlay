@@ -7,6 +7,31 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-09-27
+
+### Changed
+- **Breaking.** `@inflatable-cookie/poodle-svelte` and `@inflatable-cookie/nightfire`
+  are peer dependencies with ranges (`>=0.4.4 <0.5` and `>=0.4.0 <0.5`), not exact
+  direct dependencies. A Poodle or Nightfire patch release then needs no Underlay
+  release, and consumers resolve one copy of each. Underlay's own tests keep exact
+  dev dependencies (Poodle `0.4.4`, Nightfire `0.4.1`). The Rust `nightfire` crate
+  moves from git tag `v0.3.1` to `v0.4.1`; Nightfire `0.4.x` makes Poodle an
+  optional peer of its editor entry points. No Underlay API changes: the Nightfire
+  `0.3.x` to `0.4.x` move needed no adaptation beyond the version bump, and the
+  install resolves one `@inflatable-cookie/poodle-svelte` `0.4.4` copy. This is
+  breaking because consumers that relied on Underlay hoisting Poodle or Nightfire
+  transitively must now declare both themselves, so it ships in the next minor
+  release.
+- Impact class: breaking. Consumer action: before pinning the next Underlay minor
+  tag, declare both libraries as ranges in the consumer root `package.json`
+  (`"@inflatable-cookie/nightfire": ">=0.4.0 <0.5"` and
+  `"@inflatable-cookie/poodle-svelte": ">=0.4.4 <0.5"`), then move the
+  Underlay git tag and regenerate root locks. Validation: producer `effigy qa`;
+  lock check that `bun.lock` has Nightfire `0.4.1` and one `poodle-svelte`
+  `0.4.4`, and `Cargo.lock` has `nightfire` at `v0.4.1` only. Rollback: retain
+  `v0.10.1`. See
+  `docs/knowledge/contracts/023-release-and-compatibility-rollout.md`.
+
 ## [0.10.1] - 2026-09-27
 
 ### Changed

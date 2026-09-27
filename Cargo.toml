@@ -3,7 +3,7 @@ members = ["rust/crates/*"]
 resolver = "2"
 
 [workspace.package]
-version = "0.10.1"
+version = "0.11.0"
 rust-version = "1.95"
 edition = "2021"
 license = "MIT"
@@ -20,7 +20,7 @@ sqlx = { version = "0.9", features = ["runtime-tokio", "tls-rustls", "postgres",
 thiserror = "2"
 tokio = "1"
 toml = "1.1"
-nightfire = { git = "https://github.com/inflatable-cookie/nightfire.git", tag = "v0.3.1" }
+nightfire = { git = "https://github.com/inflatable-cookie/nightfire.git", tag = "v0.4.1" }
 
 # Image processing
 image = { version = "0.25", default-features = false, features = ["jpeg", "png", "gif", "webp"] }
