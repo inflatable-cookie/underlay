@@ -8,6 +8,16 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 ## [Unreleased]
 
 ### Changed
+- Refreshed every dependency to its newest compatible release, including
+  `@inflatable-cookie/poodle-svelte` `0.4.2` -> `0.4.4` (exact; `0.4.3` was
+  never published) and `marked` `^17` -> `^18.0.9` to meet Poodle's peer.
+  91 npm and 139 Rust packages moved within their ranges; majors held back
+  (`vitest` 5, `typescript` 7, `isomorphic-dompurify` 4, `utoipa` 6,
+  `tower-http` 0.7, `base64` 0.23). MSRV stays 1.95.
+- Impact class: additive. Consumer action: take the next Underlay tag,
+  regenerate root locks, and install `marked` `^18.0.9` if the consumer
+  satisfies Poodle's peer itself. Validation: producer `effigy qa`,
+  `cargo deny check advisories`. Rollback: retain `v0.9.12`.
 - Raised the `svelte` peer from `^5.0.0` to `>=5.56.8 <6` so it matches
   Poodle 0.4.4. Consumers on Svelte below 5.56.8 get a peer conflict. This
   is breaking and ships in the next minor release.
