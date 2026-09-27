@@ -18,24 +18,29 @@ consume a released tag.
 
 ## Install Nightfire
 
-Both language surfaces use the same Nightfire `0.3.1` release.
+Both language surfaces use the same Nightfire `0.4.1` release. Underlay
+declares Nightfire and Poodle as dependency ranges (`>=0.4.1 <0.5` and
+`>=0.4.4 <0.5`), so a consumer resolving a Nightfire version inside that range
+shares Underlay's copy instead of carrying a second one. A consumer pinned
+below the range floor, such as Nightfire `0.4.0`, still carries two; see
+[contract 023](../knowledge/contracts/023-release-and-compatibility-rollout.md).
 
 ```toml
 [dependencies]
-nightfire = { git = "https://github.com/inflatable-cookie/nightfire.git", tag = "v0.3.1" }
+nightfire = { git = "https://github.com/inflatable-cookie/nightfire.git", tag = "v0.4.1" }
 ```
 
 ```json
 {
   "dependencies": {
-    "@inflatable-cookie/nightfire": "0.3.1"
+    "@inflatable-cookie/nightfire": "0.4.1"
   }
 }
 ```
 
 Use Nightfire's repository documentation for generic setup and APIs. The Rust
-crate uses the immutable `v0.3.1` Git tag; the TypeScript package uses the
-released npm version `0.3.1`. New code imports `nightfire` in Rust and
+crate uses the immutable `v0.4.1` Git tag; the TypeScript package uses the
+released npm version `0.4.1`. New code imports `nightfire` in Rust and
 `@inflatable-cookie/nightfire/*` in TypeScript.
 
 ## Compatibility Facades
@@ -59,7 +64,7 @@ migration:
 - `@inflatable-cookie/underlay/nightfire/utils`
 - `@inflatable-cookie/underlay/nightfire/validation`
 
-They re-export the corresponding Nightfire v0.3.1 subpaths. They do not own a
+They re-export the corresponding Nightfire `v0.4.1` subpaths. They do not own a
 second implementation.
 
 Rust consumers may keep the `underlay-nightfire` dependency name until the
@@ -68,7 +73,7 @@ code should depend on `nightfire` directly.
 
 ## Underlay Media Picker Context
 
-Nightfire v0.3.1 has no `./media` subpath. Underlay retains
+Nightfire `v0.4.1` has no `./media` subpath. Underlay retains
 `@inflatable-cookie/underlay/nightfire/media` because it is an Underlay media
 library integration, not generic Nightfire runtime.
 
@@ -116,7 +121,7 @@ extraction from `NightfireValue`:
 ```toml
 [dependencies]
 underlay-media = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "vX.Y.Z", features = ["nightfire"] }
-nightfire = { git = "https://github.com/inflatable-cookie/nightfire.git", tag = "v0.3.1" }
+nightfire = { git = "https://github.com/inflatable-cookie/nightfire.git", tag = "v0.4.1" }
 ```
 
 Underlay supplies:
@@ -139,7 +144,7 @@ responses:
 ```toml
 [dependencies]
 underlay-validation = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "vX.Y.Z", features = ["nightfire"] }
-nightfire = { git = "https://github.com/inflatable-cookie/nightfire.git", tag = "v0.3.1" }
+nightfire = { git = "https://github.com/inflatable-cookie/nightfire.git", tag = "v0.4.1" }
 ```
 
 Nightfire remains the validation authority. Underlay only converts errors at

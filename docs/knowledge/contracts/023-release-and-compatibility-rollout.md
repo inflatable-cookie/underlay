@@ -180,6 +180,36 @@ Rules:
 - do not change the `@sveltejs/kit` peer, or other dependency floors, as a
   side effect of a Svelte-floor move
 
+### Runtime dependency range rule
+
+Underlay declares every runtime dependency as a semver range, never an exact
+pin. Consumers that already satisfy the same range resolve one copy of each
+package instead of carrying a duplicate next to Underlay's, so a Patch or
+minor-level move in a shared dependency is not forced through a new Underlay
+tag.
+
+Operator ruling 2026-09-27 (Longhorn planning thread): Underlay moves all its
+dependencies to ranges, including Poodle and Nightfire, and ships it as
+`v0.10.2`.
+
+Rules:
+
+- every entry in `package.json` `dependencies` is a semver range; no exact
+  versions
+- the Poodle range is `>=0.4.4 <0.5` and the Nightfire range is
+  `>=0.4.1 <0.5`
+- dedupe holds only for a consumer pin inside the declared range; a pin below
+  a range floor, such as Nightfire `0.4.0`, still yields two copies next to
+  Underlay's
+- Poodle and Nightfire stay regular `dependencies`, not peers, so consumers
+  install nothing new
+- Underlay's own `bun.lock` and `Cargo.lock` keep exact resolutions; only the
+  declared ranges widen
+- the Rust `nightfire` crate follows the matching released Nightfire tag
+- Nightfire `0.4.0` makes Poodle an optional peer of its editor entry points.
+  Underlay installs Poodle itself, so that break does not reach Underlay
+  consumers and the move is classified `additive`
+
 ### Release-note rule
 
 Every consumer-affecting shared batch must ship release-facing upgrade notes.
