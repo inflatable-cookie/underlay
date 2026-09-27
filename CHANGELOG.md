@@ -7,6 +7,8 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+## [0.10.2] - 2026-09-27
+
 ### Changed
 - Declare every runtime dependency as a semver range, with no exact pins:
   `@inflatable-cookie/poodle-svelte` `>=0.4.4 <0.5` and
