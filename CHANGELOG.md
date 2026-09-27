@@ -38,7 +38,6 @@ While Underlay is `0.x`, breaking changes raise the minor version.
   `bun.lock` has one `poodle-svelte` `0.4.4` and Nightfire `0.3.0`, and
   `Cargo.lock` has `nightfire` at `v0.3.0` only. Rollback: retain `v0.9.12`.
 
-
 ## [0.9.12] - 2026-09-19
 
 ### Fixed
