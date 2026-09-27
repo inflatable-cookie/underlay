@@ -4,9 +4,9 @@ features = ["underlay-blob/s3", "underlay-email/ses"]
 
 [advisories]
 ignore = [
-    # jsonwebtoken 10.3.0 currently pulls rsa 0.9.10 and upstream has no safe
-    # upgrade. Keep this explicit so JWT RSA usage is reviewed when upstream
-    # publishes a patched path.
+    # jsonwebtoken (11.1.0 as of the 2026-09 dependency refresh) still pulls
+    # rsa 0.9.10 and upstream has no safe upgrade. Keep this explicit so JWT
+    # RSA usage is reviewed when upstream publishes a patched path.
     "RUSTSEC-2023-0071",
 ]
 
