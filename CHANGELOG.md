@@ -7,6 +7,8 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+## [0.10.1] - 2026-09-27
+
 ### Changed
 - Consume Nightfire `0.3.1`: npm `@inflatable-cookie/nightfire` at exactly
   `0.3.1`, and the Rust `nightfire` crate from git tag `v0.3.1`. `0.3.1` is a
