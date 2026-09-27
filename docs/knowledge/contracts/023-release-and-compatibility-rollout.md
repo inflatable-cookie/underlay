@@ -14,6 +14,7 @@ This contract covers:
 - compatibility alias and deprecation-window posture at the fleet level
 - cross-repo rollout order
 - released Git-tag consumer pins, hold-back, upgrade, and rollback
+- the Svelte peer range consumers must satisfy
 - release-note and upgrade-note expectations
 - proof required before a compatibility surface can be retired
 
@@ -31,6 +32,7 @@ Shared release and upgrade guidance:
 - [`docs/guides/200-project-sync.md`](../../guides/200-project-sync.md)
 - [`docs/guides/code/190-upgrade-compatibility/feature-upgrade-note-template.md`](../../guides/code/190-upgrade-compatibility/feature-upgrade-note-template.md)
 - [`docs/guides/code/190-upgrade-compatibility/release-log-upgrade-block-template.md`](../../guides/code/190-upgrade-compatibility/release-log-upgrade-block-template.md)
+- [`package.json`](../../../package.json) `peerDependencies.svelte` — declared Svelte peer range
 
 Prior rollout and retirement evidence:
 
@@ -70,6 +72,7 @@ In scope:
 
 - shared TS, Svelte, Rust, config, migration, and docs changes that affect
   consumer apps
+- the declared Svelte peer range
 - compatibility windows
 - released Git-tag consumer pins, hold-back, upgrade, and rollback
 - release and upgrade-note expectations
@@ -159,6 +162,23 @@ Rules:
 - do not bump a consumer pin until the Underlay release tag exists and has
   been validated
 - a consumer cannot pin an unreleased shared commit, branch, or local checkout
+
+### Svelte peer range rule
+
+Underlay's `svelte` peer is `>=5.56.8 <6`. That is the same range Poodle
+declares, so a consumer that installs Underlay never meets a Poodle Svelte
+peer conflict.
+
+Operator ruling 2026-09-27: Underlay moves its Svelte peer to meet Poodle.
+Poodle does not lower its floor to meet Underlay.
+
+Rules:
+
+- `package.json` `peerDependencies.svelte` is the declared range
+- raising the Svelte floor is `breaking` for consumers below the new floor
+- a Svelte-floor move ships in the next minor release
+- do not change the `@sveltejs/kit` peer, or other dependency floors, as a
+  side effect of a Svelte-floor move
 
 ### Release-note rule
 
@@ -305,6 +325,8 @@ Good outcomes:
 - compatibility aliases are time-boxed and documented
 - shared changes move through a visible repo order instead of surprise breakage
 - consumers pin the same released Git tag on both language surfaces
+- Underlay's Svelte peer matches Poodle's, so installing both is not a peer
+  conflict
 - hold-back and rollback stay on known released tags
 - retirements happen only after caller proof exists
 - release logs and upgrade notes tell consumers exactly what to do
@@ -314,6 +336,7 @@ Bad outcomes:
 - treating npm `private: true` as unreleased
 - committed Cargo `path` or JavaScript `file:` Underlay edges
 - consumers pinning unreleased commits, branches, or local checkouts
+- Underlay's Svelte peer lagging Poodle's floor
 - shared breakage lands with no upgrade note
 - aliases stay live with no sunset or inventory
 - retirements happen before consumer callers are moved
