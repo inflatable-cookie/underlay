@@ -313,6 +313,8 @@
     "./styles/optimistic.css": "./ts/src/styles/optimistic.css"
   },
   "peerDependencies": {
+    "@inflatable-cookie/nightfire": ">=0.4.0 <0.5",
+    "@inflatable-cookie/poodle-svelte": ">=0.4.4 <0.5",
     "@sveltejs/kit": "^2.53.0",
     "bits-ui": "^2.0.0",
     "lucide-svelte": "^0.563.0 || ^1.0.0",
@@ -326,14 +328,14 @@
     }
   },
   "dependencies": {
-    "@inflatable-cookie/nightfire": "0.3.1",
-    "@inflatable-cookie/poodle-svelte": "0.4.4",
     "esm-env": "^1.2.2",
     "isomorphic-dompurify": "^3.0.0",
     "marked": "^18.0.9",
     "smol-toml": "^1.6.1"
   },
   "devDependencies": {
+    "@inflatable-cookie/nightfire": "0.4.1",
+    "@inflatable-cookie/poodle-svelte": "0.4.4",
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/svelte": "^5.4.2",

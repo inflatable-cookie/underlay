@@ -5,14 +5,14 @@
     "": {
       "name": "@inflatable-cookie/underlay",
       "dependencies": {
-        "@inflatable-cookie/nightfire": "0.3.1",
-        "@inflatable-cookie/poodle-svelte": "0.4.4",
         "esm-env": "^1.2.2",
         "isomorphic-dompurify": "^3.0.0",
         "marked": "^18.0.9",
         "smol-toml": "^1.6.1",
       },
       "devDependencies": {
+        "@inflatable-cookie/nightfire": "0.4.1",
+        "@inflatable-cookie/poodle-svelte": "0.4.4",
         "@sveltejs/vite-plugin-svelte": "^7.3.1",
         "@testing-library/dom": "^10.4.2",
         "@testing-library/svelte": "^5.4.2",
@@ -32,6 +32,8 @@
         "zod": "^4.6.5",
       },
       "peerDependencies": {
+        "@inflatable-cookie/nightfire": ">=0.4.0 <0.5",
+        "@inflatable-cookie/poodle-svelte": ">=0.4.4 <0.5",
         "@sveltejs/kit": "^2.53.0",
         "bits-ui": "^2.0.0",
         "lucide-svelte": "^0.563.0 || ^1.0.0",
@@ -147,7 +149,7 @@
 
     "@floating-ui/utils": ["@floating-ui/utils@0.2.12", "", {}, "sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww=="],
 
-    "@inflatable-cookie/nightfire": ["@inflatable-cookie/nightfire@0.3.1", "", { "dependencies": { "@inflatable-cookie/poodle-svelte": "0.4.4", "isomorphic-dompurify": "3.22.0", "marked": "18.0.14" }, "peerDependencies": { "svelte": ">=5.56.8 <6" } }, "sha512-AkSueIQnDx7gL2LoO6SsDM4drQr97P+8hij8rfV9QOzNeo1iM7oQaPBXq8QHodNYNLFV0GRd6tMPC0/rdyt5FA=="],
+    "@inflatable-cookie/nightfire": ["@inflatable-cookie/nightfire@0.4.1", "", { "dependencies": { "isomorphic-dompurify": "3.22.0", "marked": "18.0.14" }, "peerDependencies": { "@inflatable-cookie/poodle-svelte": ">=0.4.4 <0.5", "svelte": ">=5.56.8 <6" }, "optionalPeers": ["@inflatable-cookie/poodle-svelte"] }, "sha512-Wu4iGfZC1L8YrvF05lnDaXecigOhtnRVR+xyfB5W7B3GnvJLp7wimtfguTqJ0VvHnUe3hA4DkvKF0MlLtJOnBQ=="],
 
     "@inflatable-cookie/poodle-core": ["@inflatable-cookie/poodle-core@0.4.4", "", { "bin": { "poodle-icons": "dist/icons/build.mjs" } }, "sha512-gSsc0h09bjTOaaeg6g2Ryyp/M2dgFWSBKYP+mf5GhVdNvd05hW9sUSHQ5raVTP9Mk/p8cvnN72Jy5RnnshlahA=="],
 
