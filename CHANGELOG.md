@@ -7,6 +7,17 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+### Changed
+- Raised the `svelte` peer from `^5.0.0` to `>=5.56.8 <6` so it matches
+  Poodle 0.4.4. Consumers on Svelte below 5.56.8 get a peer conflict. This
+  is breaking and ships in the next minor release.
+- Impact class: breaking. Consumer action: install `svelte` `>=5.56.8 <6`
+  before pinning the next Underlay minor tag, then regenerate the root lock.
+  The `@sveltejs/kit` peer is unchanged. Validation: producer `effigy qa`;
+  consumer Svelte check after the bump. Rollback: retain `v0.9.12` until
+  ready to move. See
+  `docs/knowledge/contracts/023-release-and-compatibility-rollout.md`.
+
 ## [0.9.12] - 2026-09-19
 
 ### Fixed
