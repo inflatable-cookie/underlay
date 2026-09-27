@@ -7,6 +7,8 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-09-27
+
 ### Changed
 - **Breaking.** `@inflatable-cookie/poodle-svelte` and `@inflatable-cookie/nightfire`
   are peer dependencies with ranges (`>=0.4.4 <0.5` and `>=0.4.0 <0.5`), not exact
