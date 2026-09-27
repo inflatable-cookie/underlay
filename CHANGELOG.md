@@ -7,6 +7,8 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-09-27
+
 ### Changed
 - Refreshed every dependency to its newest compatible release, including
   `@inflatable-cookie/poodle-svelte` `0.4.2` -> `0.4.4` (exact; `0.4.3` was
