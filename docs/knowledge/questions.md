@@ -6,7 +6,7 @@ briefs. An answered question keeps only its pointer to where the answer lives.
 ## Q-001 — Where does each consumer stand on the Nightfire repoint?
 
 Status: open
-Context: Underlay's side is done: it consumes `nightfire` `v0.3.0` and keeps the
+Context: Underlay's side is done: it consumes `nightfire` `v0.3.1` and keeps the
 historical Rust `underlay-nightfire` crate name and TypeScript
 `@inflatable-cookie/underlay/nightfire/*` subpaths as deprecation facades. Froyo,
 Farmyard and Bovine Desktop repoint in their own repositories (acowtancy owns
