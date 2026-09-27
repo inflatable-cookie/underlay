@@ -117,8 +117,8 @@ When standardizing AGENTS across multiple Underlay-based apps:
 ## Planning and Status
 
 Underlay uses lean Northstar: task status lives in Queue, never in repository
-files. Keep `docs/plan.md` to intent (what matters next and why), and don't add
-status lines or task files.
+files. The plan and leads live in Queue too, so don't add plan, status or task
+files.
 
 ## Upgrade Documentation Protocol
 

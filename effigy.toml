@@ -54,7 +54,7 @@ check = "cd {repo} && bun x svelte-check --tsconfig ./ts/tsconfig.json"
 "test:ui" = "cd {repo} && bun x vitest --ui {args}"
 "test:components" = "cd {repo} && bun x vitest run -c vitest.component.config.ts {args}"
 
-"qa:docs:links" = "cd {repo} && effigy docs check links README.md AGENTS.md docs/README.md docs/plan.md docs/knowledge/*.md docs/knowledge/architecture/*.md docs/knowledge/contracts/*.md docs/guides/README.md docs/triage/*.md"
+"qa:docs:links" = "cd {repo} && effigy docs check links README.md AGENTS.md docs/README.md docs/knowledge/*.md docs/knowledge/architecture/*.md docs/knowledge/contracts/*.md docs/guides/README.md"
 "qa:docs:agent-defaults" = "cd {repo} && effigy docs check forbidden AGENTS.md README.md package.json docs/README.md docs/guides/README.md --forbid '--repo .'"
 "qa:docs:contracts:local-paths" = "cd {repo} && effigy docs check forbidden docs/knowledge/contracts/*.md --forbid '/Users/' --forbid '/home/'"
 "qa:docs" = [

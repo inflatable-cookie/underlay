@@ -48,7 +48,6 @@ task status, handoffs or delivery logs into the repository.
   normative; guides only explain them.
 - `docs/knowledge/retired.toml` — concepts that must not come back.
 - `docs/knowledge/questions.md` — open questions; check here before asking.
-- `docs/plan.md` — what matters next and why.
 - `docs/knowledge/contracts/release.md` — how a release is cut.
 
 When a change alters what is true, update the owning knowledge file in the same
@@ -58,7 +57,7 @@ the thread ends.
 ## Papercuts
 
 File small, recurring friction in Queue with `papercut.add` (see the
-`northstar` skill). There is no `PAPERCUTS.md`.
+`northstar` skill). The repository holds no papercut file or triage folder.
 
 ## Effigy-First Execution
 

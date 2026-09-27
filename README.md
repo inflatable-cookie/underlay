@@ -45,7 +45,6 @@ Use Poodle directly for foundational primitives and generic composites.
 - `docs/knowledge/vision.md`
 - `docs/knowledge/architecture/000-overview.md`
 - `docs/guides/000-overview.md`
-- `docs/plan.md`
 
 ## Development
 

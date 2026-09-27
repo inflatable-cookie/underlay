@@ -55,4 +55,4 @@ machine-readable policy files.
 
 - Whole-app fixed-schema DB suites remain app-owned; `TestDb` stays the shared
   single-schema seam.
-- What's being worked next is in [the plan](../../plan.md).
+- What's being worked next is in the plan.

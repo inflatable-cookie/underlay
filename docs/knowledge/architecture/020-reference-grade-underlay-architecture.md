@@ -197,5 +197,5 @@ Stop and re-enter planning if:
 
 ## Before the next reset
 
-Plan a bounded task in [the plan](../../plan.md) before retiring deferred
+Plan a bounded task in the plan before retiring deferred
 compatibility exports or starting another architecture reset.
