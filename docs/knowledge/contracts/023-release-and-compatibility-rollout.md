@@ -198,6 +198,9 @@ Rules:
   versions
 - the Poodle range is `>=0.4.4 <0.5` and the Nightfire range is
   `>=0.4.1 <0.5`
+- dedupe holds only for a consumer pin inside the declared range; a pin below
+  a range floor, such as Nightfire `0.4.0`, still yields two copies next to
+  Underlay's
 - Poodle and Nightfire stay regular `dependencies`, not peers, so consumers
   install nothing new
 - Underlay's own `bun.lock` and `Cargo.lock` keep exact resolutions; only the

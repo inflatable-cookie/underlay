@@ -19,9 +19,10 @@ consume a released tag.
 ## Install Nightfire
 
 Both language surfaces use the same Nightfire `0.4.1` release. Underlay
-declares Nightfire and Poodle as dependency ranges, so a consumer resolving
-any Nightfire `0.4.x` shares Underlay's copy instead of carrying a second one;
-see
+declares Nightfire and Poodle as dependency ranges (`>=0.4.1 <0.5` and
+`>=0.4.4 <0.5`), so a consumer resolving a Nightfire version inside that range
+shares Underlay's copy instead of carrying a second one. A consumer pinned
+below the range floor, such as Nightfire `0.4.0`, still carries two; see
 [contract 023](../knowledge/contracts/023-release-and-compatibility-rollout.md).
 
 ```toml
