@@ -7,6 +7,27 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+### Changed
+- Declare every runtime dependency as a semver range, with no exact pins:
+  `@inflatable-cookie/poodle-svelte` `>=0.4.4 <0.5` and
+  `@inflatable-cookie/nightfire` `>=0.4.1 <0.5`. Both stay regular
+  `dependencies`, not peers, so consumers install nothing new. A consumer on
+  Poodle 0.4.5 or Nightfire 0.4.x now resolves one copy of each instead of
+  carrying a duplicate next to Underlay's. The Rust `nightfire` crate moves to
+  git tag `v0.4.1`; the other runtime dependencies (`esm-env`,
+  `isomorphic-dompurify`, `marked`, `smol-toml`) were already ranges. Nightfire
+  `0.4.0` made Poodle an optional peer of its editor entry points and added
+  Poodle-free renderers; `0.4.1` only widened that peer to a range. Underlay
+  installs Poodle itself, so Nightfire's break does not reach Underlay
+  consumers. Historical Underlay Nightfire facades stay in place. See
+  `docs/knowledge/contracts/023-release-and-compatibility-rollout.md`.
+- Impact class: additive. Consumer action: take the next Underlay tag and
+  regenerate root locks. Validation: producer `effigy qa`; lock check that
+  `bun.lock` resolves one `poodle-svelte` `0.4.4` and one Nightfire `0.4.1`,
+  that `Cargo.lock` has `nightfire` at `v0.4.1` only, and a consumer-style
+  check that a root pin of `poodle-svelte` `0.4.4` dedupes to one copy with
+  Underlay installed. Rollback: retain `v0.10.1`.
+
 ## [0.10.1] - 2026-09-27
 
 ### Changed
