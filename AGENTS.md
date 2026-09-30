@@ -76,19 +76,23 @@ covers how to route by job. What is specific to Underlay:
 
 ## Validation
 
-Run what your change touches, then the aggregate before you call it done.
+Run what your change touches, then stop. Choose the narrowest Effigy selector
+for the change and run each required check once; do not repeat a passing run.
 
 ```bash
 effigy health            # cheap baseline
-effigy qa                # validate + qa:docs + qa:northstar (full gate)
 effigy rust:check        # cargo check --workspace --all-features
 effigy rust:clippy       # denies warnings
-effigy rust:test
-effigy test:unit         # vitest
+effigy rust:test         # filter {args} to the touched crate/package
+effigy test:unit         # vitest, filter {args} to the touched code
 effigy test:components   # vitest component config
 effigy test --plan       # when the test shape is what you need to know
+effigy qa:docs           # docs checks when docs changed
 # Use targeted raw tool commands only when Effigy does not cover the path
 ```
+
+Run full `effigy qa` (`validate` + `qa:docs`) on `main` at Queue milestones,
+not as a per-task default.
 
 `underlay-db` Postgres integration tests need a running Docker runtime and are
 `#[ignore]`d by default; see `README.md` for the bring-up.
