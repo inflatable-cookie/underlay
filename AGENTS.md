@@ -120,15 +120,38 @@ Prefer `effigy <task>`, `effigy test`, and the matching built-in surface over
 raw package-manager or shell commands when Effigy covers the path. Use
 `effigy --json <command>` whenever another agent or tool will consume output.
 
-This repo's local `.agents/skills/effigy` copy is authoritative for this
-project. When an agent supports both project-local and global skills, prefer
-the project-local copy over any globally installed Effigy skill.
+Effigy guidance is maintained in the installed shared Agent Skill. Read the
+installed `effigy/SKILL.md` from one of these user skill roots when using
+Effigy-specific agent guidance: `~/.agents/skills`, `~/.codex/skills`,
+`~/.claude/skills`, or `~/.cursor/skills`. Resolve symlinks first; aliases to
+the same canonical skill directory are one installation. If distinct roots
+contain the skill, report the ambiguity and choose one source explicitly.
 
-Do not add an explicit repo selector while already inside the target repo. Do not edit
+This repo's `.agents/skills/effigy` copy is optional project-local content,
+not the maintained guidance source. Preserve it if it exists; plain init does
+not create or refresh it. The named `skill.codex_project` init action is an
+explicit snapshot opt-in and may replace files at maintained paths. Named
+`effigy skill run` task lookup still gives an invocation project's local skill
+source precedence, as defined by contract 042.
+
+If no installed Effigy Agent Skill is present, say so and suggest
+`npx skills add inflatable-cookie/effigy -g`; init does not download or install
+skills. A filesystem check cannot prove what an already-running agent loaded;
+use a fresh agent context to verify discovery.
+
+Agent Skill guidance and the `effigy` executable are separate channels. A
+current skill does not prove the binary on `PATH` is current or admission-capable;
+check the binary independently with `command -v effigy` and
+`effigy admission status --json`.
+
+Do not add a current-directory repo override while already inside the target
+repo. Do not edit
 `.github/workflows/` or run release mutations unless the user explicitly asks.
 
 Reference docs:
 - Effigy agent adoption: `docs/guides/047-agent-and-cross-repo-adoption.md`
+- Installed skill task sources: `docs/knowledge/contracts/042-external-skill-task-runner-contract.md`
+- Heavy validation admission: `docs/guides/080-host-wide-validation-admission.md`
 - Graph workflows: `docs/guides/076-code-graph-and-agent-workflows.md`
 - JSON contracts: `docs/guides/017-json-output-contracts.md`
 <!-- END EFFIGY AGENT CONTRACT -->
