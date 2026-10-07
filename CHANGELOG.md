@@ -7,6 +7,13 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+### Fixed
+- Document the standalone Nightfire TypeScript dependency as the released npm
+  version in contract `023`, replacing the `git+ssh` annotated-tag form that
+  Bun cannot resolve during lock regeneration. Consumer action: pin
+  `@inflatable-cookie/nightfire` to the released npm version. Validation:
+  `effigy qa:docs`; rollback: none, this is a documentation correction.
+
 ## [0.10.2] - 2026-09-27
 
 ### Changed

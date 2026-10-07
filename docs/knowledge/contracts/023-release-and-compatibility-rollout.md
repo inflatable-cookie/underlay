@@ -267,9 +267,9 @@ Rules:
 The root JavaScript package is npm-private (`package.json` has
 `private: true`). Underlay distributes both language surfaces to consumers
 through immutable Git tags. The independently versioned Nightfire repository
-follows the same private Git-tag model for both
-`@inflatable-cookie/nightfire` and Rust crate `nightfire`; neither requires
-registry publication and neither remains an Underlay implementation.
+publishes the TypeScript package `@inflatable-cookie/nightfire` to npm and
+exposes the Rust crate `nightfire` from immutable Git tags; neither remains an
+Underlay implementation.
 
 The synchronized Rust workspace and JavaScript package versions follow the
 release process and semantic versioning. Roadmap generation numbers never
@@ -282,10 +282,11 @@ The only committed JavaScript form is:
 "@inflatable-cookie/underlay": "git+ssh://git@github.com/inflatable-cookie/underlay.git#vX.Y.Z"
 ```
 
-The only committed standalone Nightfire form is:
+The only committed standalone Nightfire TypeScript form is the released npm
+version:
 
 ```json
-"@inflatable-cookie/nightfire": "git+ssh://git@github.com/inflatable-cookie/nightfire.git#vX.Y.Z"
+"@inflatable-cookie/nightfire": "X.Y.Z"
 ```
 
 The committed standalone Nightfire Cargo form is:
@@ -305,8 +306,13 @@ underlay-core = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", t
 
 Rules:
 
-- pin one released Underlay tag on all Underlay declarations and one released
-  Nightfire tag on all Nightfire declarations in that consumer
+- pin one released Underlay tag on all Underlay declarations, one released
+  Nightfire npm version on the TypeScript declarations, and one released
+  Nightfire tag on the Rust declarations in that consumer
+- consume the Nightfire TypeScript package from its released npm version, not
+  from a `git+ssh` tag: Bun does not resolve the Nightfire repository's
+  annotated tags, so a `...nightfire.git#vX.Y.Z` dependency fails lock
+  regeneration
 - a consumer cannot pin an unreleased shared commit, branch, or local checkout
 - holding a consumer back means retaining its previous proven tag
 - upgrading means changing every declared Underlay tag in the consumer root,
@@ -317,8 +323,9 @@ Rules:
 - sibling Underlay checkouts remain read-only QA or tooling inputs, or
   untracked local Cargo `[patch]` links. They must never become the committed
   dependency shape
-- standalone Nightfire consumers pin a validated Nightfire tag directly;
-  they do not depend on Underlay merely to reach Nightfire
+- standalone Nightfire consumers pin a validated Nightfire release directly,
+  npm version for TypeScript and Git tag for Rust; they do not depend on
+  Underlay merely to reach Nightfire
 - the historical `@inflatable-cookie/underlay/nightfire/*` exports are a
   deprecation facade during `g12`; they resolve to the same released
   Nightfire implementation and cannot become a fork
