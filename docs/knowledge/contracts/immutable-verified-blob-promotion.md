@@ -3,7 +3,6 @@
 Status: active — v0.9.7 ownership follow-up released at `8a7ce84b`
 Owner: repo maintainers
 Created: 2026-09-02
-Roadmap: `g11.001`
 
 ## Required Surface
 
@@ -113,14 +112,28 @@ immutable publication.
 - S3 and local proof shows ownership metadata becomes visible atomically with
   exclusive destination creation.
 
-## Consumer Chain
+## Consumer Proof
 
-After merge: cut the next validated tag; resume Contact Patch Card 015; then
-adopt in Underlay Reference, Compli Me, Acowtancy, and Songsprout according to
-their target-owned cards and real finalisation oracles.
+Consumer adoption and fleet closeout require exact evidence from each named
+consumer root and every affected child package. Record the inspected root
+commit and the released Underlay tag and lock resolution that contain this
+helper. Inventory each live server finalisation path and its client delegates;
+give a reason when a related upload path is not a media-version publication
+path.
 
-## Next Task
+For each live finalisation path, cite source showing that the server uses the
+captured publication bytes or owned recovery result for digest and publication
+facts, persists ownership before exclusive create, recovers only through the
+matching token and destination authority, and makes the version ready and
+current in one database transaction. Name the real-handler and database tests
+that cover capture mutation, forged client facts, collisions, post-create
+recovery, and activation failure. Retain successful evidence for the exact
+tested head; list any missing proof precisely.
 
-Shared work is complete at `v0.9.7`. Run `g11.002` consumer adoption from
-that tag (Contact Patch Card 015 on its retained lane, Underlay Reference
-first), then `g11.003` fleet closeout.
+Classify each claim as implementation present, behavior proven, not applicable
+with a reason, or unknown. Keep per-consumer status and evidence in the
+Queue-owned task outcome and review record, not in this contract.
+
+Queue owns consumer order, dispatch, task status, review, and closeout. Consumer
+changes require a consumer-owned approved brief; this contract sets proof
+requirements and grants no dispatch authority.
