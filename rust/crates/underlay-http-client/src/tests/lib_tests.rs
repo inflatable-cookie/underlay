@@ -182,12 +182,17 @@ async fn invalid_user_agent_fallback_retains_default_timeout() {
     let addr = stalled_server().await;
     let client = HttpClient::with_user_agent("invalid\nuser-agent");
     let started = tokio::time::Instant::now();
-    let err = client
-        .get(format!("http://{addr}/stall"))
-        .send()
-        .await
-        .expect_err("bounded fallback must time out on a stalled server");
 
+    // Drive the paused clock past the default total timeout explicitly instead
+    // of relying on auto-advance. Auto-advance only reaches the earliest
+    // pending deadline, so the request can fail on the 10s connect timeout
+    // before 30s have elapsed and `elapsed() >= DEFAULT_TIMEOUT` flakes. The
+    // join polls the request first, arming its timers, then advances the clock.
+    let (result, ()) = tokio::join!(client.get(format!("http://{addr}/stall")).send(), async {
+        tokio::time::advance(DEFAULT_TIMEOUT).await;
+    });
+
+    let err = result.expect_err("bounded fallback must time out on a stalled server");
     assert!(err.is_timeout(), "expected a timeout error, got: {err}");
     assert!(started.elapsed() >= DEFAULT_TIMEOUT);
 }
