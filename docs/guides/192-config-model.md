@@ -100,4 +100,6 @@ let cors = underlay_http::admin_cors_layer(env, origins_from_config);
 4. Commit `config/effigy.toml` with the app's dev-stack constants;
    keep `local.toml` personal-only.
 5. Seed the shared dev credentials from `migrations_dev/`.
-6. `effigy qa:security` (conformance) must pass.
+6. Add `qa:security` using `bunx underlay-consumer-security .` when the
+   pinned Underlay release exposes that bin; workspace-shape and env-authority
+   checks do not provide security coverage.
