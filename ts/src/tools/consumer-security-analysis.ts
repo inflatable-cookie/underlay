@@ -274,6 +274,7 @@ function gateKindAtomic(condition: Token[], negated: boolean): GateKind | undefi
 	for (let index = 0; index < condition.length; index += 1) {
 		const token = condition[index]!;
 		let kind: GateKind | undefined;
+		let environmentVariant = false;
 		if (token.kind === "identifier" && ENVIRONMENT_GATE_NAMES.has(token.value)) kind = "environment";
 		if (token.kind === "identifier" && DOCS_GATE_NAMES.has(token.value)) kind = "docs";
 		if (
@@ -286,21 +287,32 @@ function gateKindAtomic(condition: Token[], negated: boolean): GateKind | undefi
 				condition[index - 2]?.value === "Environment"
 			) {
 				kind = "environment";
+				environmentVariant = true;
 			}
 		}
 		if (!kind) continue;
 
-		let expressionStart = index - 1;
+		let atomStart = index;
 		while (
-			expressionStart >= 0 &&
-			condition[expressionStart]!.value !== "&&" &&
-			condition[expressionStart]!.value !== "||"
+			atomStart > 0 &&
+			condition[atomStart - 1]!.value !== "&&" &&
+			condition[atomStart - 1]!.value !== "||"
 		) {
-			expressionStart -= 1;
+			atomStart -= 1;
 		}
-		const expression = condition.slice(expressionStart + 1, index);
-		const firstExpressionToken = expression.find((part) => part.value !== "(");
-		const expressionNegated = firstExpressionToken?.value === "!";
+		let atomEnd = index + 1;
+		while (
+			atomEnd < condition.length &&
+			condition[atomEnd]!.value !== "&&" &&
+			condition[atomEnd]!.value !== "||"
+		) {
+			atomEnd += 1;
+		}
+		const atom = condition.slice(atomStart, atomEnd);
+		const firstExpressionToken = atom.find((part) => part.value !== "(");
+		const expressionNegated =
+			firstExpressionToken?.value === "!" ||
+			(environmentVariant && atom.some((part) => part.value === "!="));
 		if (kind === "environment" && expressionNegated) environmentNegative = true;
 		if (kind === "environment" && !expressionNegated) environmentPositive = true;
 		if (kind === "docs" && expressionNegated) docsNegative = true;
@@ -544,6 +556,133 @@ function callArguments(module: RustModule, callIndex: number): Token[][] | undef
 	return splitTopLevel(module.tokens, open + 1, close, module.braces, module.parens, module.brackets);
 }
 
+function localBindingExpression(
+	module: RustModule,
+	fn: FunctionBody,
+	name: string,
+	beforeIndex: number,
+): Token[] | undefined {
+	let binding: { expression: Token[]; end: number } | undefined;
+
+	for (let index = fn.start + 1; index < beforeIndex; index += 1) {
+		if (module.tokens[index]!.value !== "let") continue;
+		let nameIndex = index + 1;
+		if (module.tokens[nameIndex]?.value === "mut") nameIndex += 1;
+		if (module.tokens[nameIndex]?.value !== name) continue;
+		let visibleAtCall = true;
+		for (let open = fn.start + 1; open < index; open += 1) {
+			if (module.tokens[open]!.value !== "{") continue;
+			const scopeEnd = module.braces.get(open);
+			if (scopeEnd !== undefined && scopeEnd > index && scopeEnd < beforeIndex) {
+				visibleAtCall = false;
+				break;
+			}
+		}
+		if (!visibleAtCall) continue;
+
+		let equalsIndex = nameIndex + 1;
+		while (
+			equalsIndex < beforeIndex &&
+			module.tokens[equalsIndex]!.value !== "=" &&
+			module.tokens[equalsIndex]!.value !== ";"
+		) {
+			equalsIndex += 1;
+		}
+		if (module.tokens[equalsIndex]?.value !== "=") continue;
+
+		let end = equalsIndex + 1;
+		while (end < beforeIndex) {
+			const value = module.tokens[end]!.value;
+			const pairedEnd = value === "("
+				? module.parens.get(end)
+				: value === "["
+					? module.brackets.get(end)
+					: value === "{"
+						? module.braces.get(end)
+						: undefined;
+			if (pairedEnd !== undefined && pairedEnd < beforeIndex) {
+				end = pairedEnd + 1;
+				continue;
+			}
+			if (value === ";") break;
+			end += 1;
+		}
+		if (module.tokens[end]?.value === ";") {
+			binding = { expression: module.tokens.slice(equalsIndex + 1, end), end };
+		}
+	}
+
+	if (!binding) return undefined;
+	for (let index = binding.end + 1; index + 1 < beforeIndex; index += 1) {
+		const previous = module.tokens[index - 1]?.value;
+		const previousPrevious = module.tokens[index - 2]?.value;
+		const isDeclaration = previous === "let" || (previous === "mut" && previousPrevious === "let");
+		if (
+			!isDeclaration &&
+			module.tokens[index]!.value === name &&
+			module.tokens[index + 1]!.value === "="
+		) {
+			return undefined;
+		}
+	}
+	return binding.expression;
+}
+
+function simpleIdentifier(expression: Token[]): string | undefined {
+	const identifiers = expression.filter((token) => token.kind === "identifier");
+	if (
+		identifiers.length !== 1 ||
+		expression.some((token) => token !== identifiers[0] && token.value !== "(" && token.value !== ")")
+	) {
+		return undefined;
+	}
+	return identifiers[0]!.value;
+}
+
+function localBindingIsDevelopment(
+	module: RustModule,
+	fn: FunctionBody,
+	name: string,
+	beforeIndex: number,
+	seen = new Set<string>(),
+): boolean {
+	if (seen.has(name)) return false;
+	seen.add(name);
+	const expression = localBindingExpression(module, fn, name, beforeIndex);
+	if (!expression) return false;
+	if (gateKind(expression, false) === "environment") return true;
+	const alias = simpleIdentifier(expression);
+	return alias !== undefined && localBindingIsDevelopment(module, fn, alias, beforeIndex, seen);
+}
+
+function argumentHasLocallyDerivedDocsFlag(
+	module: RustModule,
+	fn: FunctionBody | undefined,
+	argument: Token[],
+	callIndex: number,
+): boolean {
+	if (!fn) return false;
+	const names = new Set<string>();
+	for (let index = 0; index < argument.length; index += 1) {
+		const token = argument[index]!;
+		if (!DOCS_GATE_NAMES.has(token.value)) continue;
+		if (argument[index + 1]?.value === ":") {
+			const value = argument[index + 2];
+			if (
+				value?.kind === "identifier" &&
+				[",", "}"].includes(argument[index + 3]?.value ?? "}")
+			) {
+				names.add(value.value);
+			}
+		} else if ([",", "}"].includes(argument[index + 1]?.value ?? "}")) {
+			names.add(token.value);
+		}
+	}
+	const directName = simpleIdentifier(argument);
+	if (directName) names.add(directName);
+	return [...names].some((name) => localBindingIsDevelopment(module, fn, name, callIndex));
+}
+
 function callersProveDevelopment(
 	target: FunctionBody,
 	parameterIndex: number,
@@ -564,9 +703,11 @@ function callersProveDevelopment(
 			if (!args) continue;
 			callCount += 1;
 			const argument = args[parameterIndex] ?? [];
+			const caller = enclosingFunction(module.functions, index);
 			if (
 				gateKind(argument, false) !== "environment" &&
-				!isEnvironmentGatedAt(module, index)
+				!isEnvironmentGatedAt(module, index) &&
+				!argumentHasLocallyDerivedDocsFlag(module, caller, argument, index)
 			) {
 				return false;
 			}
@@ -912,6 +1053,68 @@ function statementStartIndex(tokens: Token[], bodyStart: number, before: number)
 	return Math.min(start, before);
 }
 
+function moduleSqlConstants(
+	tokens: Token[],
+	functions: FunctionBody[],
+	braces: Map<number, number>,
+	parens: Map<number, number>,
+	brackets: Map<number, number>,
+): Map<string, string> {
+	const constants = new Map<string, string>();
+	for (let index = 0; index < tokens.length - 1; index += 1) {
+		if (tokens[index]!.value !== "const" || enclosingFunction(functions, index)) continue;
+		const name = tokens[index + 1];
+		if (name?.kind !== "identifier") continue;
+
+		let equalsIndex = index + 2;
+		while (equalsIndex < tokens.length && !["=", ";"].includes(tokens[equalsIndex]!.value)) {
+			equalsIndex += 1;
+		}
+		if (tokens[equalsIndex]?.value !== "=") continue;
+
+		let end = equalsIndex + 1;
+		while (end < tokens.length) {
+			const value = tokens[end]!.value;
+			const pairedEnd = value === "("
+				? parens.get(end)
+				: value === "["
+					? brackets.get(end)
+					: value === "{"
+						? braces.get(end)
+						: undefined;
+			if (pairedEnd !== undefined) {
+				end = pairedEnd + 1;
+				continue;
+			}
+			if (value === ";") break;
+			end += 1;
+		}
+		const sql = tokens
+			.slice(equalsIndex + 1, end)
+			.find((token) => token.kind === "string" && startsWithSelect(token.value));
+		if (sql) constants.set(name.value, sql.value);
+	}
+	return constants;
+}
+
+function queryCallClose(
+	tokens: Token[],
+	fn: FunctionBody,
+	argumentIndex: number,
+	parens: Map<number, number>,
+): number | undefined {
+	for (let open = argumentIndex - 1; open > fn.start; open -= 1) {
+		if (tokens[open]!.value !== "(") continue;
+		const close = parens.get(open);
+		if (close === undefined || close < argumentIndex) continue;
+
+		let callee = open - 1;
+		if (tokens[callee]?.value === "!") callee -= 1;
+		if (["query", "query_as", "query_scalar"].includes(tokens[callee]?.value ?? "")) return close;
+	}
+	return undefined;
+}
+
 function analyzeBoundedQueriesFile(root: string, file: string): Finding[] {
 	const relative = relativePath(root, path.resolve(root, file));
 	if (
@@ -930,16 +1133,29 @@ function analyzeBoundedQueriesFile(root: string, file: string): Finding[] {
 	const parens = pairTokens(tokens, "(", ")");
 	const brackets = pairTokens(tokens, "[", "]");
 	const functions = functionBodies(tokens, braces, parens, brackets);
+	const sqlConstants = moduleSqlConstants(tokens, functions, braces, parens, brackets);
 	const findings: Finding[] = [];
 
 	for (const fn of functions) {
 		if (!fn.publicAsync || !/^(?:list|search)_/.test(fn.name)) continue;
 		for (let index = fn.start + 1; index < fn.end; index += 1) {
 			const token = tokens[index]!;
-			if (token.kind !== "string" || !startsWithSelect(token.value)) continue;
+			const sql = token.kind === "string"
+				? token.value
+				: token.kind === "identifier"
+					? sqlConstants.get(token.value)
+					: undefined;
+			if (!sql || !startsWithSelect(sql)) continue;
+
+			let searchFrom = index + 1;
+			if (token.kind === "identifier") {
+				const queryClose = queryCallClose(tokens, fn, index, parens);
+				if (queryClose === undefined) continue;
+				searchFrom = queryClose + 1;
+			}
 
 			let executionIndex: number | undefined;
-			for (let cursor = index + 1; cursor < fn.end; cursor += 1) {
+			for (let cursor = searchFrom; cursor < fn.end; cursor += 1) {
 				if (tokens[cursor]!.value === ";" || tokens[cursor]!.value === "}") break;
 				if (tokens[cursor]!.value === "fetch_all" || tokens[cursor]!.value === "fetch_optional") {
 					executionIndex = cursor;
@@ -953,8 +1169,8 @@ function analyzeBoundedQueriesFile(root: string, file: string): Finding[] {
 			const statementTokens = tokens.slice(statementIndex, executionIndex + 1);
 			const statementText = statementTokens.map((part) => part.text).join(" ");
 			const isBounded =
-				hasSqlLimit(token.value) ||
-				hasExplicitIdBound(token.value) ||
+				hasSqlLimit(sql) ||
+				hasExplicitIdBound(sql) ||
 				/\.\s*(?:limit|take)\s*\(/i.test(statementText);
 			const isDocumentedException = queryAllowanceImmediatelyBefore(source, statementStart.start);
 			if (isBounded || isDocumentedException) continue;

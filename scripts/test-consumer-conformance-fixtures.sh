@@ -35,8 +35,9 @@ pub fn build_router_with_options(options: RouterOptions) -> Router {
 EOF
 	cat > "$root/src/main.rs" <<'EOF'
 fn main_router(environment: Environment) {
+    let include_docs = environment.is_development();
     routes::build_router_with_options(RouterOptions {
-        include_docs: environment.is_development(),
+        include_docs,
     });
     if !environment.is_development() {
         return;
@@ -84,19 +85,38 @@ pub fn admin_router_with_options(options: RouterOptions) -> Router {
     }
     router
 }
+
+pub fn production_only_docs(environment: Environment) -> Router {
+    let router = Router::new();
+    if environment != Environment::Dev {
+        router.merge(SwaggerUi::new("/swagger-ui").url("/openapi.json", ApiDoc::openapi()));
+    }
+    router
+}
+
+pub fn non_dev_non_local_docs(environment: Environment) -> Router {
+    let router = Router::new();
+    if environment != Environment::Local && environment != Environment::Dev {
+        router.merge(SwaggerUi::new("/swagger-ui").url("/openapi.json", ApiDoc::openapi()));
+    }
+    router
+}
 EOF
 	cat > "$root/src/main.rs" <<'EOF'
 fn main_router(environment: Environment) {
+    let include_docs = true;
+    {
+        let include_docs = environment.is_development();
+    }
     routes::build_router_with_options(RouterOptions {
         include_docs: environment.is_development(),
     });
-    if environment.is_development() {
-        let _debug_only = true;
-    }
-    routes::admin_router_with_options(RouterOptions { include_docs: true });
+    routes::admin_router_with_options(RouterOptions { include_docs });
 }
 EOF
 	cat > "$root/src/queries.rs" <<'EOF'
+const LIST_ALL_SQL: &str = r#"SELECT id FROM archived_projects"#;
+
 pub async fn list_projects(ids: &[Uuid], pool: &PgPool) -> Result<Vec<Project>> {
     let sample = sqlx::query(r#"SELECT id FROM projects WHERE id = $1 LIMIT 1"#)
         .bind(ids.first())
@@ -106,6 +126,13 @@ pub async fn list_projects(ids: &[Uuid], pool: &PgPool) -> Result<Vec<Project>> 
         .fetch_all(pool)
         .await?;
     Ok(projects)
+}
+
+pub async fn list_archived_projects(pool: &PgPool) -> Result<Vec<Project>> {
+    let rows = sqlx::query(LIST_ALL_SQL)
+        .fetch_all(pool)
+        .await?;
+    Ok(rows)
 }
 
 pub async fn list_legacy_projects(pool: &PgPool) -> Result<Vec<Project>> {
@@ -186,7 +213,12 @@ if ! rg -q 'src/queries\.rs:.*list_projects query uses fetch_all' <<<"$UNSAFE_OU
 	printf '%s\n' "$UNSAFE_OUTPUT" >&2
 	exit 1
 fi
-if [[ "$(rg -c 'mount must be inside a development-only gate' <<<"$UNSAFE_OUTPUT")" -ne 1 ]]; then
+if ! rg -q 'src/queries\.rs:.*list_archived_projects query uses fetch_all' <<<"$UNSAFE_OUTPUT"; then
+	echo "unbounded module-constant SQL was not reported at its list/search call site" >&2
+	printf '%s\n' "$UNSAFE_OUTPUT" >&2
+	exit 1
+fi
+if [[ "$(rg -c 'mount must be inside a development-only gate' <<<"$UNSAFE_OUTPUT")" -ne 3 ]]; then
 	echo "safe and unsafe OpenAPI mounts were not distinguished by their own source paths" >&2
 	printf '%s\n' "$UNSAFE_OUTPUT" >&2
 	exit 1
