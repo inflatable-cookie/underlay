@@ -190,8 +190,9 @@ Core pieces:
 Rules:
 
 - TS editor and renderer runtime is registry-driven by `schema` and `type`
-- the root package is distributed from its own repository by immutable Git tag
-- the root Cargo workspace exposes crate `nightfire` from the same immutable
+- the TypeScript root package is published to npm from its own repository;
+  consumers pin the released npm version, not a Git tag
+- the root Cargo workspace exposes crate `nightfire` from an immutable Git
   tag; Rust and npm manifest versions stay synchronized
 - focused subpaths separate core, renderer, editor, markdown, registries,
   strategies, validation, and media helpers without creating multiple sibling
