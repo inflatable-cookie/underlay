@@ -15,9 +15,7 @@ those). Retiring the facades needs a caller inventory and consumer proof, per
 
 ## Q-002 — Which consumers still need verified media adoption?
 
-Status: open
-Context: all five consumers (Underlay Reference, Contact Patch, Compli Me,
-Acowtancy, Songsprout) must adopt the `v0.9.7` promotion helper wherever live
-upload finalisation can publish mutable or client-described bytes. See
-[immutable-verified-blob-promotion.md](contracts/immutable-verified-blob-promotion.md).
-Per-consumer status lives in each consumer's Queue history, not here.
+Answer: [Consumer Proof](contracts/immutable-verified-blob-promotion.md#consumer-proof)
+owns the requirements. The five-root evidence is in Queue outcome
+`ec38cfbb-76b1-4eff-a5f8-55380473d9af` and
+[the proof matrix](https://github.com/inflatable-cookie/underlay/pull/49).
