@@ -230,8 +230,9 @@ Core pieces:
 Rules:
 
 - the checker validates contract `024` workspace topology mechanically and stays
-  separate from security conformance in
-  `scripts/check-consumer-conformance.sh`
+  separate from security conformance, which is exposed as the
+  `underlay-consumer-security` bin; the legacy
+  `scripts/check-consumer-conformance.sh` path remains a checkout wrapper
 - consumers invoke the distributed export
   `@inflatable-cookie/underlay/tools/workspace-shape` through the published
   `underlay-workspace-shape` bin entry from an Effigy-owned task such as

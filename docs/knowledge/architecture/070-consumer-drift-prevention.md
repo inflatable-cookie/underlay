@@ -113,16 +113,20 @@ with the canonical shape: dev → MinIO, prod → S3 or explicit
 (four apps drifted on the worker side alone).
 
 **B5. Conformance kit.** ~~The meta-fix~~ — **done (v1).**
-`underlay/scripts/check-consumer-conformance.sh` statically verifies the
-canonical shapes in any consumer checkout: env fail-closed, db-error
-hygiene, OpenAPI gating, seed gates (env AND local DB host), `{@html}`
-sanitization, no SVG regex blacklists, CSP at the real serving layer, no
-tracked secrets, TOTP via `SecretCipher`, sessions via
-`underlay-auth-session`, role-hierarchy guards, refresh via the crate.
-All five consumers pass; `CONFORMANCE_SKIP` allows documented exceptions.
-acme runs it as `effigy qa:security` — the pattern other consumers copy.
-Next iteration: fold into `effigy doctor`/CI so a red build is the
-default consequence of drift.
+The canonical checker is `ts/bin/underlay-consumer-security.sh`; the legacy
+`scripts/check-consumer-conformance.sh` remains a wrapper for existing
+checkout callers. The package exposes `underlay-consumer-security` so a
+consumer pinned to a release can run the same checker without a sibling
+checkout. It verifies env fail-closed behavior, DB-error hygiene, per-mount
+OpenAPI development gates, seed gates (env AND local DB host), `{@html}`
+sanitization, no SVG regex blacklists, CSP at the serving layer, no tracked
+secrets, TOTP via `SecretCipher`, sessions via `underlay-auth-session`, role
+hierarchy guards, bounded list/search reads, and refresh via the crate.
+Contact Patch, Compli Me, Acowtancy, and Songsprout retain their existing
+direct shell callers. Underlay Reference currently runs workspace-shape and
+env-authority checks only; those checks do not provide security coverage.
+Its released-package security selector belongs to a separate consumer
+rollout after a release contains the new bin.
 
 ### C. Reference app as executable spec
 

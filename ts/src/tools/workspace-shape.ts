@@ -4,7 +4,8 @@
  * Consumer workspace-shape conformance checker.
  *
  * Validates the single-repository Bun workspace topology defined in contract 024.
- * Separate from security conformance in `scripts/check-consumer-conformance.sh`.
+ * Separate from the published `underlay-consumer-security` checker (also
+ * available through the legacy `scripts/check-consumer-conformance.sh` path).
  *
  * @example
  * ```bash

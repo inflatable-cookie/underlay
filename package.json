@@ -7,6 +7,7 @@
     "ts"
   ],
   "bin": {
+    "underlay-consumer-security": "./ts/bin/underlay-consumer-security.sh",
     "underlay-workspace-shape": "./ts/bin/underlay-workspace-shape.ts",
     "underlay-env-authority": "./ts/bin/underlay-env-authority.ts"
   },

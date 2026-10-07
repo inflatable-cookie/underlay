@@ -138,9 +138,46 @@ The checker enforces one Git root, root `private: true`, a pinned
 `apps/*` / `packages/*` workspace membership, no declared workspaces outside
 those prefixes, one root `bun.lock`, no child lockfiles, no internal `file:`
 edges, no committed `file:` Underlay/Poodle dependencies, and `workspace:*` for
-internal JavaScript dependencies. Security policy remains in
-`underlay/scripts/check-consumer-conformance.sh` via a separate task such as
-`qa:security`.
+internal JavaScript dependencies. Keep security checks in a separate
+`qa:security` task; workspace-shape and env-authority checks do not cover
+consumer security.
+
+### Security conformance
+
+Underlay provides one generic security checker through both its published
+package and the existing checkout script. The package command is additive
+under contract 023: consumers can adopt it when they pin a release that
+contains the `underlay-consumer-security` bin.
+
+For a released package, invoke the binary through Bun:
+
+```toml
+[tasks."qa:security"]
+run = "bunx underlay-consumer-security ."
+```
+
+The command needs Bun, Bash, ripgrep (`rg`), and Git for the tracked-secret
+check, matching the existing consumer tooling used by the checker. It
+inspects the current consumer root and does not need an Underlay checkout.
+For co-development, the legacy direct shell path remains available:
+
+```toml
+[tasks."qa:security"]
+run = "bash ../underlay/scripts/check-consumer-conformance.sh ."
+```
+
+The packaged and checkout entry points call the same checker. No consumer
+change is required to keep using the legacy path; switching to the released
+bin is an optional additive adoption. The checker reports bounded list reads,
+scoped migration allowances, and development-only OpenAPI mounts at the
+specific query or mount. A list/search query must use its own SQL `LIMIT` or
+`FETCH` clause, query-builder `.limit()`/`.take()`, or an explicit ID-set
+predicate such as `id = ANY($1)`. A whole-set migration read can use a reasoned
+`// conformance: allow bounded-queries: <reason>` comment immediately above
+that query statement. OpenAPI mounts must be inside a development environment
+branch, or inside an `include_docs` option whose in-repo call sites derive the
+option from the development environment or are themselves behind a development
+environment guard.
 
 ### Env-authority conformance
 
