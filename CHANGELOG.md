@@ -7,12 +7,50 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+### Added
+- Package the generic consumer security checker as the `underlay-consumer-security`
+  Bun binary. The existing checkout script remains as a wrapper; released
+  consumers can invoke the packaged checker without an Underlay sibling
+  checkout. This is static conformance evidence, not proof of complete security.
+
 ### Fixed
+- Make consumer conformance findings more precise: bounded list/search reads,
+  including generic SQLx calls, are assessed at their query call sites, and
+  documented development-only OpenAPI mounts are recognized at their gates.
+  Unsafe inputs missed by earlier checks may now be rejected. Skip-only runs
+  exit 2 and report that coverage was not assessed.
 - Document the standalone Nightfire TypeScript dependency as the released npm
   version in contract `023`, replacing the `git+ssh` annotated-tag form that
   Bun cannot resolve during lock regeneration. Consumer action: pin
   `@inflatable-cookie/nightfire` to the released npm version. Validation:
   `effigy qa:docs`; rollback: none, this is a documentation correction.
+
+### Consumer Upgrade Notes
+- Impact class: additive checker surface and accuracy fixes; no public Rust or
+  TypeScript API break. Existing unsafe inputs may newly fail conformance.
+- Affected consumers: Underlay Reference for packaged-checker adoption;
+  consumers using the checkout script receive the more precise findings when
+  they update that checkout.
+- Required actions:
+  - When adopting `v0.10.3`, pin that same released tag on every Underlay Rust
+    and TypeScript declaration in the consumer root and child packages, then
+    regenerate the root `Cargo.lock` and `bun.lock`.
+  - After the tag exists, add the packaged invocation to Reference's
+    `qa:security` task and deliberately include that task in `qa:conformance`.
+    Do not mask missing coverage with broad skips or a sibling-checkout
+    fallback. See the
+    [security conformance invocation guide](docs/guides/030-underlay-integration.md#security-conformance).
+- Validation:
+  - Producer: `effigy check:consumer-conformance-fixtures` for packaged and
+    checkout entry-point behavior, query findings, and skip-only exit status.
+  - Consumer: `effigy qa:security` and `effigy qa:conformance` after Reference
+    adopts the packaged task and pins the release.
+- Deprecation/removal date: n/a; the checkout wrapper remains available for
+  co-development.
+- Rollback: retain or return all Underlay pins to `v0.10.2`.
+- Reference docs:
+  [Underlay integration guide](docs/guides/030-underlay-integration.md#security-conformance),
+  [contract 023](docs/knowledge/contracts/023-release-and-compatibility-rollout.md).
 
 ## [0.10.2] - 2026-09-27
 
