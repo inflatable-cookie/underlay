@@ -116,6 +116,7 @@ fn main_router(environment: Environment) {
 EOF
 	cat > "$root/src/queries.rs" <<'EOF'
 const LIST_ALL_SQL: &str = r#"SELECT id FROM archived_projects"#;
+const LIST_BOUNDED_SQL: &str = r#"SELECT id FROM current_projects LIMIT 20"#;
 
 pub async fn list_projects(ids: &[Uuid], pool: &PgPool) -> Result<Vec<Project>> {
     let sample = sqlx::query(r#"SELECT id FROM projects WHERE id = $1 LIMIT 1"#)
@@ -130,6 +131,34 @@ pub async fn list_projects(ids: &[Uuid], pool: &PgPool) -> Result<Vec<Project>> 
 
 pub async fn list_archived_projects(pool: &PgPool) -> Result<Vec<Project>> {
     let rows = sqlx::query(LIST_ALL_SQL)
+        .fetch_all(pool)
+        .await?;
+    Ok(rows)
+}
+
+pub async fn list_generic_projects(pool: &PgPool) -> Result<Vec<Project>> {
+    let bounded = sqlx::query_as::<_, Project>(LIST_BOUNDED_SQL)
+        .fetch_all(pool)
+        .await?;
+    // conformance: allow bounded-queries: a neighboring fixture query models an approved migration snapshot.
+    let allowed = sqlx::query_as::<_, Project>(LIST_ALL_SQL)
+        .fetch_all(pool)
+        .await?;
+    let rows = sqlx::query_as::<_, Project>(LIST_ALL_SQL)
+        .fetch_all(pool)
+        .await?;
+    Ok(rows)
+}
+
+pub async fn list_generic_scalar(pool: &PgPool) -> Result<Vec<Option<Vec<u8>>>> {
+    let rows = sqlx::query_scalar::<_, Option<Vec<u8>>>(LIST_ALL_SQL)
+        .fetch_all(pool)
+        .await?;
+    Ok(rows)
+}
+
+pub async fn list_bounded_generic_scalar(pool: &PgPool) -> Result<Vec<Option<Vec<u8>>>> {
+    let rows = sqlx::query_scalar::<_, Option<Vec<u8>>>(LIST_BOUNDED_SQL)
         .fetch_all(pool)
         .await?;
     Ok(rows)
@@ -168,11 +197,14 @@ fi
 run_both_entry_points() {
 	local root="$1"
 	local expected_status="$2"
+	local bash_path="$3"
+	local skip_checks="${4:-}"
+	local bash_dir="${bash_path%/*}"
 	local shell_output shell_status package_output package_status
 	set +e
-	shell_output=$(bash "$REPO_ROOT/scripts/check-consumer-conformance.sh" "$root" 2>&1)
+	shell_output=$(PATH="$bash_dir:$PATH" CONFORMANCE_SKIP="$skip_checks" "$bash_path" "$REPO_ROOT/scripts/check-consumer-conformance.sh" "$root" 2>&1)
 	shell_status=$?
-	package_output=$("$PACKAGE_BIN" "$root" 2>&1)
+	package_output=$(PATH="$bash_dir:$PATH" CONFORMANCE_SKIP="$skip_checks" "$PACKAGE_BIN" "$root" 2>&1)
 	package_status=$?
 	set -e
 
@@ -191,42 +223,97 @@ run_both_entry_points() {
 	printf '%s' "$shell_output"
 }
 
+BASH_BINARIES=(/bin/bash)
+for candidate in /opt/homebrew/bin/bash /usr/local/bin/bash; do
+	if [[ -x "$candidate" ]]; then
+		major_version=$("$candidate" -c 'printf "%s" "${BASH_VERSINFO[0]}"')
+		if [[ "$major_version" -gt 3 ]]; then
+			BASH_BINARIES+=("$candidate")
+		fi
+	fi
+done
+
 SAFE_ROOT="$TMP_ROOT/safe-consumer"
 write_safe_fixture "$SAFE_ROOT"
-SAFE_OUTPUT="$(run_both_entry_points "$SAFE_ROOT" 0)"
-if ! rg -q 'All conformance checks passed\.' <<<"$SAFE_OUTPUT"; then
-	echo "safe fixture did not pass the consumer checker" >&2
-	printf '%s\n' "$SAFE_OUTPUT" >&2
-	exit 1
-fi
 
 UNSAFE_ROOT="$TMP_ROOT/unsafe-consumer"
 write_unsafe_fixture "$UNSAFE_ROOT"
-UNSAFE_OUTPUT="$(run_both_entry_points "$UNSAFE_ROOT" 1)"
-if ! rg -q 'src/routes/unsafe\.rs:.*mount must be inside a development-only gate' <<<"$UNSAFE_OUTPUT"; then
-	echo "unguarded cross-file OpenAPI mount was not reported precisely" >&2
-	printf '%s\n' "$UNSAFE_OUTPUT" >&2
-	exit 1
-fi
-if ! rg -q 'src/queries\.rs:.*list_projects query uses fetch_all' <<<"$UNSAFE_OUTPUT"; then
-	echo "unbounded list query was not reported beside unrelated LIMIT and allowance text" >&2
-	printf '%s\n' "$UNSAFE_OUTPUT" >&2
-	exit 1
-fi
-if ! rg -q 'src/queries\.rs:.*list_archived_projects query uses fetch_all' <<<"$UNSAFE_OUTPUT"; then
-	echo "unbounded module-constant SQL was not reported at its list/search call site" >&2
-	printf '%s\n' "$UNSAFE_OUTPUT" >&2
-	exit 1
-fi
-if [[ "$(rg -c 'mount must be inside a development-only gate' <<<"$UNSAFE_OUTPUT")" -ne 3 ]]; then
-	echo "safe and unsafe OpenAPI mounts were not distinguished by their own source paths" >&2
-	printf '%s\n' "$UNSAFE_OUTPUT" >&2
-	exit 1
-fi
-if [[ "$(rg -c 'list_projects query uses fetch_all' <<<"$UNSAFE_OUTPUT")" -ne 1 ]]; then
-	echo "query-local bounds or allowances were not scoped to their own query" >&2
-	printf '%s\n' "$UNSAFE_OUTPUT" >&2
-	exit 1
-fi
 
-echo "Consumer security fixture proof passed through legacy and package entry points."
+SKIP_ONLY_ROOT="$TMP_ROOT/skip-only-consumer"
+write_safe_fixture "$SKIP_ONLY_ROOT"
+ALL_CHECKS="env-fail-closed,db-errors,openapi-gated,seeds-gated,html-sanitized,svg-blacklist,csp-served,tracked-secrets,totp-cipher,canonical-sessions,role-hierarchy,refresh-recheck,per-row-reorder,row-enrichment-loop,bounded-queries,detail-fanout,cors-canonical,build-env-read"
+
+for bash_path in "${BASH_BINARIES[@]}"; do
+	SAFE_OUTPUT="$(run_both_entry_points "$SAFE_ROOT" 0 "$bash_path")"
+	if ! rg -q 'All conformance checks passed\.' <<<"$SAFE_OUTPUT"; then
+		echo "safe fixture did not pass the consumer checker under $bash_path" >&2
+		printf '%s\n' "$SAFE_OUTPUT" >&2
+		exit 1
+	fi
+
+	UNSAFE_OUTPUT="$(run_both_entry_points "$UNSAFE_ROOT" 1 "$bash_path")"
+	if ! rg -q 'src/routes/unsafe\.rs:.*mount must be inside a development-only gate' <<<"$UNSAFE_OUTPUT"; then
+		echo "unguarded cross-file OpenAPI mount was not reported precisely under $bash_path" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if ! rg -q 'src/queries\.rs:.*list_projects query uses fetch_all' <<<"$UNSAFE_OUTPUT"; then
+		echo "unbounded list query was not reported beside unrelated LIMIT and allowance text" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if ! rg -q 'src/queries\.rs:.*list_archived_projects query uses fetch_all' <<<"$UNSAFE_OUTPUT"; then
+		echo "unbounded nongeneric module-constant SQL was not reported at its list/search call site" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if ! rg -q 'src/queries\.rs:.*list_generic_projects query uses fetch_all' <<<"$UNSAFE_OUTPUT"; then
+		echo "unbounded generic query_as const SQL was not reported" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if ! rg -q 'src/queries\.rs:.*list_generic_scalar query uses fetch_all' <<<"$UNSAFE_OUTPUT"; then
+		echo "unbounded nested-generic query_scalar const SQL was not reported" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if rg -q 'src/queries\.rs:.*list_bounded_generic_scalar query uses fetch_all' <<<"$UNSAFE_OUTPUT"; then
+		echo "query_scalar with a genuine top-level SQL LIMIT was reported" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if [[ "$(rg -c 'mount must be inside a development-only gate' <<<"$UNSAFE_OUTPUT")" -ne 3 ]]; then
+		echo "safe and unsafe OpenAPI mounts were not distinguished by their own source paths" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if [[ "$(rg -c 'list_projects query uses fetch_all' <<<"$UNSAFE_OUTPUT")" -ne 1 ]]; then
+		echo "query-local bounds or allowances were not scoped to their own query" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if [[ "$(rg -c 'list_generic_projects query uses fetch_all' <<<"$UNSAFE_OUTPUT")" -ne 1 ]]; then
+		echo "a neighboring bounded query or allowance hid generic query_as findings" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+
+	SKIP_ONLY_OUTPUT="$(run_both_entry_points "$SKIP_ONLY_ROOT" 2 "$bash_path" "$ALL_CHECKS")"
+	if ! rg -q 'Checks executed: 0; skipped: 18' <<<"$SKIP_ONLY_OUTPUT" || \
+		! rg -q 'No conformance checks ran; coverage was not assessed\.' <<<"$SKIP_ONLY_OUTPUT"; then
+		echo "all-skipped execution did not report zero coverage under $bash_path" >&2
+		printf '%s\n' "$SKIP_ONLY_OUTPUT" >&2
+		exit 1
+	fi
+
+	PARTIAL_SKIP_OUTPUT="$(run_both_entry_points "$SAFE_ROOT" 0 "$bash_path" "openapi-gated,bounded-queries")"
+	if ! rg -q 'Checks executed: 16; skipped: 2' <<<"$PARTIAL_SKIP_OUTPUT" || \
+		! rg -q 'All executed conformance checks passed; 2 check\(s\) skipped\.' <<<"$PARTIAL_SKIP_OUTPUT" || \
+		rg -q 'All conformance checks passed\.' <<<"$PARTIAL_SKIP_OUTPUT"; then
+		echo "partial skips did not retain an honest passing report under $bash_path" >&2
+		printf '%s\n' "$PARTIAL_SKIP_OUTPUT" >&2
+		exit 1
+	fi
+done
+
+echo "Consumer security fixture proof passed through legacy and package entry points under ${#BASH_BINARIES[@]} Bash version(s)."

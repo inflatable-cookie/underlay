@@ -9,7 +9,8 @@
 #   bunx underlay-consumer-security .
 #   ../underlay/scripts/check-consumer-conformance.sh .  # checkout compatibility
 #
-# Exit code 0 = all checks pass, 1 = at least one violation.
+# Exit code 0 = executed checks pass, 1 = at least one check fails,
+# 2 = no checks ran (coverage was not assessed).
 # Skip individual checks with CONFORMANCE_SKIP="check1,check2".
 
 set -uo pipefail
@@ -26,19 +27,30 @@ ANALYZER="$SCRIPT_DIR/../src/tools/consumer-security-analysis.ts"
 ROOT="${1:-.}"
 FAILURES=()
 PASSES=()
+CHECKS_EXECUTED=0
+CHECKS_SKIPPED=0
+PASS_COUNT=0
+FAILURE_COUNT=0
 
 SKIP=",${CONFORMANCE_SKIP:-},"
 
 skip() {
-  [[ "$SKIP" == *",$1,"* ]]
+  if [[ "$SKIP" == *",$1,"* ]]; then
+    CHECKS_SKIPPED=$((CHECKS_SKIPPED + 1))
+    return 0
+  fi
+  CHECKS_EXECUTED=$((CHECKS_EXECUTED + 1))
+  return 1
 }
 
 pass() {
   PASSES+=("$1")
+  PASS_COUNT=$((PASS_COUNT + 1))
 }
 
 fail() {
   FAILURES+=("$1: $2")
+  FAILURE_COUNT=$((FAILURE_COUNT + 1))
 }
 
 # --------------------------------------------------------------------------
@@ -332,12 +344,21 @@ fi
 # --------------------------------------------------------------------------
 echo "Conformance report for: $ROOT"
 echo
+echo "Checks executed: $CHECKS_EXECUTED; skipped: $CHECKS_SKIPPED"
+echo
 
-for p in "${PASSES[@]}"; do
-  echo "  PASS  $p"
-done
+if [[ $CHECKS_EXECUTED -eq 0 ]]; then
+  echo "No conformance checks ran; coverage was not assessed."
+  exit 2
+fi
 
-if [[ ${#FAILURES[@]} -gt 0 ]]; then
+if [[ $PASS_COUNT -gt 0 ]]; then
+  for p in "${PASSES[@]}"; do
+    echo "  PASS  $p"
+  done
+fi
+
+if [[ $FAILURE_COUNT -gt 0 ]]; then
   echo
   for f in "${FAILURES[@]}"; do
     echo -e "  FAIL  $f"
@@ -348,5 +369,9 @@ if [[ ${#FAILURES[@]} -gt 0 ]]; then
 fi
 
 echo
-echo "All conformance checks passed."
+if [[ $CHECKS_SKIPPED -eq 0 ]]; then
+  echo "All conformance checks passed."
+else
+  echo "All executed conformance checks passed; $CHECKS_SKIPPED check(s) skipped."
+fi
 exit 0
