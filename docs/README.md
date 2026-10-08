@@ -2,12 +2,23 @@
 
 Underlay is the shared foundation other Inflatable Cookie apps build on:
 reusable Rust crates, a typed TypeScript client, retained Svelte workflow and
-template shells, and the guidance that keeps consumers coherent. The workspace
-is pre-1.0 (`0.9.x`), released as immutable Git tags; the latest is `v0.9.12`.
+template shells, and the guidance that keeps consumers coherent.
 
-Right now the verified media primitive (released in `v0.9.7`) is being adopted
-across the five consumers, and the generic Nightfire system lives in its own
-repository, with Underlay keeping temporary compatibility facades over it.
+The checkout is pre-1.0. Workspace version lives in `Cargo.toml`
+(`[workspace.package]`) and `package.json`. Releases are immutable Git tags;
+how they are cut and how consumers pin them is in
+[release.md](knowledge/contracts/release.md) and
+[contract 023](knowledge/contracts/023-release-and-compatibility-rollout.md).
+
+Verified media publication is owned by
+[immutable-verified-blob-promotion.md](knowledge/contracts/immutable-verified-blob-promotion.md).
+Consumer proof and closeout live in Queue.
+
+Nightfire is a standalone system. Underlay consumes a released tag and keeps
+historical compatibility facades; see
+[contract 070](knowledge/contracts/070-nightfire-and-migration-systems.md)
+and [guide 076](guides/076-nightfire.md). Facade retirement is
+[Q-001](knowledge/questions.md).
 
 ## Knowledge (internal truth)
 
