@@ -24,9 +24,10 @@ apps, and design for the general case rather than the caller in front of you.
   before changing a signature, and follow
   `docs/knowledge/contracts/023-release-and-compatibility-rollout.md` when a change is
   consumer-visible.
-- The workspace is pre-1.0 (`0.9.x`) with MSRV 1.95. Breaking changes take the
-  minor version, not the major. Do not raise MSRV, change edition, or drop a
-  supported toolchain without an explicit decision.
+- The workspace is pre-1.0 (version in `Cargo.toml` `[workspace.package]` and
+  `package.json`) with MSRV 1.95. Breaking changes take the minor version, not
+  the major. Do not raise MSRV, change edition, or drop a supported toolchain
+  without an explicit decision.
 - Treat the current consumer-app sweep family as:
   - `underlay-reference`
   - `contact-patch`
@@ -84,6 +85,8 @@ effigy health            # cheap baseline
 effigy rust:check        # cargo check --workspace --all-features
 effigy rust:clippy       # denies warnings
 effigy rust:test         # filter {args} to the touched crate/package
+effigy fmt:rust:check    # cargo fmt --all --check; read-only
+effigy fmt:rust          # cargo fmt --all; mutates the workspace
 effigy test:unit         # vitest, filter {args} to the touched code
 effigy test:components   # vitest component config
 effigy test --plan       # when the test shape is what you need to know
@@ -92,7 +95,8 @@ effigy qa:docs           # docs checks when docs changed
 ```
 
 Run full `effigy qa` (`validate` + `qa:docs`) on `main` at Queue milestones,
-not as a per-task default.
+not as a per-task default. Format selectors stay out of health, validate, and
+qa; run `fmt:rust:check` when formatted Rust source changed.
 
 `underlay-db` Postgres integration tests need a running Docker runtime and are
 `#[ignore]`d by default; see `README.md` for the bring-up.
