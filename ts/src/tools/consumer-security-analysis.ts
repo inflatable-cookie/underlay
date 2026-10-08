@@ -1109,6 +1109,21 @@ function queryCallClose(
 		if (close === undefined || close < argumentIndex) continue;
 
 		let callee = open - 1;
+		if (tokens[callee]?.value === ">") {
+			let genericDepth = 0;
+			for (; callee > fn.start; callee -= 1) {
+				if (tokens[callee]!.value === ">") genericDepth += 1;
+				else if (tokens[callee]!.value === "<") {
+					genericDepth -= 1;
+					if (genericDepth === 0) {
+						callee -= 1;
+						break;
+					}
+				}
+			}
+			if (genericDepth !== 0) continue;
+		}
+		if (tokens[callee]?.value === "::") callee -= 1;
 		if (tokens[callee]?.value === "!") callee -= 1;
 		if (["query", "query_as", "query_scalar"].includes(tokens[callee]?.value ?? "")) return close;
 	}
