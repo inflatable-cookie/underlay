@@ -3,7 +3,7 @@
 Use this compact block inside the release's `CHANGELOG.md` entry when the batch changes consumer-visible behavior.
 
 ```md
-## Consumer Upgrade Notes
+### Changed
 
 - Impact class: `<additive|deprecation|breaking>`
 - Affected consumers: `<apps or subsystems>`

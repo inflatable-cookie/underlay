@@ -25,7 +25,7 @@ While Underlay is `0.x`, breaking changes raise the minor version.
   `@inflatable-cookie/nightfire` to the released npm version. Validation:
   `effigy qa:docs`; rollback: none, this is a documentation correction.
 
-### Consumer Upgrade Notes
+### Changed
 - Impact class: additive checker surface and accuracy fixes; no public Rust or
   TypeScript API break. Existing unsafe inputs may newly fail conformance.
 - Affected consumers: Underlay Reference for packaged-checker adoption;
