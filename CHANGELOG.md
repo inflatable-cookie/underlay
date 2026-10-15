@@ -7,6 +7,8 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+## [0.10.4] - 2026-10-15
+
 ### Changed
 - `underlay_config::discover_config_dir` now also finds the nearest
   `config/default.toml` in an ancestor of the working directory, stopping at
