@@ -7,6 +7,8 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+## [0.10.5] - 2026-10-15
+
 ### Security
 - `underlay-auth-jwt` builds `jsonwebtoken` with the `aws_lc_rs` backend
   instead of `rust_crypto`. Underlay signs and verifies Ed25519 only, and the
