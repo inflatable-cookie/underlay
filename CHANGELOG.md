@@ -7,6 +7,28 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+### Security
+- `underlay-auth-jwt` builds `jsonwebtoken` with the `aws_lc_rs` backend
+  instead of `rust_crypto`. Underlay signs and verifies Ed25519 only, and the
+  RustCrypto backend pulled in `rsa` (RUSTSEC-2023-0071, no fixed release)
+  plus unused curve crates. `aws-lc-rs` was already in consumer graphs through
+  rustls. Underlay's `deny.toml` drops its `RUSTSEC-2023-0071` ignore and
+  allow-lists the `nightfire` git source, so `cargo deny check` passes.
+- Impact class: dependency change only; no public Rust or TypeScript API
+  change and no token-format change (Ed25519 signatures are deterministic, so
+  existing tokens keep verifying).
+- Affected consumers: all Rust consumers of `underlay-auth-jwt`.
+- Required actions:
+- Pin the new tag on every Underlay declaration and regenerate `Cargo.lock`
+  and `bun.lock`; `rsa` leaves the lockfile.
+- Remove any `RUSTSEC-2023-0071` ignore from the consumer's `deny.toml`.
+- Validation: `cargo deny check advisories` in the consumer; its JWT login and
+  refresh tests.
+- Deprecation/removal date: n/a.
+- Rollback: return all Underlay pins to the previous tag.
+- Reference docs:
+  [contract 023](docs/knowledge/contracts/023-release-and-compatibility-rollout.md).
+
 ## [0.10.4] - 2026-10-15
 
 ### Changed
