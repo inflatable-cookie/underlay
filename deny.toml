@@ -3,12 +3,9 @@ all-features = false
 features = ["underlay-blob/s3", "underlay-email/ses"]
 
 [advisories]
-ignore = [
-    # jsonwebtoken (11.1.0 as of the 2026-09 dependency refresh) still pulls
-    # rsa 0.9.10 and upstream has no safe upgrade. Keep this explicit so JWT
-    # RSA usage is reviewed when upstream publishes a patched path.
-    "RUSTSEC-2023-0071",
-]
+# jsonwebtoken uses the aws_lc_rs backend, so rsa (RUSTSEC-2023-0071) is no
+# longer in the graph and needs no ignore.
+ignore = []
 
 [licenses]
 allow = [
@@ -49,4 +46,4 @@ skip-tree = []
 unknown-registry = "deny"
 unknown-git = "deny"
 allow-registry = ["https://github.com/rust-lang/crates.io-index"]
-allow-git = []
+allow-git = ["https://github.com/inflatable-cookie/nightfire.git"]
