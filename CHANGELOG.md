@@ -7,6 +7,32 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+### Changed
+- `underlay_config::discover_config_dir` now also finds the nearest
+  `config/default.toml` in an ancestor of the working directory, stopping at
+  the checkout root (`.git`). Monorepo apps run from `apps/<api>` previously
+  missed the repo-root `config/` and silently fell back to code defaults.
+- Impact class: behavior fix; no public Rust or TypeScript API change. Apps
+  that previously fell back to code defaults now load their repository config
+  stack (`default.toml`, the environment overlay and `local.toml`).
+- Affected consumers: monorepo consumers that call
+  `discover_config_dir(None)` from a nested app directory, including Underlay
+  Reference and compli-me. Apps with `./config` or `../config`, or a config
+  directory environment variable, are unchanged.
+- Required actions:
+- Pin the new tag on every Underlay Rust and TypeScript declaration and
+  regenerate `Cargo.lock` and `bun.lock`.
+- Check that the repository config overlays now applied hold the intended
+  development values; the startup warning about falling back to code defaults
+  should disappear.
+- Validation: `effigy rust:test underlay-config`; in a consumer, start the API
+  from its app directory and confirm the effective configuration log reflects
+  the repository config.
+- Deprecation/removal date: n/a.
+- Rollback: return all Underlay pins to `v0.10.3`.
+- Reference docs:
+  [contract 023](docs/knowledge/contracts/023-release-and-compatibility-rollout.md).
+
 ## [0.10.3] - 2026-10-08
 
 ### Added

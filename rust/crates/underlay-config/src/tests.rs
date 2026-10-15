@@ -270,3 +270,31 @@ fn temp_config_dir(name: &str) -> PathBuf {
         .as_nanos();
     env::temp_dir().join(format!("underlay-config-{name}-{nanos}"))
 }
+
+#[test]
+fn discovers_checkout_root_config_from_a_nested_app() {
+    let root = temp_config_dir("ancestor");
+    let app = root.join("apps/acme-api/crates/api");
+    fs::create_dir_all(&app).expect("create nested app");
+    fs::create_dir_all(root.join(".git")).expect("mark checkout root");
+    fs::create_dir_all(root.join("config")).expect("create config dir");
+    fs::write(root.join("config/default.toml"), "").expect("write default");
+
+    assert_eq!(
+        crate::discovery::ancestor_config_dir(&app),
+        Some(root.join("config"))
+    );
+}
+
+#[test]
+fn ancestor_discovery_stops_at_the_checkout_root() {
+    let outer = temp_config_dir("outside");
+    let checkout = outer.join("repo");
+    let app = checkout.join("apps/api");
+    fs::create_dir_all(&app).expect("create nested app");
+    fs::create_dir_all(checkout.join(".git")).expect("mark checkout root");
+    fs::create_dir_all(outer.join("config")).expect("create outside config");
+    fs::write(outer.join("config/default.toml"), "").expect("write outside default");
+
+    assert_eq!(crate::discovery::ancestor_config_dir(&app), None);
+}
