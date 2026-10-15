@@ -29,7 +29,6 @@ adapter-owned, internal, or migration targets.
 The proof family for this inventory is:
 
 - `underlay-reference`
-- `contact-patch`
 - `compli-me`
 - `acowtancy`
 - `songsprout`
