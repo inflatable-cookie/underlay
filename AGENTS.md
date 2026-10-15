@@ -30,7 +30,6 @@ apps, and design for the general case rather than the caller in front of you.
   without an explicit decision.
 - Treat the current consumer-app sweep family as:
   - `underlay-reference`
-  - `contact-patch`
   - `compli-me`
   - `acowtancy`
   - `songsprout`
