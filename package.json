@@ -344,6 +344,7 @@
     "bits-ui": "^2.19.3",
     "lucide-static": "^1.48.0",
     "lucide-svelte": "^1.0.1",
+    "prettier": "3.9.9",
     "svelte": "^5.57.1",
     "svelte-check": "^4.7.6",
     "tsx": "^4.23.15",
