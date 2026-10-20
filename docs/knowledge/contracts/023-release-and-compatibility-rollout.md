@@ -320,6 +320,10 @@ Rules:
 - holding a consumer back means retaining its previous proven tag
 - upgrading means changing every declared Underlay tag in the consumer root,
   regenerating the root locks, and validating from that root
+- when Bun cannot find a newly published tag, verify the exact upstream tag
+  before using the isolated-cache install procedure in
+  [the upgrade guide](../../guides/190-upgrade-compatibility.md#fresh-tags-missing-from-buns-cache);
+  preserve the selected tag and review the resolved commit in the root lock
 - rollback means retaining or returning to a known-good released tag
 - committed Cargo `path` and JavaScript `file:` edges to Underlay are
   unsupported

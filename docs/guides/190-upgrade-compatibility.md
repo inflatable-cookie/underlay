@@ -59,6 +59,8 @@ Reusable templates:
 - Update the released Underlay tag in the consuming workspace manifests.
 - Run `bun install` once from the workspace root, then commit the root
   `bun.lock` and verify there are no child lockfiles.
+- If Bun cannot find a published tag, follow
+  [Fresh tags missing from Bun's cache](#fresh-tags-missing-from-buns-cache).
 - Use `effigy workspace:js:prepare` for the frozen-install check.
 - Verify no import drift for moved/renamed exports.
 
@@ -81,6 +83,43 @@ Reusable templates:
 - Back/cancel navigation goes to wrong page -> navigation context not preserved.
 - List pages lose filter/pagination behavior -> controller usage drift.
 - Upload pipeline fails after initiate -> upload plan/header mismatch.
+
+### Fresh Tags Missing From Bun's Cache
+
+Bun can report `no commit matching vX.Y.Z found (but repository exists)`
+when its cached Git checkout has not fetched a newly published tag. This
+does not establish that the release is missing or defective.
+
+First check the exact tag against the upstream repository. Replace `vX.Y.Z`
+with the released tag already selected in the consumer manifests:
+
+```bash
+underlay_tag=vX.Y.Z
+git ls-remote --exit-code git@github.com:inflatable-cookie/underlay.git \
+  "refs/tags/${underlay_tag}" "refs/tags/${underlay_tag}^{}"
+```
+
+If that check fails or returns no tag, stop and resolve the missing release
+or repository-access problem. An annotated tag's `^{}` row identifies its
+commit; a lightweight tag's row identifies the commit directly.
+
+If the exact tag exists, retry the upgrade install from the consumer workspace
+root with a fresh private cache:
+
+```bash
+underlay_cache="$(mktemp -d "${TMPDIR:-/tmp}/underlay-bun-cache.XXXXXX")"
+bun install --cache-dir "$underlay_cache"
+```
+
+Keep the selected tag unchanged. Check that the root `bun.lock` resolves it
+to the upstream commit, review the normal upgrade diff, then run the
+consumer's required validation. Commit the root lockfile with the manifest
+updates. The temporary cache is local material, not a consumer dependency.
+
+Do not delete the shared Bun cache, remove the lockfile, retag the release,
+or substitute a branch or local checkout to work around this error. If the
+isolated install still fails, retain that failure for diagnosis rather than
+assuming the cache was the cause.
 
 ## Current Feature Notes
 
