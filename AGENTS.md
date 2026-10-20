@@ -69,8 +69,10 @@ covers how to route by job. What is specific to Underlay:
   there, so its warnings are not a fresh regression signal.
 - Northstar AGENTS reviews use `effigy qa:docs:agent-defaults` here. This repo
   does not ship `check:agent-instructions`.
-- Fall back to raw `cargo`, `bun`, or `vitest` only when the needed operation is
-  not represented in `effigy.toml`.
+- Fall back to raw `oxide`, `bun`, or `vitest` only when the needed operation is
+  not represented in `effigy.toml`. Rust goes through `oxide` (Cargo with
+  managed build storage), not `cargo`; `rust:check:cargo`, `rust:clippy:cargo`
+  and `rust:test:cargo` are the plain-Cargo fallback if `oxide` misbehaves.
 - First-time local bring-up from outside this repo:
   `effigy bootstrap git@github.com:inflatable-cookie/underlay.git`
 
@@ -81,11 +83,11 @@ for the change and run each required check once; do not repeat a passing run.
 
 ```bash
 effigy health            # cheap baseline
-effigy rust:check        # cargo check --workspace --all-features
+effigy rust:check        # oxide check --workspace --all-features
 effigy rust:clippy       # denies warnings
 effigy rust:test         # filter {args} to the touched crate/package
-effigy fmt:rust:check    # cargo fmt --all --check; read-only
-effigy fmt:rust          # cargo fmt --all; mutates the workspace
+effigy fmt:rust:check    # oxide fmt --all --check; read-only
+effigy fmt:rust          # oxide fmt --all; mutates the workspace
 effigy fmt:ts -- ts/src/client/format.ts        # format the named TypeScript files
 effigy fmt:ts:check -- ts/src/client/format.ts  # read-only formatting check
 effigy test:unit         # vitest, filter {args} to the touched code
@@ -168,3 +170,14 @@ Reference docs:
 - Graph workflows: `docs/guides/076-code-graph-and-agent-workflows.md`
 - JSON contracts: `docs/guides/017-json-output-contracts.md`
 <!-- END EFFIGY AGENT CONTRACT -->
+
+<!-- oxide:begin -->
+## Rust commands: use `oxide`
+
+- Write `oxide` wherever you would write `cargo`: `oxide check`, `oxide test`, `oxide run -- <args>`, `oxide add <crate>`.
+- Profiles: `quick` (default), `--profile debug` for a debugger, `--release`. Oxide places build output, so it refuses `--target-dir`.
+- A `waiting for …` line means another build holds a slot; let it wait. `oxide status` shows the pool, slots and waits.
+- Use `oxide clean`, not `cargo clean`.
+
+Managed by `oxide init`; edits between these markers are replaced.
+<!-- oxide:end -->
