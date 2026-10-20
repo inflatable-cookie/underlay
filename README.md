@@ -73,7 +73,13 @@ effigy rust:build
 effigy rust:check
 effigy rust:test
 effigy test:components
+effigy fmt:ts -- ts/src/client/format.ts
+effigy fmt:ts:check -- ts/src/client/format.ts
 ```
+
+TypeScript formatting uses the local pinned Prettier with `.prettierrc.json`.
+Pass explicit changed-file paths; formatting is separate from health, validate
+and QA. Svelte formatting is outside these selectors' documented scope.
 
 For shared UI discovery, use the ACME reference apps in `underlay-reference`
 for retained Underlay workflow shells and helpers. Use Poodle's own

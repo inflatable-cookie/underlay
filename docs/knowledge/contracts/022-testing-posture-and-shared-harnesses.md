@@ -98,6 +98,18 @@ Rules:
 - `validate` should represent the normal local merge gate
 - `qa` may layer docs, lint, audits, or other broader checks
 
+### Underlay repository TypeScript formatting
+
+Underlay's `fmt:ts` and `fmt:ts:check` selectors invoke the root development
+dependency's pinned Prettier with the committed `.prettierrc.json` options.
+The first writes formatting; the second checks without writing and returns
+nonzero for formatting differences or formatter errors.
+
+Pass explicit changed TypeScript file paths after `--`. These selectors are
+separate from `health`, `validate` and `qa`; adding them does not require a
+repository-wide formatting migration. They do not establish Svelte formatting
+support or prescribe a consumer application's formatter configuration.
+
 ### API minimum posture
 
 Every normal API package should prove at least:

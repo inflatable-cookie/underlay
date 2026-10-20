@@ -86,6 +86,8 @@ effigy rust:clippy       # denies warnings
 effigy rust:test         # filter {args} to the touched crate/package
 effigy fmt:rust:check    # cargo fmt --all --check; read-only
 effigy fmt:rust          # cargo fmt --all; mutates the workspace
+effigy fmt:ts -- ts/src/client/format.ts        # format the named TypeScript files
+effigy fmt:ts:check -- ts/src/client/format.ts  # read-only formatting check
 effigy test:unit         # vitest, filter {args} to the touched code
 effigy test:components   # vitest component config
 effigy test --plan       # when the test shape is what you need to know
@@ -96,6 +98,10 @@ effigy qa:docs           # docs checks when docs changed
 Run full `effigy qa` (`validate` + `qa:docs`) on `main` at Queue milestones,
 not as a per-task default. Format selectors stay out of health, validate, and
 qa; run `fmt:rust:check` when formatted Rust source changed.
+
+TypeScript formatting uses the pinned local Prettier and `.prettierrc.json`.
+Pass the changed TypeScript paths explicitly to `fmt:ts` and `fmt:ts:check`.
+These selectors do not include Svelte formatting or run automatically in QA.
 
 `underlay-db` Postgres integration tests need a running Docker runtime and are
 `#[ignore]`d by default; see `README.md` for the bring-up.
