@@ -2,7 +2,8 @@
 
 Underlay releases as an immutable Git tag, `vX.Y.Z`, with the Rust workspace
 and the JavaScript package on the same synchronized version. There is no
-registry publication. Consumers pin the tag on every Underlay declaration, as
+registry publication; the GitHub Release is the release-notes surface.
+Consumers pin the tag on every Underlay declaration, as
 [contract 023](023-release-and-compatibility-rollout.md) specifies.
 
 Releasing is an operator action: an agent prepares it only when the operator
@@ -34,6 +35,10 @@ asks, and never pushes a tag on its own.
 6. Execute: `effigy release execute`. This commits `release: vX.Y.Z` and
    creates the tag.
 7. Push the commit and the tag.
+8. Publish the GitHub Release from the tag, with that version's
+   `CHANGELOG.md` section as the notes:
+   `gh release create vX.Y.Z --verify-tag --title "Underlay vX.Y.Z" --notes-file <section>`.
+   Every tag has a GitHub Release.
 
 ## Verify
 
