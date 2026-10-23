@@ -98,6 +98,14 @@ Rules:
 - `validate` should represent the normal local merge gate
 - `qa` may layer docs, lint, audits, or other broader checks
 
+### Coverage tooling
+
+Install Tarpaulin with `oxide install cargo-tarpaulin`. The coverage script
+still checks for `cargo-tarpaulin` and runs
+`cargo tarpaulin --workspace --out Xml`; Tarpaulin's instrumentation, profile,
+and platform behavior is not qualified through Oxide, so its execution remains
+a Cargo exception.
+
 ### Underlay repository TypeScript formatting
 
 Underlay's `fmt:ts` and `fmt:ts:check` selectors invoke the root development

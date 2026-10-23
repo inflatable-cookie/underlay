@@ -103,5 +103,5 @@ Some `underlay-db` tests spin up Postgres via `testcontainers`.
 
 ### Coverage
 
-- Install tarpaulin: `cargo install cargo-tarpaulin`
+- Install tarpaulin: `oxide install cargo-tarpaulin`
 - Run coverage check: `rust/scripts/check-coverage.sh`
