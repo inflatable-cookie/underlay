@@ -13,7 +13,7 @@ cd "$ROOT_DIR"
 
 if ! command -v cargo-tarpaulin >/dev/null 2>&1; then
   echo "cargo-tarpaulin not found. Install with:" >&2
-  echo "  cargo install cargo-tarpaulin" >&2
+  echo "  oxide install cargo-tarpaulin" >&2
   exit 1
 fi
 
