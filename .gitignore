@@ -1,7 +1,7 @@
 node_modules/
 dist/
 .svelte-kit/
-target/
+target
 .cache/cargo/
 tarpaulin-report.html
 ts/coverage/
