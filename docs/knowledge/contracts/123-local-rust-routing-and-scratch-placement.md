@@ -77,7 +77,11 @@ invocation. Cargo still appears where it is the subject or the host:
   the thing being proved, plus container/VM guests that build inside their own
   target directory.
 - historical records: release, upgrade and sweep records that quote what a past
-  run executed. They are evidence, not live instructions.
+  run executed, and guides that declare themselves a historical reference for
+  retired posture (for example `205-legacy-migration-framework.md`). They are
+  evidence, not live instructions. Recheck trigger: reviving such a guide as a
+  current route means re-routing its commands through Oxide before it can be
+  followed again.
 
 These are classified, not pending migrations. Do not mechanically rewrite them.
 
