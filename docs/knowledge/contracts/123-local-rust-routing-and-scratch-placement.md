@@ -42,6 +42,12 @@ Ordinary local Rust work runs through Oxide.
 - A tool that runs Cargo itself, or needs its own target directory or
   `CARGO_TARGET_DIR`, runs `oxide exec -- <tool> …`. The inner `cargo` word
   belongs to that tool. Tarpaulin is the current case.
+- `oxide exec` replaces a `CARGO_TARGET_DIR` inherited by its own invocation
+  with `<workspace>/target`. A tool-specific target directory survives only
+  when the tool sets it for its Cargo child, through that child's environment
+  or an inner Cargo `--target-dir` argument. This also applies to Tarpaulin;
+  setting the variable before `oxide exec` does not preserve it (Oxide
+  contract correction at `5222f9e`, 2026-10-25).
 - Oxide owns build storage, so it refuses `--target-dir` and the build-dir
   config keys.
 - The `oxide init` block in `AGENTS.md` is managed; do not restate it.
