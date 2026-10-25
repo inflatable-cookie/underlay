@@ -40,6 +40,7 @@ machine-readable policy files.
 | [119-helper-search-and-lookup-route-catalogue.md](119-helper-search-and-lookup-route-catalogue.md) | M | Shared helper-route naming and bounded envelope contract for lookup, search, suggest, detect, requirements, and status routes |
 | [120-tooling-testing-and-contract-artifacts.md](120-tooling-testing-and-contract-artifacts.md) | M | Shared Rust/TS test harnesses, migration/schema devtools, guardrail scanners, and machine-readable contract-artifact boundary |
 | [122-rust-public-api-inventory.md](122-rust-public-api-inventory.md) | M | Rust public API classification and first typed-boundary migration gates for the `g06` platform-contract transition |
+| [123-local-rust-routing-and-scratch-placement.md](123-local-rust-routing-and-scratch-placement.md) | L | Local-host Oxide routing for this checkout, the remaining Cargo uses by class, and agent/proof scratch placement on the Builds volume |
 
 ## Index
 

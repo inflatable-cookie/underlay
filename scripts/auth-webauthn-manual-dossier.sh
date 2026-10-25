@@ -8,17 +8,27 @@ REPORT_DIR="$UNDERLAY_DIR/docs/reports"
 
 SKIP_GOOGLE_OAUTH_CHECKS="${SKIP_GOOGLE_OAUTH_CHECKS:-1}"
 
+# Agent/proof scratch belongs on the Builds volume. Refuse when it is not
+# mounted instead of falling back to $TMPDIR, $HOME or the checkout.
+SCRATCH_BASE="/Volumes/Builds/scratch/underlay"
+if [[ ! -d "$SCRATCH_BASE" ]]; then
+  echo "error: agent/proof scratch volume is unavailable: $SCRATCH_BASE" >&2
+  echo 'Mount the Builds volume; do not fall back to $TMPDIR, $HOME or the checkout.' >&2
+  exit 1
+fi
+SCRATCH_DIR="$(mktemp -d "$SCRATCH_BASE/auth-webauthn-dossier.XXXXXXXX")"
+
 TS="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 TS_FILE="$(date -u +"%Y-%m-%d-%H%M%S")"
 REPORT_PATH="$REPORT_DIR/${TS_FILE}-auth-webauthn-manual-evidence-dossier.md"
 
 mkdir -p "$REPORT_DIR"
 
-readiness_tmp="$(mktemp)"
-regression_tmp="$(mktemp)"
+readiness_tmp="$SCRATCH_DIR/readiness.log"
+regression_tmp="$SCRATCH_DIR/regression.log"
 
 cleanup() {
-  rm -f "$readiness_tmp" "$regression_tmp"
+  rm -rf "$SCRATCH_DIR"
 }
 trap cleanup EXIT
 

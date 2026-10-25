@@ -4,7 +4,7 @@
 //!
 //! ```bash
 //! UNDERLAY_TEST_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/postgres \
-//!   cargo test -p underlay-media-postgres --lib -- --ignored
+//!   oxide test -p underlay-media-postgres --lib -- --ignored
 //! ```
 //!
 //! The fixture builds the four media tables from the *adapter's* column usage

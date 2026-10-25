@@ -1,7 +1,7 @@
 use super::*;
 
 // Docker-backed tests are ignored by default.
-// Run with: cargo test -p underlay-testing --features db -- --ignored
+// Run with: oxide test -p underlay-testing --features db -- --ignored
 
 #[tokio::test]
 #[ignore]

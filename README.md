@@ -104,4 +104,7 @@ Some `underlay-db` tests spin up Postgres via `testcontainers`.
 ### Coverage
 
 - Install tarpaulin: `oxide install cargo-tarpaulin`
-- Run coverage check: `rust/scripts/check-coverage.sh`
+- Run coverage check: `rust/scripts/check-coverage.sh`, which launches the tool
+  through `oxide exec -- cargo tarpaulin --workspace --out Xml`
+- Prove the wrapper's dispatch, output and exit behaviour without running
+  Tarpaulin: `effigy check:coverage-route`

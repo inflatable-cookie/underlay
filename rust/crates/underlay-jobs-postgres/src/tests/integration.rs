@@ -4,7 +4,7 @@
 //!
 //! ```bash
 //! UNDERLAY_TEST_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/postgres \
-//!   cargo test -p underlay-jobs-postgres --lib -- --ignored
+//!   oxide test -p underlay-jobs-postgres --lib -- --ignored
 //! ```
 //!
 //! This adapter hardcodes the `platform` schema, so per-test schema isolation
