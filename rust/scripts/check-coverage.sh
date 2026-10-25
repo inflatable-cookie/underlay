@@ -6,6 +6,10 @@ set -euo pipefail
 # Local prerequisites:
 # - cargo-tarpaulin installed (or let this script tell you how)
 #
+# Tarpaulin runs Cargo itself, so it is launched through `oxide exec`, the
+# supported route for a tool that owns its Cargo invocation and target
+# directory. Arguments, thresholds and output handling stay here.
+#
 # CI is expected to have a Docker runtime available.
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -21,14 +25,14 @@ fi
 MIN_OVERALL=50
 
 echo "Running tarpaulin (workspace)…"
-OUTPUT="$(cargo tarpaulin --workspace --out Xml 2>&1)" || {
+OUTPUT="$(oxide exec -- cargo tarpaulin --workspace --out Xml 2>&1)" || {
   echo "$OUTPUT" >&2
   exit 1
 }
 
 # Extract overall % from the final summary line, e.g.
 # "54.01% coverage, 606/1122 lines covered"
-OVERALL_PCT="$(echo "$OUTPUT" | grep -Eo '^[0-9]+(\.[0-9]+)?% coverage' | tail -1 | cut -d% -f1)"
+OVERALL_PCT="$(echo "$OUTPUT" | grep -Eo '^[0-9]+(\.[0-9]+)?% coverage' | tail -1 | cut -d% -f1 || true)"
 
 if [[ -z "$OVERALL_PCT" ]]; then
   echo "Failed to parse tarpaulin output:" >&2

@@ -10,6 +10,7 @@ Every topic has exactly one owning file. Link to it; don't restate it.
 | Public Rust API stability | [contracts/122-rust-public-api-inventory.md](contracts/122-rust-public-api-inventory.md) |
 | Compatibility and consumer rollout | [contracts/023-release-and-compatibility-rollout.md](contracts/023-release-and-compatibility-rollout.md) |
 | How we release | [contracts/release.md](contracts/release.md) |
+| Local Rust routing and agent/proof scratch | [contracts/123-local-rust-routing-and-scratch-placement.md](contracts/123-local-rust-routing-and-scratch-placement.md) |
 | Writing style | [contracts/writing-style.md](contracts/writing-style.md) |
 | Retired concepts | [retired.toml](retired.toml) |
 | Open questions | [questions.md](questions.md) |

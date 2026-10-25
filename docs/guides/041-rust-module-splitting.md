@@ -92,8 +92,8 @@ pub use crate::postgres_scheduled::Notifier;
 2. Create the new file with the extracted code.
 3. Replace the inline code with a module reference or import.
 4. Update `lib.rs` with `mod` declarations and re-exports.
-5. `cargo check -p <crate> --all-features` — fix compile errors.
-6. `cargo test -p <crate> --all-features` — verify all tests pass.
+5. `oxide check -p <crate> --all-features` — fix compile errors.
+6. `oxide test -p <crate> --all-features` — verify all tests pass.
 7. Commit as a single change for easy revert.
 
 ## Reference

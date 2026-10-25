@@ -71,8 +71,11 @@ covers how to route by job. What is specific to Underlay:
   does not ship `check:agent-instructions`.
 - Fall back to raw `oxide`, `bun`, or `vitest` only when the needed operation is
   not represented in `effigy.toml`. Rust goes through `oxide` (Cargo with
-  managed build storage), not `cargo`; `rust:check:cargo`, `rust:clippy:cargo`
-  and `rust:test:cargo` are the plain-Cargo fallback if `oxide` misbehaves.
+  managed build storage), never plain `cargo`; a tool that runs Cargo itself or
+  needs its own target directory runs `oxide exec -- <tool>`. No selector keeps
+  a plain-Cargo `:cargo` sibling. The only escape is an operator decision —
+  `EFFIGY_OXIDE_ESCAPE=cargo` on a routed surface that honours it, or Cargo by
+  hand outside Effigy — never a silent fallback.
 - First-time local bring-up from outside this repo:
   `effigy bootstrap git@github.com:inflatable-cookie/underlay.git`
 
@@ -90,6 +93,7 @@ effigy fmt:rust:check    # oxide fmt --all --check; read-only
 effigy fmt:rust          # oxide fmt --all; mutates the workspace
 effigy fmt:ts -- ts/src/client/format.ts        # format the named TypeScript files
 effigy fmt:ts:check -- ts/src/client/format.ts  # read-only formatting check
+effigy check:coverage-route  # fake-tool proof of the coverage wrapper's Oxide route
 effigy test:unit         # vitest, filter {args} to the touched code
 effigy test:components   # vitest component config
 effigy test --plan       # when the test shape is what you need to know
@@ -107,6 +111,19 @@ These selectors do not include Svelte formatting or run automatically in QA.
 
 `underlay-db` Postgres integration tests need a running Docker runtime and are
 `#[ignore]`d by default; see `README.md` for the bring-up.
+
+## Scratch Placement
+
+- Agent and proof scratch goes in a unique directory below
+  `/Volumes/Builds/scratch/underlay/`. If the volume is not mounted, refuse and
+  report it; never fall back to `$TMPDIR`, `$HOME`, a drive root, or the
+  checkout, and never create a mount point that pretends to be the volume.
+- Delete only scratch your own run created; leave unknown state where it is.
+- Proof output records key presence, never secret values, and no generic `HOME`
+  override substitutes for the scratch rule.
+- Product-managed temp files are not agent scratch; leave runtime behaviour and
+  guest `/tmp` files alone.
+- Owner: `docs/knowledge/contracts/123-local-rust-routing-and-scratch-placement.md`.
 
 ## Documentation Rules
 

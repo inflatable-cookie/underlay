@@ -2,7 +2,15 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-TMP_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/underlay-consumer-conformance.XXXXXX")"
+# Agent/proof scratch belongs on the Builds volume. Refuse when it is not
+# mounted instead of falling back to $TMPDIR, $HOME or the checkout.
+SCRATCH_BASE="/Volumes/Builds/scratch/underlay"
+if [[ ! -d "$SCRATCH_BASE" ]]; then
+	echo "error: agent/proof scratch volume is unavailable: $SCRATCH_BASE" >&2
+	echo 'Mount the Builds volume; do not fall back to $TMPDIR, $HOME or the checkout.' >&2
+	exit 1
+fi
+TMP_ROOT="$(mktemp -d "$SCRATCH_BASE/consumer-conformance.XXXXXXXX")"
 trap 'rm -rf -- "$TMP_ROOT"' EXIT
 
 write_shared_fixture_files() {

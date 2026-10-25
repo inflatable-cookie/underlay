@@ -47,16 +47,18 @@ check = "cd {repo} && bun x svelte-check --tsconfig ./ts/tsconfig.json"
 "check:workspace-shape" = "cd {repo} && bun x vitest run ts/tests/tools/workspace-shape.test.ts ts/tests/tools/merge-pr-closeout-cleanup.test.ts"
 "check:env-authority" = "cd {repo} && bun x vitest run ts/tests/tools/env-authority.test.ts"
 "check:consumer-conformance-fixtures" = "cd {repo} && bash scripts/test-consumer-conformance-fixtures.sh"
+"check:coverage-route" = "cd {repo} && bash rust/scripts/test-check-coverage.sh"
 # Rust goes through Oxide (Cargo with managed, budgeted build storage off the
-# laptop SSD). The `:cargo` selectors are the plain-Cargo fallback if Oxide
-# misbehaves; they write to the checkout's `target/`.
+# laptop SSD). No selector keeps a plain-Cargo `:cargo` sibling: the only
+# escape is an operator decision (`EFFIGY_OXIDE_ESCAPE=cargo` on a routed
+# surface that honours it, or Cargo by hand outside Effigy), never a silent
+# fallback. A tool that runs Cargo itself or needs its own target directory
+# goes through `oxide exec -- <tool>`. See
+# docs/knowledge/contracts/123-local-rust-routing-and-scratch-placement.md.
 "rust:build" = "cd {repo} && oxide build --workspace"
 "rust:check" = "cd {repo} && oxide check --workspace --all-features"
 "rust:clippy" = "cd {repo} && oxide clippy --workspace --all-targets -- -D warnings"
 "rust:test" = "cd {repo} && oxide test --workspace --all-features"
-"rust:check:cargo" = "cd {repo} && cargo check --workspace --all-features"
-"rust:clippy:cargo" = "cd {repo} && cargo clippy --workspace --all-targets -- -D warnings"
-"rust:test:cargo" = "cd {repo} && cargo test --workspace --all-features"
 "fmt:rust" = "cd {repo} && oxide fmt --all"
 "fmt:rust:check" = "cd {repo} && oxide fmt --all --check"
 "fmt:ts" = "cd {repo} && ./node_modules/.bin/prettier --write {args}"

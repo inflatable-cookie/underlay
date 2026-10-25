@@ -5,7 +5,7 @@
 //!
 //! ```bash
 //! UNDERLAY_TEST_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/postgres \
-//!   cargo test -p underlay-ratelimit --features postgres --lib -- --ignored
+//!   oxide test -p underlay-ratelimit --features postgres --lib -- --ignored
 //! ```
 //!
 //! This is the test the `g08.008` card promised: two backend instances (two

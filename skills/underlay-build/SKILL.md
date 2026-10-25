@@ -322,8 +322,9 @@ When a repo publishes `effigy.toml`:
 2. `effigy health` — baseline check
 3. `effigy test --plan` — plan before running tests
 4. Use repo-owned tasks (`effigy validate`, `effigy rust:check`, etc.)
-5. Fall back to raw `cargo`/`bun`/`vitest` only when Effigy does not cover the
-path
+5. Fall back to raw `oxide`/`bun`/`vitest` only when Effigy does not cover the
+path. A tool that runs Cargo itself goes through `oxide exec -- <tool>`; plain
+`cargo` is not an ordinary local route.
 
 ---
 

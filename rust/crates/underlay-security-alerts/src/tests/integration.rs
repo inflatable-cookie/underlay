@@ -4,7 +4,7 @@
 //!
 //! ```bash
 //! UNDERLAY_TEST_DATABASE_URL=postgres://postgres:postgres@127.0.0.1:5432/postgres \
-//!   cargo test -p underlay-security-alerts -- --ignored
+//!   oxide test -p underlay-security-alerts -- --ignored
 //! ```
 
 use chrono::{Duration, Utc};

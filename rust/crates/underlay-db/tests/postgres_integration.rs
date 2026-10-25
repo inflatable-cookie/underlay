@@ -7,7 +7,7 @@ use underlay_db::{create_pool, drop_schemas, validate_schema_name, DbConfig, Des
 //   colima start
 //
 // Run with:
-//   cargo test -p underlay-db --test postgres_integration -- --ignored
+//   oxide test -p underlay-db --test postgres_integration -- --ignored
 
 use testcontainers::runners::SyncRunner;
 use testcontainers::Container;

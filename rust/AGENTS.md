@@ -32,10 +32,15 @@ tooling (`underlay-devtools`, `underlay-testing`).
 ## Validation
 
 ```bash
-effigy rust:check    # cargo check --workspace --all-features
-effigy rust:clippy   # cargo clippy --workspace --all-targets -- -D warnings
-effigy rust:test     # cargo test --workspace --all-features
+effigy rust:check    # oxide check --workspace --all-features
+effigy rust:clippy   # oxide clippy --workspace --all-targets -- -D warnings
+effigy rust:test     # oxide test --workspace --all-features
 ```
+
+Ordinary local Rust routes go through Oxide; there is no plain-Cargo `:cargo`
+sibling. A tool that runs Cargo itself (Tarpaulin) runs
+`oxide exec -- <tool> …`. See
+`../docs/knowledge/contracts/123-local-rust-routing-and-scratch-placement.md`.
 
 `underlay-db`'s Postgres integration target is `#[ignore]`d and needs a Docker
 runtime:

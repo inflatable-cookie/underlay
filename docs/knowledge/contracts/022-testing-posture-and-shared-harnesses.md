@@ -101,10 +101,13 @@ Rules:
 ### Coverage tooling
 
 Install Tarpaulin with `oxide install cargo-tarpaulin`. The coverage script
-still checks for `cargo-tarpaulin` and runs
-`cargo tarpaulin --workspace --out Xml`; Tarpaulin's instrumentation, profile,
-and platform behavior is not qualified through Oxide, so its execution remains
-a Cargo exception.
+still requires `cargo-tarpaulin` and runs the tool as
+`oxide exec -- cargo tarpaulin --workspace --out Xml`: Tarpaulin invokes Cargo
+itself, so its inner `cargo` word belongs to the tool, and the `oxide exec`
+lease is routing only. Arguments, thresholds and exit behaviour stay in
+`rust/scripts/check-coverage.sh`. Routing does not qualify Tarpaulin's
+instrumentation, profile or platform behaviour. See
+[`123-local-rust-routing-and-scratch-placement.md`](123-local-rust-routing-and-scratch-placement.md).
 
 ### Underlay repository TypeScript formatting
 
