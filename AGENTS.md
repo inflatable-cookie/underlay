@@ -39,9 +39,10 @@ apps, and design for the general case rather than the caller in front of you.
 
 ## Knowledge and Planning
 
-Underlay uses lean Northstar (`northstar` skill). The repository holds
-knowledge and code; Queue holds tasks, briefs, status and outcomes. Never write
-task status, handoffs or delivery logs into the repository.
+Underlay uses lean Northstar (`northstar` skill) for repository knowledge.
+The repository holds knowledge and code; Queue holds tasks, briefs, status and
+outcomes (see the Nucleus skill). Never write task status, handoffs or delivery
+logs into the repository.
 
 - `docs/README.md` — current state and the doc map.
 - `docs/knowledge/` — current truth, one owner per fact. Contracts are
@@ -57,7 +58,7 @@ the thread ends.
 ## Papercuts
 
 File small, recurring friction in Queue with `papercut.add` (see the
-`northstar` skill). The repository holds no papercut file or triage folder.
+Nucleus skill). The repository holds no papercut file or triage folder.
 
 ## Effigy-First Execution
 
