@@ -47,7 +47,6 @@ logs into the repository.
 - `docs/README.md` — current state and the doc map.
 - `docs/knowledge/` — current truth, one owner per fact. Contracts are
   normative; guides only explain them.
-- `docs/knowledge/retired.toml` — concepts that must not come back.
 - `docs/knowledge/questions.md` — open questions; check here before asking.
 - `docs/knowledge/contracts/release.md` — how a release is cut.
 
