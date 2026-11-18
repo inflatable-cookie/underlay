@@ -39,7 +39,7 @@ apps, and design for the general case rather than the caller in front of you.
 
 ## Knowledge and Planning
 
-Underlay uses lean Northstar (`northstar` skill) for repository knowledge.
+Underlay uses the Northstar docs structure (`northstar-docs` skill) for repository knowledge.
 The repository holds knowledge and code; Queue holds tasks, briefs, status and
 outcomes (see the Nucleus skill). Never write task status, handoffs or delivery
 logs into the repository.
