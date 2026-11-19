@@ -44,7 +44,7 @@ The repository holds knowledge and code; Nucleus holds tasks, briefs, status and
 outcomes (see the Nucleus skill). Never write task status, handoffs or delivery
 logs into the repository.
 
-- `docs/README.md` — current state and the doc map.
+- `docs/README.md` — docs entry point.
 - `docs/knowledge/` — current truth, one owner per fact. Contracts are
   normative; guides only explain them.
 - `docs/knowledge/questions.md` — open questions; check here before asking.

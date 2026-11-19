@@ -27,6 +27,11 @@ reply, not for every message:
 3. validation, only if it failed or materially affects confidence
 4. next move
 
+## Links and paths
+
+Active docs use repo-local links for Underlay content, prose references for
+sibling repositories, and no absolute local filesystem paths.
+
 ## Apply to
 
 - chat replies about internal work

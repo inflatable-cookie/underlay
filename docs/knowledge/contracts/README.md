@@ -24,6 +24,7 @@ machine-readable policy files.
 | [033-error-codes-and-operator-audit.md](033-error-codes-and-operator-audit.md) | M | Shared stable error-code, privileged-mutation audit, workflow-action audit, and operator-evidence contract for normal Underlay app workflows and admin mutations |
 | [121-underlay-app-review-checklist-and-audit-artifact.md](121-underlay-app-review-checklist-and-audit-artifact.md) | M | Shared consumer-audit checklist contract plus machine-readable review artifact for contract-backed app reviews across the Underlay app family |
 | [040-storage-blob-and-media-systems.md](040-storage-blob-and-media-systems.md) | M | Shared DB/bootstrap, soft-delete, blob adapter, storage-key, and lower media repository/storage contract |
+| [immutable-verified-blob-promotion.md](immutable-verified-blob-promotion.md) | M | Verified media publication: bounded capture, create-only writes, and verified staging-to-destination blob promotion |
 | [050-media-library-and-usage.md](050-media-library-and-usage.md) | L | Shared media asset, usage-graph, structured-content sync, and migration replay contract |
 | [051-media-library-fleet-capability-policy.md](051-media-library-fleet-capability-policy.md) | M | Shared fleet policy for whether the full admin media family is required across the five consumer apps and how full / partial / absent media capability is classified |
 | [060-jobs-events-and-operator-systems.md](060-jobs-events-and-operator-systems.md) | M | Shared job queue, scheduler, outbox, audit, email, rate-limit, and security-alert contract |
