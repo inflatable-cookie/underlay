@@ -53,8 +53,7 @@ machine-readable policy files.
 - [media-capability/fleet-media-capability-matrix.csv](media-capability/fleet-media-capability-matrix.csv)
   is the retained fleet media capability inventory artifact.
 
-## Current state
+## Test database boundary
 
-- Whole-app fixed-schema DB suites remain app-owned; `TestDb` stays the shared
-  single-schema seam.
-- What's being worked next is in the plan.
+Whole-app fixed-schema database suites stay app-owned; `TestDb` is the shared
+single-schema seam.
