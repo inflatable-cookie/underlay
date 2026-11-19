@@ -40,7 +40,7 @@ apps, and design for the general case rather than the caller in front of you.
 ## Knowledge and Planning
 
 Underlay uses the Northstar docs structure (`northstar-docs` skill) for repository knowledge.
-The repository holds knowledge and code; Queue holds tasks, briefs, status and
+The repository holds knowledge and code; Nucleus holds tasks, briefs, status and
 outcomes (see the Nucleus skill). Never write task status, handoffs or delivery
 logs into the repository.
 
@@ -56,7 +56,7 @@ the thread ends.
 
 ## Papercuts
 
-File small, recurring friction in Queue with `papercut.add` (see the
+File small, recurring friction in Nucleus with `papercut.add` (see the
 Nucleus skill). The repository holds no papercut file or triage folder.
 
 ## Effigy-First Execution
@@ -101,7 +101,7 @@ effigy qa:docs           # docs checks when docs changed
 # Use targeted raw tool commands only when Effigy does not cover the path
 ```
 
-Run full `effigy qa` (`validate` + `qa:docs`) on `main` at Queue milestones,
+Run full `effigy qa` (`validate` + `qa:docs`) on `main` at Nucleus milestones,
 not as a per-task default. Format selectors stay out of health, validate, and
 qa; run `fmt:rust:check` when formatted Rust source changed.
 

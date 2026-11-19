@@ -12,7 +12,7 @@ how they are cut and how consumers pin them is in
 
 Verified media publication is owned by
 [immutable-verified-blob-promotion.md](knowledge/contracts/immutable-verified-blob-promotion.md).
-Consumer proof and closeout live in Queue.
+Consumer proof and closeout live in Nucleus.
 
 Nightfire is a standalone system. Underlay consumes a released tag and keeps
 historical compatibility facades; see
@@ -40,7 +40,7 @@ that owns a guarantee; it never restates it.
 
 ## What's next
 
-The project's plan is in Queue: its lanes, their documents and their order.
+The project's plan is in Nucleus: its lanes, their documents and their order.
 
 ## Documentation boundary
 
