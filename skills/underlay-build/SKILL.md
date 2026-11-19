@@ -211,7 +211,7 @@ Use when updating an existing app to match a newer Underlay version or contract.
 
 **Opens:** `underlay/docs/guides/190-upgrade-compatibility.md`
 **Also read:** `underlay/CHANGELOG.md` for the target tag's consumer-upgrade notes,
-and Underlay's Queue plan for what is changing next
+and Underlay's Nucleus plan for what is changing next
 
 ---
 
@@ -334,7 +334,7 @@ path. A tool that runs Cargo itself goes through `oxide exec -- <tool>`; plain
 - **Non-Underlay projects:** This skill assumes `@inflatable-cookie/underlay` is a
 dependency
 - **Internal Underlay development:** Use `underlay/docs/knowledge/` and
-Underlay's Queue plan directly; this skill is for consumer apps
+Underlay's Nucleus plan directly; this skill is for consumer apps
 
 ---
 
