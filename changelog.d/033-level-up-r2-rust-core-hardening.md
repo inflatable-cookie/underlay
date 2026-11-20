@@ -35,7 +35,10 @@
   throughout, and the generated macros now use hygienic `$crate::` paths so
   consumers do not need `sqlx`, `async-trait`, or `uuid` in scope.
 
-### Consumer actions (breaking; target `0.11.0`)
+### Consumer Upgrade Impact (breaking; target `0.11.0`)
+
+Contract 023 upgrade block for the active roadmap batch: impact class
+`breaking`, no deprecation window, consumer actions and validation below.
 
 - Update manual `SoftDeletable` implementations to return
   `SoftDeleteResult`, and pass `underlay_core::Uuid` values (the soft-delete
