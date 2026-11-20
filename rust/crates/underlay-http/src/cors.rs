@@ -283,7 +283,10 @@ pub(crate) fn admin_cors_empty_origins_warning(
 /// Panics on an invalid origin value.
 pub fn admin_cors_config(environment: Environment, explicit_origins: Vec<String>) -> CorsConfig {
     if let Some(warning) = admin_cors_empty_origins_warning(&environment, &explicit_origins) {
-        eprintln!("warning: {warning}");
+        #[cfg(feature = "tracing")]
+        tracing::warn!("{warning}");
+        #[cfg(not(feature = "tracing"))]
+        let _ = warning;
     }
 
     let mut config = CorsConfig::default()

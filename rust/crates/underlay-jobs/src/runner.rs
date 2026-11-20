@@ -241,9 +241,19 @@ where
             "Starting job runner in polling mode"
         );
 
+        let batch_size = self.config.batch_size();
+        let mut processed_in_batch = 0usize;
+
         loop {
             let did_work = self.run_once().await?;
-            if !did_work {
+            if did_work {
+                processed_in_batch += 1;
+                if batch_size > 0 && processed_in_batch >= batch_size {
+                    processed_in_batch = 0;
+                    tokio::time::sleep(self.config.poll_interval()).await;
+                }
+            } else {
+                processed_in_batch = 0;
                 tokio::time::sleep(self.config.poll_interval()).await;
             }
         }

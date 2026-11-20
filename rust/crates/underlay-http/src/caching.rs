@@ -163,24 +163,29 @@ impl<V: Clone> SingleFlight<V> {
         let key = key.into();
         let mut loader = Some(loader);
 
-        let waiter = {
-            let mut guard = self.lock_inflight();
-            if let Some(waiters) = guard.get_mut(&key) {
-                let (tx, rx) = oneshot::channel();
-                waiters.push(tx);
-                Some(rx)
-            } else {
-                guard.insert(key.clone(), Vec::new());
-                None
-            }
-        };
+        loop {
+            let waiter = {
+                let mut guard = self.lock_inflight();
+                if let Some(waiters) = guard.get_mut(&key) {
+                    let (tx, rx) = oneshot::channel();
+                    waiters.push(tx);
+                    Some(rx)
+                } else {
+                    guard.insert(key.clone(), Vec::new());
+                    None
+                }
+            };
 
-        if let Some(rx) = waiter {
-            if let Ok(value) = rx.await {
-                return value;
+            if let Some(rx) = waiter {
+                if let Ok(value) = rx.await {
+                    return value;
+                }
+                // Leader was cancelled or panicked; re-enter the loop so
+                // exactly one woken waiter becomes the new leader and the rest
+                // re-attach instead of thundering-herding or clobbering state.
+                continue;
             }
-            // If the leader task exited or was cancelled before sending,
-            // recompute instead of panicking or deadlocking.
+
             let mut cleanup = InflightGuard {
                 inflight: &self.inflight,
                 key: key.clone(),
@@ -201,25 +206,6 @@ impl<V: Clone> SingleFlight<V> {
             }
             return value;
         }
-
-        let mut cleanup = InflightGuard {
-            inflight: &self.inflight,
-            key: key.clone(),
-            active: true,
-        };
-        let value = loader
-            .take()
-            .expect("singleflight loader should only be consumed once")()
-        .await;
-        cleanup.active = false;
-        let waiters = {
-            let mut guard = self.lock_inflight();
-            guard.remove(&key).unwrap_or_default()
-        };
-        for tx in waiters {
-            let _ = tx.send(value.clone());
-        }
-        value
     }
 
     #[cfg(test)]

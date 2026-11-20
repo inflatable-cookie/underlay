@@ -44,6 +44,24 @@ pub struct ApiError {
 /// Canonical result type for HTTP handlers.
 pub type ApiResult<T> = Result<T, ApiError>;
 
+impl std::fmt::Display for ApiError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} ({}): {}", self.status, self.err.code, self.err.message)
+    }
+}
+
+impl std::error::Error for ApiError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        Some(&self.err)
+    }
+}
+
+impl underlay_core::ErrorCode for ApiError {
+    fn code(&self) -> &'static str {
+        self.err.code
+    }
+}
+
 impl ApiError {
     pub fn new(status: StatusCode, code: &'static str, message: impl Into<String>) -> Self {
         Self {

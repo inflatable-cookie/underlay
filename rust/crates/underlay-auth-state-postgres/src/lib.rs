@@ -119,7 +119,11 @@ impl AuthStateStore {
         .await
         .map_err(AuthStateError::Db)?;
 
-        Ok(row.map(|r| r.get::<serde_json::Value, _>("state")))
+        row.map(|r| {
+            r.try_get::<serde_json::Value, _>("state")
+                .map_err(AuthStateError::Db)
+        })
+        .transpose()
     }
 
     pub async fn load_user(
