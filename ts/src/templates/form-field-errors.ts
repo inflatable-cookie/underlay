@@ -7,12 +7,19 @@ export type FormFieldErrors = {
   fieldError(name: string): string | undefined;
 };
 
+export type FormFieldErrorsSource =
+  | Record<string, string>
+  | null
+  | (() => Record<string, string> | null);
+
 /**
- * Set by form-page templates (EntityFormPage) so nested form content can
- * bind field-level errors without prop drilling.
+ * Set by form-page templates (EntityFormPage) during component initialization
+ * so nested form content can bind field-level errors reactively without prop
+ * drilling. Pass a getter `() => fieldErrors` so updates after submit stay live.
  */
-export function setFormFieldErrors(errors: Record<string, string> | null): void {
-  setContext(FORM_FIELD_ERRORS_KEY, errors);
+export function setFormFieldErrors(source: FormFieldErrorsSource): void {
+  const getter = typeof source === "function" ? source : () => source;
+  setContext(FORM_FIELD_ERRORS_KEY, getter);
 }
 
 /**
@@ -20,8 +27,8 @@ export function setFormFieldErrors(errors: Record<string, string> | null): void 
  * `error={fieldError("title")}`.
  */
 export function useFormFieldErrors(): (name: string) => string | undefined {
-  const errors = getContext<Record<string, string> | null | undefined>(
+  const getter = getContext<(() => Record<string, string> | null) | undefined>(
     FORM_FIELD_ERRORS_KEY,
   );
-  return (name: string) => errors?.[name];
+  return (name: string) => getter?.()?.[name];
 }

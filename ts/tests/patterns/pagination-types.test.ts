@@ -26,7 +26,7 @@ describe("patterns/pagination-types", () => {
 			limit: "25",
 			cursor: "abc123",
 			direction: "backward",
-			includeTotal: "false",
+			include_total: "false",
 		});
 
 		const defaultsOmitted: CursorPaginationParams = {
@@ -46,10 +46,10 @@ describe("patterns/pagination-types", () => {
 			includeTotal: false,
 		};
 		expect(appendCursorPaginationParams("/api/items", params)).toBe(
-			"/api/items?limit=10&cursor=next%2Bcursor&direction=backward&includeTotal=false"
+			"/api/items?limit=10&cursor=next%2Bcursor&direction=backward&include_total=false"
 		);
 		expect(appendCursorPaginationParams("/api/items?sort=name", params)).toBe(
-			"/api/items?sort=name&limit=10&cursor=next%2Bcursor&direction=backward&includeTotal=false"
+			"/api/items?sort=name&limit=10&cursor=next%2Bcursor&direction=backward&include_total=false"
 		);
 		expect(appendCursorPaginationParams("/api/items", {})).toBe("/api/items");
 	});

@@ -77,7 +77,7 @@ export function readDottedValue<T = ConfigValue>(
   let current: ConfigValue | undefined = config;
 
   for (const part of dottedKey.split(".")) {
-    if (!isTable(current)) {
+    if (isUnsafeKey(part) || !isTable(current) || !Object.prototype.hasOwnProperty.call(current, part)) {
       return undefined;
     }
 

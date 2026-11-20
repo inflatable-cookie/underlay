@@ -100,15 +100,19 @@ fi
 # check-seeds-gated: dev seeds require env AND local-database-host gates
 # --------------------------------------------------------------------------
 if ! skip "seeds-gated"; then
+  seeds_failed=0
   while IFS= read -r -d '' file; do
     if rg -q "run_dev_seeds|run_bootstrap_seed" "$file"; then
       if ! rg -q "is_local_database_url" "$file"; then
         fail "seeds-gated" "seed runner without local-database-host guard: $file"
+        seeds_failed=1
       fi
     fi
   done < <(rg -l "run_dev_seeds|run_bootstrap_seed" "$ROOT" --type rust -g '!target' 2>/dev/null \
     | rg -v "/underlay/|test|/db/src/lib.rs|/bin/|/crates/migration/" | tr '\n' '\0')
-  pass "seeds-gated"
+  if [[ "$seeds_failed" -eq 0 ]]; then
+    pass "seeds-gated"
+  fi
 fi
 
 # --------------------------------------------------------------------------
@@ -268,9 +272,14 @@ fi
 # check-no-row-enrichment-loop: no per-item fetch loops (N+1)
 # --------------------------------------------------------------------------
 if ! skip "row-enrichment-loop"; then
-  hits=$(rg -U "for \w+ in \w+ \{" "$ROOT" --type rust -g '!target' 2>/dev/null \
-    | xargs -I{} sh -c 'rg -lU "for \w+ in \w+ \{[^}]{0,400}\.await" "{}" 2>/dev/null' \
-    | rg -v "/underlay/|/tests/|_tests\.rs" || true)
+  hits=""
+  while IFS= read -r -d '' file; do
+    if rg -qU "for \w+ in \w+ \{[^}]{0,400}\.await" "$file" 2>/dev/null; then
+      hits+="$file"$'\n'
+    fi
+  done < <(rg -lU "for \w+ in \w+ \{" "$ROOT" --type rust -g '!target' 2>/dev/null \
+    | rg -v "/underlay/|/tests/|_tests\.rs" | tr '\n' '\0')
+  hits="${hits%$'\n'}"
   if [[ -z "$hits" ]]; then
     pass "row-enrichment-loop"
   else

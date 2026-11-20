@@ -448,7 +448,7 @@
   // A refetch is in flight but we still have prior results on screen (e.g. a
   // debounced search). The full-page loader only shows on the first load, so
   // surface a subtle busy affordance instead of leaving the list looking frozen.
-  const isRefetching = $derived(pageData.loading && items.length > 0);
+  const isRefetching = $derived(pageData.refetching && items.length > 0);
 
   // Batch actions
   const batch = useBatchActions<string>();
@@ -535,8 +535,8 @@
 
   // Register batch actions (skip dialog actions — handled separately)
   $effect(() => {
+    const directActions = batchActions.filter((action) => !action.dialog);
     untrack(() => {
-      const directActions = batchActions.filter((action) => !action.dialog);
       const directActionIds = new Set(directActions.map((action) => action.id));
 
       for (const existingAction of batch.actions) {
@@ -906,25 +906,31 @@
     }
 
     if (isLoadedReorderConfig(reorder)) {
-      const token = getAuthConfig()?.getToken() ?? null;
-      const result = await reorder.loadItems(fetch, token, currentQuery);
-      if (result.error) {
-        toastStore.push({ message: result.error, variant: "error" });
-        reorderSessionPending = false;
+      try {
+        const token = getAuthConfig()?.getToken() ?? null;
+        const result = await reorder.loadItems(fetch, token, currentQuery);
+        if (result.error) {
+          toastStore.push({ message: result.error, variant: "error" });
+          return false;
+        }
+
+        loadedReorderItems = reorder.mapItems
+          ? reorder.mapItems(result.items)
+          : result.items.map((item) => ({
+              ...(item as T & Record<string, unknown>),
+              id: String((item as Record<string, unknown>)[idField])
+            })) as Array<T & ReorderableItem>;
+
+        reorderController = createReorderController(loadedReorderItems, submitReorder);
+        reorderError = null;
+        return true;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to load reorder items";
+        toastStore.push({ message, variant: "error" });
         return false;
+      } finally {
+        reorderSessionPending = false;
       }
-
-      loadedReorderItems = reorder.mapItems
-        ? reorder.mapItems(result.items)
-        : result.items.map((item) => ({
-            ...(item as T & Record<string, unknown>),
-            id: String((item as Record<string, unknown>)[idField])
-          })) as Array<T & ReorderableItem>;
-
-      reorderController = createReorderController(loadedReorderItems, submitReorder);
-      reorderError = null;
-      reorderSessionPending = false;
-      return true;
     }
 
     loadedReorderItems = [];

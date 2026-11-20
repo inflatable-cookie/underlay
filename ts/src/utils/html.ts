@@ -13,6 +13,7 @@ const EMBED_ALLOWED_ATTR = [
   "frameborder",
   "loading",
   "referrerpolicy",
+  "sandbox",
   "playsinline",
   "controls",
   "autoplay",
@@ -48,7 +49,6 @@ const SVG_ALLOWED_ATTR = [
   "points",
   "transform",
   "class",
-  "style",
   "id",
 ];
 
@@ -74,6 +74,7 @@ export function sanitizeSvgHtml(svg: string | null | undefined): string {
   return DOMPurify.sanitize(toInput(svg), {
     USE_PROFILES: { svg: true, svgFilters: true },
     ALLOWED_ATTR: SVG_ALLOWED_ATTR,
+    FORBID_ATTR: ["style"],
     FORBID_TAGS: ["script", "foreignObject"],
   });
 }

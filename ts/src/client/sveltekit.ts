@@ -99,8 +99,9 @@ export function createAuthCookieHelpers(config: AuthCookieConfig): AuthCookieHel
     },
 
     clearAuthTokens(cookies: Cookies): void {
-      cookies.delete(config.accessTokenName, { path: "/" });
-      cookies.delete(config.refreshTokenName, { path: "/" });
+      const deleteOpts = { path: defaultOptions.path ?? "/" };
+      cookies.delete(config.accessTokenName, deleteOpts);
+      cookies.delete(config.refreshTokenName, deleteOpts);
     },
   };
 }
@@ -109,11 +110,12 @@ export function createCookieTokenStore(
   event: RequestEvent,
   options: CookieTokenStoreOptions
 ): TokenStore {
+  const deleteOpts = { path: options.cookie?.path ?? "/" };
   return {
     getAccessToken: () => event.cookies.get(options.accessTokenCookie) ?? null,
     setAccessToken: async (token) => {
       if (!token) {
-        event.cookies.delete(options.accessTokenCookie, { path: "/" });
+        event.cookies.delete(options.accessTokenCookie, deleteOpts);
         return;
       }
       event.cookies.set(options.accessTokenCookie, token, {
@@ -127,7 +129,7 @@ export function createCookieTokenStore(
     getRefreshToken: () => event.cookies.get(options.refreshTokenCookie) ?? null,
     setRefreshToken: async (token) => {
       if (!token) {
-        event.cookies.delete(options.refreshTokenCookie, { path: "/" });
+        event.cookies.delete(options.refreshTokenCookie, deleteOpts);
         return;
       }
       event.cookies.set(options.refreshTokenCookie, token, {
@@ -139,8 +141,8 @@ export function createCookieTokenStore(
     },
 
     clear: async () => {
-      event.cookies.delete(options.accessTokenCookie, { path: "/" });
-      event.cookies.delete(options.refreshTokenCookie, { path: "/" });
+      event.cookies.delete(options.accessTokenCookie, deleteOpts);
+      event.cookies.delete(options.refreshTokenCookie, deleteOpts);
     },
   };
 }

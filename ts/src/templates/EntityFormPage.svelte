@@ -94,9 +94,7 @@
     fieldErrors = initialFieldErrors;
   });
 
-  $effect(() => {
-    setFormFieldErrors(fieldErrors);
-  });
+  setFormFieldErrors(() => fieldErrors);
 
   const hasFieldErrors = $derived(Boolean(fieldErrors && Object.keys(fieldErrors).length > 0));
   const visibleError = $derived(hasFieldErrors ? null : error);

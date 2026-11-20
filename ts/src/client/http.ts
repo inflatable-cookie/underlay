@@ -110,17 +110,11 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
     const isIdempotent = req.method === "GET" || req.method === "DELETE";
     const shouldRetry = isIdempotent && !opts?.skipRetry;
 
-    let attempt = 0;
     let retries = 0;
 
     while (true) {
-      attempt += 1;
-
-      // Set up timeout for idempotent requests
       const controller =
-        typeof AbortController !== "undefined" && isIdempotent
-          ? new AbortController()
-          : undefined;
+        typeof AbortController !== "undefined" ? new AbortController() : undefined;
 
       const timeout =
         controller != null
@@ -207,6 +201,18 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
         // If it's an HTTP error (not network/timeout), don't retry - we already handled that above
         if (err instanceof UnderlayHttpError) {
           throw err;
+        }
+
+        const isTimeout =
+          err instanceof Error &&
+          (err.name === "AbortError" || controller?.signal.aborted === true);
+        if (isTimeout) {
+          throw new UnderlayHttpError(0, "Request timed out", {
+            error: {
+              code: "timeout",
+              message: "Request timed out",
+            },
+          });
         }
 
         const message = err instanceof Error ? err.message : "Network error";

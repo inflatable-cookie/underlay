@@ -131,7 +131,7 @@
 {/snippet}
 
 {#snippet badgeContent()}
-  {#each resolvedBadgeItems as badge (`${badge.label}:${badge.tone ?? "neutral"}`)}
+  {#each resolvedBadgeItems as badge, index (`${badge.label}:${badge.tone ?? "neutral"}:${index}`)}
     <Pill
       tone={badge.tone ?? "neutral"}
       appearance={badge.appearance ?? "subtle"}

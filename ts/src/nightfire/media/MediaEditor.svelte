@@ -24,24 +24,36 @@
   interface Props {
     block: MediaBlock;
     onChange: (block: MediaBlock) => void;
-    onContextChange?: ((context: MarkdownEditorContext) => void) | null;
   }
 
-  let { block, onChange, onContextChange = null }: Props = $props();
+  let { block, onChange }: Props = $props();
 
+  const uid = $props.id();
   const mediaContext = useNightfireMedia();
 
-  // Local state for the selected media preview
+  // Local state for the selected media preview (tracks which mediaId it belongs to)
+  let selectedMediaId = $state<string | null>(null);
   let selectedTitle = $state<string | null>(null);
   let selectedThumbnailUrl = $state<string | null>(null);
   let selectedKind = $state<string | null>(null);
   let picking = $state(false);
+  let pickError = $state<string | null>(null);
 
   // Derive current data from block
   const mediaId = $derived(block?.data?.media_id ?? "");
   const caption = $derived(block?.data?.caption ?? "");
   const alt = $derived(block?.data?.alt ?? "");
   const display = $derived(block?.data?.display ?? "inline");
+
+  // Clear local preview metadata whenever block.data.media_id changes externally
+  $effect(() => {
+    if (selectedMediaId !== null && mediaId !== selectedMediaId) {
+      selectedMediaId = null;
+      selectedTitle = null;
+      selectedThumbnailUrl = null;
+      selectedKind = null;
+    }
+  });
 
   const displayOptions = [
     { value: "inline", label: "Inline" },
@@ -67,18 +79,22 @@
   async function handlePickMedia() {
     if (!mediaContext || picking) return;
     picking = true;
+    pickError = null;
 
     try {
       const result = await mediaContext.pickMedia();
       if (result) {
         applySelection(result);
       }
+    } catch (err) {
+      pickError = err instanceof Error ? err.message : "Failed to pick media";
     } finally {
       picking = false;
     }
   }
 
   function applySelection(result: NightfireMediaPickResult) {
+    selectedMediaId = result.id;
     selectedTitle = result.title;
     selectedThumbnailUrl = result.thumbnailUrl;
     selectedKind = result.kind;
@@ -86,9 +102,11 @@
   }
 
   function handleRemove() {
+    selectedMediaId = null;
     selectedTitle = null;
     selectedThumbnailUrl = null;
     selectedKind = null;
+    pickError = null;
     emit({ media_id: "" });
   }
 
@@ -148,11 +166,14 @@
     {:else}
       <!-- Fallback: plain text input when no media context is configured -->
       <TextInput
-        id="nightfire-media-id"
+        id={`${uid}-media-id`}
         placeholder="Media ID"
         value={mediaId}
         onValueChange={(nextValue) => emit({ media_id: nextValue })}
       />
+    {/if}
+    {#if pickError}
+      <p class="underlay-media-editor__error" role="alert">{pickError}</p>
     {/if}
   </div>
 
@@ -160,13 +181,13 @@
   {#if mediaId}
     <div class="underlay-media-editor__fields">
       <TextInput
-        id="nightfire-media-caption"
+        id={`${uid}-media-caption`}
         placeholder="Caption (optional)"
         value={caption}
         onValueChange={(nextValue) => emit({ caption: nextValue })}
       />
       <TextInput
-        id="nightfire-media-alt"
+        id={`${uid}-media-alt`}
         placeholder="Alt text (optional)"
         value={alt}
         onValueChange={(nextValue) => emit({ alt: nextValue })}

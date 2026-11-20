@@ -129,7 +129,8 @@ describe("createHttpClient retry and timeout", () => {
       const promise = client.get("/slow-endpoint");
       const rejection = expect(promise).rejects.toMatchObject({
         status: 0,
-        message: "Aborted",
+        message: "Request timed out",
+        envelope: { error: { code: "timeout" } },
       });
 
       // Advance timers to trigger timeout

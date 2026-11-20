@@ -92,10 +92,10 @@
 	align-items: center;
 	gap: 0.75rem;
 	padding: 0.75rem 1rem;
-	background: var(--color-danger-subtle, #fef2f2);
-	border: 1px solid var(--color-danger-border, #fecaca);
-	border-radius: var(--radius-md, 0.375rem);
-	color: var(--color-danger, #dc2626);
+	background: var(--underlay-color-danger-bg, #fef2f2);
+	border: 1px solid var(--underlay-color-danger-border, #fecaca);
+	border-radius: var(--underlay-radius-md, 0.375rem);
+	color: var(--underlay-color-danger, #dc2626);
 	font-size: 0.875rem;
 }
 
@@ -112,7 +112,7 @@
 	padding: 0.25rem 0.5rem;
 	font-size: 0.75rem;
 	font-weight: 500;
-	border-radius: var(--radius-sm, 0.25rem);
+	border-radius: var(--underlay-radius-sm, 0.25rem);
 	border: 1px solid currentColor;
 	background: transparent;
 	color: inherit;
@@ -121,9 +121,9 @@
 }
 
 .underlay-optimistic-error button:hover {
-	background: var(--color-danger, #dc2626);
+	background: var(--underlay-color-danger, #dc2626);
 	color: white;
-	border-color: var(--color-danger, #dc2626);
+	border-color: var(--underlay-color-danger, #dc2626);
 }
 
 /* Success flash for confirmed items (optional, add data-optimistic-confirmed) */
@@ -133,7 +133,7 @@
 
 @keyframes underlay-confirm-flash {
 	0% {
-		background-color: var(--color-success-subtle, #f0fdf4);
+		background-color: var(--underlay-color-success-bg, #f0fdf4);
 	}
 	100% {
 		background-color: transparent;

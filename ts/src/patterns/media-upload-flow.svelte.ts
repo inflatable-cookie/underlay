@@ -182,6 +182,8 @@ export function createMediaUploadFlow(
   }
 
   function clearFile() {
+    abortController?.abort();
+    abortController = null;
     file = null;
     fileError = null;
     fileHash = null;

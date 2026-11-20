@@ -81,7 +81,7 @@
   flex: 1;
 }
 
-@container (max-width: 46rem) {
+@media (max-width: 46rem) {
   .underlay-details-content {
     grid-template-columns: 1fr;
   }

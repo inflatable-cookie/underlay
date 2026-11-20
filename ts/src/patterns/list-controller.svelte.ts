@@ -207,16 +207,20 @@ export function createListController<T, F extends Record<string, unknown> = Reco
   let refetching = $state(false);
   let error = $state<string | null>(null);
   let filters = $state<F>((options.initialFilters ?? {}) as F);
-  let _fetched = false;
+  let _fetched = $state(false);
+  let requestSeq = 0;
 
   const doFetch = async (isRefetch = false) => {
+    const seq = ++requestSeq;
     // Resolve auth lazily (fetch path only) so setup stays SSR-safe; a
     // misconfiguration surfaces as the controller's error state.
     const resolved = tryResolveAuthFetchHandlers("createListController", options);
     if (!resolved.handlers) {
-      error = resolved.error;
-      loading = false;
-      refetching = false;
+      if (seq === requestSeq) {
+        error = resolved.error;
+        loading = false;
+        refetching = false;
+      }
       return;
     }
     const { getToken, onRefresh } = resolved.handlers;
@@ -235,23 +239,27 @@ export function createListController<T, F extends Record<string, unknown> = Reco
         onRefresh,
         fetcher: (token) => fetcher(fetch, token, filters),
         onSuccess: (result) => {
+          if (seq !== requestSeq) return;
           items = result;
           _fetched = true;
           options.onSuccess?.(result);
           options.onItemsChange?.(result);
         },
         onError: (fetchError) => {
+          if (seq !== requestSeq) return;
           error = fetchError.message;
           options.onError?.(fetchError);
         },
       });
 
-      if (!attempted) {
+      if (!attempted && seq === requestSeq) {
         loading = false;
       }
     } finally {
-      loading = false;
-      refetching = false;
+      if (seq === requestSeq) {
+        loading = false;
+        refetching = false;
+      }
     }
   };
 

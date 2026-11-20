@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Underlay Contracts
-  version: 0.0.1
+  version: 0.10.5
 paths: {}
 components:
   schemas:

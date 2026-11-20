@@ -113,7 +113,7 @@ export function buildCursorPaginationQuery(
     query.direction = params.direction;
   }
   if (params.includeTotal === false) {
-    query.includeTotal = "false";
+    query.include_total = "false";
   }
 
   return query;
