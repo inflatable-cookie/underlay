@@ -60,12 +60,17 @@ export async function loadConfig(configPath?: string, srcDirOverride?: string): 
 
 	// Try loading from config file
 	if (configPath) {
+		let parsed: unknown;
 		try {
 			const content = await readFile(configPath, 'utf8');
-			config = JSON.parse(content);
+			parsed = JSON.parse(content);
 		} catch (error) {
-			console.error(`Warning: Could not load config from ${configPath}`, error);
+			throw new Error(`Could not load config from ${configPath}`, { cause: error });
 		}
+		if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+			throw new Error(`Config file ${configPath} must contain a JSON object`);
+		}
+		config = parsed as GuardrailsConfigFile;
 	} else {
 		// Try .guardrailsrc.json
 		try {
@@ -88,13 +93,20 @@ export async function loadConfig(configPath?: string, srcDirOverride?: string): 
 	// Load banned patterns (can be template reference or inline array)
 	let bannedPatterns: BannedPattern[] = [];
 	if (typeof config.bannedPatterns === 'string') {
+		let template: unknown;
 		try {
-			const template = await importTemplateModule(config.bannedPatterns);
-			const resolved = (template as { bannedPatterns?: BannedPattern[]; default?: BannedPattern[] });
-			bannedPatterns = resolved.bannedPatterns ?? resolved.default ?? [];
+			template = await importTemplateModule(config.bannedPatterns);
 		} catch (error) {
-			console.error(`Warning: Could not load template ${config.bannedPatterns}`, error);
+			throw new Error(`Could not load bannedPatterns template ${config.bannedPatterns}`, {
+				cause: error
+			});
 		}
+		const resolved = template as { bannedPatterns?: BannedPattern[]; default?: BannedPattern[] };
+		const rules = resolved.bannedPatterns ?? resolved.default;
+		if (!Array.isArray(rules)) {
+			throw new Error(`Template ${config.bannedPatterns} did not export a bannedPatterns array`);
+		}
+		bannedPatterns = rules;
 	} else {
 		bannedPatterns = parsePatternConfigs(config.bannedPatterns ?? []);
 	}
@@ -102,16 +114,25 @@ export async function loadConfig(configPath?: string, srcDirOverride?: string): 
 	// Load module scope checks (can be template reference or inline array)
 	let moduleScopeChecks: ModuleScopeCheck[] = [];
 	if (typeof config.moduleScopeChecks === 'string') {
+		let template: unknown;
 		try {
-			const template = await importTemplateModule(config.moduleScopeChecks);
-			const resolved = (template as {
-				moduleScopeChecks?: ModuleScopeCheck[];
-				default?: ModuleScopeCheck[];
-			});
-			moduleScopeChecks = resolved.moduleScopeChecks ?? resolved.default ?? [];
+			template = await importTemplateModule(config.moduleScopeChecks);
 		} catch (error) {
-			console.error(`Warning: Could not load template ${config.moduleScopeChecks}`, error);
+			throw new Error(`Could not load moduleScopeChecks template ${config.moduleScopeChecks}`, {
+				cause: error
+			});
 		}
+		const resolved = template as {
+			moduleScopeChecks?: ModuleScopeCheck[];
+			default?: ModuleScopeCheck[];
+		};
+		const checks = resolved.moduleScopeChecks ?? resolved.default;
+		if (!Array.isArray(checks)) {
+			throw new Error(
+				`Template ${config.moduleScopeChecks} did not export a moduleScopeChecks array`
+			);
+		}
+		moduleScopeChecks = checks;
 	} else if (Array.isArray(config.moduleScopeChecks)) {
 		moduleScopeChecks = config.moduleScopeChecks;
 	}

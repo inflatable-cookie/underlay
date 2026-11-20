@@ -86,5 +86,11 @@ describe("toRomanNumerals", () => {
 			expect(toRomanNumerals(4000)).toBe("4000");
 			expect(toRomanNumerals(10000)).toBe("10000");
 		});
+
+		it("returns string for non-finite numbers", () => {
+			expect(toRomanNumerals(Number.NaN)).toBe("NaN");
+			expect(toRomanNumerals(Number.POSITIVE_INFINITY)).toBe("Infinity");
+			expect(toRomanNumerals(Number.NEGATIVE_INFINITY)).toBe("-Infinity");
+		});
 	});
 });

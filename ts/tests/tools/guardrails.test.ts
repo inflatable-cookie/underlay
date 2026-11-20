@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -138,5 +139,80 @@ describe("tools/guardrails", () => {
 		});
 
 		expect(failures).toBe(1);
+	});
+
+	it("passes custom suppressionPrefix through to suppression checks", async () => {
+		const dir = await makeTempDir();
+		const bannedRule = ["window", "alert"].join(".");
+		await writeFile(
+			path.join(dir, "sample.ts"),
+			[
+				"// custom-ignore-next-line module-scope-browser-api",
+				"const okWidth = window.innerWidth;",
+				"function notify() {",
+				`  // custom-ignore-next-line ${bannedRule}`,
+				`  ${bannedRule}('suppressed');`,
+				`  // guardrails-disable-next-line ${bannedRule}`,
+				`  ${bannedRule}('unsuppressed');`,
+				"}",
+				"// guardrails-disable-next-line module-scope-browser-api",
+				"const badWidth = window.innerWidth;",
+			].join("\n"),
+		);
+		vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+		const failures = await scanFiles({
+			srcDir: dir,
+			extensions: [".ts"],
+			bannedPatterns,
+			moduleScopeChecks,
+			suppressionPrefix: "custom-ignore",
+		});
+
+		expect(failures).toBe(2);
+	});
+
+	it("fails closed when explicit config file is missing or template import fails", async () => {
+		const dir = await makeTempDir();
+		const missingConfig = path.join(dir, "missing.json");
+		await expect(loadConfig(missingConfig)).rejects.toThrow(/Could not load config/);
+
+		const badTemplateConfig = path.join(dir, "bad-template.json");
+		await writeFile(
+			badTemplateConfig,
+			JSON.stringify({
+				srcDir: dir,
+				bannedPatterns: "@inflatable-cookie/underlay/tools/templates/does-not-exist",
+			}),
+		);
+		await expect(loadConfig(badTemplateConfig)).rejects.toThrow(
+			/Could not load bannedPatterns template/,
+		);
+
+		const badSsrTemplateConfig = path.join(dir, "bad-ssr-template.json");
+		await writeFile(
+			badSsrTemplateConfig,
+			JSON.stringify({
+				srcDir: dir,
+				moduleScopeChecks: "@inflatable-cookie/underlay/tools/templates/does-not-exist",
+			}),
+		);
+		await expect(loadConfig(badSsrTemplateConfig)).rejects.toThrow(
+			/Could not load moduleScopeChecks template/,
+		);
+
+		const cliMissing = spawnSync(
+			"bun",
+			[path.resolve("ts/src/tools/guardrails.ts"), "--config", missingConfig],
+			{ encoding: "utf8" },
+		);
+		expect(cliMissing.status).not.toBe(0);
+
+		const cliBadTemplate = spawnSync(
+			"bun",
+			[path.resolve("ts/src/tools/guardrails.ts"), "--config", badTemplateConfig],
+			{ encoding: "utf8" },
+		);
+		expect(cliBadTemplate.status).not.toBe(0);
 	});
 });

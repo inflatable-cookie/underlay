@@ -117,6 +117,35 @@ describe("createHttpClient errors, debug, and metadata", () => {
     });
   });
 
+  it("throws UnderlayHttpError with response status (not 0) when 200 JSON parsing fails", async () => {
+    fetchMock = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: new Headers({
+        "content-type": "application/json",
+      }),
+      json: async () => {
+        throw new SyntaxError("Unexpected token '<'");
+      },
+    });
+
+    const client = createHttpClient({
+      baseUrl: "https://api.example.com",
+      fetch: fetchMock,
+    });
+
+    try {
+      await client.get("/resource");
+      expect.fail("Should have thrown error");
+    } catch (error) {
+      expect(error).toBeInstanceOf(UnderlayHttpError);
+      const httpError = error as UnderlayHttpError;
+      expect(httpError.status).toBe(200);
+      expect(httpError.code).toBe("invalid_json");
+      expect(httpError.message).toContain("Invalid JSON response");
+    }
+  });
+
   describe("debug logging", () => {
     it("should log requests when debug is enabled", async () => {
       const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});

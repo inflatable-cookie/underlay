@@ -36,6 +36,10 @@ export interface HttpAuthOptions {
 
 export interface RefreshContext {
   rawRequest<T>(req: HttpRequest): Promise<T>;
+  rawRequestWithMeta?: <T>(
+    req: HttpRequest,
+    options?: HttpRequestOptions,
+  ) => Promise<HttpResponse<T>>;
   tokenStore?: TokenStore;
 
   getRefreshToken(): Promise<string | null>;
