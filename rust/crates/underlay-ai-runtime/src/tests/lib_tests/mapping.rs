@@ -53,6 +53,10 @@ fn status_code_mapping_covers_expected_classes() {
     );
     assert_eq!(
         map_http_status_to_error_kind(StatusCode::BAD_REQUEST),
-        AiErrorKind::Unknown
+        AiErrorKind::Validation
+    );
+    assert_eq!(
+        map_http_status_to_error_kind(StatusCode::UNPROCESSABLE_ENTITY),
+        AiErrorKind::Validation
     );
 }

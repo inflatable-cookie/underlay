@@ -198,7 +198,33 @@ impl LlmClient for OpenAiCompatibleClient {
             ));
         }
 
-        let parsed: ChatCompletionsResponse = response.json().await.map_err(|e| {
+        if let Some(len) = response.content_length() {
+            if len as usize > MAX_AI_RESPONSE_BYTES {
+                return Err(AiRuntimeError::new(
+                    AiErrorKind::Validation,
+                    format!("AI response body exceeded {MAX_AI_RESPONSE_BYTES} byte limit"),
+                ));
+            }
+        }
+
+        let mut body = Vec::new();
+        let mut response = response;
+        while let Some(chunk) = response.chunk().await.map_err(|e| {
+            AiRuntimeError::new(
+                AiErrorKind::Provider,
+                format!("Failed to read AI response body: {e}"),
+            )
+        })? {
+            if body.len().saturating_add(chunk.len()) > MAX_AI_RESPONSE_BYTES {
+                return Err(AiRuntimeError::new(
+                    AiErrorKind::Validation,
+                    format!("AI response body exceeded {MAX_AI_RESPONSE_BYTES} byte limit"),
+                ));
+            }
+            body.extend_from_slice(&chunk);
+        }
+
+        let parsed: ChatCompletionsResponse = serde_json::from_slice(&body).map_err(|e| {
             AiRuntimeError::new(
                 AiErrorKind::Validation,
                 format!("Failed to parse AI response JSON: {e}"),
@@ -232,11 +258,14 @@ impl LlmClient for OpenAiCompatibleClient {
     }
 }
 
+const MAX_AI_RESPONSE_BYTES: usize = 4 * 1024 * 1024;
+
 pub(crate) fn map_http_status_to_error_kind(status: StatusCode) -> AiErrorKind {
     match status {
         StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN => AiErrorKind::Auth,
         StatusCode::TOO_MANY_REQUESTS => AiErrorKind::RateLimit,
         StatusCode::REQUEST_TIMEOUT | StatusCode::GATEWAY_TIMEOUT => AiErrorKind::Timeout,
+        _ if status.is_client_error() => AiErrorKind::Validation,
         _ if status.is_server_error() => AiErrorKind::Provider,
         _ => AiErrorKind::Unknown,
     }

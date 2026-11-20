@@ -48,9 +48,10 @@ impl JobRepository {
         let should_retry = !is_permanent && attempts < max_attempts;
 
         if should_retry {
-            let delay = config
-                .backoff()
-                .delay_for_attempt_with_seed((attempts - 1) as u32, job_id.0.as_u128() as u64);
+            let delay = config.backoff().delay_for_attempt_with_seed(
+                attempts.saturating_sub(1) as u32,
+                job_id.0.as_u128() as u64,
+            );
             let retry_at = now + chrono::Duration::from_std(delay).unwrap_or_default();
 
             sqlx::query(

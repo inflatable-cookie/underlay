@@ -178,9 +178,10 @@ where
         request: &LlmRequest,
     ) -> Result<LlmResponse, AiRuntimeError> {
         let now = Instant::now();
-        {
+        let acquired_half_open = {
             let mut state = self.lock_state();
             let provider_state = state.entry(route.provider_name.clone()).or_default();
+            let was_half_open_in_flight = provider_state.half_open_in_flight;
             if !provider_state.allow_request(now, &self.config) {
                 return Err(AiRuntimeError::new(
                     AiErrorKind::CircuitOpen,
@@ -190,9 +191,36 @@ where
                     ),
                 ));
             }
+            !was_half_open_in_flight && provider_state.half_open_in_flight
+        };
+
+        struct HalfOpenGuard<'a, C> {
+            breaker: &'a CircuitBreakerMiddleware<C>,
+            provider_name: &'a str,
+            armed: bool,
+        }
+        impl<C> Drop for HalfOpenGuard<'_, C> {
+            fn drop(&mut self) {
+                if !self.armed {
+                    return;
+                }
+                let mut state = self.breaker.lock_state();
+                if let Some(provider_state) = state.get_mut(self.provider_name) {
+                    provider_state.half_open_in_flight = false;
+                }
+            }
         }
 
-        match self.inner.generate_structured(route, request).await {
+        let mut guard = HalfOpenGuard {
+            breaker: self,
+            provider_name: &route.provider_name,
+            armed: acquired_half_open,
+        };
+
+        let result = self.inner.generate_structured(route, request).await;
+        guard.armed = false;
+
+        match result {
             Ok(response) => {
                 let mut state = self.lock_state();
                 if let Some(provider_state) = state.get_mut(&route.provider_name) {

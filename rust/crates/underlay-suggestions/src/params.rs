@@ -107,7 +107,7 @@ impl SuggestionParams {
 
     /// Check if any hints were provided.
     pub fn has_hints(&self) -> bool {
-        !self.recent_hints_raw.is_empty()
+        !self.recent_hints().is_empty()
     }
 
     /// Get the number of hints provided.

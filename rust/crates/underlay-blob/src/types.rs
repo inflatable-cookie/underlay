@@ -101,6 +101,19 @@ pub fn validate_blob_object_key(key: &str) -> Result<(), BlobObjectKeyError> {
         return Err(BlobObjectKeyError::InvalidCharacter);
     }
 
+    if key.ends_with('/') {
+        return Err(BlobObjectKeyError::InvalidComponent);
+    }
+
+    for segment in key.split('/') {
+        if segment.is_empty() {
+            return Err(BlobObjectKeyError::InvalidComponent);
+        }
+        if segment == "." || segment == ".." {
+            return Err(BlobObjectKeyError::TraversalComponent);
+        }
+    }
+
     for component in Path::new(key).components() {
         match component {
             Component::Normal(part) if !part.is_empty() => {}

@@ -300,20 +300,22 @@ impl OutboxProcessor {
                     event_type = %event.event_type,
                     "Outbox event processed successfully"
                 );
+                Ok(true)
             }
             Err(e) => {
-                // Roll back - event remains unprocessed for retry
+                // Roll back - event remains unprocessed for retry. Return false
+                // so batch/polling loops yield to the configured poll interval
+                // instead of tight-spinning on a poison-pill event.
                 warn!(
                     event_id = %event.id,
                     event_type = %event.event_type,
                     error = %e,
-                    "Outbox event handler failed, will retry"
+                    "Outbox event handler failed, will retry on next poll"
                 );
                 // Transaction rolls back automatically on drop
+                Ok(false)
             }
         }
-
-        Ok(true)
     }
 
     /// Run the processor in polling mode (without LISTEN/NOTIFY).

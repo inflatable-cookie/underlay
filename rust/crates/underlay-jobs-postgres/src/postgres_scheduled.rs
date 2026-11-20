@@ -44,6 +44,7 @@ impl ScheduledTaskRepository {
                 timeout_seconds = EXCLUDED.timeout_seconds,
                 allow_overlap = EXCLUDED.allow_overlap,
                 priority = EXCLUDED.priority,
+                enabled = TRUE,
                 updated_at = NOW()
             RETURNING id
             "#,

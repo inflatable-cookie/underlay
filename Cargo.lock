@@ -5381,6 +5381,7 @@ dependencies = [
  "thiserror 2.0.21",
  "tokio",
  "underlay-core",
+ "underlay-db",
  "underlay-testing",
 ]
 
@@ -5486,6 +5487,7 @@ dependencies = [
  "thiserror 2.0.21",
  "tokio",
  "underlay-core",
+ "url",
  "uuid",
 ]
 
@@ -5573,6 +5575,7 @@ dependencies = [
  "thiserror 2.0.21",
  "tokio",
  "tracing",
+ "url",
 ]
 
 [[package]]
@@ -5680,6 +5683,7 @@ dependencies = [
  "thiserror 2.0.21",
  "tokio",
  "tracing",
+ "underlay-db",
  "underlay-testing",
 ]
 
@@ -5752,6 +5756,7 @@ dependencies = [
  "tokio",
  "underlay-core",
  "underlay-validation-derive",
+ "url",
  "uuid",
  "validator",
 ]

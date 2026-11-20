@@ -28,14 +28,26 @@ impl EmailAddress {
     pub fn with_name(email: impl Into<String>, name: impl Into<String>) -> EmailResult<Self> {
         let email = email.into();
         Self::validate(&email)?;
+        let name = name.into();
+        if name.chars().any(|c| c.is_control()) {
+            return Err(EmailError::InvalidAddress(
+                "display name cannot contain control characters".into(),
+            ));
+        }
         Ok(Self {
             email,
-            name: Some(name.into()),
+            name: Some(name),
         })
     }
 
-    /// Basic email validation - checks for @ symbol and non-empty parts.
+    /// Basic email validation - checks for @ symbol, non-empty parts, and no
+    /// header-injection / control characters.
     fn validate(email: &str) -> EmailResult<()> {
+        if email.chars().any(|c| c.is_control()) {
+            return Err(EmailError::InvalidAddress(
+                "email cannot contain control characters".into(),
+            ));
+        }
         let email = email.trim();
         if email.is_empty() {
             return Err(EmailError::InvalidAddress("email cannot be empty".into()));

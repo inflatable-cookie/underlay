@@ -123,9 +123,17 @@ where
             warn!(
                 job_type = %job.job_type,
                 job_id = %job.id,
-                "No handler registered for job type, skipping"
+                "No handler registered for job type; failing claimed job"
             );
-            return Ok(false);
+            let err = crate::JobHandlerError::permanent(format!(
+                "no handler registered for job type `{}`",
+                job.job_type
+            ));
+            let _ = self
+                .store
+                .mark_failure(&job, err, &crate::types::JobConfig::default())
+                .await?;
+            return Ok(true);
         };
 
         debug!(
@@ -149,7 +157,20 @@ where
 
         let handler_config = handler.config();
 
-        match handler.handle(job.clone()).await {
+        let handle_result = if let Some(timeout_secs) = handler_config.timeout_seconds() {
+            let timeout = std::time::Duration::from_secs(u64::from(timeout_secs.max(1)));
+            match tokio::time::timeout(timeout, handler.handle(job.clone())).await {
+                Ok(res) => res,
+                Err(_) => Err(crate::JobHandlerError::new(format!(
+                    "job timed out after {}s",
+                    timeout.as_secs()
+                ))),
+            }
+        } else {
+            handler.handle(job.clone()).await
+        };
+
+        match handle_result {
             Ok(()) => {
                 self.store.mark_success(job.id).await?;
                 let duration = job

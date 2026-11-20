@@ -26,18 +26,23 @@ impl JobRepository {
         Ok(rows.into_iter().map(Job::from).collect())
     }
 
-    /// Reset a stalled job back to pending for retry.
+    /// Reset a stalled job back to pending for retry, or mark it failed when
+    /// it has already reached `max_attempts`.
     #[instrument(skip(self))]
     pub async fn reset_stalled(&self, job_id: Uuid) -> Result<()> {
         sqlx::query(
             r#"
             UPDATE platform.job
-            SET status = 'pending',
+            SET status = CASE WHEN attempts < max_attempts THEN 'pending' ELSE 'failed' END,
                 claimed_at = NULL,
                 claimed_by = NULL,
                 started_at = NULL,
                 heartbeat_at = NULL,
-                last_error = 'Job stalled and was reset'
+                completed_at = CASE WHEN attempts < max_attempts THEN NULL ELSE NOW() END,
+                last_error = CASE
+                    WHEN attempts < max_attempts THEN 'Job stalled and was reset'
+                    ELSE 'Job stalled and exceeded max_attempts'
+                END
             WHERE id = $1 AND status IN ('claimed', 'running')
             "#,
         )
