@@ -282,10 +282,7 @@ fn is_public_ip(ip: IpAddr) -> bool {
                 return is_public_ip(IpAddr::V4(v4));
             }
             // Deprecated IPv4-compatible ::/96
-            if segments[0..6] == [0, 0, 0, 0, 0, 0] {
-                return false;
-            }
-            true
+            segments[0..6] != [0, 0, 0, 0, 0, 0]
         }
     }
 }
