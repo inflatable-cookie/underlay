@@ -159,5 +159,73 @@ describe("createHttpClient retry and timeout", () => {
       expect(result).toEqual({ data: { id: "123" } });
       vi.useRealTimers();
     });
+
+    it("times out stalled res.json() response body reads", async () => {
+      vi.useFakeTimers();
+      fetchMock = vi.fn().mockImplementation((_url, init?: RequestInit) => {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          headers: new Headers({ "content-type": "application/json" }),
+          json: () =>
+            new Promise((_resolve, reject) => {
+              init?.signal?.addEventListener("abort", () =>
+                reject(new DOMException("Aborted", "AbortError")),
+              );
+            }),
+        });
+      });
+
+      const client = createHttpClient({
+        baseUrl: "https://api.example.com",
+        timeoutMs: 2500,
+        fetch: fetchMock,
+      });
+
+      const promise = client.get("/stalled-json");
+      const rejection = expect(promise).rejects.toMatchObject({
+        status: 0,
+        message: "Request timed out",
+        envelope: { error: { code: "timeout" } },
+      });
+
+      await vi.advanceTimersByTimeAsync(2500);
+      await rejection;
+      vi.useRealTimers();
+    });
+
+    it("times out stalled res.text() response body reads", async () => {
+      vi.useFakeTimers();
+      fetchMock = vi.fn().mockImplementation((_url, init?: RequestInit) => {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          headers: new Headers({ "content-type": "text/plain" }),
+          text: () =>
+            new Promise((_resolve, reject) => {
+              init?.signal?.addEventListener("abort", () =>
+                reject(new DOMException("Aborted", "AbortError")),
+              );
+            }),
+        });
+      });
+
+      const client = createHttpClient({
+        baseUrl: "https://api.example.com",
+        timeoutMs: 2500,
+        fetch: fetchMock,
+      });
+
+      const promise = client.get("/stalled-text");
+      const rejection = expect(promise).rejects.toMatchObject({
+        status: 0,
+        message: "Request timed out",
+        envelope: { error: { code: "timeout" } },
+      });
+
+      await vi.advanceTimersByTimeAsync(2500);
+      await rejection;
+      vi.useRealTimers();
+    });
   });
 });

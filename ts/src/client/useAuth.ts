@@ -46,8 +46,23 @@ export function createAuthStore(options: CreateAuthStoreOptions): AuthStore {
     error: null,
   });
 
+  function stripTokens(info: SessionInfo): SessionInfo {
+    const {
+      accessToken: _accessToken,
+      refreshToken: _refreshToken,
+      ...rest
+    } = info as SessionInfo &
+      Partial<Pick<AuthSession, "accessToken" | "refreshToken">>;
+    return rest;
+  }
+
   function setAuthenticated(session: SessionInfo) {
-    state.set({ status: "authenticated", session, loading: false, error: null });
+    state.set({
+      status: "authenticated",
+      session: stripTokens(session),
+      loading: false,
+      error: null,
+    });
   }
 
   async function setTokens(session: AuthSession) {

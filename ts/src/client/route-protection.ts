@@ -64,6 +64,10 @@ export function normalizePath(path: string): string {
   return withForwardSlashes.endsWith("/") && normalized !== "/" ? `${normalized}/` : normalized;
 }
 
+function stripTrailingSlash(path: string): string {
+  return path.length > 1 && path.endsWith("/") ? path.slice(0, -1) : path;
+}
+
 /**
  * Resolve an untrusted redirect target (e.g. a `redirectTo` query param) to a
  * safe same-origin path. Accepts only single-leading-slash paths; rejects
@@ -99,7 +103,13 @@ export function resolveRedirectTo(
     return fallback;
   }
 
-  return target;
+  const normalizedPath = normalizePath(pathOnly);
+  if (!normalizedPath.startsWith("/") || normalizedPath.startsWith("//")) {
+    return fallback;
+  }
+
+  const suffix = decoded.slice(pathOnly.length);
+  return `${normalizedPath}${suffix}`;
 }
 
 export function isPublicPath(path: string, publicPaths: string[]): boolean {
@@ -107,12 +117,20 @@ export function isPublicPath(path: string, publicPaths: string[]): boolean {
   if (!normalized) {
     return false;
   }
+  const normalizedNoTrailing = stripTrailingSlash(normalized);
+
   return publicPaths.some((publicPath) => {
     if (publicPath.endsWith("/*")) {
-      const prefix = publicPath.slice(0, -1);
-      return normalized.startsWith(prefix);
+      const base = stripTrailingSlash(publicPath.slice(0, -2));
+      if (base === "") {
+        return normalizedNoTrailing.startsWith("/");
+      }
+      return (
+        normalizedNoTrailing === base ||
+        normalizedNoTrailing.startsWith(`${base}/`)
+      );
     }
-    return normalized === publicPath;
+    return normalizedNoTrailing === stripTrailingSlash(publicPath);
   });
 }
 

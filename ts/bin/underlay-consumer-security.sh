@@ -15,6 +15,11 @@
 
 set -uo pipefail
 
+if ! command -v rg >/dev/null 2>&1; then
+  echo "error: ripgrep (rg) is required on PATH to run underlay-consumer-security." >&2
+  exit 2
+fi
+
 SOURCE="${BASH_SOURCE[0]}"
 while [[ -h "$SOURCE" ]]; do
   SOURCE_DIR="$(cd -- "$(dirname -- "$SOURCE")" && pwd)"

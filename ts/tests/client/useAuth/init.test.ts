@@ -23,7 +23,7 @@ describe("client/useAuth init", () => {
 		});
 	});
 
-	it("does not write tokens to the store even if session GET echoes them", async () => {
+	it("does not write tokens to the store or state.session even if session GET echoes them", async () => {
 		const { commands, tokenStore } = makeDeps();
 		const session = makeSession("leaky");
 		commands.session.mockResolvedValue(session);
@@ -33,9 +33,13 @@ describe("client/useAuth init", () => {
 
 		expect(tokenStore.setAccessToken).not.toHaveBeenCalled();
 		expect(tokenStore.setRefreshToken).not.toHaveBeenCalled();
+		const storedSession = get(auth.state).session as unknown as Record<string, unknown>;
+		expect(storedSession).toEqual(makeSessionInfo("leaky"));
+		expect("accessToken" in storedSession).toBe(false);
+		expect("refreshToken" in storedSession).toBe(false);
 	});
 
-	it("refreshes on init when session is unauthorized", async () => {
+	it("refreshes on init when session is unauthorized without storing tokens onto state.session", async () => {
 		const { commands, tokenStore } = makeDeps();
 		const unauthorized = new UnderlayHttpError(401, "Unauthorized");
 		const refreshed = makeSession("refresh");
@@ -48,6 +52,10 @@ describe("client/useAuth init", () => {
 		expect(commands.refresh).toHaveBeenCalledOnce();
 		expect(get(auth.state).status).toBe("authenticated");
 		expect(tokenStore.clear).not.toHaveBeenCalled();
+		const storedSession = get(auth.state).session as unknown as Record<string, unknown>;
+		expect(storedSession).toEqual(makeSessionInfo("refresh"));
+		expect("accessToken" in storedSession).toBe(false);
+		expect("refreshToken" in storedSession).toBe(false);
 	});
 
 	it("becomes anonymous when refresh on init fails", async () => {

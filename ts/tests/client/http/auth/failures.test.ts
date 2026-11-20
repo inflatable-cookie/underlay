@@ -108,4 +108,81 @@ describe("createHttpClient authentication failures", () => {
     expect(refresh).toHaveBeenCalledTimes(1);
     tokenStore.expectTokens(null, null);
   });
+
+  it("clears tokenStore once without redundant setAccessToken(null)/setRefreshToken(null) calls", async () => {
+    const tokenStore = new FakeTokenStore();
+    tokenStore.seedTokens("old-token", "invalid-refresh-token");
+
+    fetchMock = mockFetchSequence({
+      ok: false,
+      status: 401,
+      error: { code: "auth.token_expired", message: "Token expired" },
+    });
+
+    const refresh = vi.fn(async () => ({ success: false }));
+    const client = createHttpClient({
+      baseUrl: "https://api.example.com",
+      auth: { tokenStore, refresh },
+      fetch: fetchMock,
+    });
+
+    await expect(client.get("/protected")).rejects.toThrow(UnderlayHttpError);
+    expect(tokenStore.clear).toHaveBeenCalledTimes(1);
+    expect(tokenStore.setAccessToken).not.toHaveBeenCalled();
+    expect(tokenStore.setRefreshToken).not.toHaveBeenCalled();
+  });
+
+  it("does not auto-refresh or retry when caller supplied an explicit Authorization header", async () => {
+    const tokenStore = new FakeTokenStore();
+    tokenStore.seedTokens("store-access", "store-refresh");
+
+    fetchMock = mockFetchSequence({
+      ok: false,
+      status: 401,
+      error: { code: "auth.invalid_token", message: "Invalid explicit token" },
+    });
+
+    const refresh = vi.fn(async () => ({
+      success: true,
+      accessToken: "new-access",
+    }));
+    const client = createHttpClient({
+      baseUrl: "https://api.example.com",
+      auth: { tokenStore, refresh },
+      fetch: fetchMock,
+    });
+
+    await expect(
+      client.get("/protected", { authorization: "Bearer caller-token" }),
+    ).rejects.toMatchObject({ status: 401 });
+
+    expect(refresh).not.toHaveBeenCalled();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    tokenStore.expectTokens("store-access", "store-refresh");
+  });
+
+  it("preserves stored tokens when refresh throws a transient 5xx or network UnderlayHttpError", async () => {
+    const tokenStore = new FakeTokenStore();
+    tokenStore.seedTokens("old-token", "refresh-token");
+
+    fetchMock = mockFetchSequence({
+      ok: false,
+      status: 401,
+      error: { code: "auth.token_expired", message: "Expired" },
+    });
+
+    const transientError = new UnderlayHttpError(503, "Service Unavailable");
+    const refresh = vi.fn(async () => {
+      throw transientError;
+    });
+    const client = createHttpClient({
+      baseUrl: "https://api.example.com",
+      auth: { tokenStore, refresh },
+      fetch: fetchMock,
+    });
+
+    await expect(client.get("/protected")).rejects.toBe(transientError);
+    expect(tokenStore.clear).not.toHaveBeenCalled();
+    tokenStore.expectTokens("old-token", "refresh-token");
+  });
 });

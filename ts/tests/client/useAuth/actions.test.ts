@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 import { get } from "svelte/store";
 import { UnderlayHttpError } from "../../../src/client/errors";
 import { createAuthStore } from "../../../src/client/useAuth";
-import { makeDeps, makeSession } from "./fixtures";
+import { makeDeps, makeSession, makeSessionInfo } from "./fixtures";
 
 describe("client/useAuth actions", () => {
-	it("register/login flows set authenticated state and preserve non-http errors", async () => {
+	it("register/login flows set authenticated state without leaking tokens into state.session", async () => {
 		const { commands, tokenStore } = makeDeps();
 		const auth = createAuthStore({ commands: commands as any, tokenStore: tokenStore as any });
 
@@ -15,11 +15,17 @@ describe("client/useAuth actions", () => {
 			auth.register({ email: "u@example.com", password: "pw", displayName: "User" })
 		).resolves.toEqual(registered);
 		expect(get(auth.state).status).toBe("authenticated");
+		expect(get(auth.state).session).toEqual(makeSessionInfo("register"));
+		expect("accessToken" in (get(auth.state).session as Record<string, unknown>)).toBe(false);
+		expect("refreshToken" in (get(auth.state).session as Record<string, unknown>)).toBe(false);
 
 		const login = makeSession("login");
 		commands.loginWithPassword.mockResolvedValue(login);
 		await auth.loginWithPassword({ email: "u@example.com", password: "pw" });
 		expect(commands.loginWithPassword).toHaveBeenLastCalledWith({ email: "u@example.com", password: "pw" });
+		expect(get(auth.state).session).toEqual(makeSessionInfo("login"));
+		expect("accessToken" in (get(auth.state).session as Record<string, unknown>)).toBe(false);
+		expect("refreshToken" in (get(auth.state).session as Record<string, unknown>)).toBe(false);
 
 		commands.loginWithPassword.mockResolvedValue(makeSession("login-code"));
 		await auth.loginWithPassword({ email: "u@example.com", password: "pw", code: "123456" });
@@ -33,6 +39,9 @@ describe("client/useAuth actions", () => {
 		commands.loginWithPasskey.mockResolvedValue(passkey);
 		await auth.loginWithPasskey({ credential: { id: "cred-1" } });
 		expect(get(auth.state).status).toBe("authenticated");
+		expect(get(auth.state).session).toEqual(makeSessionInfo("passkey"));
+		expect("accessToken" in (get(auth.state).session as Record<string, unknown>)).toBe(false);
+		expect("refreshToken" in (get(auth.state).session as Record<string, unknown>)).toBe(false);
 
 		const plainErr = new Error("boom");
 		commands.register.mockRejectedValue(plainErr);
@@ -48,6 +57,9 @@ describe("client/useAuth actions", () => {
 
 		commands.refresh.mockResolvedValueOnce(makeSession("ok"));
 		await expect(auth.refresh()).resolves.toEqual(makeSession("ok"));
+		expect(get(auth.state).session).toEqual(makeSessionInfo("ok"));
+		expect("accessToken" in (get(auth.state).session as Record<string, unknown>)).toBe(false);
+		expect("refreshToken" in (get(auth.state).session as Record<string, unknown>)).toBe(false);
 
 		const unauthorized = new UnderlayHttpError(401, "Unauthorized");
 		commands.refresh.mockRejectedValueOnce(unauthorized);

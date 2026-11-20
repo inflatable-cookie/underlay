@@ -121,6 +121,8 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
           ? setTimeout(() => controller.abort(), timeoutMs)
           : undefined;
 
+      let retryStatus: number | undefined;
+
       try {
         log(req.method, req.path);
 
@@ -132,10 +134,6 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
           credentials,
         });
 
-        if (timeout != null) {
-          clearTimeout(timeout);
-        }
-
         const contentType =
           res.headers?.get?.("content-type") ?? "application/json";
         const hasJson = contentType.includes("application/json");
@@ -144,9 +142,21 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
         const isAccepted = res.ok || acceptedStatuses.has(res.status);
 
         if (!isAccepted) {
-          const parsed = hasJson
-            ? await res.json().catch(() => undefined)
-            : undefined;
+          let parsed: unknown;
+          if (hasJson) {
+            try {
+              parsed = await res.json();
+            } catch (parseErr) {
+              if (
+                parseErr instanceof Error &&
+                (parseErr.name === "AbortError" ||
+                  controller?.signal.aborted === true)
+              ) {
+                throw parseErr;
+              }
+              parsed = undefined;
+            }
+          }
           const envelope = isErrorEnvelope(parsed) ? parsed : undefined;
           const message = envelope?.error.message ?? `HTTP ${res.status}`;
 
@@ -159,64 +169,56 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
             retries < maxRetries;
 
           if (canRetry) {
-            retries += 1;
-            log("Retrying due to status", res.status);
-            // Exponential backoff: 100ms, 200ms, 400ms, etc.
-            const backoffMs = Math.min(100 * Math.pow(2, retries - 1), 3000);
-            await new Promise((resolve) => setTimeout(resolve, backoffMs));
-            continue;
+            retryStatus = res.status;
+          } else {
+            throw new UnderlayHttpError(res.status, message, envelope);
+          }
+        } else {
+          const responseHeaders = headersToRecord(res.headers);
+
+          if (res.status === 204) {
+            return { status: res.status, headers: responseHeaders, body: null };
           }
 
-          throw new UnderlayHttpError(res.status, message, envelope);
-        }
-
-        const responseHeaders = headersToRecord(res.headers);
-
-        if (res.status === 204) {
-          return { status: res.status, headers: responseHeaders, body: null };
-        }
-
-        if (res.status === 304) {
-          return { status: res.status, headers: responseHeaders, body: null };
-        }
-
-        if (!hasJson) {
-          return {
-            status: res.status,
-            headers: responseHeaders,
-            body: (await res.text()) as unknown as T,
-          };
-        }
-
-        try {
-          return {
-            status: res.status,
-            headers: responseHeaders,
-            body: (await res.json()) as T,
-          };
-        } catch (parseErr) {
-          if (
-            parseErr instanceof Error &&
-            (parseErr.name === "AbortError" || controller?.signal.aborted === true)
-          ) {
-            throw parseErr;
+          if (res.status === 304) {
+            return { status: res.status, headers: responseHeaders, body: null };
           }
-          const message =
-            parseErr instanceof Error
-              ? `Invalid JSON response: ${parseErr.message}`
-              : "Invalid JSON response";
-          throw new UnderlayHttpError(res.status, message, {
-            error: {
-              code: "invalid_json",
-              message,
-            },
-          });
+
+          if (!hasJson) {
+            return {
+              status: res.status,
+              headers: responseHeaders,
+              body: (await res.text()) as unknown as T,
+            };
+          }
+
+          try {
+            return {
+              status: res.status,
+              headers: responseHeaders,
+              body: (await res.json()) as T,
+            };
+          } catch (parseErr) {
+            if (
+              parseErr instanceof Error &&
+              (parseErr.name === "AbortError" ||
+                controller?.signal.aborted === true)
+            ) {
+              throw parseErr;
+            }
+            const message =
+              parseErr instanceof Error
+                ? `Invalid JSON response: ${parseErr.message}`
+                : "Invalid JSON response";
+            throw new UnderlayHttpError(res.status, message, {
+              error: {
+                code: "invalid_json",
+                message,
+              },
+            });
+          }
         }
       } catch (err) {
-        if (timeout != null) {
-          clearTimeout(timeout);
-        }
-
         // If it's an HTTP error (not network/timeout), don't retry - we already handled that above
         if (err instanceof UnderlayHttpError) {
           throw err;
@@ -236,6 +238,18 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
 
         const message = err instanceof Error ? err.message : "Network error";
         throw new UnderlayHttpError(0, message);
+      } finally {
+        if (timeout != null) {
+          clearTimeout(timeout);
+        }
+      }
+
+      if (retryStatus !== undefined) {
+        retries += 1;
+        log("Retrying due to status", retryStatus);
+        // Exponential backoff: 100ms, 200ms, 400ms, etc.
+        const backoffMs = Math.min(100 * Math.pow(2, retries - 1), 3000);
+        await new Promise((resolve) => setTimeout(resolve, backoffMs));
       }
     }
   }
@@ -253,16 +267,23 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
   }
 
   async function clearStoredTokens(): Promise<void> {
-    await tokenStore?.clear();
-    await setAccessToken?.(null);
-    await setRefreshToken?.(null);
+    if (tokenStore) {
+      await tokenStore.clear();
+    }
+    if (options.auth?.setAccessToken) {
+      await options.auth.setAccessToken(null);
+    }
+    if (options.auth?.setRefreshToken) {
+      await options.auth.setRefreshToken(null);
+    }
   }
 
   async function requestWithMeta<T>(
     req: HttpRequest,
     requestOptions?: HttpRequestOptions,
   ): Promise<HttpResponse<T>> {
-    const token = hasHeader(req.headers ?? {}, "Authorization")
+    const hasExplicitAuth = hasHeader(req.headers ?? {}, "Authorization");
+    const token = hasExplicitAuth
       ? null
       : ((await getAccessToken?.()) ?? null);
 
@@ -276,7 +297,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
     } catch (err) {
       if (!(err instanceof UnderlayHttpError)) throw err;
 
-      if (err.status !== 401 || !options.auth?.refresh) {
+      if (err.status !== 401 || hasExplicitAuth || !options.auth?.refresh) {
         throw err;
       }
 
@@ -303,7 +324,13 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
       try {
         refreshed = await refreshInFlight;
       } catch (refreshErr) {
-        await clearStoredTokens();
+        const isTransient =
+          refreshErr instanceof TypeError ||
+          (refreshErr instanceof UnderlayHttpError &&
+            (refreshErr.status === 0 || refreshErr.status >= 500));
+        if (!isTransient) {
+          await clearStoredTokens();
+        }
         throw refreshErr;
       }
 

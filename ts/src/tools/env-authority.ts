@@ -16,6 +16,7 @@
 
 import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
+import { isCliEntrypoint } from './cli-entrypoint.js';
 
 export const ENV_AUTHORITY_RULE_IDS = {
 	ENV_MANIFEST_MISSING: 'env-manifest-missing',
@@ -394,6 +395,6 @@ Live value presence remains scripts/check-env-manifest.sh.
 	})();
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isCliEntrypoint(import.meta.url)) {
 	runEnvAuthorityCli();
 }

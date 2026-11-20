@@ -26,9 +26,10 @@ export interface AuthCookieConfig {
   accessTokenName: string;
   /** Cookie name for the refresh token (e.g., "bloom_refresh_token") */
   refreshTokenName: string;
-  /** Cookie options (path, httpOnly, sameSite, maxAge, etc.) */
+  /** Cookie options (path, domain, httpOnly, sameSite, maxAge, etc.) */
   options?: {
     path?: string;
+    domain?: string;
     httpOnly?: boolean;
     sameSite?: "lax" | "strict" | "none";
     maxAge?: number;
@@ -105,7 +106,11 @@ export function createAuthCookieHelpers(config: AuthCookieConfig): AuthCookieHel
     },
 
     clearAuthTokens(cookies: Cookies): void {
-      const deleteOpts = { path: defaultOptions.path ?? "/" };
+      const { maxAge: _maxAge, ...cookieDeleteBase } = config.options ?? {};
+      const deleteOpts = {
+        ...cookieDeleteBase,
+        path: defaultOptions.path ?? "/",
+      };
       cookies.delete(config.accessTokenName, deleteOpts);
       cookies.delete(config.refreshTokenName, deleteOpts);
     },
@@ -116,7 +121,11 @@ export function createCookieTokenStore(
   event: RequestEvent,
   options: CookieTokenStoreOptions
 ): TokenStore {
-  const deleteOpts = { path: options.cookie?.path ?? "/" };
+  const { maxAge: _maxAge, expires: _expires, ...cookieDeleteBase } = options.cookie ?? {};
+  const deleteOpts = {
+    ...cookieDeleteBase,
+    path: options.cookie?.path ?? "/",
+  };
   return {
     getAccessToken: () => event.cookies.get(options.accessTokenCookie) ?? null,
     setAccessToken: async (token) => {
@@ -251,7 +260,14 @@ export function createAuthHandle(options: SvelteKitAuthOptions): Handle {
               accessToken: session.accessToken,
               refreshToken: session.refreshToken,
             };
-          } catch {
+          } catch (err) {
+            if (
+              err instanceof TypeError ||
+              (err instanceof UnderlayHttpError &&
+                (err.status === 0 || err.status >= 500))
+            ) {
+              throw err;
+            }
             return { success: false, accessToken: null, refreshToken: null };
           }
         },

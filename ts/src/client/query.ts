@@ -223,19 +223,24 @@ export function appendQueryParams(path: string, params: QueryParams): string {
   const queryString = buildQueryString(params);
   if (!queryString) return path;
 
-  const hasQuery = path.includes("?");
-  if (!hasQuery) {
-    return `${path}?${queryString}`;
+  const hashIndex = path.indexOf("#");
+  const pathWithoutHash = hashIndex === -1 ? path : path.slice(0, hashIndex);
+  const hash = hashIndex === -1 ? "" : path.slice(hashIndex);
+
+  const queryIndex = pathWithoutHash.indexOf("?");
+  if (queryIndex === -1) {
+    return `${pathWithoutHash}?${queryString}${hash}`;
   }
 
   // Merge new params into existing query string to avoid duplicates
-  const [basePath, existingQuery] = path.split("?", 2);
+  const basePath = pathWithoutHash.slice(0, queryIndex);
+  const existingQuery = pathWithoutHash.slice(queryIndex + 1);
   const merged = new URLSearchParams(existingQuery);
   const newParams = new URLSearchParams(queryString);
   for (const [key, value] of newParams) {
     merged.set(key, value);
   }
-  return `${basePath}?${merged.toString()}`;
+  return `${basePath}?${merged.toString()}${hash}`;
 }
 
 /**
@@ -379,13 +384,13 @@ export function parseQueryParams(searchParams: URLSearchParams): QueryParams {
   const filters: FilterField[] = [];
   for (const [key, value] of searchParams.entries()) {
     // Match filter[field] or filter[field][op]
-    const simpleMatch = key.match(/^filter\[(\w+)\]$/);
+    const simpleMatch = key.match(/^filter\[([A-Za-z0-9_]+(?:[.-][A-Za-z0-9_]+)*)\]$/);
     if (simpleMatch) {
       filters.push({ field: simpleMatch[1], value });
       continue;
     }
 
-    const opMatch = key.match(/^filter\[(\w+)\]\[(\w+)\]$/);
+    const opMatch = key.match(/^filter\[([A-Za-z0-9_]+(?:[.-][A-Za-z0-9_]+)*)\]\[(\w+)\]$/);
     if (opMatch && isFilterOperator(opMatch[2])) {
       filters.push({
         field: opMatch[1],

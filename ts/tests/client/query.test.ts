@@ -91,6 +91,28 @@ describe("client/query", () => {
 		).toBe("/v1/items?variant=pending&limit=20");
 	});
 
+	it("preserves #hash fragments when appending or merging query params", () => {
+		expect(
+			appendQueryParams("/v1/items#section", {
+				page: 2,
+				limit: 10,
+			})
+		).toBe("/v1/items?page=2&limit=10#section");
+
+		expect(
+			appendQueryParams("/v1/items?archived=true&limit=5#top", {
+				limit: 20,
+				page: 3,
+			})
+		).toBe("/v1/items?archived=true&limit=20&page=3#top");
+
+		expect(
+			appendQueryParams("/v1/items#frag?not-query=1", {
+				page: 1,
+			})
+		).toBe("/v1/items?page=1#frag?not-query=1");
+	});
+
 	it("converts query params with variant to flat records", () => {
 		expect(
 			queryParamsToFlatRecord({
@@ -144,12 +166,16 @@ describe("client/query", () => {
 		expect(parseQueryParams(params)).toEqual({});
 	});
 
-	it("ignores malformed filter keys while parsing valid pagination", () => {
+	it("supports hyphenated and dotted field names while ignoring malformed filter keys", () => {
 		const params = new URLSearchParams(
-			"filter[not-valid-key]=x&filter[weight][gte]=10&page=1&limit=20"
+			"filter[created-at][gte]=2026-01-01&filter[user.email][like]=%40example.com&filter[meta.zip-code]=12345&filter[bad key]=x&filter[]=y&filter[a..b]=z&page=1&limit=20"
 		);
 		expect(parseQueryParams(params)).toEqual({
-			filters: [{ field: "weight", operator: "gte", value: "10" }],
+			filters: [
+				{ field: "created-at", operator: "gte", value: "2026-01-01" },
+				{ field: "user.email", operator: "like", value: "@example.com" },
+				{ field: "meta.zip-code", value: "12345" },
+			],
 			page: 1,
 			limit: 20,
 		});

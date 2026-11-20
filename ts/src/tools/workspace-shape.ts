@@ -14,6 +14,7 @@
  * ```
  */
 
+import { isCliEntrypoint } from './cli-entrypoint.js';
 import { runWorkspaceShapeCli } from './workspace-shape/cli.js';
 
 export { WORKSPACE_SHAPE_RULE_IDS } from './workspace-shape/model.js';
@@ -22,6 +23,6 @@ export { checkWorkspaceShape } from './workspace-shape/check.js';
 export { formatWorkspaceShapeReport } from './workspace-shape/report.js';
 export { runWorkspaceShapeCli };
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isCliEntrypoint(import.meta.url)) {
 	runWorkspaceShapeCli();
 }

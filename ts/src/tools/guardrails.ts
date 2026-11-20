@@ -26,7 +26,8 @@
 
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { isCliEntrypoint } from './cli-entrypoint.js';
 import { getLineNumberFromIndex, getLineStarts } from './guardrails/line-utils.js';
 import { scanModuleScopeBrowserApis } from './guardrails/scanner.js';
 import { isSuppressed } from './guardrails/suppressions.js';
@@ -73,7 +74,8 @@ async function* walk(dirUrl: URL, extensions: string[]): AsyncGenerator<URL> {
 	for (const entry of entries) {
 		if (entry.name.startsWith('.')) continue;
 
-		const entryUrl = new URL(entry.name + (entry.isDirectory() ? '/' : ''), dirUrl);
+		const entryPath = path.join(dirPath, entry.name) + (entry.isDirectory() ? path.sep : '');
+		const entryUrl = pathToFileURL(entryPath);
 
 		if (entry.isDirectory()) {
 			yield* walk(entryUrl, extensions);
@@ -116,7 +118,10 @@ function getSvelteScriptBlocks(text: string): SvelteScriptBlock[] {
 // =============================================================================
 
 export async function scanFiles(config: GuardrailsConfig): Promise<number> {
-	const rootUrl = new URL(config.srcDir + '/', 'file://' + process.cwd() + '/');
+	const resolvedSrcDir = path.resolve(config.srcDir);
+	const rootUrl = pathToFileURL(
+		resolvedSrcDir.endsWith(path.sep) ? resolvedSrcDir : `${resolvedSrcDir}${path.sep}`
+	);
 	let failures = 0;
 
 	for await (const fileUrl of walk(rootUrl, config.extensions)) {
@@ -204,7 +209,7 @@ export async function scanFiles(config: GuardrailsConfig): Promise<number> {
 // CLI Entry Point
 // =============================================================================
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isCliEntrypoint(import.meta.url)) {
 	(async () => {
 		// Parse CLI args
 		const args = process.argv.slice(2);
