@@ -118,3 +118,13 @@ fn test_email_builder_missing_body() {
 
     assert!(result.is_err());
 }
+#[test]
+fn formatted_email_address_quotes_and_escapes_display_names() {
+    let address = EmailAddress::with_name("user@example.com", "Doe, \"Jane\" \\ Sales").unwrap();
+    assert_eq!(
+        address.formatted(),
+        "\"Doe, \\\"Jane\\\" \\\\ Sales\" <user@example.com>"
+    );
+    let unnamed = EmailAddress::new("user@example.com").unwrap();
+    assert_eq!(unnamed.formatted(), "user@example.com");
+}

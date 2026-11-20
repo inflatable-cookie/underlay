@@ -138,6 +138,37 @@ async fn sync_media_usages_retains_matching_edge() {
 }
 
 #[tokio::test]
+async fn sync_media_usages_processes_duplicate_keys_once() {
+    let media_id = MediaId::from_uuid(Uuid::from_u128(3));
+    let repo = TestUsageSyncRepository {
+        existing: Arc::new(Mutex::new(vec![usage_edge(2, "existing", media_id)])),
+        ..Default::default()
+    };
+    let existing = usage_input("existing", media_id);
+    let new = usage_input("new", media_id);
+    let owner_id = existing.used_by_id.unwrap();
+    let desired = [existing.clone(), new.clone(), existing, new];
+
+    let report = sync_media_usages_for_record(
+        &repo,
+        "blog_article",
+        owner_id,
+        &desired,
+        &MediaUsageProvenanceKind::ContentSync,
+    )
+    .await
+    .unwrap();
+
+    assert_eq!(report.inserted, 1);
+    assert_eq!(report.retained, 1);
+    assert_eq!(report.removed, 0);
+    let upserts = repo.upserts.lock().unwrap();
+    assert_eq!(upserts.len(), 1);
+    assert_eq!(upserts[0].locator_key, "new");
+    assert!(repo.removals.lock().unwrap().is_empty());
+}
+
+#[tokio::test]
 async fn sync_media_usages_rejects_scope_mismatch() {
     let repo = TestUsageSyncRepository::default();
     let mut desired = vec![usage_input(

@@ -100,7 +100,7 @@ impl<B: BlobAdapter> RenditionService<B> {
 
         generate_and_store(
             self.blob_adapter.as_ref(),
-            source_bytes,
+            source_bytes.to_vec(),
             target_key,
             max_dimension,
             self.config.jpeg_quality(),

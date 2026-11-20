@@ -16,6 +16,7 @@ mod failures;
 #[derive(Debug, Default)]
 struct MemStore {
     queue: Mutex<Vec<Job>>,
+    ignore_allowed_types: bool,
     successes: Mutex<Vec<JobId>>,
     failures: Mutex<Vec<JobId>>,
     failure_calls: Mutex<Vec<FailureCall>>,
@@ -49,7 +50,7 @@ impl JobStore for Arc<MemStore> {
         let mut q = self.queue.lock().unwrap();
         let idx = q
             .iter()
-            .position(|j| allowed_types.iter().any(|t| t == &j.job_type));
+            .position(|j| self.ignore_allowed_types || allowed_types.contains(&j.job_type));
         Ok(idx.map(|i| q.remove(i)))
     }
 

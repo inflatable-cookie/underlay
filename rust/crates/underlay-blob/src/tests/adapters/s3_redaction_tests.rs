@@ -1,5 +1,5 @@
 //! Proof that no raw backend error or credential-shaped fixture reaches the
-//! public error from the new S3 bounded-capture / exclusive-create paths.
+//! public S3 adapter errors.
 //!
 //! Split from `s3_tests.rs` to keep both files under the doctor god-files
 //! threshold; this file duplicates the small replay-client harness rather
@@ -67,6 +67,32 @@ fn assert_no_leak(err: &BlobError) {
             "public error leaked hostile provider content {marker:?}: {rendered}"
         );
     }
+}
+
+#[tokio::test]
+async fn get_bytes_redacts_provider_errors_and_preserves_the_error_kind() {
+    let adapter = s3_adapter_with_replay(vec![ReplayEvent::new(
+        http::Request::builder()
+            .method("GET")
+            .uri("https://fixture-bucket.s3.us-east-1.amazonaws.com/media/a.png")
+            .body(SdkBody::empty())
+            .unwrap(),
+        http::Response::builder()
+            .status(403)
+            .body(hostile_error_body())
+            .unwrap(),
+    )]);
+
+    let err = adapter
+        .get_bytes("media/a.png")
+        .await
+        .expect_err("the signature failure must be returned");
+    assert!(matches!(err, BlobError::AuthError(_)));
+    assert_eq!(
+        err.to_string(),
+        "authentication error: s3 get_object failed (status 403)"
+    );
+    assert_no_leak(&err);
 }
 
 async fn hostile_put_response(status: u16) -> BlobError {

@@ -1,5 +1,8 @@
 //! SMTP email adapter using lettre.
 
+use std::error::Error as _;
+use std::io;
+
 use async_trait::async_trait;
 use lettre::message::{
     header::{ContentType, HeaderName, HeaderValue},
@@ -7,6 +10,7 @@ use lettre::message::{
 };
 use lettre::transport::smtp::authentication::Credentials;
 use lettre::transport::smtp::client::{Tls, TlsParameters};
+use lettre::transport::smtp::Error as SmtpError;
 use lettre::{AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor};
 
 use crate::adapter::EmailAdapter;
@@ -23,6 +27,10 @@ impl SmtpAdapter {
     /// Create a new SMTP adapter with the given configuration.
     pub fn new(config: &SmtpConfig) -> EmailResult<Self> {
         let builder = match config.tls_mode() {
+            TlsMode::Required if config.port() == 465 => {
+                AsyncSmtpTransport::<Tokio1Executor>::relay(config.host())
+                    .map_err(|e| EmailError::ConfigError(format!("SMTP relay error: {e}")))?
+            }
             TlsMode::Required => {
                 AsyncSmtpTransport::<Tokio1Executor>::starttls_relay(config.host())
                     .map_err(|e| EmailError::ConfigError(format!("SMTP relay error: {}", e)))?
@@ -162,23 +170,7 @@ impl EmailAdapter for SmtpAdapter {
                 let message_id = response.message().next().map(|s| s.to_string());
                 Ok(SendResult::success(email.id, message_id))
             }
-            Err(e) => {
-                let error_msg = e.to_string();
-
-                // Categorize the error
-                if error_msg.contains("authentication") || error_msg.contains("AUTH") {
-                    Err(EmailError::AuthenticationFailed(error_msg))
-                } else if error_msg.contains("connection")
-                    || error_msg.contains("connect")
-                    || error_msg.contains("timeout")
-                {
-                    Err(EmailError::ConnectionFailed(error_msg))
-                } else if error_msg.contains("rejected") || error_msg.contains("550") {
-                    Err(EmailError::Rejected(error_msg))
-                } else {
-                    Err(EmailError::TransportError(error_msg))
-                }
-            }
+            Err(e) => Err(classify_send_error(&e)),
         }
     }
 
@@ -193,6 +185,31 @@ impl EmailAdapter for SmtpAdapter {
             .await
             .map_err(|e| EmailError::ConnectionFailed(e.to_string()))?;
         Ok(())
+    }
+}
+
+fn classify_send_error(error: &SmtpError) -> EmailError {
+    let message = error.to_string();
+    match error.status().map(u16::from) {
+        // RFC 4954 authentication replies. 530 can also require STARTTLS,
+        // so leave it among SMTP rejections without access to the command.
+        Some(432 | 534 | 535 | 538) => EmailError::AuthenticationFailed(message),
+        Some(421) => EmailError::ConnectionFailed(message),
+        _ if error.is_transient() || error.is_permanent() => EmailError::Rejected(message),
+        _ if error.is_timeout() || error.is_tls() || error.is_transport_shutdown() => {
+            EmailError::ConnectionFailed(message)
+        }
+        _ => {
+            // Lettre exposes connection and socket errors through their sources.
+            let mut source = error.source();
+            while let Some(cause) = source {
+                if cause.is::<io::Error>() {
+                    return EmailError::ConnectionFailed(message);
+                }
+                source = cause.source();
+            }
+            EmailError::TransportError(message)
+        }
     }
 }
 

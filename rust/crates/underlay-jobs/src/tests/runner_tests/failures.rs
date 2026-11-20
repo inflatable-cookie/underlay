@@ -3,6 +3,32 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use super::*;
 
 #[tokio::test]
+async fn runner_emits_failure_and_dead_letter_for_unregistered_claim() {
+    let store = Arc::new(MemStore {
+        ignore_allowed_types: true,
+        ..Default::default()
+    });
+    let job = make_test_job("unregistered");
+    let job_id = job.id;
+    store.queue.lock().unwrap().push(job);
+    let events = Arc::new(RecordingEventSink::default());
+    let runner = JobRunner::new(store.clone(), JobRegistry::new()).with_event_sink(events.clone());
+
+    assert!(runner.run_once().await.unwrap());
+    let calls = store.failure_calls.lock().unwrap();
+    assert_eq!(calls.len(), 1);
+    assert!(calls[0].is_permanent);
+    let events = events.events();
+    assert!(matches!(
+        events.as_slice(),
+        [
+            JobEvent::Failed { job_id: failed_id, will_retry: false, .. },
+            JobEvent::DeadLettered { job_id: dead_letter_job_id, .. },
+        ] if *failed_id == job_id && *dead_letter_job_id == job_id
+    ));
+}
+
+#[tokio::test]
 async fn runner_records_failures() {
     #[derive(Debug)]
     struct FailingHandler {

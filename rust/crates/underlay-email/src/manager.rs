@@ -108,7 +108,7 @@ pub struct SmtpConfig {
 /// TLS mode for SMTP connections.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum TlsMode {
-    /// Require TLS (STARTTLS or implicit TLS).
+    /// Require implicit TLS on port 465 and STARTTLS on other ports.
     #[default]
     Required,
     /// Use TLS if available, but allow unencrypted.

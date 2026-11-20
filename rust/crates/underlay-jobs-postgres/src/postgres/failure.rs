@@ -9,6 +9,11 @@ use super::{to_raw, JobRepository, RepoError, Result};
 
 impl JobRepository {
     /// Mark a job as failed and potentially schedule for retry.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the job is missing or the supplied attempt no
+    /// longer owns the running row.
     #[instrument(skip(self, config))]
     pub async fn mark_failed(
         &self,
@@ -18,24 +23,31 @@ impl JobRepository {
         is_permanent: bool,
     ) -> Result<JobFailureOutcome> {
         let job_id = job.id;
-        let now = Utc::now();
         let mut tx = self.pool.begin().await?;
 
-        let row: Option<(i32, i32, Value)> = sqlx::query_as(
+        let row: Option<(i32, i32, Value, bool)> = sqlx::query_as(
             r#"
-            SELECT attempts, max_attempts, error_history
+            SELECT attempts, max_attempts, error_history, status = 'running'
             FROM platform.job
             WHERE id = $1
+            FOR UPDATE
             "#,
         )
         .bind(to_raw(job_id))
         .fetch_optional(&mut *tx)
         .await?;
 
-        let Some((attempts, max_attempts, mut error_history)) = row else {
+        let Some((attempts, max_attempts, mut error_history, is_running)) = row else {
             return Err(RepoError::NotFound(job_id));
         };
+        if !is_running || attempts != job.attempts {
+            return Err(RepoError::Conflict(format!(
+                "job {job_id} is no longer running attempt {}",
+                job.attempts
+            )));
+        }
 
+        let now = Utc::now();
         let job_error = JobErrorRecord {
             attempt: attempts,
             error: error.to_string(),

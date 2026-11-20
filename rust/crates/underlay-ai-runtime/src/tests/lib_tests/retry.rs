@@ -17,7 +17,7 @@ fn ai_runtime_error_helpers_match_default_policies() {
 }
 
 #[test]
-fn retry_config_uses_bounded_exponential_backoff() {
+fn retry_config_jitters_capped_exponential_delay() {
     let config = RetryConfig::default()
         .with_max_attempts(4)
         .with_base_delay(Duration::from_millis(100))
@@ -25,10 +25,23 @@ fn retry_config_uses_bounded_exponential_backoff() {
         .with_retriable_kinds(default_retriable_error_kinds());
 
     assert_eq!(config.delay_for_attempt(0), Duration::ZERO);
-    assert_eq!(config.delay_for_attempt(1), Duration::from_millis(100));
-    assert_eq!(config.delay_for_attempt(2), Duration::from_millis(200));
-    assert_eq!(config.delay_for_attempt(3), Duration::from_millis(250));
-    assert_eq!(config.delay_for_attempt(4), Duration::from_millis(250));
+    for (attempt, ceiling) in [(1, 100), (2, 200), (3, 250), (u32::MAX, 250)] {
+        let ceiling = Duration::from_millis(ceiling);
+        let bounds = (ceiling - ceiling / 4)..=ceiling;
+        let first = config.delay_for_attempt(attempt);
+        assert!(bounds.contains(&first), "attempt {attempt}: {first:?}");
+        let mut varied = false;
+        for _ in 0..31 {
+            let delay = config.delay_for_attempt(attempt);
+            assert!(bounds.contains(&delay), "attempt {attempt}: {delay:?}");
+            varied |= delay != first;
+        }
+        assert!(varied, "attempt {attempt} always returned {first:?}");
+    }
+    assert_eq!(
+        config.with_max_delay(Duration::ZERO).delay_for_attempt(1),
+        Duration::ZERO
+    );
 }
 
 #[tokio::test]

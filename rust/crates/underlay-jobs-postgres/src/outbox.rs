@@ -54,6 +54,8 @@ pub struct OutboxConfig {
     /// Fallback poll interval when using LISTEN/NOTIFY.
     /// The processor will wake up at least this often even without notifications.
     fallback_interval: Duration,
+    /// Maximum time allowed for a handler while its event is claimed.
+    handler_timeout: Duration,
 }
 
 impl Default for OutboxConfig {
@@ -61,6 +63,7 @@ impl Default for OutboxConfig {
         Self {
             batch_size: 100,
             fallback_interval: Duration::from_secs(30),
+            handler_timeout: Duration::from_secs(30),
         }
     }
 }
@@ -74,6 +77,11 @@ impl OutboxConfig {
         self.fallback_interval
     }
 
+    /// Return the per-event handler timeout.
+    pub fn handler_timeout(&self) -> Duration {
+        self.handler_timeout
+    }
+
     /// Create a new config with the specified batch size.
     pub fn with_batch_size(mut self, size: usize) -> Self {
         self.batch_size = size;
@@ -83,6 +91,12 @@ impl OutboxConfig {
     /// Set the fallback poll interval.
     pub fn with_fallback_interval(mut self, interval: Duration) -> Self {
         self.fallback_interval = interval;
+        self
+    }
+
+    /// Set the per-event handler timeout before the event becomes retryable.
+    pub fn with_handler_timeout(mut self, timeout: Duration) -> Self {
+        self.handler_timeout = timeout;
         self
     }
 }
@@ -142,6 +156,12 @@ impl OutboxNotifier {
 /// The processor claims events using `FOR UPDATE SKIP LOCKED` for
 /// safe concurrent processing, and marks them as processed after
 /// the handler completes successfully.
+///
+/// The outbox schema has no persistent claim fields. Each in-flight event
+/// holds one row lock and pool connection through its handler, with a
+/// 30-second default handler deadline. Reserve other pool connections if
+/// handlers also use the pool. Handlers must yield to Tokio for the deadline
+/// to take effect and be idempotent because a retry may repeat a side effect.
 #[derive(Debug, Clone)]
 pub struct OutboxProcessor {
     config: OutboxConfig,
@@ -166,7 +186,8 @@ impl OutboxProcessor {
     ///
     /// The handler function is called for each event. If it returns `Ok(())`,
     /// the event is marked as processed. If it returns an error, the event
-    /// remains unprocessed and will be retried on the next batch.
+    /// remains unprocessed and can be retried on the next poll. A timed-out
+    /// handler future is dropped and its event is also left unprocessed.
     pub async fn run_with_notifier<F, Fut>(
         &self,
         pool: &PgPool,
@@ -278,9 +299,11 @@ impl OutboxProcessor {
             "Processing outbox event"
         );
 
-        // Call the handler
-        match handler(event.clone()).await {
-            Ok(()) => {
+        let event_id = event.id;
+        let event_type = event.event_type.clone();
+        let timeout = self.config.handler_timeout();
+        let failure = match tokio::time::timeout(timeout, async { handler(event).await }).await {
+            Ok(Ok(())) => {
                 // Mark as processed
                 sqlx::query(
                     r#"
@@ -290,32 +313,31 @@ impl OutboxProcessor {
                     "#,
                 )
                 .bind(Utc::now())
-                .bind(event.id)
+                .bind(event_id)
                 .execute(&mut *tx)
                 .await?;
 
                 tx.commit().await?;
                 info!(
-                    event_id = %event.id,
-                    event_type = %event.event_type,
+                    %event_id,
+                    %event_type,
                     "Outbox event processed successfully"
                 );
-                Ok(true)
+                return Ok(true);
             }
-            Err(e) => {
-                // Roll back - event remains unprocessed for retry. Return false
-                // so batch/polling loops yield to the configured poll interval
-                // instead of tight-spinning on a poison-pill event.
-                warn!(
-                    event_id = %event.id,
-                    event_type = %event.event_type,
-                    error = %e,
-                    "Outbox event handler failed, will retry on next poll"
-                );
-                // Transaction rolls back automatically on drop
-                Ok(false)
-            }
-        }
+            Ok(Err(error)) => error.to_string(),
+            Err(_) => format!("handler timed out after {timeout:?}"),
+        };
+
+        tx.rollback().await?;
+        warn!(
+            %event_id,
+            %event_type,
+            error = %failure,
+            "Outbox event handler failed, will retry on next poll"
+        );
+        // Yield to the poll interval so the same event is not retried immediately.
+        Ok(false)
     }
 
     /// Run the processor in polling mode (without LISTEN/NOTIFY).

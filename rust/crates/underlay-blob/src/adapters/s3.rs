@@ -9,6 +9,7 @@ use async_trait::async_trait;
 use aws_sdk_s3::presigning::PresigningConfig;
 use aws_sdk_s3::Client;
 use chrono::{DateTime, Utc};
+use tokio::sync::OnceCell;
 use tracing::warn;
 
 use crate::adapter::BlobAdapter;
@@ -25,6 +26,7 @@ pub struct S3Adapter {
     client: Client,
     presign_client: Client,
     config: S3Config,
+    bucket_ready: OnceCell<()>,
 }
 
 #[async_trait]
@@ -139,7 +141,7 @@ impl BlobAdapter for S3Adapter {
             .key(key)
             .send()
             .await
-            .map_err(|e| Self::map_s3_error(e.into(), key))?;
+            .map_err(|e| Self::map_s3_error(&e, key, "delete_object"))?;
 
         Ok(())
     }
@@ -152,7 +154,7 @@ impl BlobAdapter for S3Adapter {
             .key(key)
             .send()
             .await
-            .map_err(|e| Self::map_s3_error(e.into(), key))?;
+            .map_err(|e| Self::map_s3_error(&e, key, "head_object"))?;
 
         let last_modified = response.last_modified().map(|t| {
             DateTime::<Utc>::from_timestamp(t.secs(), t.subsec_nanos()).unwrap_or_else(Utc::now)
@@ -184,7 +186,7 @@ impl BlobAdapter for S3Adapter {
             .key(key)
             .send()
             .await
-            .map_err(|e| Self::map_s3_error(e.into(), key))?;
+            .map_err(|e| Self::map_s3_error(&e, key, "get_object"))?;
 
         let bytes = response
             .body
@@ -217,7 +219,7 @@ impl BlobAdapter for S3Adapter {
             .body(body)
             .send()
             .await
-            .map_err(|e| BlobError::UploadFailed(format!("Failed to upload object: {}", e)))?;
+            .map_err(|e| BlobError::UploadFailed(Self::redacted_error_message(&e, "put_object")))?;
 
         Ok(StoredObject {
             provider: "s3".to_string(),
@@ -304,7 +306,7 @@ impl BlobAdapter for S3Adapter {
             .max_keys(1)
             .send()
             .await
-            .map_err(|e| Self::map_s3_error(e.into(), ""))?;
+            .map_err(|e| Self::map_s3_error(&e, "", "list_objects_v2"))?;
 
         Ok(())
     }

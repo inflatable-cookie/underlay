@@ -3,7 +3,7 @@
 //! This module provides additive shared surfaces for generalized media usage
 //! edges without forcing existing repositories to migrate in one step.
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
 use async_trait::async_trait;
 use uuid::Uuid;
@@ -109,17 +109,18 @@ where
         .list_usage_edges_for_owner(used_by_type, used_by_id, provenance_kind)
         .await?;
 
-    let mut existing_by_key: HashMap<MediaUsageEdgeKey, MediaUsageEdge> = existing
-        .into_iter()
-        .map(|edge| (edge.key(), edge))
-        .collect();
-    let desired_keys: HashSet<MediaUsageEdgeKey> = desired.iter().map(|edge| edge.key()).collect();
+    let mut existing_keys: HashSet<_> = existing.into_iter().map(|edge| edge.key()).collect();
+    let mut seen = HashSet::with_capacity(desired.len());
 
     let mut report = MediaUsageSyncReport::default();
 
     for edge in desired {
         let key = edge.key();
-        if existing_by_key.remove(&key).is_some() {
+        let retained = existing_keys.remove(&key);
+        if !seen.insert(key) {
+            continue;
+        }
+        if retained {
             report.retained += 1;
         } else {
             repo.upsert_usage_edge(edge).await?;
@@ -127,11 +128,9 @@ where
         }
     }
 
-    for key in existing_by_key.keys() {
-        if !desired_keys.contains(key) {
-            repo.remove_usage_edge(key).await?;
-            report.removed += 1;
-        }
+    for key in &existing_keys {
+        repo.remove_usage_edge(key).await?;
+        report.removed += 1;
     }
 
     Ok(report)
