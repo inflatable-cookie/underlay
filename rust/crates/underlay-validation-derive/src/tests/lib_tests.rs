@@ -79,3 +79,23 @@ fn derive_rejects_unknown_validator() {
     let err = impl_validate(&input).expect_err("unknown validator should fail");
     assert!(err.to_string().contains("unknown validator"));
 }
+
+#[test]
+fn derive_wraps_option_fields_in_if_let_some() {
+    let input: syn::DeriveInput = parse_quote! {
+        struct UpdateUser {
+            #[validate(email)]
+            email: Option<String>,
+            #[validate(range(min = 1, max = 10))]
+            score: std::option::Option<i32>,
+        }
+    };
+
+    let tokens = impl_validate(&input).expect("derive generation should succeed");
+    let rendered = normalize(tokens);
+
+    assert!(rendered.contains("ifletsome(ref__underlay_val)=self.email"));
+    assert!(rendered.contains("validators::email(__underlay_val)"));
+    assert!(rendered.contains("ifletsome(ref__underlay_val)=self.score"));
+    assert!(rendered.contains("validators::range(*__underlay_val,some(1),some(10))"));
+}

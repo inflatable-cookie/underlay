@@ -74,16 +74,21 @@ fn is_version_compatible(stored: &str, current: &str) -> bool {
         return true;
     }
 
-    let stored_major = parse_major_version(stored);
-    let current_major = parse_major_version(current);
-    match (stored_major, current_major) {
-        (Some(lhs), Some(rhs)) => lhs == rhs,
+    match (parse_major_minor(stored), parse_major_minor(current)) {
+        (Some((0, Some(lhs_minor))), Some((0, Some(rhs_minor)))) => lhs_minor == rhs_minor,
+        (Some((0, _)), Some((0, _))) => false,
+        (Some((lhs_major, _)), Some((rhs_major, _))) => lhs_major == rhs_major,
         _ => false,
     }
 }
 
-fn parse_major_version(value: &str) -> Option<u64> {
+fn parse_major_minor(value: &str) -> Option<(u64, Option<u64>)> {
     let trimmed = value.strip_prefix('v').unwrap_or(value);
-    let major = trimmed.split('.').next()?;
-    major.parse::<u64>().ok()
+    let mut parts = trimmed.split('.');
+    let major = parts.next()?.parse::<u64>().ok()?;
+    let minor = match parts.next() {
+        Some(raw_minor) => Some(raw_minor.parse::<u64>().ok()?),
+        None => None,
+    };
+    Some((major, minor))
 }

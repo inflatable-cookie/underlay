@@ -73,3 +73,16 @@ fn test_serialization() {
     assert!(json.contains("field_errors"));
     assert!(json.contains("email.invalid"));
 }
+
+#[test]
+fn test_validation_error_display_is_deterministic() {
+    let mut err = ValidationError::new();
+    err.add_field("zeta", "bad zeta");
+    err.add_field("alpha", "bad alpha");
+    err.add_field("mid", "bad mid");
+
+    assert_eq!(
+        err.to_string(),
+        "Validation failed: alpha: bad alpha, mid: bad mid, zeta: bad zeta"
+    );
+}

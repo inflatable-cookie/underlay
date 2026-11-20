@@ -153,3 +153,19 @@ async fn duplicates_are_rejected_before_writing() {
     .unwrap_err();
     assert!(matches!(err, ReorderError::DuplicateIds));
 }
+
+#[test]
+fn scope_sql_qualifies_columns_to_avoid_unnest_alias_collision() {
+    let id_col = col("id");
+    let ord_col = col("ord");
+    let parent_id = Uuid::nil();
+
+    let scope_sql = build_scope_sql(
+        "\"public\".\"items\"",
+        ReorderScope::parent(&id_col, parent_id).exclude_deleted(&ord_col),
+    );
+    assert_eq!(
+        scope_sql,
+        "\"public\".\"items\".\"id\" = $1 AND \"public\".\"items\".\"ord\" IS NULL"
+    );
+}

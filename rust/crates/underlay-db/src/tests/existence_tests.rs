@@ -93,4 +93,18 @@ fn typed_exists_check_rejects_invalid_identifiers() {
     assert!(check.value("bad-column", "summary").is_err());
 }
 
+#[tokio::test]
+async fn typed_exists_check_errors_when_conditions_empty() {
+    let pool = sqlx::postgres::PgPoolOptions::new()
+        .connect_lazy("postgres://underlay:underlay@127.0.0.1:1/underlay")
+        .expect("lazy pool");
+
+    let err = TypedExistsCheck::from_schema_table("content", "summary_item")
+        .unwrap()
+        .check(&pool)
+        .await
+        .expect_err("empty conditions must fail");
+    assert!(matches!(err, sqlx::Error::Configuration(_)));
+}
+
 // Database-backed integration coverage belongs in tests/ with testcontainers.

@@ -14,7 +14,7 @@ pub use crate::existence::{value_exists_excluding_typed, value_exists_typed, Typ
 pub use crate::identifiers::{
     format_qualified_table_name, format_schema_table, quote_sql_identifier,
     validate_qualified_table_name, validate_sql_identifier, IdentifierError, QualifiedTableName,
-    SqlIdentifier,
+    SqlIdentifier, MAX_PG_IDENTIFIER_BYTES,
 };
 pub use crate::migrations::{load_migrator_from_dir, run_migrations};
 pub use crate::pool::{

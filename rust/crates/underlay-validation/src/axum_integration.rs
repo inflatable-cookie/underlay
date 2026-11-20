@@ -62,39 +62,82 @@ pub enum ValidatedJsonRejection {
     ValidationError(ValidationError),
 }
 
+#[derive(serde::Serialize)]
+struct ValidationErrorEnvelope {
+    error: ValidationErrorBody,
+}
+
+#[derive(serde::Serialize)]
+struct ValidationErrorBody {
+    code: String,
+    message: String,
+    #[serde(rename = "fieldErrors", skip_serializing_if = "Option::is_none")]
+    field_errors: Option<HashMap<String, String>>,
+    #[serde(rename = "fieldErrorCodes", skip_serializing_if = "Option::is_none")]
+    field_error_codes: Option<HashMap<String, String>>,
+}
+
 impl IntoResponse for ValidatedJsonRejection {
     fn into_response(self) -> Response {
         match self {
             Self::JsonRejection(rejection) => {
+                let (status, code, message) = match rejection {
+                    axum::extract::rejection::JsonRejection::MissingJsonContentType(_) => (
+                        StatusCode::UNSUPPORTED_MEDIA_TYPE,
+                        "json.unsupported_media_type",
+                        "Expected request with Content-Type: application/json",
+                    ),
+                    axum::extract::rejection::JsonRejection::JsonSyntaxError(_) => (
+                        StatusCode::BAD_REQUEST,
+                        "json.invalid",
+                        "Malformed JSON in request body",
+                    ),
+                    axum::extract::rejection::JsonRejection::JsonDataError(_) => (
+                        StatusCode::BAD_REQUEST,
+                        "json.invalid",
+                        "Invalid JSON payload",
+                    ),
+                    axum::extract::rejection::JsonRejection::BytesRejection(_) => (
+                        StatusCode::BAD_REQUEST,
+                        "json.invalid",
+                        "Failed to read request body",
+                    ),
+                    _ => (
+                        StatusCode::BAD_REQUEST,
+                        "json.invalid",
+                        "Invalid JSON request",
+                    ),
+                };
                 let envelope = ErrorEnvelope {
                     error: ErrorBody {
-                        code: "json.invalid".to_string(),
-                        message: rejection.body_text(),
+                        code: code.to_string(),
+                        message: message.to_string(),
                         field_errors: None,
                     },
                 };
-                (StatusCode::BAD_REQUEST, Json(envelope)).into_response()
+                (status, Json(envelope)).into_response()
             }
             Self::ValidationError(error) => {
-                let field_errors: HashMap<String, String> = error
-                    .field_errors
-                    .into_iter()
-                    .map(|(field, err)| (field, err.message))
-                    .collect();
-                let field_errors = if field_errors.is_empty() {
-                    None
-                } else {
-                    Some(field_errors)
-                };
-                let envelope = ErrorEnvelope {
-                    error: ErrorBody {
+                let mut field_errors = HashMap::new();
+                let mut field_error_codes = HashMap::new();
+                for (field, err) in error.field_errors {
+                    if let Some(code) = err.code {
+                        field_error_codes.insert(field.clone(), code);
+                    }
+                    field_errors.insert(field, err.message);
+                }
+
+                let envelope = ValidationErrorEnvelope {
+                    error: ValidationErrorBody {
                         code: error
                             .code
                             .unwrap_or_else(|| "validation.failed".to_string()),
                         message: error
                             .message
                             .unwrap_or_else(|| "Validation failed".to_string()),
-                        field_errors,
+                        field_errors: (!field_errors.is_empty()).then_some(field_errors),
+                        field_error_codes: (!field_error_codes.is_empty())
+                            .then_some(field_error_codes),
                     },
                 };
                 (StatusCode::BAD_REQUEST, Json(envelope)).into_response()

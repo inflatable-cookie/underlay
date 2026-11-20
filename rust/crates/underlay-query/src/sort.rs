@@ -30,14 +30,37 @@ impl fmt::Display for SortDirection {
     }
 }
 
+/// Error returned when parsing a [`SortDirection`] from a string fails.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ParseSortDirectionError {
+    input: String,
+}
+
+impl ParseSortDirectionError {
+    /// Return the unrecognized direction string.
+    pub fn input(&self) -> &str {
+        &self.input
+    }
+}
+
+impl fmt::Display for ParseSortDirectionError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "unknown sort direction: {:?}", self.input)
+    }
+}
+
+impl std::error::Error for ParseSortDirectionError {}
+
 impl FromStr for SortDirection {
-    type Err = ();
+    type Err = ParseSortDirectionError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_lowercase().as_str() {
             "asc" | "ascending" => Ok(SortDirection::Asc),
             "desc" | "descending" => Ok(SortDirection::Desc),
-            _ => Err(()),
+            _ => Err(ParseSortDirectionError {
+                input: s.to_string(),
+            }),
         }
     }
 }
@@ -94,4 +117,17 @@ pub fn parse_sort_string(s: &str) -> Vec<SortField> {
             Some(SortField { field, direction })
         })
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn from_str_returns_typed_error_with_input() {
+        let err = "sideways".parse::<SortDirection>().unwrap_err();
+        assert_eq!(err.input(), "sideways");
+        assert!(err.to_string().contains("sideways"));
+        let _: &dyn std::error::Error = &err;
+    }
 }

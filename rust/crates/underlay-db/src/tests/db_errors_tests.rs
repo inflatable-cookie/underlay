@@ -36,3 +36,91 @@ fn describe_db_error_falls_back_for_empty_operation() {
     assert!(message.contains("running database operation"));
     assert!(message.contains("pool timed out"));
 }
+
+#[derive(Debug)]
+struct FakeDbError {
+    message: String,
+    code: Option<String>,
+    table: Option<String>,
+    constraint: Option<String>,
+}
+
+impl std::fmt::Display for FakeDbError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.message)
+    }
+}
+
+impl std::error::Error for FakeDbError {}
+
+impl sqlx::error::DatabaseError for FakeDbError {
+    fn message(&self) -> &str {
+        &self.message
+    }
+
+    fn code(&self) -> Option<std::borrow::Cow<'_, str>> {
+        self.code.as_deref().map(std::borrow::Cow::Borrowed)
+    }
+
+    fn table(&self) -> Option<&str> {
+        self.table.as_deref()
+    }
+
+    fn constraint(&self) -> Option<&str> {
+        self.constraint.as_deref()
+    }
+
+    fn as_error(&self) -> &(dyn std::error::Error + Send + Sync + 'static) {
+        self
+    }
+
+    fn as_error_mut(&mut self) -> &mut (dyn std::error::Error + Send + Sync + 'static) {
+        self
+    }
+
+    fn into_error(self: Box<Self>) -> Box<dyn std::error::Error + Send + Sync + 'static> {
+        self
+    }
+
+    fn kind(&self) -> sqlx::error::ErrorKind {
+        sqlx::error::ErrorKind::UniqueViolation
+    }
+}
+
+#[test]
+fn map_db_error_sanitizes_database_schema_and_detail_from_client_message() {
+    let db_err = FakeDbError {
+        message: "duplicate key value violates unique constraint \"secret_users_email_key\""
+            .to_string(),
+        code: Some("23505".to_string()),
+        table: Some("secret_users".to_string()),
+        constraint: Some("secret_users_email_key".to_string()),
+    };
+    let app_err = map_db_error("creating account", sqlx::Error::Database(Box::new(db_err)));
+
+    assert_eq!(app_err.code, "infra.db_error");
+    assert!(app_err.message.contains("creating account"));
+    assert!(app_err.message.contains("uniqueness constraints"));
+    assert!(!app_err.message.contains("secret_users"));
+    assert!(!app_err.message.contains("secret_users_email_key"));
+    assert!(!app_err.message.contains("duplicate key"));
+    assert!(!app_err.message.contains("23505"));
+}
+
+#[test]
+fn map_db_error_sanitizes_io_and_driver_errors_from_client_message() {
+    let io_err = sqlx::Error::Io(std::io::Error::new(
+        std::io::ErrorKind::ConnectionRefused,
+        "10.0.0.42:5432 refused",
+    ));
+    let io_msg = map_db_error("saving item", io_err).message;
+    assert!(io_msg.contains("saving item"));
+    assert!(!io_msg.contains("10.0.0.42"));
+    assert!(!io_msg.contains("5432"));
+
+    let driver_err = sqlx::Error::Protocol("internal protocol frame secret_col".to_string());
+    let driver_msg = map_db_error("saving item", driver_err).message;
+    assert!(driver_msg.contains("saving item"));
+    assert!(!driver_msg.contains("internal protocol frame"));
+    assert!(!driver_msg.contains("secret_col"));
+}

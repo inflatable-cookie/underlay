@@ -57,3 +57,42 @@ fn typed_identifiers_reject_unsafe_values() {
     assert!(QualifiedTableName::parse("platform.audit-log").is_err());
     assert!(QualifiedTableName::from_schema_table("platform", "audit;drop").is_err());
 }
+
+#[test]
+fn enforces_postgresql_63_byte_identifier_limit() {
+    let exact_63 = "a".repeat(63);
+    assert!(SqlIdentifier::parse(&exact_63).is_ok());
+
+    let over_64 = "a".repeat(64);
+    assert!(matches!(
+        SqlIdentifier::parse(&over_64),
+        Err(IdentifierError::TooLong {
+            len: 64,
+            max: 63,
+            ..
+        })
+    ));
+    assert!(matches!(
+        QualifiedTableName::from_schema_table(&exact_63, &over_64),
+        Err(IdentifierError::TooLong {
+            len: 64,
+            max: 63,
+            ..
+        })
+    ));
+}
+
+#[test]
+fn rejects_leading_and_trailing_whitespace() {
+    assert!(matches!(
+        validate_sql_identifier(" audit_log"),
+        Err(IdentifierError::InvalidStart { .. })
+    ));
+    assert!(matches!(
+        validate_sql_identifier("audit_log "),
+        Err(IdentifierError::InvalidChar { ch: ' ', .. })
+    ));
+    assert!(SqlIdentifier::parse(" audit_log ").is_err());
+    assert!(QualifiedTableName::parse(" platform.audit_log").is_err());
+    assert!(QualifiedTableName::parse("platform.audit_log ").is_err());
+}

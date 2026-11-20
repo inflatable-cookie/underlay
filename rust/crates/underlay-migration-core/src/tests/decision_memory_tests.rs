@@ -200,6 +200,144 @@ fn evaluate_reuse_compatible_allows_same_major_versions_and_blocks_plugin_invali
 }
 
 #[test]
+fn compatible_reuse_succeeds_with_recomputed_fingerprint_on_minor_bump() {
+    let stored_input = DecisionFingerprintInput {
+        canonical_decision_input: json!({ "a": 1 }),
+        decision_type: "migration_record_resolution".to_string(),
+        resolver_version: "1.2.0".to_string(),
+        prompt_version: "1.0.0".to_string(),
+        target_schema_version: "schema_v1".to_string(),
+    };
+    let stored_fp = decision_fingerprint(&stored_input).expect("stored fingerprint");
+
+    let mut record = sample_decision_record();
+    record.fingerprint = stored_fp;
+    record.resolver_version = stored_input.resolver_version.clone();
+    record.prompt_version = stored_input.prompt_version.clone();
+    record.target_schema_version = stored_input.target_schema_version.clone();
+
+    let bumped_input = DecisionFingerprintInput {
+        canonical_decision_input: json!({ "a": 1 }),
+        decision_type: "migration_record_resolution".to_string(),
+        resolver_version: "1.9.0".to_string(),
+        prompt_version: "1.4.2".to_string(),
+        target_schema_version: "schema_v1".to_string(),
+    };
+    let expected_fp = decision_fingerprint(&bumped_input).expect("expected fingerprint");
+    assert_eq!(record.fingerprint, expected_fp);
+
+    let evaluation = evaluate_decision_reuse(
+        &record,
+        &expected_fp,
+        &bumped_input,
+        DecisionReusePolicy::Compatible,
+        false,
+    );
+    assert!(evaluation.reusable);
+    assert_eq!(evaluation.reason, None);
+}
+
+#[test]
+fn compatible_reuse_treats_zero_x_minor_bumps_as_incompatible_and_patch_bumps_as_compatible() {
+    let mut record = sample_decision_record();
+    record.resolver_version = "0.1.0".to_string();
+    record.prompt_version = "0.2.0".to_string();
+
+    let patch_input = DecisionFingerprintInput {
+        canonical_decision_input: json!({ "a": 1 }),
+        decision_type: record.decision_type.clone(),
+        resolver_version: "0.1.4".to_string(),
+        prompt_version: "0.2.9".to_string(),
+        target_schema_version: record.target_schema_version.clone(),
+    };
+    let patch_eval = evaluate_decision_reuse(
+        &record,
+        &record.fingerprint,
+        &patch_input,
+        DecisionReusePolicy::Compatible,
+        false,
+    );
+    assert!(patch_eval.reusable);
+
+    let resolver_minor_bump = DecisionFingerprintInput {
+        canonical_decision_input: json!({ "a": 1 }),
+        decision_type: record.decision_type.clone(),
+        resolver_version: "0.2.0".to_string(),
+        prompt_version: "0.2.0".to_string(),
+        target_schema_version: record.target_schema_version.clone(),
+    };
+    let resolver_eval = evaluate_decision_reuse(
+        &record,
+        &record.fingerprint,
+        &resolver_minor_bump,
+        DecisionReusePolicy::Compatible,
+        false,
+    );
+    assert!(!resolver_eval.reusable);
+    assert_eq!(
+        resolver_eval.reason,
+        Some(DecisionInvalidationReason::ResolverVersionMismatch)
+    );
+
+    let prompt_minor_bump = DecisionFingerprintInput {
+        canonical_decision_input: json!({ "a": 1 }),
+        decision_type: record.decision_type.clone(),
+        resolver_version: "0.1.0".to_string(),
+        prompt_version: "0.3.0".to_string(),
+        target_schema_version: record.target_schema_version.clone(),
+    };
+    let prompt_eval = evaluate_decision_reuse(
+        &record,
+        &record.fingerprint,
+        &prompt_minor_bump,
+        DecisionReusePolicy::Compatible,
+        false,
+    );
+    assert!(!prompt_eval.reusable);
+    assert_eq!(
+        prompt_eval.reason,
+        Some(DecisionInvalidationReason::PromptVersionMismatch)
+    );
+}
+
+#[test]
+fn fingerprints_length_prefix_fields_to_avoid_newline_delimiter_ambiguity() {
+    let left_decision = DecisionFingerprintInput {
+        canonical_decision_input: json!({ "a": 1 }),
+        decision_type: "alpha\ntarget_schema_version:beta".to_string(),
+        resolver_version: "1.0.0".to_string(),
+        prompt_version: "1.0.0".to_string(),
+        target_schema_version: "gamma".to_string(),
+    };
+    let right_decision = DecisionFingerprintInput {
+        canonical_decision_input: json!({ "a": 1 }),
+        decision_type: "alpha".to_string(),
+        resolver_version: "1.0.0".to_string(),
+        prompt_version: "1.0.0".to_string(),
+        target_schema_version: "beta\ntarget_schema_version:gamma".to_string(),
+    };
+    assert_ne!(
+        decision_fingerprint(&left_decision).expect("left"),
+        decision_fingerprint(&right_decision).expect("right")
+    );
+
+    let left_record = RecordFingerprintInput {
+        canonical_transform_input: json!({ "id": 1 }),
+        source_identity: "users:1\nsemantic_dependencies={}".to_string(),
+        semantic_dependencies: HashMap::new(),
+    };
+    let right_record = RecordFingerprintInput {
+        canonical_transform_input: json!({ "id": 1 }),
+        source_identity: "users:1".to_string(),
+        semantic_dependencies: HashMap::from([("k".to_string(), "v".to_string())]),
+    };
+    assert_ne!(
+        record_fingerprint(&left_record).expect("left record"),
+        record_fingerprint(&right_record).expect("right record")
+    );
+}
+
+#[test]
 fn effective_decision_prefers_human_override() {
     let mut ai = sample_decision_record();
     ai.provenance = "ai".to_string();
