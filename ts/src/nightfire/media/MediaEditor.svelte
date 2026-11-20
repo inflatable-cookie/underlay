@@ -243,7 +243,7 @@
     padding: var(--underlay-space-3, 0.75rem);
     border: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.35));
     border-radius: var(--underlay-radius-md, 0.75rem);
-    background: var(--underlay-color-surface-secondary, rgba(255, 255, 255, 0.03));
+    background: var(--underlay-color-surface-secondary, #f3f4f6);
   }
 
   .underlay-media-editor__preview :global(.media-thumbnail) {

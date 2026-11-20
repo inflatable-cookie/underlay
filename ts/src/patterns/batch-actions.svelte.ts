@@ -326,6 +326,11 @@ export function useBatchActions<T = string>(): BatchActionsResult<T> {
   };
 
   const executeAction = async (action: BatchAction<T>): Promise<BatchActionResult | null> => {
+    // Block overlapping runs: a second click while one is in flight must not
+    // re-run the action on the same selection.
+    if (executing) {
+      return null;
+    }
     const ids = Array.from(selectedSet);
     if (ids.length === 0) {
       return null;
@@ -340,8 +345,8 @@ export function useBatchActions<T = string>(): BatchActionsResult<T> {
       if (result.success) {
         // Clear selection after successful action
         clear();
-      } else if (result.message) {
-        error = result.message;
+      } else {
+        error = result.message ?? `${action.label} failed`;
       }
 
       return result;
@@ -404,21 +409,16 @@ export function useBatchActions<T = string>(): BatchActionsResult<T> {
     error = null;
   };
 
-  // Compute available actions based on selection
-  const getAvailableActions = (): BatchAction<T>[] => {
-    const ids = Array.from(selectedSet);
-    return actions.filter((action) => {
-      if (!action.isAvailable) {
-        return true;
-      }
-      return action.isAvailable(ids);
-    });
-  };
+  // Derived selection and availability: recomputed only when their inputs change.
+  const selectedIdList = $derived(Array.from(selectedSet));
+  const availableActionList = $derived(
+    actions.filter((action) => !action.isAvailable || action.isAvailable(selectedIdList)),
+  );
 
   return {
     // Selection
     get selectedIds() {
-      return Array.from(selectedSet);
+      return selectedIdList;
     },
     get count() {
       return selectedSet.size;
@@ -439,7 +439,7 @@ export function useBatchActions<T = string>(): BatchActionsResult<T> {
       return actions;
     },
     get availableActions() {
-      return getAvailableActions();
+      return availableActionList;
     },
     get pendingAction() {
       return pendingAction;

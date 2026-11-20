@@ -270,8 +270,6 @@
             <div class="underlay-context-action-dialog__field" data-context-action-number={field.type === "number" ? "" : undefined}>
               {#if field.type !== "checkbox"}
                 <label for={fieldId}>{field.label}</label>
-              {:else if field.placeholder && field.placeholder !== field.label}
-                <span>{field.label}</span>
               {/if}
               {#if field.description}
                 <small id={descriptionId}>{field.description}</small>
@@ -361,8 +359,7 @@
     min-width: 0;
   }
 
-  .underlay-context-action-dialog__field > label,
-  .underlay-context-action-dialog__field > span {
+  .underlay-context-action-dialog__field > label {
     color: var(--poodle-color-text-primary);
     font-weight: 600;
     line-height: 1.25;

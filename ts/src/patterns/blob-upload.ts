@@ -58,6 +58,9 @@ export async function uploadToBlob(
 
   // Check if upload URL has expired
   const expiresAt = new Date(plan.expiresAt);
+  if (Number.isNaN(expiresAt.getTime())) {
+    throw new BlobUploadError("Upload plan has an invalid expiry", "VALIDATION_ERROR");
+  }
   if (expiresAt < new Date()) {
     throw new BlobUploadError("Upload URL has expired", "UPLOAD_EXPIRED");
   }
@@ -69,15 +72,19 @@ export async function uploadToBlob(
   };
 
   // Use XMLHttpRequest for progress tracking
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
+  const xhr = new XMLHttpRequest();
+  const onAbort = () => xhr.abort();
+  const detachAbort = () => signal?.removeEventListener("abort", onAbort);
+
+  return new Promise<UploadResult>((resolve, reject) => {
+    // Do not start a request for a signal that has already fired.
+    if (signal?.aborted) {
+      reject(new BlobUploadError("Upload was aborted", "UPLOAD_ABORTED"));
+      return;
+    }
 
     // Handle abort
-    if (signal) {
-      signal.addEventListener("abort", () => {
-        xhr.abort();
-      });
-    }
+    signal?.addEventListener("abort", onAbort);
 
     // Progress tracking
     if (onProgress) {
@@ -127,14 +134,14 @@ export async function uploadToBlob(
     }
 
     xhr.send(file);
-  });
+  }).finally(detachAbort);
 }
 
 /**
  * Compute the SHA-256 hash of a file.
  *
- * Uses the Web Crypto API to compute the hash efficiently.
- * For large files, this reads the file in chunks to avoid memory issues.
+ * Web Crypto does not support incremental SHA-256 hashing, so the whole file is
+ * read into memory. Very large files are better hashed server-side.
  *
  * @param file - The file to hash
  * @returns Promise resolving to the hex-encoded SHA-256 hash
@@ -149,17 +156,6 @@ export async function uploadToBlob(
  * ```
  */
 export async function computeFileHash(file: File): Promise<string> {
-  // For files smaller than 64MB, read all at once
-  const CHUNK_THRESHOLD = 64 * 1024 * 1024;
-
-  if (file.size <= CHUNK_THRESHOLD) {
-    const buffer = await file.arrayBuffer();
-    const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
-    return bufferToHex(hashBuffer);
-  }
-
-  // Web Crypto does not support incremental SHA-256 hashing, so large files
-  // still need a full read. Very large files are better hashed server-side.
   const buffer = await file.arrayBuffer();
   const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
   return bufferToHex(hashBuffer);
@@ -240,12 +236,14 @@ export function validateFileSize(file: File, maxBytes: number): boolean {
  * @returns Human-readable size string (e.g., "1.5 MB")
  */
 export function formatFileSize(bytes: number | null | undefined): string {
-  if (bytes == null) return "—";
+  if (bytes == null || !Number.isFinite(bytes) || bytes < 0) return "—";
   if (bytes === 0) return "0 B";
 
-  const units = ["B", "KB", "MB", "GB"];
+  const units = ["B", "KB", "MB", "GB", "TB"];
   const k = 1024;
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  // Clamp to the unit table: sub-byte values stay in B, and anything at or
+  // above 1 TB is shown in TB rather than indexing past the table.
+  const i = Math.min(Math.max(Math.floor(Math.log(bytes) / Math.log(k)), 0), units.length - 1);
   const size = bytes / Math.pow(k, i);
 
   return `${size.toFixed(i > 0 ? 1 : 0)} ${units[i]}`;
@@ -286,7 +284,7 @@ export function validateFile(
   if (isVideoFile(file)) {
     return {
       valid: false,
-      error: "Video files are not supported. Please use Vimeo for video content.",
+      error: "Video files are not supported.",
     };
   }
 

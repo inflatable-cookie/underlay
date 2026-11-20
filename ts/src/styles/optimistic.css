@@ -12,77 +12,79 @@
  * ```
  */
 
-/* Pending state - subtle opacity reduction */
-[data-pending="true"] {
-	opacity: 0.7;
-	transition: opacity 0.15s ease-out;
-}
-
-/* Pending with pointer events disabled */
-[data-pending="true"][data-pending-disabled] {
-	pointer-events: none;
-}
-
-/* Striped overlay pattern for pending items (optional, add data-pending-striped) */
-[data-pending="true"][data-pending-striped] {
-	position: relative;
-}
-
-[data-pending="true"][data-pending-striped]::after {
-	content: "";
-	position: absolute;
-	inset: 0;
-	pointer-events: none;
-	background: repeating-linear-gradient(
-		-45deg,
-		transparent,
-		transparent 4px,
-		rgba(0, 0, 0, 0.03) 4px,
-		rgba(0, 0, 0, 0.03) 8px
-	);
-	border-radius: inherit;
-}
-
-/* Pulse animation for pending items (optional, add data-pending-pulse) */
-[data-pending="true"][data-pending-pulse] {
-	animation: underlay-pending-pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes underlay-pending-pulse {
-	0%,
-	100% {
-		opacity: 0.7;
-	}
-	50% {
-		opacity: 0.5;
-	}
-}
-
-/* Dark mode adjustments */
-[data-theme="dark"] [data-pending="true"][data-pending-striped]::after,
-.dark [data-pending="true"][data-pending-striped]::after {
-	background: repeating-linear-gradient(
-		-45deg,
-		transparent,
-		transparent 4px,
-		rgba(255, 255, 255, 0.03) 4px,
-		rgba(255, 255, 255, 0.03) 8px
-	);
-}
-
-/* Respect reduced motion preferences */
-@media (prefers-reduced-motion: reduce) {
+@layer underlay.components {
+	/* Pending state - subtle opacity reduction */
 	[data-pending="true"] {
-		opacity: 0.5;
-		transition: none;
+		opacity: 0.7;
+		transition: opacity 0.15s ease-out;
 	}
 
-	[data-pending="true"][data-pending-pulse] {
-		animation: none;
+	/* Pending with pointer events disabled */
+	[data-pending="true"][data-pending-disabled] {
+		pointer-events: none;
+	}
+
+	/* Striped overlay pattern for pending items (optional, add data-pending-striped) */
+	[data-pending="true"][data-pending-striped] {
+		position: relative;
 	}
 
 	[data-pending="true"][data-pending-striped]::after {
-		display: none;
+		content: "";
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		background: repeating-linear-gradient(
+			-45deg,
+			transparent,
+			transparent 4px,
+			rgba(0, 0, 0, 0.03) 4px,
+			rgba(0, 0, 0, 0.03) 8px
+		);
+		border-radius: inherit;
+	}
+
+	/* Pulse animation for pending items (optional, add data-pending-pulse) */
+	[data-pending="true"][data-pending-pulse] {
+		animation: underlay-pending-pulse 1.5s ease-in-out infinite;
+	}
+
+	@keyframes underlay-pending-pulse {
+		0%,
+		100% {
+			opacity: 0.7;
+		}
+		50% {
+			opacity: 0.5;
+		}
+	}
+
+	/* Dark mode adjustments */
+	[data-theme="dark"] [data-pending="true"][data-pending-striped]::after,
+	.dark [data-pending="true"][data-pending-striped]::after {
+		background: repeating-linear-gradient(
+			-45deg,
+			transparent,
+			transparent 4px,
+			rgba(255, 255, 255, 0.03) 4px,
+			rgba(255, 255, 255, 0.03) 8px
+		);
+	}
+
+	/* Respect reduced motion preferences */
+	@media (prefers-reduced-motion: reduce) {
+		[data-pending="true"] {
+			opacity: 0.5;
+			transition: none;
+		}
+
+		[data-pending="true"][data-pending-pulse] {
+			animation: none;
+		}
+
+		[data-pending="true"][data-pending-striped]::after {
+			display: none;
+		}
 	}
 }
 
@@ -132,22 +134,24 @@
 	outline-offset: var(--underlay-focus-ring-offset, 2px);
 }
 
-/* Success flash for confirmed items (optional, add data-optimistic-confirmed) */
-[data-optimistic-confirmed="true"] {
-	animation: underlay-confirm-flash 0.5s ease-out;
-}
-
-@keyframes underlay-confirm-flash {
-	0% {
-		background-color: var(--underlay-color-success-bg, #f0fdf4);
-	}
-	100% {
-		background-color: transparent;
-	}
-}
-
-@media (prefers-reduced-motion: reduce) {
+@layer underlay.components {
+	/* Success flash for confirmed items (optional, add data-optimistic-confirmed) */
 	[data-optimistic-confirmed="true"] {
-		animation: none;
+		animation: underlay-confirm-flash 0.5s ease-out;
+	}
+
+	@keyframes underlay-confirm-flash {
+		0% {
+			background-color: var(--underlay-color-success-bg, #f0fdf4);
+		}
+		100% {
+			background-color: transparent;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		[data-optimistic-confirmed="true"] {
+			animation: none;
+		}
 	}
 }

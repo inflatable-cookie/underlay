@@ -162,6 +162,26 @@ export function createMediaUploadFlow(
     step === "checking" || step === "uploading" || step === "finalising"
   );
 
+  // Unmounting the owning component abandons any in-flight upload: abort the
+  // blob PUT and invalidate pending continuations so they never write state.
+  $effect(() => () => {
+    runGeneration += 1;
+    abortController?.abort();
+    abortController = null;
+  });
+
+  // Surface a failure through state and onError. Fall back to console only
+  // when the consumer has not registered an error handler.
+  function reportFailure(cause: unknown): void {
+    step = "error";
+    error = cause instanceof Error ? cause.message : "Upload failed";
+    if (onError) {
+      onError(cause instanceof Error ? cause : new Error(String(cause)));
+    } else {
+      console.error("Upload failed", cause);
+    }
+  }
+
   // Actions
   function setFile(f: File) {
     runGeneration += 1;
@@ -243,10 +263,7 @@ export function createMediaUploadFlow(
       await proceedWithUploadInternal(metadata, generation);
     } catch (e) {
       if (generation !== runGeneration) return;
-      console.error("Upload failed", e);
-      error = e instanceof Error ? e.message : "Upload failed";
-      step = "error";
-      onError?.(e instanceof Error ? e : new Error(String(e)));
+      reportFailure(e);
     }
   }
 
@@ -337,11 +354,7 @@ export function createMediaUploadFlow(
       onComplete?.(finaliseResponse.media);
     } catch (e) {
       if (generation !== runGeneration) return;
-
-      console.error("Upload failed", e);
-      error = e instanceof Error ? e.message : "Upload failed";
-      step = "error";
-      onError?.(e instanceof Error ? e : new Error(String(e)));
+      reportFailure(e);
     }
   }
 

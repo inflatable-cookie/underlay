@@ -494,7 +494,7 @@
       var(--underlay-field-padding-inline, 0.7em);
     border-radius: 0.35rem;
     background: var(--underlay-color-field-bg, rgba(148, 163, 184, 0.18));
-    color: var(--underlay-color-text, #e5e7eb);
+    color: var(--underlay-color-text, #111827);
     font-size: 0.85rem;
     line-height: 1.2;
     cursor: pointer;
@@ -539,8 +539,8 @@
     height: 1.6rem;
     border: 0.0625rem solid rgba(148, 163, 184, 0.35);
     border-radius: 0.5rem;
-    background: rgba(255, 255, 255, 0.03);
-    color: var(--underlay-color-text, #e5e7eb);
+    background: var(--underlay-color-surface-secondary, #f3f4f6);
+    color: var(--underlay-color-text, #111827);
   }
 
   .underlay-relation-selector__action {

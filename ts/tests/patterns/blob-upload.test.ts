@@ -81,6 +81,51 @@ describe("patterns/blob-upload", () => {
 		await expect(uploadToBlob(basePlan as any, file)).rejects.toMatchObject({ code: "FILE_TOO_LARGE" });
 		await expect(uploadToBlob({ ...basePlan, maxBytes: 100, allowedContentTypes: ["image/png"] } as any, file)).rejects.toMatchObject({ code: "INVALID_CONTENT_TYPE" });
 		await expect(uploadToBlob({ ...basePlan, maxBytes: 100, expiresAt: "2000-01-01T00:00:00.000Z" } as any, file)).rejects.toMatchObject({ code: "UPLOAD_EXPIRED" });
+		await expect(uploadToBlob({ ...basePlan, maxBytes: 100, expiresAt: "not-a-date" } as any, file)).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
+	});
+
+	it("does not start a request when the signal is already aborted", async () => {
+		const file = new File(["hello"], "f.txt", { type: "text/plain" });
+		const sent = vi.fn();
+		class SpyXHR extends MockXHR {
+			send(f: File): void {
+				sent();
+				super.send(f);
+			}
+		}
+		(globalThis as any).XMLHttpRequest = SpyXHR;
+		const controller = new AbortController();
+		controller.abort();
+		const plan = {
+			uploadUrl: "https://upload",
+			method: "PUT",
+			requiredHeaders: {},
+			maxBytes: 100,
+			allowedContentTypes: ["text/plain"],
+			expiresAt: "2099-01-01T00:00:00.000Z",
+			objectKey: "obj-abort",
+		};
+
+		await expect(uploadToBlob(plan as any, file, { signal: controller.signal })).rejects.toMatchObject({ code: "UPLOAD_ABORTED" });
+		expect(sent).not.toHaveBeenCalled();
+	});
+
+	it("removes its abort listener once the upload settles", async () => {
+		const file = new File(["hello"], "f.txt", { type: "text/plain" });
+		const controller = new AbortController();
+		const removeSpy = vi.spyOn(controller.signal, "removeEventListener");
+		const plan = {
+			uploadUrl: "https://upload",
+			method: "PUT",
+			requiredHeaders: {},
+			maxBytes: 100,
+			allowedContentTypes: ["text/plain"],
+			expiresAt: "2099-01-01T00:00:00.000Z",
+			objectKey: "obj-listener",
+		};
+
+		await uploadToBlob(plan as any, file, { signal: controller.signal });
+		expect(removeSpy).toHaveBeenCalledWith("abort", expect.any(Function));
 	});
 
 	it("uploads successfully and reports progress", async () => {
@@ -180,12 +225,16 @@ describe("patterns/blob-upload", () => {
 		expect(formatFileSize(undefined)).toBe("—");
 		expect(formatFileSize(0)).toBe("0 B");
 		expect(formatFileSize(1024)).toBe("1.0 KB");
+		expect(formatFileSize(-1)).toBe("—");
+		expect(formatFileSize(Number.NaN)).toBe("—");
+		expect(formatFileSize(1024 ** 4)).toBe("1.0 TB");
+		expect(formatFileSize(5 * 1024 ** 5)).toBe("5120.0 TB");
 		expect(getFileTypeDescription("image/png")).toBe("PNG image");
 		expect(getFileTypeDescription("foo/bar")).toBe("foo/bar");
 
 		expect(validateFile(video, 100)).toEqual({
 			valid: false,
-			error: "Video files are not supported. Please use Vimeo for video content.",
+			error: "Video files are not supported.",
 		});
 			expect(validateFile(unknown, 100)).toEqual(
 				expect.objectContaining({ valid: false, error: expect.stringContaining("not supported") })

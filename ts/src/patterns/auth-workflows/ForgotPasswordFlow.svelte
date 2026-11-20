@@ -65,10 +65,13 @@
   let resetToken = $state("");
   let error = $state<string | null>(null);
   let loading = $state(false);
+  const uid = $props.id();
+  const emailFieldId = `${uid}-email`;
 
   // Step 1: Request password reset code
   async function handleRequestCode(event: SubmitEvent) {
     event.preventDefault();
+    if (loading) return;
     error = null;
     loading = true;
 
@@ -90,6 +93,7 @@
 
   // Step 2: Verify the code
   async function handleVerifyCode(inputCode: string) {
+    if (loading) return;
     error = null;
     loading = true;
 
@@ -106,6 +110,7 @@
 
   // Step 3: Set new password
   async function handleResetPassword(newPassword: string) {
+    if (loading) return;
     error = null;
     loading = true;
 
@@ -121,6 +126,7 @@
 
   // Request a new code
   async function handleResendCode() {
+    if (loading) return;
     error = null;
     loading = true;
 
@@ -147,10 +153,10 @@
     <form onsubmit={handleRequestCode} class="underlay-forgot-password-flow__form">
       <p class="underlay-forgot-password-flow__hint">{emailHint}</p>
 
-      <Field id="forgot-password-email" label="Email" required>
+      <Field id={emailFieldId} label="Email" required>
         {#snippet control({ describedBy })}
           <TextInput
-            id="forgot-password-email"
+            id={emailFieldId}
             name="email"
             type="email"
             value={email}

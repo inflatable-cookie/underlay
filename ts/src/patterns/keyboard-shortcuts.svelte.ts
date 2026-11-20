@@ -25,6 +25,12 @@ export interface ShortcutOptions {
   when?: () => boolean;
   /** Priority — higher wins on conflict (default: 0) */
   priority?: number;
+  /**
+   * Fire even when focus is in a text-editing element (input, textarea,
+   * select, or contenteditable). Off by default so typing never triggers
+   * global shortcuts.
+   */
+  allowInInputs?: boolean;
 }
 
 export interface RegisteredShortcut {
@@ -54,16 +60,31 @@ interface InternalShortcut {
   description: string;
   when?: () => boolean;
   priority: number;
+  allowInInputs: boolean;
 }
 
 const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.userAgent);
+
+/**
+ * Split a key pattern on `+`. The `+` key is special: a bare `+` or a
+ * trailing `++` (e.g. `mod++`) names the plus key rather than an empty part.
+ */
+function splitKeyPattern(key: string): string[] {
+  const lower = key.trim().toLowerCase();
+  if (lower === "+") return ["+"];
+  if (lower.endsWith("++")) {
+    const modifiers = lower.slice(0, -2).split("+").map((p) => p.trim()).filter((p) => p.length > 0);
+    return [...modifiers, "+"];
+  }
+  return lower.split("+").map((p) => p.trim()).filter((p) => p.length > 0);
+}
 
 /**
  * Normalize a key pattern: resolve `mod+` to platform key,
  * lowercase, and sort modifiers for consistent matching.
  */
 function normalizeKey(key: string): string {
-  const parts = key.toLowerCase().split("+").map((p) => p.trim());
+  const parts = splitKeyPattern(key);
 
   // Resolve mod+ to platform modifier
   const modIndex = parts.indexOf("mod");
@@ -100,6 +121,23 @@ function eventToKey(event: KeyboardEvent): string {
 }
 
 /**
+ * Whether a keyboard event originated from an element that accepts text input.
+ * Duck-typed so it stays safe during SSR and in non-DOM test environments.
+ */
+function isEditableTarget(target: EventTarget | null): boolean {
+  if (!target || typeof target !== "object") return false;
+  const el = target as {
+    tagName?: unknown;
+    isContentEditable?: unknown;
+    getAttribute?: (name: string) => string | null;
+  };
+  if (el.isContentEditable === true) return true;
+  const editableAttr = typeof el.getAttribute === "function" ? el.getAttribute("contenteditable") : null;
+  if (editableAttr !== null && editableAttr.toLowerCase() !== "false") return true;
+  return typeof el.tagName === "string" && ["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName.toUpperCase());
+}
+
+/**
  * Create a keyboard shortcut manager.
  */
 export function createKeyboardShortcuts(): KeyboardShortcutManager {
@@ -116,7 +154,8 @@ export function createKeyboardShortcuts(): KeyboardShortcutManager {
       handler,
       description: options.description ?? "",
       when: options.when,
-      priority: options.priority ?? 0
+      priority: options.priority ?? 0,
+      allowInInputs: options.allowInInputs ?? false
     };
 
     registrations = [...registrations, entry];
@@ -134,10 +173,12 @@ export function createKeyboardShortcuts(): KeyboardShortcutManager {
 
   function handleKeydown(event: KeyboardEvent): void {
     const eventKey = eventToKey(event);
+    const inTextField = isEditableTarget(event.target);
 
     // Find all matching shortcuts
     const matches = registrations.filter((r) => {
       if (r.normalizedKey !== eventKey) return false;
+      if (inTextField && !r.allowInInputs) return false;
       if (r.when && !r.when()) return false;
       return true;
     });

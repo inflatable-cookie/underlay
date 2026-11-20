@@ -83,4 +83,54 @@ describe("patterns/keyboard-shortcuts.svelte.ts", () => {
 		manager.handleKeydown(modifierOnly);
 		expect(modifierOnly.preventDefault).toHaveBeenCalledTimes(0);
 	});
+
+	it("ignores shortcuts while typing in inputs unless the shortcut opts in", async () => {
+		const { createKeyboardShortcuts } = await loadKeyboardModule();
+		const manager = createKeyboardShortcuts();
+		const guarded = vi.fn();
+		const optedIn = vi.fn();
+		manager.register("Escape", guarded);
+		manager.register("ctrl+j", optedIn, { allowInInputs: true });
+
+		const fromInput = (key: string, target: unknown, modifiers?: { ctrl?: boolean }) =>
+			Object.assign(createKeyboardEventLike(key, modifiers), { target });
+		const input = { tagName: "INPUT" };
+		const textarea = { tagName: "TEXTAREA" };
+		const select = { tagName: "SELECT" };
+		const editable = { tagName: "DIV", isContentEditable: true };
+		const attrEditable = { tagName: "DIV", getAttribute: (name: string) => (name === "contenteditable" ? "" : null) };
+		const plainDiv = { tagName: "DIV", isContentEditable: false, getAttribute: () => null };
+
+		for (const target of [input, textarea, select, editable, attrEditable]) {
+			manager.handleKeydown(fromInput("Escape", target));
+		}
+		expect(guarded).not.toHaveBeenCalled();
+
+		manager.handleKeydown(fromInput("Escape", plainDiv));
+		expect(guarded).toHaveBeenCalledTimes(1);
+
+		const optIn = fromInput("j", input, { ctrl: true });
+		manager.handleKeydown(optIn);
+		expect(optedIn).toHaveBeenCalledTimes(1);
+		expect(optIn.preventDefault).toHaveBeenCalledTimes(1);
+	});
+
+	it("matches the plus key with and without modifiers", async () => {
+		const { createKeyboardShortcuts } = await loadKeyboardModule();
+		const manager = createKeyboardShortcuts();
+		const zoomIn = vi.fn();
+		const zoomInWithMod = vi.fn();
+		manager.register("+", zoomIn);
+		manager.register("mod++", zoomInWithMod);
+
+		const plain = createKeyboardEventLike("+");
+		manager.handleKeydown(plain);
+		expect(zoomIn).toHaveBeenCalledTimes(1);
+		expect(plain.preventDefault).toHaveBeenCalledTimes(1);
+
+		const withCtrl = createKeyboardEventLike("+", { ctrl: true });
+		manager.handleKeydown(withCtrl);
+		expect(zoomInWithMod).toHaveBeenCalledTimes(1);
+		expect(zoomIn).toHaveBeenCalledTimes(1);
+	});
 });

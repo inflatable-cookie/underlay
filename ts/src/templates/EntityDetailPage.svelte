@@ -1,5 +1,5 @@
 <script lang="ts" generics="T = unknown">
-  import { onMount } from "svelte";
+  import { onMount, untrack } from "svelte";
   import type { Snippet } from "svelte";
   import type { BreadcrumbItem } from "../patterns/types";
   import { useAuthenticatedData } from "../runtime/auth";
@@ -214,25 +214,34 @@
     }
   }
 
+  // Plain guard, not state: it only blocks overlapping confirms.
+  let confirmInFlight = false;
+
   async function handleConfirm() {
-    if (!pendingAction) return;
-    await invokeActionHandler(pendingAction);
-    pendingAction = null;
+    const action = pendingAction;
+    if (!action || confirmInFlight) return;
+    confirmInFlight = true;
+    try {
+      await invokeActionHandler(action);
+      pendingAction = null;
+    } finally {
+      confirmInFlight = false;
+    }
   }
 
   function handleCancel() {
     pendingAction = null;
   }
 
-  async function loadPageData(fetch: FetchFn, token: string | null) {
-    if (!dataLoader) return providedItem;
-    return await dataLoader(fetch, token);
-  }
-
-  const pageData = useAuthenticatedData<T | null>(
-    loadPageData,
-    { defaultValue: null }
-  );
+  // Decided once at init: only fetch when a loader is supplied; pages with a
+  // preloaded `item` skip the authenticated-data machinery entirely.
+  const hasDataLoader = untrack(() => dataLoader !== undefined && dataLoader !== null);
+  const pageData = hasDataLoader
+    ? useAuthenticatedData<T | null>(
+        (fetch, token) => dataLoader?.(fetch, token) ?? Promise.resolve(null),
+        { defaultValue: null }
+      )
+    : null;
 
   const item = $derived(providedItem ?? pageData?.data ?? null);
   const loading = $derived(
@@ -265,7 +274,8 @@
   }));
   const resolvedBackInfo = $derived(getResolvedBackInfo());
   const UNSET_RELOAD_KEY = Symbol("unset-reload-key");
-  let previousReloadKey = $state<string | number | null | typeof UNSET_RELOAD_KEY>(UNSET_RELOAD_KEY);
+  // Plain bookkeeping: the effect below must re-run only when reloadKey changes.
+  let previousReloadKey: string | number | null | typeof UNSET_RELOAD_KEY = UNSET_RELOAD_KEY;
 
   $effect(() => {
     const firstTabId = allTabs[0]?.id ?? "";
