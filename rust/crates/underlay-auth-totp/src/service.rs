@@ -78,12 +78,9 @@ impl TotpService {
 
     /// Verify a second factor with a per-user attempt cap.
     ///
-    /// Second-factor codes have a tiny keyspace (6 digits / short backup
-    /// codes), so unlimited guesses are brute-forceable. This checks a rate
-    /// limit keyed on `rate_limit_key` (use something like
-    /// `"2fa:<user_id>"`) before verifying, and increments only on a failed
-    /// attempt so legitimate success is never penalized. A successful verify
-    /// resets the counter.
+    /// Reserve an attempt before verifying to bound online guesses against
+    /// short TOTP codes, including under concurrency. Key the limiter by user,
+    /// for example `"2fa:<user_id>"`. A successful verification resets the counter.
     #[allow(clippy::too_many_arguments)] // limiter + key + config + the full verify inputs
     pub async fn verify_second_factor_throttled<L: RateLimitBackend>(
         &self,

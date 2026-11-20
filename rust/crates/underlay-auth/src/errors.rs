@@ -196,9 +196,11 @@ impl AuthError {
 
     /// Convert to AppError for HTTP response handling.
     pub fn into_app_error(self) -> AppError {
-        let code = self.code();
-        let message = self.message();
-        AppError::new(code, message)
+        AppError {
+            code: self.code(),
+            message: self.message(),
+            field_errors: self.details(),
+        }
     }
 
     /// Get a user-friendly message for this error.

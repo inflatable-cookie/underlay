@@ -153,13 +153,14 @@ impl RoleHierarchy {
             return Ok(());
         }
 
+        if self.is_super_role(role) {
+            return Err(RoleHierarchyError::CannotPromoteToSuperRole);
+        }
+
         let caller_level = self.max_level(caller_roles);
         let target_level = self.level(role);
 
         if caller_level <= target_level {
-            if self.is_super_role(role) {
-                return Err(RoleHierarchyError::CannotPromoteToSuperRole);
-            }
             return Err(RoleHierarchyError::InsufficientPrivileges {
                 caller_level,
                 target_level,

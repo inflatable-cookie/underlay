@@ -51,6 +51,17 @@ fn super_role_is_protected_independent_of_numeric_level() {
 }
 
 #[test]
+fn only_super_role_can_assign_super_role_regardless_of_numeric_level() {
+    let h = RoleHierarchy::new(&[("owner", 10), ("admin", 15), ("support", 5)], "owner");
+    assert_eq!(
+        h.can_assign(&["support", "admin"], "owner"),
+        Err(RoleHierarchyError::CannotPromoteToSuperRole)
+    );
+    assert!(h.can_assign(&["owner"], "owner").is_ok());
+    assert!(h.can_assign(&["admin"], "support").is_ok());
+}
+
+#[test]
 fn support_cannot_manage_admins() {
     let h = standard();
     assert!(matches!(

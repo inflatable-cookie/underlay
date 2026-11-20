@@ -71,8 +71,14 @@ impl MemoryRepo {
 
 #[async_trait::async_trait]
 impl underlay_auth::UserRepository for MemoryRepo {
-    async fn find_by_id(&self, _user_id: Uuid) -> underlay_auth::RepoResult<Option<User>> {
-        Ok(None)
+    async fn find_by_id(&self, user_id: Uuid) -> underlay_auth::RepoResult<Option<User>> {
+        Ok(self
+            .users_by_email
+            .lock()
+            .await
+            .values()
+            .find(|user| user.id == user_id)
+            .cloned())
     }
 
     async fn find_by_email(&self, email: &str) -> underlay_auth::RepoResult<Option<User>> {
@@ -185,6 +191,14 @@ impl underlay_auth::CredentialRepository for MemoryRepo {
 
         if credential_type == CredentialType::OAuthGoogle {
             let mut oauth = self.oauth_by_user_id.lock().await;
+            if let CredentialMetadata::OAuthGoogle { google_user_id, .. } = metadata {
+                if oauth.values().any(|existing| matches!(
+                    &existing.metadata,
+                    CredentialMetadata::OAuthGoogle { google_user_id: stored, .. } if stored == google_user_id
+                )) {
+                    return Err(AuthError::OAuthAlreadyConnected);
+                }
+            }
             match oauth.entry(user_id) {
                 std::collections::hash_map::Entry::Vacant(entry) => {
                     entry.insert(credential.clone());
@@ -229,6 +243,16 @@ impl underlay_auth::CredentialRepository for MemoryRepo {
 
 #[async_trait::async_trait]
 impl GoogleOAuthCredentialRepository for MemoryRepo {
+    async fn find_google_credential_by_subject(
+        &self,
+        google_user_id: &str,
+    ) -> AuthResult<Option<Credential>> {
+        Ok(self.oauth_by_user_id.lock().await.values().find(|credential| matches!(
+            &credential.metadata,
+            CredentialMetadata::OAuthGoogle { google_user_id: stored, .. } if stored == google_user_id
+        )).cloned())
+    }
+
     async fn replace_google_refresh_token(
         &self,
         credential_id: Uuid,

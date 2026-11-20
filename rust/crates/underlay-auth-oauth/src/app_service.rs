@@ -9,12 +9,18 @@ use crate::{
 /// Stored in the credential secret field for Google sign-ins without offline access.
 pub const NO_GOOGLE_REFRESH_TOKEN: &str = "oauth:no-refresh-token";
 
-/// Persistence for refreshing an existing Google credential.
+/// Persistence for resolving and refreshing a linked Google credential.
 ///
-/// The underlying credential store must enforce at most one Google credential
-/// per user and reject conflicting creates.
+/// The store must enforce uniqueness per user and per Google subject for
+/// Google credentials, and reject conflicting creates.
 #[async_trait::async_trait]
 pub trait GoogleOAuthCredentialRepository: CredentialRepository {
+    /// Find an `OAuthGoogle` credential by the Google subject stored in its metadata.
+    async fn find_google_credential_by_subject(
+        &self,
+        google_user_id: &str,
+    ) -> AuthResult<Option<Credential>>;
+
     /// Atomically replace the encrypted secret and return the updated row.
     /// Match the credential ID, Google type, and stored Google subject.
     /// Return `None` if the matching link no longer exists.
@@ -109,52 +115,66 @@ where
             .fetch_userinfo(&token_set.access_token)
             .await?;
 
-        let email = userinfo
-            .email
-            .clone()
-            .map(|e| e.trim().to_ascii_lowercase())
-            .filter(|e| !e.is_empty())
-            .ok_or_else(|| AuthError::OAuthError("google userinfo missing email".into()))?;
-
         if self.require_verified_email && userinfo.email_verified != Some(true) {
             return Err(AuthError::OAuthError(
                 "google userinfo email not verified".into(),
             ));
         }
 
-        let (user, is_new_user) = match repo.find_by_email(&email).await? {
-            Some(existing) => {
-                if existing.is_suspended() {
-                    return Err(AuthError::AccountSuspended);
+        let linked_credential = repo
+            .find_google_credential_by_subject(&userinfo.sub)
+            .await?;
+        let (user, is_new_user) = if let Some(credential) = &linked_credential {
+            let user = UserRepository::find_by_id(repo, credential.user_id)
+                .await?
+                .ok_or(AuthError::UserNotFound)?;
+            (user, false)
+        } else {
+            let email = userinfo
+                .email
+                .as_deref()
+                .map(|email| email.trim().to_ascii_lowercase())
+                .filter(|email| !email.is_empty())
+                .ok_or_else(|| AuthError::OAuthError("google userinfo missing email".into()))?;
+            match repo.find_by_email(&email).await? {
+                Some(existing) => (existing, false),
+                None => {
+                    let display_name = derive_display_name(&userinfo, &email);
+                    (
+                        UserRepository::create(repo, &email, Some(display_name.as_str())).await?,
+                        true,
+                    )
                 }
-                if existing.is_deleted() {
-                    return Err(AuthError::AccountDeleted);
-                }
-                (existing, false)
-            }
-            None => {
-                let display_name = derive_display_name(&userinfo, &email);
-                (
-                    UserRepository::create(repo, &email, Some(display_name.as_str())).await?,
-                    true,
-                )
             }
         };
 
-        let existing_oauth = repo
-            .find_oauth_by_user_and_provider(user.id, CredentialType::OAuthGoogle)
-            .await?;
+        if user.is_suspended() {
+            return Err(AuthError::AccountSuspended);
+        }
+        if user.is_deleted() {
+            return Err(AuthError::AccountDeleted);
+        }
+
+        let existing_oauth = match linked_credential {
+            Some(credential) => Some(credential),
+            None => {
+                repo.find_oauth_by_user_and_provider(user.id, CredentialType::OAuthGoogle)
+                    .await?
+            }
+        };
         let refresh_token = token_set
             .refresh_token
             .as_deref()
             .filter(|token| !token.is_empty());
 
         if let Some(credential) = existing_oauth {
-            if !matches!(
-                &credential.metadata,
-                CredentialMetadata::OAuthGoogle { google_user_id, .. }
-                    if *google_user_id == userinfo.sub
-            ) {
+            if credential.credential_type != CredentialType::OAuthGoogle
+                || !matches!(
+                    &credential.metadata,
+                    CredentialMetadata::OAuthGoogle { google_user_id, .. }
+                        if *google_user_id == userinfo.sub
+                )
+            {
                 return Err(AuthError::OAuthError(
                     "google account does not match the linked account".into(),
                 ));

@@ -1,6 +1,8 @@
 use chrono::{Duration, Utc};
 
-use super::super::{EmailTotpConfig, EmailTotpService, VERIFICATION_METHOD_EMAIL_TOTP};
+use super::super::{
+    EmailTotpConfig, EmailTotpError, EmailTotpService, VERIFICATION_METHOD_EMAIL_TOTP,
+};
 use super::support::{
     default_rate_limit, hash, session, MockCodeRepo, MockCodeRepoState, MockSender,
     MockSessionRepo, MockSessionRepoState,
@@ -70,4 +72,50 @@ async fn verify_code_only_success_marks_used_without_session_creation() {
     assert_eq!(code_state.marked_used, vec!["code-only".to_string()]);
     let session_state = service.session_repository.state.lock().expect("lock");
     assert_eq!(session_state.create_calls, 0);
+}
+
+#[tokio::test]
+async fn concurrent_verification_consumes_code_and_creates_session_once() {
+    let mut codes = MockCodeRepo::new(MockCodeRepoState {
+        active_code: Some(StoredCode {
+            id: "concurrent-code".to_string(),
+            code_hash: hash("123456"),
+            expires_at: Utc::now() + Duration::minutes(5),
+            attempts: 0,
+            max_attempts: 5,
+        }),
+        ..Default::default()
+    });
+    // Both verifications must read the same unused code before either consumes it.
+    codes.active_code_read_barrier = Some(tokio::sync::Barrier::new(2));
+    let service = EmailTotpService::new(
+        codes,
+        MockSessionRepo::new(MockSessionRepoState {
+            session_to_create: Some(session("session-1", "user-1", "login")),
+            ..Default::default()
+        }),
+        MockSender::new(),
+        EmailTotpConfig::default(),
+    );
+
+    let (first, second) = tokio::join!(
+        service.verify_code("user-1", "login", "123456"),
+        service.verify_code("user-1", "login", "123456"),
+    );
+    let (winner, loser) = if first.is_ok() {
+        (first, second)
+    } else {
+        (second, first)
+    };
+    assert!(winner.is_ok());
+    assert!(matches!(loser, Err(EmailTotpError::NoActiveCode)));
+    assert_eq!(
+        service
+            .session_repository
+            .state
+            .lock()
+            .unwrap()
+            .create_calls,
+        1
+    );
 }

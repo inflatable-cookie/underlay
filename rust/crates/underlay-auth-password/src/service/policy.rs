@@ -2,7 +2,7 @@ use underlay_auth::hashing::{PasswordHasherExt, PasswordVerifierExt};
 use underlay_ratelimit::RateLimitBackend;
 
 use crate::errors::{PasswordAuthError, PasswordAuthResult};
-use crate::strength::PasswordStrength;
+use crate::strength::MIN_PASSWORD_STRENGTH;
 
 use super::{CompromisedPasswordStrategy, PasswordAuthRepository, PasswordAuthService};
 
@@ -37,10 +37,13 @@ where
             return Err(PasswordAuthError::PasswordCompromised);
         }
 
-        if analysis.strength < PasswordStrength::Fair {
-            return Err(PasswordAuthError::PasswordTooWeak(
-                analysis.feedback.join(". "),
-            ));
+        if analysis.strength < MIN_PASSWORD_STRENGTH {
+            let feedback = if analysis.feedback.is_empty() {
+                "Password is too weak".to_string()
+            } else {
+                analysis.feedback.join(". ")
+            };
+            return Err(PasswordAuthError::PasswordTooWeak(feedback));
         }
 
         Ok(())

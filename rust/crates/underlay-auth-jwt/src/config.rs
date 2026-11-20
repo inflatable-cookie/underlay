@@ -157,6 +157,7 @@ impl JwtConfig {
         Self::from_env_with_defaults(&JwtBehaviorDefaults::default())
     }
 
+    /// Load JWT settings from the environment, clamping lifetimes to at least one unit.
     pub fn from_env_with_defaults(defaults: &JwtBehaviorDefaults) -> JwtResult<Self> {
         let private_key_b64 = std::env::var("AUTH_JWT_PRIVATE_KEY")
             .map_err(|_| JwtError::Config("AUTH_JWT_PRIVATE_KEY not set".to_string()))?;
@@ -197,17 +198,20 @@ impl JwtConfig {
             .transpose()?
             .unwrap_or(defaults.leeway_seconds);
 
-        Ok(Self {
+        Ok(Self::from_values(
             private_key_b64,
             public_key_b64,
-            access_token_lifetime_minutes,
-            refresh_token_lifetime_days,
-            issuer,
-            audience,
-            leeway_seconds,
-        })
+            JwtBehaviorDefaults {
+                access_token_lifetime_minutes,
+                refresh_token_lifetime_days,
+                issuer,
+                audience,
+                leeway_seconds,
+            },
+        ))
     }
 
+    /// Build a config with a minimum access lifetime of one minute and refresh lifetime of one day.
     pub fn from_values(
         private_key_b64: String,
         public_key_b64: String,
@@ -216,8 +220,8 @@ impl JwtConfig {
         Self {
             private_key_b64,
             public_key_b64,
-            access_token_lifetime_minutes: behavior.access_token_lifetime_minutes,
-            refresh_token_lifetime_days: behavior.refresh_token_lifetime_days,
+            access_token_lifetime_minutes: behavior.access_token_lifetime_minutes.max(1),
+            refresh_token_lifetime_days: behavior.refresh_token_lifetime_days.max(1),
             issuer: behavior.issuer,
             audience: behavior.audience,
             leeway_seconds: behavior.leeway_seconds,

@@ -5,6 +5,7 @@ use underlay_auth::AuthError;
 use crate::TotpService;
 
 impl TotpService {
+    /// Generate backup codes with 80 bits of entropy each and their storage hashes.
     pub fn generate_backup_codes(&self, count: usize) -> (Vec<String>, Vec<String>) {
         let mut codes = Vec::with_capacity(count);
         let mut hashes = Vec::with_capacity(count);
@@ -53,12 +54,14 @@ fn normalize_backup_code(input: &str) -> String {
 fn generate_backup_code() -> String {
     const ALPHABET: &[u8] = b"ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
-    let mut raw = [0_u8; 10];
+    // Each of the 16 symbols contributes 5 bits. The 32-symbol alphabet
+    // divides the byte space evenly, so taking the remainder is unbiased.
+    let mut raw = [0_u8; 16];
     rand::rng().fill(&mut raw);
 
-    let mut out = String::with_capacity(11);
+    let mut out = String::with_capacity(19);
     for (i, b) in raw.into_iter().enumerate() {
-        if i == 5 {
+        if i > 0 && i % 4 == 0 {
             out.push('-');
         }
         out.push(ALPHABET[(b as usize) % ALPHABET.len()] as char);

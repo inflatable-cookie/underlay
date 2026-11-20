@@ -10,11 +10,12 @@ async-trait = { workspace = true }
 chrono = { workspace = true, features = ["serde"] }
 rand = { workspace = true }
 thiserror = { workspace = true }
+tokio = { workspace = true, features = ["rt"] }
 tracing = { workspace = true }
 underlay-auth = { path = "../underlay-auth", features = ["hashing"] }
 
 [dev-dependencies]
-tokio = { workspace = true, features = ["macros", "rt"] }
+tokio = { workspace = true, features = ["macros", "sync"] }
 
 [lints]
 workspace = true

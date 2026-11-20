@@ -3,6 +3,7 @@ use std::sync::Mutex;
 use std::time::Duration;
 
 use async_trait::async_trait;
+use tokio::sync::Barrier;
 use underlay_auth::{AuthError, AuthResult};
 use underlay_auth_jwt::{JwtConfig, JwtService};
 use underlay_core::Uuid;
@@ -14,6 +15,7 @@ use crate::types::{SessionFingerprint, SessionRecord};
 struct InMemoryRepo {
     sessions: Mutex<HashMap<Uuid, SessionRecord>>,
     revoke_calls: Mutex<Vec<(Uuid, String)>>,
+    rotation_barrier: Option<Barrier>,
 }
 
 impl InMemoryRepo {
@@ -21,6 +23,7 @@ impl InMemoryRepo {
         Self {
             sessions: Mutex::new(HashMap::new()),
             revoke_calls: Mutex::new(Vec::new()),
+            rotation_barrier: None,
         }
     }
 }
@@ -45,6 +48,9 @@ impl SessionRepository for InMemoryRepo {
         expected_refresh_token_id: Uuid,
         expected_refresh_token_version: i32,
     ) -> AuthResult<bool> {
+        if let Some(barrier) = &self.rotation_barrier {
+            barrier.wait().await;
+        }
         let mut sessions = self.sessions.lock().unwrap();
         let Some(current) = sessions.get(&session.id) else {
             return Ok(false);
@@ -233,6 +239,48 @@ async fn replayed_refresh_token_revokes_family() {
         "family not revoked after reuse"
     );
     let _ = session;
+}
+
+#[tokio::test]
+async fn concurrent_refresh_cas_loss_keeps_the_winners_session_active() {
+    let (config, _) = JwtConfig::generate().unwrap();
+    let mut repo = InMemoryRepo::new();
+    // Both refreshes must reach rotation before either writes a new token.
+    repo.rotation_barrier = Some(Barrier::new(2));
+    let service = SessionService::new(
+        JwtService::new(config).unwrap(),
+        repo,
+        StaticAccounts {
+            status: AccountStatus::Active,
+            roles: vec!["user".into()],
+        },
+    );
+    let user_id = Uuid::new_v7();
+    let (tokens, _) = service
+        .create_session(user_id, vec!["user".into()], None)
+        .await
+        .unwrap();
+
+    let (first, second) = tokio::join!(
+        service.refresh(&tokens.refresh_token, None),
+        service.refresh(&tokens.refresh_token, None),
+    );
+    let (winner, loser) = if first.is_ok() {
+        (first, second)
+    } else {
+        (second, first)
+    };
+    let winner = winner.unwrap();
+    assert!(matches!(loser, Err(AuthError::TokenInvalid)));
+    assert_eq!(winner.session.refresh_token_version, 2);
+    assert_eq!(
+        service
+            .verify_access_principal(&winner.tokens.access_token)
+            .await
+            .unwrap()
+            .0,
+        user_id
+    );
 }
 
 #[tokio::test]

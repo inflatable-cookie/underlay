@@ -1,11 +1,15 @@
 use axum::extract::FromRequestParts;
-use axum::http::{request::Parts, StatusCode};
-
-use underlay_core::AppError;
+use axum::http::{header, request::Parts, HeaderMap, HeaderValue, StatusCode};
 
 use crate::{AuthError, AuthProvider, Principal};
 
 pub const AUTHORIZATION_HEADER: &str = "authorization";
+
+type AuthRejection = (
+    StatusCode,
+    HeaderMap,
+    axum::Json<underlay_core::ErrorEnvelope>,
+);
 
 /// Trait for application state types that can supply an auth provider.
 ///
@@ -30,21 +34,17 @@ impl<S> FromRequestParts<S> for Authenticated
 where
     S: Send + Sync + HasAuthProvider,
 {
-    type Rejection = (StatusCode, axum::Json<underlay_core::ErrorEnvelope>);
+    type Rejection = AuthRejection;
 
     async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
-        let token = extract_bearer(parts.headers.get(AUTHORIZATION_HEADER)).ok_or_else(|| {
-            reject(
-                StatusCode::UNAUTHORIZED,
-                AuthError::Unauthorized.into_app_error(),
-            )
-        })?;
+        let token = extract_bearer(parts.headers.get(AUTHORIZATION_HEADER))
+            .ok_or_else(|| reject(AuthError::Unauthorized))?;
 
         let principal = state
             .auth_provider()
             .authenticate_bearer(&token)
             .await
-            .map_err(|auth_err| reject(auth_error_status(&auth_err), auth_err.into_app_error()))?;
+            .map_err(reject)?;
 
         Ok(Authenticated(principal))
     }
@@ -54,7 +54,7 @@ impl<S> FromRequestParts<S> for OptionalAuthenticated
 where
     S: Send + Sync + HasAuthProvider,
 {
-    type Rejection = (StatusCode, axum::Json<underlay_core::ErrorEnvelope>);
+    type Rejection = AuthRejection;
 
     async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
         let Some(token) = extract_bearer(parts.headers.get(AUTHORIZATION_HEADER)) else {
@@ -63,31 +63,30 @@ where
 
         match state.auth_provider().authenticate_bearer(&token).await {
             Ok(principal) => Ok(OptionalAuthenticated(Some(principal))),
-            Err(auth_err) => Err(reject(
-                auth_error_status(&auth_err),
-                auth_err.into_app_error(),
-            )),
+            Err(auth_err) => Err(reject(auth_err)),
         }
     }
 }
 
-fn auth_error_status(auth_err: &AuthError) -> StatusCode {
-    match auth_err {
+fn reject(err: AuthError) -> AuthRejection {
+    let mut headers = HeaderMap::new();
+    let status = match err {
         AuthError::Forbidden => StatusCode::FORBIDDEN,
-        AuthError::RateLimited { .. } => StatusCode::TOO_MANY_REQUESTS,
+        AuthError::RateLimited {
+            retry_after_seconds,
+        } => {
+            headers.insert(header::RETRY_AFTER, HeaderValue::from(retry_after_seconds));
+            StatusCode::TOO_MANY_REQUESTS
+        }
         AuthError::BadRequest(_) => StatusCode::BAD_REQUEST,
         AuthError::Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
         _ => StatusCode::UNAUTHORIZED,
-    }
-}
-
-fn reject(
-    status: StatusCode,
-    err: AppError,
-) -> (StatusCode, axum::Json<underlay_core::ErrorEnvelope>) {
-    // Match `underlay-http` behaviour by setting `x-error-code` when apps use `underlay-http`.
-    // (The rejection type itself stays pure.)
-    (status, axum::Json(err.into_envelope()))
+    };
+    (
+        status,
+        headers,
+        axum::Json(err.into_app_error().into_envelope()),
+    )
 }
 
 pub(crate) fn extract_bearer(header: Option<&http::HeaderValue>) -> Option<String> {

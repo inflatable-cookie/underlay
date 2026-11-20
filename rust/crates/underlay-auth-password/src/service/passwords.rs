@@ -10,8 +10,8 @@ use super::{PasswordAuthRepository, PasswordAuthService};
 impl<R, H, V, L> PasswordAuthService<R, H, V, L>
 where
     R: PasswordAuthRepository,
-    H: PasswordHasherExt,
-    V: PasswordVerifierExt,
+    H: PasswordHasherExt + 'static,
+    V: PasswordVerifierExt + 'static,
     L: RateLimitBackend,
 {
     /// Create or replace a user's password credential.
@@ -22,18 +22,23 @@ where
     ) -> PasswordAuthResult<Credential> {
         self.validate_new_password(password).await?;
 
-        let new_hash = self.hasher.hash_password(password.as_bytes())?;
+        let existing_id =
+            if let Some(existing) = self.repository.find_password_credential(user_id).await? {
+                if self
+                    .verify_password(password, existing.secret_encrypted)
+                    .await?
+                {
+                    return Err(PasswordAuthError::PasswordSameAsCurrent);
+                }
+                Some(existing.id)
+            } else {
+                None
+            };
 
-        if let Some(existing) = self.repository.find_password_credential(user_id).await? {
-            if self
-                .verifier
-                .verify_password(password.as_bytes(), &existing.secret_encrypted)?
-            {
-                return Err(PasswordAuthError::PasswordSameAsCurrent);
-            }
-
+        let new_hash = self.hash_password(password).await?;
+        if let Some(existing_id) = existing_id {
             self.repository
-                .update_password_credential(existing.id, &new_hash)
+                .update_password_credential(existing_id, &new_hash)
                 .await?;
 
             let updated = self
@@ -66,23 +71,20 @@ where
             None => return Err(PasswordAuthError::CredentialNotFound),
         };
 
-        let current_hash = &credential.secret_encrypted;
+        let current_hash = credential.secret_encrypted;
         let is_valid = self
-            .verifier
-            .verify_password(current_password.as_bytes(), current_hash)?;
+            .verify_password(current_password, current_hash.clone())
+            .await?;
 
         if !is_valid {
             return Err(PasswordAuthError::WrongPassword);
         }
 
-        if self
-            .verifier
-            .verify_password(new_password.as_bytes(), current_hash)?
-        {
+        if self.verify_password(new_password, current_hash).await? {
             return Err(PasswordAuthError::PasswordSameAsCurrent);
         }
 
-        let new_hash = self.hasher.hash_password(new_password.as_bytes())?;
+        let new_hash = self.hash_password(new_password).await?;
 
         self.repository
             .update_password_credential(credential.id, &new_hash)
@@ -104,7 +106,7 @@ where
             None => return Err(PasswordAuthError::CredentialNotFound),
         };
 
-        let new_hash = self.hasher.hash_password(new_password.as_bytes())?;
+        let new_hash = self.hash_password(new_password).await?;
 
         self.repository
             .update_password_credential(credential.id, &new_hash)

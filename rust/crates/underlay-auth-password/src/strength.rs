@@ -5,6 +5,8 @@ use std::collections::HashSet;
 use serde::{Deserialize, Serialize};
 use zxcvbn::zxcvbn;
 
+pub(crate) const MIN_PASSWORD_STRENGTH: PasswordStrength = PasswordStrength::Good;
+
 /// Password requirements configuration.
 ///
 /// This can be serialized and exposed via an API endpoint so that
@@ -191,7 +193,7 @@ impl PasswordStrengthAnalyzer {
             require_mixed_case: true,
             require_digit: true,
             require_special: true,
-            min_strength_score: 3, // "Good" strength
+            min_strength_score: MIN_PASSWORD_STRENGTH as u8,
             description: format!(
                 "Password must be at least {} characters with a mix of letters, numbers, and symbols. Avoid common words and patterns.",
                 self.min_length
@@ -284,7 +286,7 @@ impl PasswordStrengthAnalyzer {
             return Err("Password is too common".to_string());
         }
 
-        if analysis.strength < PasswordStrength::Good {
+        if analysis.strength < MIN_PASSWORD_STRENGTH {
             if let Some(msg) = analysis.feedback.first() {
                 return Err(msg.clone());
             }
