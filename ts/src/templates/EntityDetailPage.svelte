@@ -1,9 +1,9 @@
-<script lang="ts">
+<script lang="ts" generics="T = unknown">
   import { onMount } from "svelte";
   import type { Snippet } from "svelte";
   import type { BreadcrumbItem } from "../patterns/types";
   import { useAuthenticatedData } from "../runtime/auth";
-  import { getBackButtonInfo } from "../patterns/navigation";
+  import { useTemplateBackInfo } from "./template-back-info.svelte";
   import {
     PageHeader,
     Breadcrumbs,
@@ -131,8 +131,6 @@
     headerActions?: TemplateSurface;
   }
 
-  type T = $$Generic;
-
   // --- Props ---
 
   let {
@@ -177,7 +175,7 @@
   let activeTab = $state("");
   const mountedTabsSet = new Set<string>();
   let mountedTabsVersion = $state(0);
-  let showConfirmDialog = $state(false);
+  let actionError = $state<string | null>(null);
   let pendingAction: DetailActionConfig | null = $state(null);
   let isNarrowViewport = $state(false);
   const pageActionItems = $derived(
@@ -191,20 +189,20 @@
 
   // --- Actions ---
 
-  function invokeActionHandler(action: DetailActionConfig) {
-    Promise.resolve()
-      .then(() => action.handler())
-      .catch((err) => {
-        console.error(`Action "${action.label}" failed`, err);
-      });
+  async function invokeActionHandler(action: DetailActionConfig) {
+    actionError = null;
+    try {
+      await action.handler();
+    } catch (error) {
+      actionError = error instanceof Error ? error.message : String(error);
+    }
   }
 
   function handleAction(action: DetailActionConfig) {
     if (action.confirm) {
       pendingAction = action;
-      showConfirmDialog = true;
     } else {
-      invokeActionHandler(action);
+      void invokeActionHandler(action);
     }
   }
 
@@ -216,18 +214,14 @@
     }
   }
 
-  function handleConfirm() {
-    if (pendingAction) {
-      const action = pendingAction;
-      pendingAction = null;
-      invokeActionHandler(action);
-    }
-    showConfirmDialog = false;
+  async function handleConfirm() {
+    if (!pendingAction) return;
+    await invokeActionHandler(pendingAction);
+    pendingAction = null;
   }
 
   function handleCancel() {
     pendingAction = null;
-    showConfirmDialog = false;
   }
 
   async function loadPageData(fetch: FetchFn, token: string | null) {
@@ -263,33 +257,15 @@
     tabsHistoryKey === undefined ? "tab" : tabsHistoryKey
   );
   const shouldShowSubtitleWithBreadcrumbs = $derived(showSubtitleWithBreadcrumbs || detailBreadcrumbs.length === 0);
-  let resolvedBackInfo = $state<{ href: string; label: string; contextual: boolean } | null>(null);
+  const getResolvedBackInfo = useTemplateBackInfo(() => ({
+    href: backHref,
+    label: backLabel,
+    contextual: backIsContextual,
+    resolveContext: resolveBackContext
+  }));
+  const resolvedBackInfo = $derived(getResolvedBackInfo());
   const UNSET_RELOAD_KEY = Symbol("unset-reload-key");
   let previousReloadKey = $state<string | number | null | typeof UNSET_RELOAD_KEY>(UNSET_RELOAD_KEY);
-
-  $effect(() => {
-    if (!backHref) {
-      resolvedBackInfo = null;
-      return;
-    }
-
-    const fallbackLabel = backLabel ?? "Back";
-    if (!resolveBackContext) {
-      resolvedBackInfo = {
-        href: backHref,
-        label: fallbackLabel,
-        contextual: backIsContextual
-      };
-      return;
-    }
-
-    const contextualBackInfo = getBackButtonInfo(fallbackLabel, backHref);
-    resolvedBackInfo = {
-      href: contextualBackInfo.href,
-      label: contextualBackInfo.label,
-      contextual: Boolean(contextualBackInfo.isContextual || backIsContextual)
-    };
-  });
 
   $effect(() => {
     const firstTabId = allTabs[0]?.id ?? "";
@@ -492,6 +468,10 @@
       {/snippet}
     </PageHeader>
 
+    {#if actionError !== null}
+      <Callout tone="danger" title="Action failed" message={actionError} announceMode="polite" />
+    {/if}
+
     {#if allTabs.length > 0}
       <!-- `tabsVariant` stays underlay's own vocabulary: it also drives size,
            density, collapse and the panel class below, and callers pass it.
@@ -517,7 +497,7 @@
         onValueChange={handleTabValueChange}
       >
         {#snippet children(activeValue)}
-        {#each allTabs as tab}
+        {#each allTabs as tab (tab.id)}
           {#if tab.content && shouldRenderTab(tab.id)}
             <div
               class:underlay-entity-detail-page__tab-panel={tabsVariant === "underline"}
@@ -543,7 +523,7 @@
 {/if}
 
 <!-- Action confirmation dialog -->
-{#if showConfirmDialog && pendingAction}
+{#if pendingAction}
   <AlertDialog
     open={true}
     title={typeof pendingAction.confirm === "object" 

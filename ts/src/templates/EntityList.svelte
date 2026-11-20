@@ -1,13 +1,7 @@
 <script lang="ts" generics="T extends object = Record<string, unknown>">
   import { onDestroy, setContext, untrack } from "svelte";
-  import { getAuthConfig } from "../patterns/auth";
   import { useAuthenticatedData } from "../runtime/auth";
   import { useBatchActions } from "../patterns/batch-actions.svelte";
-  import {
-    createReorderController,
-    type ReorderController,
-    type ReorderableItem
-  } from "../patterns/reorder-controller.svelte";
   import { useToasts } from "../runtime/feedback";
   import {
     FilterToolbar,
@@ -38,11 +32,10 @@
     TableRow,
     TableRowAction,
     BulkAction,
-    EditableListItem,
-    LogActor,
     CardToggleItem
   } from "@inflatable-cookie/poodle-svelte";
-  import type { FilterField, QueryParams, SortField } from "../client/query";
+  import type { QueryParams, SortField } from "../client/query";
+  import { orderByToSortFields } from "../client/query";
   import { DEFAULT_PAGE_SIZE } from "../patterns/pagination-types";
   import {
     claimListSelectionScope,
@@ -50,6 +43,16 @@
     registerListSelectionScope,
     releaseListSelectionScope
   } from "../patterns/list-selection-scope.svelte";
+  import {
+    getListFilterValue,
+    isListFilterActive,
+    listQueryKey,
+    sortFieldsEqual,
+    updateListFilters
+  } from "./entity-list-query";
+  import { createEntityListQuery } from "./entity-list-query.svelte";
+  import { useEntityListFilterOptions, useEntityListSearch } from "./entity-list-filters.svelte";
+  import { isListReorderAvailable, useEntityListReorder } from "./entity-list-reorder.svelte";
   import { default as EntityReorderControls } from "./EntityReorderControls.svelte";
   import {
     UNDERLAY_ENTITY_LIST_CONTEXT_KEY,
@@ -57,19 +60,15 @@
   } from "./entity-list-context";
   import type {
     BatchActionConfig,
-    CustomReorderConfig,
     EntityListCapabilitiesLoader,
     EntityListDataLoader,
     EntityListItemContext,
     EntityListSharedProps,
     FilterConfig,
-    FetchFn,
     ListVariantDefinition,
     ListCapabilities,
-    LoadedReorderConfig,
     PagedListResult,
     ReorderActionState,
-    ReorderErrorResult,
     ReorderConfig,
     TemplateSurface
   } from "./template.types";
@@ -284,12 +283,17 @@
   const toastStore = useToasts();
   const selectionScopeId = createListSelectionScopeId();
 
-  let internalQuery = $state<QueryParams>({
-    page: 1,
-    limit: DEFAULT_PAGE_SIZE
+  const listQuery = createEntityListQuery({
+    external: () => externalQuery,
+    onChange: () => onQueryChange
   });
-  let currentQuery = $derived(normalizeQuery(externalQuery ?? internalQuery));
-  let loadedCapabilities = $state<ListCapabilities | null>(null);
+  const currentQuery = $derived(listQuery.current);
+
+  const capabilities = useAuthenticatedData<ListCapabilities | null>(
+    (fetch, token) => capabilitiesLoader?.(fetch, token) ?? Promise.resolve(null),
+    { defaultValue: null }
+  );
+  const loadedCapabilities = $derived(capabilitiesLoader ? capabilities.data : null);
   let effectiveFilterConfigs = $derived(loadedCapabilities?.filters ?? filterConfigs);
   let effectiveQueryVariants = $derived(loadedCapabilities?.variants ?? queryVariants);
   let effectiveDefaultVariantId = $derived(loadedCapabilities?.defaultVariantId ?? defaultVariantId);
@@ -303,7 +307,7 @@
   let currentVariantId = $derived(
     currentQuery.variant ?? (variantSelectionTouched ? selectedVariantId : resolvedDefaultVariantId)
   );
-  let effectiveQuery = $derived(resolveEffectiveQuery(currentQuery));
+  const effectiveQuery = $derived({ ...currentQuery, variant: currentVariantId ?? undefined });
   let queryVariantItems = $derived<CardToggleItem[]>(
     effectiveQueryVariants.map((variant) => ({
       value: variant.id,
@@ -316,18 +320,15 @@
     effectiveQueryVariants.find((variant) => variant.id === currentVariantId) ?? null
   );
   let activeAdHocFilterCount = $derived(
-    effectiveFilterConfigs.filter((filter) => filter.type !== "sort" && isFilterActive(filter)).length
+    effectiveFilterConfigs.filter((filter) => filter.type !== "sort" && isListFilterActive(currentQuery, filter)).length
   );
   let hasActiveEphemeralControls = $derived(activeAdHocFilterCount > 0 || currentSort.length > 0);
   let queryVariantColumns = $derived(Math.min(4, Math.max(1, queryVariantItems.length)) as 1 | 2 | 3 | 4);
   let currentPage = $derived(currentQuery.page ?? 1);
   let currentPageSize = $derived(currentQuery.limit ?? DEFAULT_PAGE_SIZE);
 
-  // Async filter options
-  let loadedFilterOptions = $state<Record<string, { value: string; label: string }[]>>({});
-  let filterOptionsLoading = $state<Record<string, boolean>>({});
-  let filterOptionsFailed = $state<Record<string, boolean>>({});
-  let filterLoadKeys = $state<Record<string, string>>({});
+  const getSelectItems = useEntityListFilterOptions(() => effectiveFilterConfigs);
+  const search = useEntityListSearch(() => effectiveFilterConfigs);
 
   // Selection mode (internal or external)
   let internalSelectionMode = $state(false);
@@ -343,108 +344,34 @@
   };
 
   setContext(UNDERLAY_ENTITY_LIST_CONTEXT_KEY, entityListContext);
-  let reorderError = $state<string | null>(null);
   let lastNotifiedVisibleCount = $state<number | null>(null);
   let lastNotifiedTotalCount = $state<number | null>(null);
   let lastNotifiedReorderAvailability = $state<boolean | null>(null);
 
   // Custom batch action dialog
   let pendingDialogAction = $state<BatchActionConfig | null>(null);
-  let reorderController = $state<ReorderController<ReorderableItem & T> | null>(null);
-  let loadedReorderItems = $state<Array<T & ReorderableItem>>([]);
-  let reorderHighlightedIds = $state<string[]>([]);
-  let reorderSessionPending = $state(false);
-  let previousListQueryKey = $state<string | null>(null);
-  let pendingFetchQuery = $state<QueryParams | null>(null);
-  let handledListQueryKey = $state<string | null>(null);
-
-  // Single source of truth for the fetch-dedup key so the derived key and the
-  // key stamped in setQuery can never drift out of the same shape.
-  const buildListQueryKey = (query: QueryParams) =>
-    JSON.stringify({ query, reloadKey: reloadKey ?? null });
-  const listQueryKey = $derived.by(() => buildListQueryKey(effectiveQuery));
   const selectedIdsKey = $derived.by(() => JSON.stringify(batch.selectedIds));
-  const getCurrentQuery = () =>
-    pendingFetchQuery ? resolveEffectiveQuery(pendingFetchQuery) : effectiveQuery;
-  const getDataLoader = () => dataLoader;
 
-  async function loadPageData(fetch: FetchFn, token: string | null) {
-    return await getDataLoader()(fetch, token, getCurrentQuery());
-  }
-
-  async function loadCapabilities(fetch: FetchFn, token: string | null) {
-    if (!capabilitiesLoader) {
-      return null;
-    }
-    const result = await capabilitiesLoader(fetch, token);
-    loadedCapabilities = result;
-    return result;
-  }
-
-  // Data loading (includes filters and sort)
   const pageData = useAuthenticatedData<PagedListResult<T>>(
-    loadPageData,
+    (fetch, token) => untrack(() => dataLoader(fetch, token, effectiveQuery)),
     {
-      defaultValue: {
-        data: [],
-        total: 0
-      }
+      defaultValue: { data: [], total: 0 },
+      queryKey: () => listQueryKey(effectiveQuery, reloadKey)
     }
   );
-
-  useAuthenticatedData<ListCapabilities | null>(
-    loadCapabilities,
-    {
-      defaultValue: null
-    }
-  );
-
-  $effect(() => {
-    const currentKey = listQueryKey;
-    if (previousListQueryKey === null) {
-      previousListQueryKey = currentKey;
-      return;
-    }
-
-    if (previousListQueryKey !== currentKey) {
-      const nextQuery = effectiveQuery;
-      previousListQueryKey = currentKey;
-      if (handledListQueryKey === currentKey) {
-        handledListQueryKey = null;
-        return;
-      }
-      pendingFetchQuery = nextQuery;
-      void pageData.refetch();
-    }
-  });
-
-  $effect(() => {
-    if (!pendingFetchQuery) {
-      return;
-    }
-
-    if (JSON.stringify(normalizeQuery(pendingFetchQuery)) === JSON.stringify(currentQuery)) {
-      pendingFetchQuery = null;
-    }
-  });
 
   const items = $derived(pageData.data?.data ?? []);
   const itemCount = $derived(items.length);
   const totalCount = $derived(resolveTotalCount(pageData.data, items.length));
   const totalPages = $derived(Math.max(1, Math.ceil(totalCount / currentPageSize)));
   const hasNextPage = $derived(currentPage < totalPages || Boolean(pageData.data?.hasMore));
-  const reorderAvailable = $derived(
-    isCustomReorderConfig(reorder)
-      ? Boolean(reorder.enabled) && totalCount > 0
-      : isLoadedReorderConfig(reorder)
-      ? Boolean(reorder.enabled) && totalCount > 1
-      : Boolean(reorder?.enabled) &&
-          currentPage === 1 &&
-          itemCount > 1 &&
-          totalCount > 0 &&
-          totalCount <= currentPageSize
-  );
-  const itemIds = $derived(items.map((item) => String((item as Record<string, unknown>)[idField])));
+  const reorderAvailable = $derived(isListReorderAvailable(reorder, {
+    items: itemCount,
+    total: totalCount,
+    page: currentPage,
+    pageSize: currentPageSize
+  }));
+  const itemIds = $derived(items.map(getItemKey));
   const logEntries = $derived(toLogEntries ? toLogEntries(items) : []);
   // A refetch is in flight but we still have prior results on screen (e.g. a
   // debounced search). The full-page loader only shows on the first load, so
@@ -459,12 +386,27 @@
   });
 
   onDestroy(unregisterSelectionScope);
-  onDestroy(() => {
-    for (const timer of searchDebounceTimers.values()) {
-      clearTimeout(timer);
-    }
-    searchDebounceTimers.clear();
+  const reorderSession = useEntityListReorder({
+    config: () => reorder,
+    active: () => reorderMode,
+    available: () => reorderAvailable,
+    setActive: setReorderMode,
+    items: () => items,
+    getItemId: getItemKey,
+    query: () => currentQuery,
+    onEnter: () => {
+      if (selectionMode) {
+        setSelectionMode(false);
+        batch.clear();
+      }
+    },
+    onSaved: async () => {
+      onDataChange?.();
+      await pageData.refetch();
+    },
+    onError: () => onReorderError
   });
+  const reorderController = $derived(reorderSession.controller);
 
   // Notify parent of visible and total count changes
   $effect(() => {
@@ -493,54 +435,15 @@
       available: reorderAvailable,
       dirty: Boolean(reorderController?.isDirty),
       saving: Boolean(reorderController?.isPending),
-      enter: enterReorderMode,
-      save: handleReorderSubmit,
-      cancel: exitReorderMode
+      enter: reorderSession.enter,
+      save: reorderSession.save,
+      cancel: reorderSession.exit
     });
   });
 
   $effect(() => {
     if (!selectionMode && batch.count > 0) {
       batch.clear();
-    }
-  });
-
-  // Load async filter options on mount
-  $effect(() => {
-    for (const filter of effectiveFilterConfigs) {
-      const currentLoadKey = filter.loadKey ?? "";
-      if (filterLoadKeys[filter.id] !== currentLoadKey) {
-        filterLoadKeys = { ...filterLoadKeys, [filter.id]: currentLoadKey };
-        if (loadedFilterOptions[filter.id]) {
-          const nextOptions = { ...loadedFilterOptions };
-          delete nextOptions[filter.id];
-          loadedFilterOptions = nextOptions;
-        }
-        if (filterOptionsFailed[filter.id]) {
-          const nextFailed = { ...filterOptionsFailed };
-          delete nextFailed[filter.id];
-          filterOptionsFailed = nextFailed;
-        }
-      }
-      if (
-        filter.loadOptions &&
-        !filter.searchable &&
-        !loadedFilterOptions[filter.id] &&
-        !filterOptionsLoading[filter.id] &&
-        !filterOptionsFailed[filter.id]
-      ) {
-        const expectedLoadKey = currentLoadKey;
-        filterOptionsLoading = { ...filterOptionsLoading, [filter.id]: true };
-        filter.loadOptions().then((options) => {
-          if (filterLoadKeys[filter.id] !== expectedLoadKey) return;
-          loadedFilterOptions = { ...loadedFilterOptions, [filter.id]: options };
-          filterOptionsLoading = { ...filterOptionsLoading, [filter.id]: false };
-        }).catch(() => {
-          if (filterLoadKeys[filter.id] !== expectedLoadKey) return;
-          filterOptionsFailed = { ...filterOptionsFailed, [filter.id]: true };
-          filterOptionsLoading = { ...filterOptionsLoading, [filter.id]: false };
-        });
-      }
     }
   });
 
@@ -597,40 +500,11 @@
     }
   }
 
-  async function submitReorder(orderedIds: string[]) {
-    if (reorder && "handler" in reorder) {
-      await reorder.handler(orderedIds);
-    }
-  }
-
-  function normalizeQuery(query: QueryParams): QueryParams {
-    return {
-      ...query,
-      variant: query.variant ?? undefined,
-      page: Math.max(1, query.page ?? 1),
-      limit: Math.max(1, query.limit ?? DEFAULT_PAGE_SIZE),
-      filters:
-        query.filters
-          ?.filter((filter: FilterField) => {
-            const normalizedValue = filter.value.trim();
-            return normalizedValue !== "" && normalizedValue !== "All";
-          }) ?? [],
-      sort: query.sort?.filter((field: SortField) => field.field.trim() !== "") ?? []
-    };
-  }
-
   function resolveTotalCount(result: PagedListResult<T> | undefined, visibleCount: number): number {
     if (typeof result?.total === "number" && Number.isFinite(result.total) && result.total >= 0) {
       return result.total;
     }
     return visibleCount;
-  }
-
-  function resolveEffectiveQuery(query: QueryParams): QueryParams {
-    return {
-      ...query,
-      variant: query.variant ?? (variantSelectionTouched ? selectedVariantId ?? undefined : resolvedDefaultVariantId ?? undefined)
-    };
   }
 
   function getVariantPillTone(
@@ -647,146 +521,30 @@
     }
   }
 
-  function setQuery(nextQuery: QueryParams) {
-    const normalizedQuery = normalizeQuery(nextQuery);
-    pendingFetchQuery = normalizedQuery;
-    handledListQueryKey = buildListQueryKey(resolveEffectiveQuery(normalizedQuery));
-    if (onQueryChange) {
-      onQueryChange(normalizedQuery);
-    } else {
-      internalQuery = normalizedQuery;
-    }
-    void pageData.refetch();
-  }
-
-  function getFilterValue(filter: FilterConfig): string {
-    const activeFilter = currentQuery.filters?.find(
-      (entry: FilterField) => entry.field === filter.id
-    );
-    if (!activeFilter) {
-      return "";
-    }
-    if (filter.type === "search" && activeFilter.operator === "like") {
-      return activeFilter.value.replace(/^%|%$/g, "");
-    }
-    if (filter.type === "select" && activeFilter.value === "All") {
-      return "";
-    }
-    return activeFilter.value;
-  }
-
-  function buildNextFilters(filter: FilterConfig, value: string): FilterField[] {
-    const nextFilters = (currentQuery.filters ?? []).filter(
-      (entry: FilterField) => entry.field !== filter.id
-    );
-
-    if (!value) {
-      return nextFilters;
-    }
-
-    if (filter.type === "search") {
-      const trimmedValue = value.trim();
-      if (!trimmedValue) {
-        return nextFilters;
-      }
-      return [
-        ...nextFilters,
-        {
-          field: filter.id,
-          operator: "like",
-          value: `%${trimmedValue}%`
-        }
-      ];
-    }
-
-    return [
-      ...nextFilters,
-      {
-        field: filter.id,
-        value
-      }
-    ];
-  }
-
-  function sortFieldsEqual(left: SortField[], right: SortField[]): boolean {
-    if (left.length !== right.length) return false;
-    return left.every((field, index) => {
-      const other = right[index];
-      return field.field === other.field && field.direction === other.direction;
-    });
-  }
-
-  function getSelectItems(filter: FilterConfig): { value: string; label: string }[] {
-    return loadedFilterOptions[filter.id] ?? filter.options ?? [];
-  }
-
-  function getFilterAriaLabel(filter: FilterConfig): string {
-    return filter.label;
-  }
-
   function getSearchPlaceholder(filter: FilterConfig): string {
     return filter.placeholder ?? `Search ${filter.label.toLowerCase()}...`;
   }
 
-  function isFilterActive(filter: FilterConfig): boolean {
-    if (filter.type === "sort") {
-      return currentSort.length > 0;
-    }
-
-    const value = getFilterValue(filter);
-    if (filter.type === "search") {
-      return value.trim().length > 0;
-    }
-
-    if (filter.type === "select") {
-      return value !== "";
-    }
-
-    return value.trim().length > 0;
-  }
-
   function applyFilterChange(filter: FilterConfig, value: string) {
-    if (getFilterValue(filter) === value) {
+    if (getListFilterValue(currentQuery, filter) === value) {
       return;
     }
-    setQuery({
+    listQuery.set({
       ...currentQuery,
-      filters: buildNextFilters(filter, value),
+      filters: updateListFilters(currentQuery, filter, value),
       page: 1
     });
   }
 
-  // Free-text search fires on every keystroke; debounce it so we issue one
-  // refetch per typing pause rather than one per character.
-  let searchDebounceTimers = new Map<string, ReturnType<typeof setTimeout>>();
-
-  function handleFilterChange(filter: FilterConfig, value: string) {
-    if (filter.type !== "search" || searchDebounceMs <= 0) {
-      applyFilterChange(filter, value);
-      return;
-    }
-    const existing = searchDebounceTimers.get(filter.id);
-    if (existing) {
-      clearTimeout(existing);
-    }
-    searchDebounceTimers.set(
-      filter.id,
-      setTimeout(() => {
-        searchDebounceTimers.delete(filter.id);
-        applyFilterChange(filter, value);
-      }, searchDebounceMs)
-    );
-  }
-
   function handleQueryVariantChange(value: string | null) {
     const nextVariant = value ?? undefined;
-    const currentEffectiveVariant = resolveEffectiveQuery(currentQuery).variant;
+    const currentEffectiveVariant = effectiveQuery.variant;
     if (currentEffectiveVariant === nextVariant && variantSelectionTouched && selectedVariantId === value) {
       return;
     }
     variantSelectionTouched = true;
     selectedVariantId = value;
-    setQuery({
+    listQuery.set({
       ...currentQuery,
       variant: nextVariant,
       page: 1
@@ -798,7 +556,7 @@
     if (sortFieldsEqual(currentSort, normalizedSort)) {
       return;
     }
-    setQuery({
+    listQuery.set({
       ...currentQuery,
       sort: normalizedSort,
       page: 1
@@ -809,7 +567,7 @@
     if (page === currentPage) {
       return;
     }
-    setQuery({
+    listQuery.set({
       ...currentQuery,
       page
     });
@@ -824,12 +582,9 @@
       return;
     }
 
-    for (const timer of searchDebounceTimers.values()) {
-      clearTimeout(timer);
-    }
-    searchDebounceTimers.clear();
+    search.clear();
 
-    setQuery({
+    listQuery.set({
       ...currentQuery,
       filters: [],
       sort: [],
@@ -842,19 +597,6 @@
       key: field.field,
       direction: field.direction
     }));
-  }
-
-  function handleSortOrderChange(value: { key: string; direction: string }[]) {
-    handleSortChange(value.map((field) => ({
-      field: field.key,
-      direction: field.direction as "asc" | "desc"
-    })));
-  }
-
-  function handleEditableReorder(nextItems: EditableListItem[]) {
-    // Poodle's EditableList is non-generic; the echoed items are our
-    // (ReorderableItem & T) rows at runtime.
-    reorderController?.updatePending(nextItems as unknown as (ReorderableItem & T)[]);
   }
 
   function getItemKey(item: T): string {
@@ -889,7 +631,7 @@
   function toggleSelectionMode() {
     if (reorderMode) {
       setReorderMode(false);
-      reorderController?.reset();
+      reorderSession.reset();
     }
     const nextSelectionMode = !selectionMode;
     setSelectionMode(nextSelectionMode);
@@ -902,135 +644,8 @@
     await batch.confirmPendingAction();
   }
 
-  function isLoadedReorderConfig(
-    config: ReorderConfig<T> | undefined
-  ): config is LoadedReorderConfig<T> {
-    return Boolean(config && config.strategy === "loaded");
-  }
-
-  function isCustomReorderConfig(
-    config: ReorderConfig<T> | undefined
-  ): config is CustomReorderConfig<T> {
-    return Boolean(config && config.strategy === "custom");
-  }
-
-  async function createReorderSession(): Promise<boolean> {
-    if (!reorder?.enabled) return false;
-    reorderSessionPending = true;
-    reorderHighlightedIds = [];
-
-    if (isCustomReorderConfig(reorder)) {
-      reorderController = null;
-      loadedReorderItems = [];
-      reorderError = null;
-      reorderSessionPending = false;
-      return true;
-    }
-
-    if (isLoadedReorderConfig(reorder)) {
-      try {
-        const token = getAuthConfig()?.getToken() ?? null;
-        const result = await reorder.loadItems(fetch, token, currentQuery);
-        if (result.error) {
-          toastStore.push({ message: result.error, variant: "error" });
-          return false;
-        }
-
-        loadedReorderItems = reorder.mapItems
-          ? reorder.mapItems(result.items)
-          : result.items.map((item) => ({
-              ...(item as T & Record<string, unknown>),
-              id: String((item as Record<string, unknown>)[idField])
-            })) as Array<T & ReorderableItem>;
-
-        reorderController = createReorderController(loadedReorderItems, submitReorder);
-        reorderError = null;
-        return true;
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Failed to load reorder items";
-        toastStore.push({ message, variant: "error" });
-        return false;
-      } finally {
-        reorderSessionPending = false;
-      }
-    }
-
-    loadedReorderItems = [];
-    reorderController = createReorderController(
-      items.map((item) => ({
-        id: String((item as Record<string, unknown>)[idField]),
-        ...item
-      })),
-      submitReorder
-    );
-    reorderError = null;
-    reorderSessionPending = false;
-    return true;
-  }
-
-  async function enterReorderMode() {
-    if (!reorderAvailable || !reorder?.enabled) return;
-    if (selectionMode) {
-      setSelectionMode(false);
-      batch.clear();
-    }
-    const ready = await createReorderSession();
-    if (!ready) return;
-    setReorderMode(true);
-  }
-
-  function exitReorderMode() {
-    setReorderMode(false);
-    reorderError = null;
-    reorderHighlightedIds = [];
-    reorderController?.reset();
-    reorderController = null;
-    loadedReorderItems = [];
-  }
-
-  async function handleReorderSubmit() {
-    if (!reorderController) return;
-    reorderError = null;
-    try {
-      await reorderController.submit();
-      if (reorder && "successMessage" in reorder && reorder.successMessage) {
-        toastStore.push({ message: reorder.successMessage, variant: "success" });
-      }
-      exitReorderMode();
-      onDataChange?.();
-      await pageData.refetch();
-    } catch (error) {
-      if (onReorderError && reorderController) {
-        const result = await onReorderError({
-          error,
-          controller: reorderController,
-          items: isLoadedReorderConfig(reorder)
-            ? loadedReorderItems
-            : items.map((item) => ({
-                id: String((item as Record<string, unknown>)[idField]),
-                ...item
-              })) as Array<T & ReorderableItem>
-        });
-        if (typeof result === "string") {
-          reorderError = result;
-          reorderHighlightedIds = [];
-        } else if (result) {
-          const recovery = result as ReorderErrorResult;
-          reorderError = recovery.message;
-          reorderHighlightedIds = recovery.highlightedIds ?? [];
-        } else {
-          reorderError = error instanceof Error ? error.message : String(error);
-          reorderHighlightedIds = [];
-        }
-      } else {
-        reorderError = error instanceof Error ? error.message : String(error);
-        reorderHighlightedIds = [];
-      }
-    }
-  }
-
   function getItemContext(item: T): ItemContext {
-    const itemId = String((item as Record<string, unknown>)[idField]);
+    const itemId = getItemKey(item);
     return {
       selectionMode,
       reorderMode,
@@ -1039,42 +654,6 @@
       refetch: () => pageData.refetch()
     };
   }
-
-  $effect(() => {
-    if (reorderMode) {
-      if (!reorderAvailable || !reorder?.enabled) {
-        if (reorderController) {
-          reorderController.reset();
-          reorderController = null;
-        }
-        reorderError = null;
-        reorderHighlightedIds = [];
-        loadedReorderItems = [];
-        if (externalReorderMode !== undefined) {
-          onReorderModeChange?.(false);
-        } else {
-          internalReorderMode = false;
-        }
-        return;
-      }
-      if (!reorderController && !reorderSessionPending) {
-        void createReorderSession().then((ready) => {
-          if (!ready) {
-            setReorderMode(false);
-          }
-        });
-      }
-      return;
-    }
-
-    if (reorderController) {
-      reorderController.reset();
-      reorderController = null;
-      reorderError = null;
-      reorderHighlightedIds = [];
-    }
-    loadedReorderItems = [];
-  });
 
   function handleKeydown(event: KeyboardEvent) {
     if (event.defaultPrevented) {
@@ -1088,21 +667,17 @@
         setSelectionMode(false);
         batch.clear();
       } else if (reorderMode) {
-        exitReorderMode();
+        reorderSession.exit();
       }
     }
   }
 
   const tableColumns = $derived<TableColumn[]>(columns ?? []);
 
-  function isReorderItemHighlighted(reorderEntryId: string): boolean {
-    return reorderHighlightedIds.includes(reorderEntryId);
-  }
-
   // Table rows
   const tableRows = $derived<TableRow<T>[]>(
     items.map((item) => ({
-      id: String((item as Record<string, unknown>)[idField]),
+      id: getItemKey(item),
       cells: tableColumns.reduce((acc, col) => {
         acc[col.id] = String((item as Record<string, unknown>)[col.id] ?? "");
         return acc;
@@ -1181,15 +756,6 @@
     pendingDialogAction = null;
   }
 
-  function getReorderOriginalItem(reorderEntryId: string): T | undefined {
-    if (isLoadedReorderConfig(reorder)) {
-      return loadedReorderItems.find((item) => item.id === reorderEntryId);
-    }
-
-    return items.find(
-      (item) => String((item as Record<string, unknown>)[idField]) === reorderEntryId
-    );
-  }
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -1277,27 +843,28 @@
       </div>
     {/if}
 
-    {#each effectiveFilterConfigs as filter}
+    {#each effectiveFilterConfigs as filter (filter.id)}
       <div
         class="underlay-entity-list__filter-control"
-        data-active={isFilterActive(filter)}
+        data-active={isListFilterActive(currentQuery, filter)}
       >
         {#if filter.type === "search"}
           <TextInput
             id={`filter-${filter.id}`}
             type="search"
             size="sm"
-            value={getFilterValue(filter)}
-            ariaLabel={getFilterAriaLabel(filter)}
+            value={search.value(filter, getListFilterValue(currentQuery, filter))}
+            ariaLabel={filter.label}
             placeholder={getSearchPlaceholder(filter)}
-            onValueChange={(nextValue) => handleFilterChange(filter, nextValue)}
+            onValueChange={(value) =>
+              search.change(filter, value, searchDebounceMs, () => applyFilterChange(filter, value))}
           />
         {:else if filter.type === "select"}
           <Select
             id={`filter-${filter.id}`}
             size="sm"
             disabled={filter.disabled ?? false}
-            value={getFilterValue(filter)}
+            value={getListFilterValue(currentQuery, filter)}
             options={getSelectItems(filter)}
             loadOptions={filter.searchable ? filter.loadOptions ?? null : null}
             loadKey={filter.loadKey ?? null}
@@ -1305,17 +872,17 @@
             native={false}
             clearable
             placeholder={filter.placeholder ?? filter.label}
-            ariaLabel={getFilterAriaLabel(filter)}
-            onValueChange={(value) => handleFilterChange(filter, value)}
+            ariaLabel={filter.label}
+            onValueChange={(value) => applyFilterChange(filter, value)}
           />
         {:else if filter.type === "sort" && filter.sortFields}
           <OrderBy
             fields={filter.sortFields}
             value={getSortOrderValue()}
             size="sm"
-            ariaLabel={getFilterAriaLabel(filter)}
+            ariaLabel={filter.label}
             showClearButton={false}
-            onChange={handleSortOrderChange}
+            onChange={(value) => handleSortChange(orderByToSortFields(value))}
             compact
           />
         {/if}
@@ -1333,28 +900,28 @@
   {#if reorderMode && customReorderContent}
     {@render customReorderContent({
       items,
-      cancel: exitReorderMode,
+      cancel: reorderSession.exit,
       refetch: () => pageData.refetch()
     })}
   {:else if reorderMode && reorderController}
     <EditableList
-      items={reorderController.pending as unknown as EditableListItem[]}
+      items={reorderSession.editableItems}
       embeddedHandle
       dirty={reorderController.isDirty}
       submitting={reorderController.isPending}
-      errorMessage={reorderError}
+      errorMessage={reorderSession.error}
       showWorkflowChrome={false}
-      onSubmit={handleReorderSubmit}
-      onCancel={exitReorderMode}
-      onReorder={handleEditableReorder}
+      onSubmit={reorderSession.save}
+      onCancel={reorderSession.exit}
+      onReorder={reorderSession.updateOrder}
     >
       {#snippet item(reorderEntry)}
-        {@const originalItem = getReorderOriginalItem(reorderEntry.id)}
+        {@const originalItem = reorderSession.originalItem(reorderEntry.id)}
         {#if renderReorderItem && originalItem}
-          <div data-reorder-highlighted={isReorderItemHighlighted(reorderEntry.id)}>
+          <div data-reorder-highlighted={reorderSession.isHighlighted(reorderEntry.id)}>
             {@render renderReorderItem(originalItem, {
               ...getItemContext(originalItem),
-              highlighted: isReorderItemHighlighted(reorderEntry.id)
+              highlighted: reorderSession.isHighlighted(reorderEntry.id)
             })}
           </div>
         {:else if renderItem && originalItem}
@@ -1421,12 +988,23 @@
   {/if}
 {/snippet}
 
+{#snippet retryCallout(message: string, retry: () => Promise<void>, title?: string)}
+  <Callout tone="danger" {title} {message} announceMode="polite">
+    {#snippet actions()}
+      <Button type="button" variant="ghost" size="sm" onClick={retry}>Retry</Button>
+    {/snippet}
+  </Callout>
+{/snippet}
+
+{#if capabilitiesLoader && capabilities.error}
+  {@render retryCallout(capabilities.error, () => capabilities.refetch(), "Unable to load list options")}
+{/if}
+
 {#if title}
   <!-- When used standalone (not inside EntityListPage), show ListContainer -->
   <ListContainer
     {title}
     state={pageData.loading ? "loading" : pageData.error ? "error" : items.length > 0 ? "ready" : "empty"}
-    errorMessage={pageData.error ?? undefined}
     emptyTitle="No items found"
     emptyMessage="Try adjusting your filters or add a new item."
     currentPage={currentPage}
@@ -1454,9 +1032,9 @@
           available={reorderAvailable}
           dirty={Boolean(reorderController?.isDirty)}
           saving={Boolean(reorderController?.isPending)}
-          onEnter={enterReorderMode}
-          onSave={handleReorderSubmit}
-          onCancel={exitReorderMode}
+          onEnter={reorderSession.enter}
+          onSave={reorderSession.save}
+          onCancel={reorderSession.exit}
         />
       {/if}
       {#if !selectionMode && !reorderMode && onAdd}
@@ -1470,12 +1048,15 @@
       {/if}
     {/snippet}
 
-    <!-- Content rendered below -->
-    {#if pageData.loading && items.length === 0}
+    {#snippet loading()}
       <PageLoading presentation="inline" message={`Loading ${title.toLowerCase()}...`} />
-    {:else if pageData.error}
-      <Callout tone="danger" message={pageData.error} announceMode="polite" />
-    {:else if items.length === 0}
+    {/snippet}
+    {#snippet error()}
+      {#if pageData.error}
+        {@render retryCallout(pageData.error, () => pageData.refetch())}
+      {/if}
+    {/snippet}
+    {#snippet empty()}
       <EmptyState
         title={`No ${title.toLowerCase()} found`}
         message="Try adjusting your filters or create a new item."
@@ -1486,9 +1067,9 @@
           {/if}
         {/snippet}
       </EmptyState>
-    {:else}
-      {@render listBody(`No ${title.toLowerCase()} found`)}
-    {/if}
+    {/snippet}
+
+    {@render listBody(`No ${title.toLowerCase()} found`)}
   </ListContainer>
 {:else}
   <!-- When used inside EntityListPage, don't show ListContainer shell -->
@@ -1499,7 +1080,7 @@
   {#if pageData.loading && items.length === 0}
     <PageLoading presentation="inline" message="Loading..." />
   {:else if pageData.error}
-    <Callout tone="danger" message={pageData.error} announceMode="polite" />
+    {@render retryCallout(pageData.error, () => pageData.refetch())}
   {:else if items.length === 0}
     <EmptyState
       title="No items found"

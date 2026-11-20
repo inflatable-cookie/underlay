@@ -7,7 +7,7 @@
     IconButton
   } from "@inflatable-cookie/poodle-svelte";
   import type { ControlSize } from "@inflatable-cookie/poodle-svelte";
-  import { getBackButtonInfo } from "../patterns/navigation";
+  import { useTemplateBackInfo } from "./template-back-info.svelte";
   import { default as EntityList } from "./EntityList.svelte";
   import { default as EntityReorderControls } from "./EntityReorderControls.svelte";
   import type { SortField } from "../client/query";
@@ -257,7 +257,13 @@
     onReorderError
   }: Props = $props();
 
-  let resolvedBackInfo = $state<{ href: string; label: string; contextual: boolean } | null>(null);
+  const getResolvedBackInfo = useTemplateBackInfo(() => ({
+    href: backHref,
+    label: backLabel,
+    contextual: backIsContextual,
+    resolveContext: resolveBackContext
+  }));
+  const resolvedBackInfo = $derived(getResolvedBackInfo());
 
   // --- State ---
 
@@ -276,30 +282,6 @@
         ? "xs"
         : "sm"
   );
-
-  $effect(() => {
-    if (!backHref) {
-      resolvedBackInfo = null;
-      return;
-    }
-
-    const fallbackLabel = backLabel ?? "Back";
-    if (!resolveBackContext) {
-      resolvedBackInfo = {
-        href: backHref,
-        label: fallbackLabel,
-        contextual: backIsContextual
-      };
-      return;
-    }
-
-    const contextualBackInfo = getBackButtonInfo(fallbackLabel, backHref);
-    resolvedBackInfo = {
-      href: contextualBackInfo.href,
-      label: contextualBackInfo.label,
-      contextual: Boolean(contextualBackInfo.isContextual || backIsContextual)
-    };
-  });
 
   // Mode flags are managed internally by EntityList
   // We track them here only for header button state

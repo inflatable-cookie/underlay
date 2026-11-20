@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { on } from "svelte/events";
   import { Button, Checkbox, Dialog, NumberInput, Select, TextInput } from "@inflatable-cookie/poodle-svelte";
   import type {
     ContextActionDefinition,
@@ -44,6 +45,8 @@
     onSelectedModelChange = undefined
   }: Props = $props();
 
+  const formId = $props.id();
+  const modelId = `${formId}-model`;
   const busy = $derived(runState === "validating" || runState === "running");
   const activeForm = $derived(form ?? action?.form ?? null);
   const modelOptions = $derived(
@@ -85,6 +88,7 @@
   let validationError = $state<string | null>(null);
 
   function setOpen(nextOpen: boolean): void {
+    if (!nextOpen && busy) return;
     if (!nextOpen) {
       validationError = null;
     }
@@ -102,7 +106,10 @@
     if (selectedProviderKey && selectedModelId) {
       return { providerKey: selectedProviderKey, modelId: selectedModelId };
     }
-    const fallback = action?.modelOptions?.find((option) => !option.disabled);
+    const available = modelOptions.filter((option) => !option.disabled);
+    const fallback = available.find((option) =>
+      option.providerKey === action?.defaultModelProviderKey && option.modelId === action.defaultModelId
+    ) ?? available[0];
     if (fallback) {
       return { providerKey: fallback.providerKey, modelId: fallback.modelId };
     }
@@ -168,13 +175,35 @@
     });
   }
 
+  function handleSubmit(event: SubmitEvent): void {
+    event.preventDefault();
+    submit();
+  }
+
+  // Poodle's NumberInput consumes Enter to commit its draft. Submit the
+  // surrounding form after that control handles the key.
+  function submitNumberOnEnter(form: HTMLFormElement) {
+    const destroy = on(form, "keydown", (event) => {
+      const target = event.target;
+      if (event.key === "Enter" && event.defaultPrevented && !event.isComposing &&
+          target instanceof HTMLInputElement && target.closest("[data-context-action-number]")) {
+        form.requestSubmit();
+      }
+    });
+    return { destroy };
+  }
+
+  function fieldValue(field: ContextActionInputField): unknown {
+    const value = values[field.id];
+    return value === undefined ? field.defaultValue : value;
+  }
+
   function fieldStringValue(field: ContextActionInputField): string {
-    const value = values[field.id] ?? field.defaultValue ?? "";
-    return typeof value === "string" ? value : String(value ?? "");
+    return String(fieldValue(field) ?? "");
   }
 
   function fieldNumberValue(field: ContextActionInputField): number | null {
-    const value = values[field.id] ?? field.defaultValue ?? null;
+    const value = fieldValue(field);
     if (typeof value === "number") {
       return Number.isFinite(value) ? value : null;
     }
@@ -186,8 +215,7 @@
   }
 
   function fieldBoolValue(field: ContextActionInputField): boolean {
-    const value = values[field.id] ?? field.defaultValue ?? false;
-    return value === true;
+    return fieldValue(field) === true;
   }
 </script>
 
@@ -196,24 +224,31 @@
   width="lg"
   title={action?.name ?? "AI action"}
   description={action?.description ?? null}
-  showCloseButton={true}
+  showCloseButton={!busy}
   dismissOnBackdrop={!busy}
   dismissOnEscape={!busy}
   onOpenChange={setOpen}
   onRequestClose={cancel}
 >
   {#if action}
-    <div class="underlay-context-action-dialog">
+    <form
+      id={formId}
+      class="underlay-context-action-dialog"
+      novalidate={!activeForm}
+      onsubmit={handleSubmit}
+      use:submitNumberOnEnter
+    >
       {#if modelOptions.length > 0}
-        <label class="underlay-context-action-dialog__field">
-          <span>Model</span>
+        <div class="underlay-context-action-dialog__field">
+          <label for={modelId}>Model</label>
           <Select
+            id={modelId}
             value={selectedModelValue()}
             options={groupedModelOptions}
             disabled={busy}
             onValueChange={setSelectedModel}
           />
-        </label>
+        </div>
       {/if}
 
       {#if activeForm}
@@ -230,71 +265,65 @@
       {:else if action.fields && action.fields.length > 0}
         <div class="underlay-context-action-dialog__fields">
           {#each action.fields as field (field.id)}
-            {#if field.type === "checkbox"}
-              <div class="underlay-context-action-dialog__field">
+            {@const fieldId = `${formId}-field-${encodeURIComponent(field.id)}`}
+            {@const descriptionId = field.description ? `${fieldId}-description` : null}
+            <div class="underlay-context-action-dialog__field" data-context-action-number={field.type === "number" ? "" : undefined}>
+              {#if field.type !== "checkbox"}
+                <label for={fieldId}>{field.label}</label>
+              {:else if field.placeholder && field.placeholder !== field.label}
                 <span>{field.label}</span>
-                {#if field.description}
-                  <small>{field.description}</small>
-                {/if}
+              {/if}
+              {#if field.description}
+                <small id={descriptionId}>{field.description}</small>
+              {/if}
+
+              {#if field.type === "checkbox"}
                 <Checkbox
+                  id={fieldId}
+                  describedBy={descriptionId}
                   checked={fieldBoolValue(field)}
-                  label={field.placeholder ?? field.label}
+                  label={field.placeholder || field.label}
                   disabled={busy}
                   onCheckedChange={(checked) => setValue(field.id, checked)}
                 />
-              </div>
-            {:else}
-              <label class="underlay-context-action-dialog__field">
-                <span>{field.label}</span>
-                {#if field.description}
-                  <small>{field.description}</small>
-                {/if}
-
-                {#if field.type === "textarea"}
-                  <TextInput
-                    type="multiline"
-                    rows={field.rows ?? 6}
-                    value={fieldStringValue(field)}
-                    placeholder={field.placeholder ?? null}
-                    required={field.required}
-                    disabled={busy}
-                    onValueChange={(value) => setValue(field.id, value)}
-                  />
-                {:else if field.type === "select"}
-                  <Select
-                    value={fieldStringValue(field)}
-                    placeholder={field.placeholder ?? null}
-                    options={(field.options ?? []).map((option) => ({
-                      value: option.value,
-                      label: option.label,
-                      disabled: option.disabled
-                    }))}
-                    required={field.required}
-                    disabled={busy}
-                    onValueChange={(value) => setValue(field.id, value)}
-                  />
-                {:else if field.type === "number"}
-                  <NumberInput
-                    value={fieldNumberValue(field)}
-                    placeholder={field.placeholder ?? null}
-                    required={field.required}
-                    min={field.min ?? null}
-                    max={field.max ?? null}
-                    step={field.step ?? null}
-                    disabled={busy}
-                    onValueChange={(value) => setValue(field.id, value)}
-                  />
-                {:else}
-                  <TextInput
-                    value={fieldStringValue(field)}
-                    placeholder={field.placeholder ?? null}
-                    required={field.required}
-                    disabled={busy}
-                    onValueChange={(value) => setValue(field.id, value)}
-                  />
-                {/if}
-              </label>
-            {/if}
+              {:else if field.type === "select"}
+                <Select
+                  id={fieldId}
+                  describedBy={descriptionId}
+                  value={fieldStringValue(field)}
+                  placeholder={field.placeholder ?? null}
+                  options={field.options ?? []}
+                  required={field.required}
+                  disabled={busy}
+                  onValueChange={(value) => setValue(field.id, value)}
+                />
+              {:else if field.type === "number"}
+                <NumberInput
+                  id={fieldId}
+                  describedBy={descriptionId}
+                  value={fieldNumberValue(field)}
+                  placeholder={field.placeholder ?? null}
+                  required={field.required}
+                  min={field.min ?? null}
+                  max={field.max ?? null}
+                  step={field.step ?? null}
+                  disabled={busy}
+                  onValueChange={(value) => setValue(field.id, value)}
+                />
+              {:else}
+                <TextInput
+                  id={fieldId}
+                  describedBy={descriptionId}
+                  type={field.type === "textarea" ? "multiline" : "text"}
+                  rows={field.type === "textarea" ? field.rows ?? 6 : null}
+                  value={fieldStringValue(field)}
+                  placeholder={field.placeholder ?? null}
+                  required={field.required}
+                  disabled={busy}
+                  onValueChange={(value) => setValue(field.id, value)}
+                />
+              {/if}
+            </div>
           {/each}
         </div>
       {/if}
@@ -302,14 +331,14 @@
       {#if validationError || errorMessage}
         <p class="underlay-context-action-dialog__error" role="alert">{validationError ?? errorMessage}</p>
       {/if}
-    </div>
+    </form>
   {/if}
 
   {#snippet actions()}
     <Button type="button" variant="ghost" disabled={busy} onClick={cancel}>
       {cancelLabel}
     </Button>
-    <Button type="button" variant="primary" loading={busy} disabled={!action} onClick={submit}>
+    <Button type="submit" form={formId} variant="primary" loading={busy} disabled={!action || busy}>
       {resolvedSubmitLabel}
     </Button>
   {/snippet}
@@ -332,6 +361,7 @@
     min-width: 0;
   }
 
+  .underlay-context-action-dialog__field > label,
   .underlay-context-action-dialog__field > span {
     color: var(--poodle-color-text-primary);
     font-weight: 600;
