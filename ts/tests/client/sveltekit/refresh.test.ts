@@ -123,17 +123,112 @@ describe("client/sveltekit refresh adapter", () => {
 		const cfg = mocks.createHttpClient.mock.calls[0][0];
 		const refresh = cfg.auth.refresh as (ctx: {
 			rawRequest: (req: any) => Promise<any>;
+			rawRequestWithMeta?: (req: any, opts?: any) => Promise<any>;
 			getRefreshToken: () => Promise<string | null>;
 		}) => Promise<any>;
 		const rawRequest = vi.fn(async (req) => ({ ok: true, req }));
+		const rawRequestWithMeta = vi.fn(async (req, opts) => ({
+			status: 201,
+			headers: { "x-req": "meta" },
+			body: { ok: true, req, opts },
+		}));
 
 		await expect(
 			refresh({
 				rawRequest,
+				rawRequestWithMeta,
 				getRefreshToken: vi.fn().mockResolvedValue("rt"),
 			})
 		).resolves.toEqual({ success: true, accessToken: "a3", refreshToken: "r3" });
-		expect(rawRequest).toHaveBeenCalledTimes(8);
+		expect(rawRequest).toHaveBeenCalledTimes(6);
+		expect(rawRequestWithMeta).toHaveBeenCalledTimes(2);
 		expect(refreshRequest).toHaveBeenCalled();
+	});
+
+	it("preserves real status, headers, and acceptedStatuses in rawHttp *WithMeta", async () => {
+		const { createAuthHandle } = await import("../../../src/client/sveltekit");
+
+		mocks.createHttpClient.mockReturnValue({});
+		mocks.createAuthCommands.mockReturnValue({ session: vi.fn().mockResolvedValue({ id: "ok" }) });
+
+		const event = {
+			cookies: createCookiesMock(),
+			fetch: vi.fn(),
+			locals: {},
+			url: new URL("https://example.com/private"),
+		} as any;
+		const resolve = vi.fn(async () => new Response("ok", { status: 200 }));
+
+		let observedPostMeta: any;
+		let observedGetMeta: any;
+		const refreshRequest = vi.fn(async ({ rawHttp }) => {
+			observedPostMeta = await rawHttp.requestWithMeta(
+				{ method: "POST", path: "/refresh-check" },
+				{ acceptedStatuses: [202] }
+			);
+			observedGetMeta = await rawHttp.getWithMeta(
+				"/session-check",
+				{ "x-test": "1" },
+				{ acceptedStatuses: [304] }
+			);
+			return { accessToken: "a4", refreshToken: "r4" };
+		});
+
+		const handle = createAuthHandle({
+			baseUrl: "https://api.example.com",
+			routes: authRoutes,
+			cookies: { accessTokenCookie: "access", refreshTokenCookie: "refresh" },
+			refreshRequest,
+		});
+
+		await handle({ event, resolve } as any);
+		const cfg = mocks.createHttpClient.mock.calls[0][0];
+		const refresh = cfg.auth.refresh as (ctx: {
+			rawRequest: (req: any) => Promise<any>;
+			rawRequestWithMeta?: (req: any, opts?: any) => Promise<any>;
+			getRefreshToken: () => Promise<string | null>;
+		}) => Promise<any>;
+
+		const rawRequestWithMeta = vi
+			.fn()
+			.mockResolvedValueOnce({ status: 202, headers: { "x-accepted": "yes" }, body: { queued: true } })
+			.mockResolvedValueOnce({ status: 304, headers: { etag: '"v1"' }, body: null });
+
+		await expect(
+			refresh({
+				rawRequest: vi.fn(),
+				rawRequestWithMeta,
+				getRefreshToken: vi.fn().mockResolvedValue("rt"),
+			})
+		).resolves.toEqual({ success: true, accessToken: "a4", refreshToken: "r4" });
+
+		expect(observedPostMeta).toEqual({
+			status: 202,
+			headers: { "x-accepted": "yes" },
+			body: { queued: true },
+		});
+		expect(observedGetMeta).toEqual({
+			status: 304,
+			headers: { etag: '"v1"' },
+			body: null,
+		});
+		expect(rawRequestWithMeta).toHaveBeenNthCalledWith(
+			1,
+			{ method: "POST", path: "/refresh-check" },
+			{ acceptedStatuses: [202] }
+		);
+		expect(rawRequestWithMeta).toHaveBeenNthCalledWith(
+			2,
+			{ method: "GET", path: "/session-check", headers: { "x-test": "1" } },
+			{ acceptedStatuses: [304] }
+		);
+
+		// Missing rawRequestWithMeta fails closed instead of fabricating { status: 200, headers: {} }
+		await expect(
+			refresh({
+				rawRequest: vi.fn(),
+				getRefreshToken: vi.fn().mockResolvedValue("rt"),
+			})
+		).resolves.toEqual({ success: false, accessToken: null, refreshToken: null });
 	});
 });

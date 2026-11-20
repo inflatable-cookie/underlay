@@ -118,6 +118,11 @@ describe("client/useAuth actions", () => {
 			auth.loginWithPasskey({ credential: { id: "cred-1" } })
 		).rejects.toBe(nonHttpPasskeyErr);
 		expect(get(auth.state).error).toBeNull();
+
+		const nonHttpRefreshErr = new Error("offline");
+		commands.refresh.mockRejectedValueOnce(nonHttpRefreshErr);
+		await expect(auth.refresh()).rejects.toBe(nonHttpRefreshErr);
+		expect(get(auth.state).error).toBeNull();
 	});
 
 	it("logout always clears tokens and returns anonymous, even when command fails", async () => {

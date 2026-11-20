@@ -86,7 +86,10 @@ describe("createHttpClient authentication failures", () => {
     expect(refresh).not.toHaveBeenCalled();
   });
 
-  it("rethrows non-http errors from refresh handler", async () => {
+  it("clears tokens and rethrows when refresh handler throws", async () => {
+    const tokenStore = new FakeTokenStore();
+    tokenStore.seedTokens("old-token", "refresh-token");
+
     fetchMock = mockFetchSequence({
       ok: false,
       status: 401,
@@ -97,11 +100,12 @@ describe("createHttpClient authentication failures", () => {
     });
     const client = createHttpClient({
       baseUrl: "https://api.example.com",
-      auth: { refresh },
+      auth: { tokenStore, refresh },
       fetch: fetchMock,
     });
 
     await expect(client.get("/protected")).rejects.toThrow("refresh exploded");
     expect(refresh).toHaveBeenCalledTimes(1);
+    tokenStore.expectTokens(null, null);
   });
 });

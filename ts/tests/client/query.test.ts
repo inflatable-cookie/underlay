@@ -35,6 +35,12 @@ describe("client/query", () => {
 			{ field: "updated_at", direction: "desc" },
 		]);
 		expect(parseSort("name")).toEqual([{ field: "name", direction: "asc" }]);
+		expect(parseSort("title:asc,")).toEqual([{ field: "title", direction: "asc" }]);
+		expect(parseSort(",title:asc,,created_at:desc, ")).toEqual([
+			{ field: "title", direction: "asc" },
+			{ field: "created_at", direction: "desc" },
+		]);
+		expect(parseSort(":asc, ,")).toEqual([]);
 		expect(parseSort("")).toEqual([]);
 	});
 
@@ -147,5 +153,17 @@ describe("client/query", () => {
 			page: 1,
 			limit: 20,
 		});
+	});
+
+	it("rejects unknown filter operators and non-numeric pagination values", () => {
+		const params = new URLSearchParams(
+			"filter[weight][evil]=10&filter[status][eq]=active&page=abc&limit=12abc&sort=,"
+		);
+		expect(parseQueryParams(params)).toEqual({
+			filters: [{ field: "status", operator: "eq", value: "active" }],
+		});
+
+		expect(parseQueryParams(new URLSearchParams("page=0&limit=-5"))).toEqual({});
+		expect(parseQueryParams(new URLSearchParams("page=1.5&limit=NaN"))).toEqual({});
 	});
 });

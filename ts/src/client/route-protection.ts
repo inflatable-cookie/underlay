@@ -11,9 +11,11 @@ export interface LoginRedirectOptions {
   redirectToParam?: string;
 }
 
+const MAX_DECODE_ITERATIONS = 3;
+
 function decodeToFixpoint(value: string): string | null {
   let decoded = value;
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < MAX_DECODE_ITERATIONS; i++) {
     let next: string;
     try {
       next = decodeURIComponent(decoded);
@@ -25,7 +27,13 @@ function decodeToFixpoint(value: string): string | null {
     }
     decoded = next;
   }
-  return decoded;
+
+  // Reject inputs that still change (or become malformed) after max iterations.
+  try {
+    return decodeURIComponent(decoded) === decoded ? decoded : null;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -35,7 +43,7 @@ function decodeToFixpoint(value: string): string | null {
 export function normalizePath(path: string): string {
   const decoded = decodeToFixpoint(path);
   if (decoded === null) {
-    return path;
+    return "";
   }
 
   const withForwardSlashes = decoded.replace(/\\/g, "/");
@@ -86,7 +94,8 @@ export function resolveRedirectTo(
   if (!decoded.startsWith("/") || decoded.startsWith("//")) {
     return fallback;
   }
-  if (decoded.split("/").some((segment) => segment === "..")) {
+  const pathOnly = decoded.split(/[?#]/, 1)[0] ?? "";
+  if (pathOnly.split("/").some((segment) => segment === "..")) {
     return fallback;
   }
 
@@ -95,6 +104,9 @@ export function resolveRedirectTo(
 
 export function isPublicPath(path: string, publicPaths: string[]): boolean {
   const normalized = normalizePath(path);
+  if (!normalized) {
+    return false;
+  }
   return publicPaths.some((publicPath) => {
     if (publicPath.endsWith("/*")) {
       const prefix = publicPath.slice(0, -1);

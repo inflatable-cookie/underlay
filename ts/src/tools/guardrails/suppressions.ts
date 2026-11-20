@@ -1,7 +1,19 @@
 import { getLineNumberFromIndex, getLineText } from "./line-utils.js";
 
-function hasSuppression(lineText: string, directive: "line" | "next-line", ruleIds: string[]): boolean {
-  const pattern = new RegExp(`\\bguardrails-disable-${directive}\\b([^\\n]*)`);
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function hasSuppression(
+  lineText: string,
+  directive: "line" | "next-line",
+  ruleIds: string[],
+  suppressionPrefix: string
+): boolean {
+  if (!suppressionPrefix) return false;
+
+  const escapedPrefix = escapeRegExp(suppressionPrefix);
+  const pattern = new RegExp(`(?<![\\w-])${escapedPrefix}-${directive}\\b([^\\n]*)`);
   const match = lineText.match(pattern);
   if (!match) return false;
 
@@ -24,15 +36,16 @@ export function isSuppressed(
   text: string,
   lineStarts: number[],
   index: number,
-  ruleIds: string[]
+  ruleIds: string[],
+  suppressionPrefix = "guardrails-disable"
 ): boolean {
   const lineNumber = getLineNumberFromIndex(lineStarts, index);
 
   const currentLine = getLineText(text, lineStarts, lineNumber);
-  if (hasSuppression(currentLine, "line", ruleIds)) return true;
+  if (hasSuppression(currentLine, "line", ruleIds, suppressionPrefix)) return true;
 
   const prevLine = lineNumber > 1 ? getLineText(text, lineStarts, lineNumber - 1) : "";
-  if (hasSuppression(prevLine, "next-line", ruleIds)) return true;
+  if (hasSuppression(prevLine, "next-line", ruleIds, suppressionPrefix)) return true;
 
   return false;
 }

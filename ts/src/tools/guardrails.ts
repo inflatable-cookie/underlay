@@ -130,7 +130,15 @@ export async function scanFiles(config: GuardrailsConfig): Promise<number> {
 
 			let match: RegExpExecArray | null;
 			while ((match = pattern.regex.exec(text))) {
-				if (isSuppressed(text, lineStarts, match.index, ['banned', pattern.name])) {
+				if (
+					isSuppressed(
+						text,
+						lineStarts,
+						match.index,
+						['banned', pattern.name],
+						config.suppressionPrefix
+					)
+				) {
 					continue;
 				}
 
@@ -146,11 +154,13 @@ export async function scanFiles(config: GuardrailsConfig): Promise<number> {
 		if (ext === '.ts') {
 			for (const issue of scanModuleScopeBrowserApis(text, 0, config.moduleScopeChecks)) {
 				if (
-					isSuppressed(text, lineStarts, issue.index, [
-						'module-scope',
-						'module-scope-browser-api',
-						issue.name
-					])
+					isSuppressed(
+						text,
+						lineStarts,
+						issue.index,
+						['module-scope', 'module-scope-browser-api', issue.name],
+						config.suppressionPrefix
+					)
 				) {
 					continue;
 				}
@@ -168,11 +178,13 @@ export async function scanFiles(config: GuardrailsConfig): Promise<number> {
 			for (const block of blocks) {
 				for (const issue of scanModuleScopeBrowserApis(block.content, block.contentStart, config.moduleScopeChecks)) {
 					if (
-						isSuppressed(text, lineStarts, issue.index, [
-							'module-scope',
-							'module-scope-browser-api',
-							issue.name
-						])
+						isSuppressed(
+							text,
+							lineStarts,
+							issue.index,
+							['module-scope', 'module-scope-browser-api', issue.name],
+							config.suppressionPrefix
+						)
 					) {
 						continue;
 					}
@@ -200,10 +212,16 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 		let configPath: string | undefined;
 
 		for (let i = 0; i < args.length; i++) {
-			if (args[i] === '--src' && args[i + 1]) {
+			if (args[i] === '--src') {
+				if (!args[i + 1]) {
+					throw new Error('Missing directory argument for --src');
+				}
 				srcDir = args[i + 1];
 				i++;
-			} else if (args[i] === '--config' && args[i + 1]) {
+			} else if (args[i] === '--config') {
+				if (!args[i + 1]) {
+					throw new Error('Missing path argument for --config');
+				}
 				configPath = args[i + 1];
 				i++;
 			} else if (args[i] === '--help' || args[i] === '-h') {
@@ -260,5 +278,8 @@ Suppression:
 		}
 
 		console.log('✓ Guardrails passed: no issues found.');
-	})();
+	})().catch((error) => {
+		console.error(error instanceof Error ? error.message : String(error));
+		process.exit(1);
+	});
 }

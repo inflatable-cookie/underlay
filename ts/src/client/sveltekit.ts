@@ -3,7 +3,13 @@ import type { Cookies, Handle, RequestEvent } from "@sveltejs/kit";
 import type { AuthCommands, AuthRoutes, AuthSession, SessionInfo } from "./auth";
 import { createAuthCommands } from "./auth";
 import { UnderlayHttpError } from "./errors";
-import { createHttpClient, type HttpClient, type TokenStore } from "./http";
+import {
+  createHttpClient,
+  type HttpClient,
+  type HttpRequest,
+  type HttpRequestOptions,
+  type TokenStore,
+} from "./http";
 import type { SingleResponse } from "./envelopes";
 
 export interface CookieTokenStoreOptions {
@@ -202,24 +208,26 @@ export function createAuthHandle(options: SvelteKitAuthOptions): Handle {
           // Ensure refresh requests do not include Authorization.
           const rawHttp = {
             request: ctx.rawRequest,
-            requestWithMeta: async <T>(req: {
-              method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
-              path: string;
-              headers?: Record<string, string>;
-              body?: unknown;
-            }, _options?: { acceptedStatuses?: number[] }) => {
-              const body = await ctx.rawRequest<T>(req);
-              return { status: 200, headers: {}, body };
+            requestWithMeta: <T>(
+              req: HttpRequest,
+              requestOptions?: HttpRequestOptions
+            ) => {
+              if (!ctx.rawRequestWithMeta) {
+                throw new Error("rawRequestWithMeta is not available in RefreshContext");
+              }
+              return ctx.rawRequestWithMeta<T>(req, requestOptions);
             },
             get: (path: string, headers?: Record<string, string>) =>
               ctx.rawRequest({ method: "GET", path, headers }),
-            getWithMeta: async <T>(
+            getWithMeta: <T>(
               path: string,
               headers?: Record<string, string>,
-              _options?: { acceptedStatuses?: number[] }
+              requestOptions?: HttpRequestOptions
             ) => {
-              const body = await ctx.rawRequest<T>({ method: "GET", path, headers });
-              return { status: 200, headers: {}, body };
+              if (!ctx.rawRequestWithMeta) {
+                throw new Error("rawRequestWithMeta is not available in RefreshContext");
+              }
+              return ctx.rawRequestWithMeta<T>({ method: "GET", path, headers }, requestOptions);
             },
             post: (path: string, body?: unknown, headers?: Record<string, string>) =>
               ctx.rawRequest({ method: "POST", path, body, headers }),

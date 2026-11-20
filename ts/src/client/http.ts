@@ -188,11 +188,30 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
           };
         }
 
-        return {
-          status: res.status,
-          headers: responseHeaders,
-          body: (await res.json()) as T,
-        };
+        try {
+          return {
+            status: res.status,
+            headers: responseHeaders,
+            body: (await res.json()) as T,
+          };
+        } catch (parseErr) {
+          if (
+            parseErr instanceof Error &&
+            (parseErr.name === "AbortError" || controller?.signal.aborted === true)
+          ) {
+            throw parseErr;
+          }
+          const message =
+            parseErr instanceof Error
+              ? `Invalid JSON response: ${parseErr.message}`
+              : "Invalid JSON response";
+          throw new UnderlayHttpError(res.status, message, {
+            error: {
+              code: "invalid_json",
+              message,
+            },
+          });
+        }
       } catch (err) {
         if (timeout != null) {
           clearTimeout(timeout);
@@ -226,6 +245,19 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
     return response.body as T;
   }
 
+  async function rawRequestWithMeta<T>(
+    req: HttpRequest,
+    requestOptions?: HttpRequestOptions,
+  ): Promise<HttpResponse<T>> {
+    return rawRequest<T>(req, requestOptions);
+  }
+
+  async function clearStoredTokens(): Promise<void> {
+    await tokenStore?.clear();
+    await setAccessToken?.(null);
+    await setRefreshToken?.(null);
+  }
+
   async function requestWithMeta<T>(
     req: HttpRequest,
     requestOptions?: HttpRequestOptions,
@@ -249,9 +281,11 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
       }
 
       if (!refreshInFlight) {
-        refreshInFlight = options.auth
-          .refresh({
+        const refreshFn = options.auth.refresh;
+        refreshInFlight = (async () =>
+          refreshFn({
             rawRequest: rawRequestBody,
+            rawRequestWithMeta,
             tokenStore,
             getRefreshToken: async () => (await getRefreshToken?.()) ?? null,
             setAccessToken: async (t) => {
@@ -260,18 +294,21 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
             setRefreshToken: async (t) => {
               await setRefreshToken?.(t);
             },
-          })
-          .finally(() => {
-            refreshInFlight = null;
-          });
+          }))().finally(() => {
+          refreshInFlight = null;
+        });
       }
 
-      const refreshed = await refreshInFlight;
+      let refreshed: RefreshResult;
+      try {
+        refreshed = await refreshInFlight;
+      } catch (refreshErr) {
+        await clearStoredTokens();
+        throw refreshErr;
+      }
 
       if (!refreshed.success) {
-        await tokenStore?.clear();
-        await setAccessToken?.(null);
-        await setRefreshToken?.(null);
+        await clearStoredTokens();
         throw err;
       }
 

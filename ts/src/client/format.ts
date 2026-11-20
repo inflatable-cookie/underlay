@@ -3,7 +3,7 @@
  * Supports numbers 1-3999.
  */
 export function toRomanNumerals(num: number): string {
-  if (num < 1 || num > 3999) {
+  if (!Number.isFinite(num) || num < 1 || num > 3999) {
     return String(num);
   }
 

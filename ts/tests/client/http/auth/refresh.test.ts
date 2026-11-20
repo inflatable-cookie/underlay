@@ -184,4 +184,48 @@ describe("createHttpClient authentication refresh", () => {
     expect(b).toEqual({ data: { id: "b" } });
     expect(refresh).toHaveBeenCalledTimes(1);
   });
+
+  it("exposes rawRequestWithMeta with real status, headers, and acceptedStatuses", async () => {
+    fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        headers: new Headers({ "content-type": "application/json" }),
+        json: async () => ({ error: { code: "auth.token_expired", message: "Expired" } }),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 304,
+        headers: new Headers({ etag: '"refresh-etag"' }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: new Headers({ "content-type": "application/json" }),
+        json: async () => ({ data: { id: "ok" } }),
+      });
+
+    let metaResult: unknown;
+    const refresh = vi.fn(async ({ rawRequestWithMeta }) => {
+      metaResult = await rawRequestWithMeta?.(
+        { method: "GET", path: "/auth/refresh-check" },
+        { acceptedStatuses: [304] },
+      );
+      return { success: true, accessToken: "new-token" };
+    });
+
+    const client = createHttpClient({
+      baseUrl: "https://api.example.com",
+      auth: { refresh },
+      fetch: fetchMock,
+    });
+
+    await expect(client.get("/protected")).resolves.toEqual({ data: { id: "ok" } });
+    expect(metaResult).toEqual({
+      status: 304,
+      headers: { etag: '"refresh-etag"' },
+      body: null,
+    });
+  });
 });

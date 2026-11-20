@@ -37,6 +37,28 @@ export interface SortField {
 /** Filter operator */
 export type FilterOperator = "eq" | "ne" | "gt" | "gte" | "lt" | "lte" | "like";
 
+const VALID_FILTER_OPERATORS = new Set<FilterOperator>([
+  "eq",
+  "ne",
+  "gt",
+  "gte",
+  "lt",
+  "lte",
+  "like",
+]);
+
+function isFilterOperator(value: string): value is FilterOperator {
+  return VALID_FILTER_OPERATORS.has(value as FilterOperator);
+}
+
+function parsePositiveInt(value: string | null): number | undefined {
+  if (!value) return undefined;
+  const trimmed = value.trim();
+  if (!/^\d+$/.test(trimmed)) return undefined;
+  const parsed = Number(trimmed);
+  return Number.isSafeInteger(parsed) && parsed >= 1 ? parsed : undefined;
+}
+
 /** A single filter condition */
 export interface FilterField {
   /** The field name to filter on */
@@ -115,13 +137,21 @@ export function serializeSort(sort: SortField[]): string {
 export function parseSort(sortString: string): SortField[] {
   if (!sortString) return [];
 
-  return sortString.split(",").map((part) => {
-    const [field, dir] = part.split(":");
-    return {
-      field: field.trim(),
-      direction: (dir?.trim() === "desc" ? "desc" : "asc") as SortDirection,
-    };
-  });
+  const fields: SortField[] = [];
+  for (const part of sortString.split(",")) {
+    const trimmed = part.trim();
+    if (!trimmed) continue;
+
+    const [rawField, rawDir] = trimmed.split(":");
+    const field = (rawField ?? "").trim();
+    if (!field) continue;
+
+    fields.push({
+      field,
+      direction: rawDir?.trim() === "desc" ? "desc" : "asc",
+    });
+  }
+  return fields;
 }
 
 /**
@@ -339,7 +369,10 @@ export function parseQueryParams(searchParams: URLSearchParams): QueryParams {
   // Parse sort
   const sortParam = searchParams.get("sort");
   if (sortParam) {
-    result.sort = parseSort(sortParam);
+    const sort = parseSort(sortParam);
+    if (sort.length > 0) {
+      result.sort = sort;
+    }
   }
 
   // Parse filters
@@ -353,10 +386,10 @@ export function parseQueryParams(searchParams: URLSearchParams): QueryParams {
     }
 
     const opMatch = key.match(/^filter\[(\w+)\]\[(\w+)\]$/);
-    if (opMatch) {
+    if (opMatch && isFilterOperator(opMatch[2])) {
       filters.push({
         field: opMatch[1],
-        operator: opMatch[2] as FilterOperator,
+        operator: opMatch[2],
         value,
       });
     }
@@ -366,14 +399,14 @@ export function parseQueryParams(searchParams: URLSearchParams): QueryParams {
   }
 
   // Parse pagination
-  const page = searchParams.get("page");
-  if (page) {
-    result.page = parseInt(page, 10);
+  const page = parsePositiveInt(searchParams.get("page"));
+  if (page !== undefined) {
+    result.page = page;
   }
 
-  const limit = searchParams.get("limit");
-  if (limit) {
-    result.limit = parseInt(limit, 10);
+  const limit = parsePositiveInt(searchParams.get("limit"));
+  if (limit !== undefined) {
+    result.limit = limit;
   }
 
   return result;

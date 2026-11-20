@@ -127,4 +127,20 @@ describe("client/useAuth init", () => {
 			error: err,
 		});
 	});
+
+	it("sets anonymous with null error when session throws non-http error during init", async () => {
+		const { commands, tokenStore } = makeDeps();
+		commands.session.mockRejectedValue(new Error("network down"));
+		const auth = createAuthStore({ commands: commands as any, tokenStore: tokenStore as any });
+
+		await auth.init();
+
+		expect(tokenStore.clear).not.toHaveBeenCalled();
+		expect(get(auth.state)).toEqual({
+			status: "anonymous",
+			session: null,
+			loading: false,
+			error: null,
+		});
+	});
 });

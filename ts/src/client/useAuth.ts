@@ -91,7 +91,7 @@ export function createAuthStore(options: CreateAuthStoreOptions): AuthStore {
         return;
       }
 
-      state.set({ status: "anonymous", session: null, loading: false, error: err as UnderlayHttpError });
+      setAnonymous(err instanceof UnderlayHttpError ? err : null);
     }
   }
 
@@ -157,7 +157,8 @@ export function createAuthStore(options: CreateAuthStoreOptions): AuthStore {
         await clearTokens();
         setAnonymous(err);
       } else {
-        state.update((s) => ({ ...s, loading: false, error: err as UnderlayHttpError }));
+        const e = err instanceof UnderlayHttpError ? err : null;
+        state.update((s) => ({ ...s, loading: false, error: e }));
       }
       throw err;
     }

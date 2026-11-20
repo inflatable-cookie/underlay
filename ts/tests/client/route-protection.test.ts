@@ -75,11 +75,16 @@ describe("client/route-protection", () => {
 		expect(resolveRedirectTo("/%2e%2e/admin")).toBe("/");
 		expect(resolveRedirectTo("/%252e%252e/admin")).toBe("/");
 		expect(resolveRedirectTo("/a/../b")).toBe("/");
+		expect(resolveRedirectTo("/a/..?x")).toBe("/");
+		expect(resolveRedirectTo("/a/..#frag")).toBe("/");
+		expect(resolveRedirectTo("/..?x")).toBe("/");
 		expect(resolveRedirectTo("/line%0d%0abreak")).toBe("/");
 		expect(resolveRedirectTo("")).toBe("/");
 		expect(resolveRedirectTo(null)).toBe("/");
 		expect(resolveRedirectTo(undefined)).toBe("/");
 		expect(resolveRedirectTo("%zz")).toBe("/");
+		expect(resolveRedirectTo("/%2525252e%2525252e/admin")).toBe("/");
+		expect(resolveRedirectTo("/a/b?next=..")).toBe("/a/b?next=..");
 	});
 
 	it("resolveRedirectTo honours a custom fallback", () => {
@@ -94,13 +99,22 @@ describe("client/route-protection", () => {
 		expect(normalizePath("/")).toBe("/");
 	});
 
-	it("isPublicPath is not bypassed by encoded traversal", () => {
+	it("isPublicPath is not bypassed by encoded traversal or malformed encodings", () => {
 		const publicPaths = ["/docs/*"];
 
 		expect(isPublicPath("/docs/guide", publicPaths)).toBe(true);
 		expect(isPublicPath("/docs/../admin", publicPaths)).toBe(false);
 		expect(isPublicPath("/docs/%2e%2e/admin", publicPaths)).toBe(false);
 		expect(shouldProtectRoute("/docs/%2e%2e/admin", publicPaths)).toBe(true);
+
+		expect(normalizePath("/public/%ZZ/../../admin")).toBe("");
+		expect(isPublicPath("/public/%ZZ/../../admin", ["/public/*"])).toBe(false);
+		expect(shouldProtectRoute("/public/%ZZ/../../admin", ["/public/*"])).toBe(true);
+
+		// Still changes after max decode iterations (3) -> fail closed
+		expect(normalizePath("/public/%2525252e%2525252e/admin")).toBe("");
+		expect(isPublicPath("/public/%2525252e%2525252e/admin", ["/public/*"])).toBe(false);
+		expect(shouldProtectRoute("/public/%2525252e%2525252e/admin", ["/public/*"])).toBe(true);
 	});
 
 	it("does not write protocol-relative pathnames into the redirect param", () => {
