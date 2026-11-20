@@ -110,12 +110,13 @@
   }
 
   function cancel(): void {
+    if (busy) return;
     onCancel?.();
     setOpen(false);
   }
 
   function submit(): void {
-    if (!action) return;
+    if (!action || busy) return;
     onSubmit?.({
       action,
       values,

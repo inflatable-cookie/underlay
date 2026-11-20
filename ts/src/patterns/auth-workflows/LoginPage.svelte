@@ -70,12 +70,12 @@
     loading = true;
 
     try {
-      if (!email.trim() || !password.trim()) {
+      if (!email.trim() || password.length === 0) {
         error = "Email and password are required";
         return;
       }
 
-      const result = await onPasswordLogin?.(email.trim(), password.trim());
+      const result = await onPasswordLogin?.(email.trim(), password);
       const outcome = resolvePasswordLoginOutcome(result, email);
 
       if (outcome.kind === "2fa") {
@@ -231,7 +231,11 @@
         {methods}
         {activeMethod}
         {onGoogleLogin}
-        onSelect={(method) => { activeMethod = method; }}
+        onSelect={(method) => {
+          activeMethod = method;
+          error = null;
+          passkeyError = null;
+        }}
       />
     {/if}
 

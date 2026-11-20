@@ -19,8 +19,8 @@
   --underlay-shadow-dialog: 0 20px 40px rgba(0, 0, 0, 0.55);
 
   --underlay-color-text: #111827;
-  --underlay-color-text-muted: #6b7280;
-  --underlay-color-text-subtle: rgba(148, 163, 184, 0.65);
+  --underlay-color-text-muted: #4b5563;
+  --underlay-color-text-subtle: #526071;
 
   /* Borders */
   --underlay-color-border-subtle: rgba(15, 23, 42, 0.15);
@@ -31,10 +31,10 @@
   --underlay-color-primary-strong: #1d4ed8;
   --underlay-color-on-primary: #ffffff;
 
-  /* Status */
-  --underlay-color-success: #16a34a;
-  --underlay-color-warning: #f59e0b;
-  --underlay-color-error: #ef4444;
+  /* Status (WCAG AA >= 4.5:1 on light surface) */
+  --underlay-color-success: #15803d;
+  --underlay-color-warning: #b45309;
+  --underlay-color-error: #dc2626;
   --underlay-color-danger: var(--underlay-color-error);
 
   /* Muted / secondary surfaces */

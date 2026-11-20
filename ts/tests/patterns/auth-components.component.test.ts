@@ -4,7 +4,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/svelte";
 import LoginPage from "../../src/patterns/auth-workflows/LoginPage.svelte";
 
 describe("patterns/auth-workflows/*", () => {
-	it("handles password login validation and trims credentials before submit", async () => {
+	it("handles password login validation, trims email, and preserves password whitespace", async () => {
 		const onPasswordLogin = vi.fn(async () => ({ complete: true }));
 		const onComplete = vi.fn();
 
@@ -26,7 +26,7 @@ describe("patterns/auth-workflows/*", () => {
 		await fireEvent.submit(screen.getByRole("button", { name: "Log in" }).closest("form") as HTMLFormElement);
 
 		await waitFor(() => {
-			expect(onPasswordLogin).toHaveBeenCalledWith("person@example.com", "secret-pass");
+			expect(onPasswordLogin).toHaveBeenCalledWith("person@example.com", "  secret-pass  ");
 			expect(onComplete).toHaveBeenCalledTimes(1);
 		});
 		expect(screen.getByRole("link", { name: "Forgot password?" }).getAttribute("href")).toBe("/forgot");

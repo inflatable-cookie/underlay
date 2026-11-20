@@ -47,7 +47,7 @@
 
 <div class="underlay-media-browse-panel">
   {#if loading && items.length === 0}
-    <div class="underlay-media-browse-panel__state">
+    <div class="underlay-media-browse-panel__state" role="status" aria-live="polite">
       <p>Loading media...</p>
     </div>
   {:else if error}
@@ -68,13 +68,12 @@
             kind={toMediaKind(item.kind)}
             presentation="compact"
             aspectRatio="square"
-            ariaLabel={item.label}
           >
             {@const previewUrl = getPreviewUrl(item)}
             {#if previewUrl}
               <img
                 src={previewUrl}
-                alt={item.label}
+                alt=""
                 class="underlay-media-browse-panel__image"
               />
             {/if}
@@ -110,13 +109,14 @@
 
   .underlay-media-browse-panel__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(var(--underlay-media-browse-grid-min), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--underlay-media-browse-grid-min)), 1fr));
     gap: var(--underlay-media-browse-grid-gap);
     margin-top: var(--underlay-media-browse-grid-gap);
   }
 
   .underlay-media-browse-panel__item {
     display: grid;
+    min-width: 0;
     gap: var(--underlay-media-browse-item-gap);
     padding: var(--underlay-media-browse-item-pad);
     border: 0.0625rem solid var(--poodle-color-border-subtle);
@@ -127,11 +127,16 @@
     cursor: pointer;
   }
 
-  .underlay-media-browse-panel__item:hover,
+  .underlay-media-browse-panel__item:hover {
+    border-color: var(--poodle-color-border-focus);
+    background: color-mix(in srgb, var(--poodle-color-background-elevated) 90%, transparent);
+  }
+
   .underlay-media-browse-panel__item:focus-visible {
     border-color: var(--poodle-color-border-focus);
     background: color-mix(in srgb, var(--poodle-color-background-elevated) 90%, transparent);
-    outline: none;
+    outline: var(--underlay-focus-ring-width, 2px) solid var(--poodle-color-border-focus, var(--underlay-color-primary, #2563eb));
+    outline-offset: var(--underlay-focus-ring-offset, 2px);
   }
 
   .underlay-media-browse-panel__image {
