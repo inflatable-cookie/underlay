@@ -37,9 +37,9 @@
 </script>
 
 {#if failed}
-  <p>{errorMessage}</p>
+  <p role="alert">{errorMessage}</p>
 {:else if !loaded}
-  <p>{loadingMessage}</p>
+  <p role="status" aria-live="polite">{loadingMessage}</p>
 {:else}
   {@render render(data, item)}
 {/if}

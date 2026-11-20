@@ -224,15 +224,10 @@ export function useAuthenticatedData<T>(
   let _queuedRefetchPromise: Promise<void> | null = null;
   let _resolveQueuedRefetch: (() => void) | null = null;
 
-  // Query key tracking: intercept onSuccess to capture the key after each fetch.
-  // This must be set up before doFetch is defined since doFetch calls the hook.
+  // Query key tracking: capture the key at fetch start so failed or superseded
+  // fetches never mask subsequent queryKey changes.
   let _previousQueryKey: string | null = null;
-  const _onSuccessHook: ((data: T) => void) | undefined = options.queryKey
-    ? (result: T) => {
-        _previousQueryKey = options.queryKey!();
-        options.onSuccess?.(result);
-      }
-    : options.onSuccess;
+  const _onSuccessHook = options.onSuccess;
 
   const doFetch = async (isRefetch = false): Promise<void> => {
     if (_inFlight) {
@@ -261,6 +256,7 @@ export function useAuthenticatedData<T>(
     }
     const { getToken, onRefresh } = resolved.handlers;
 
+    const fetchKey = options.queryKey ? options.queryKey() : null;
     if (isRefetch) {
       refetching = true;
     } else {
@@ -298,6 +294,9 @@ export function useAuthenticatedData<T>(
         // Mark as fetched even on error to prevent tryFetch from auto-retrying.
         // Users can still explicitly call refetch() to retry.
         _fetched = true;
+        if (options.queryKey && _previousQueryKey === null) {
+          _previousQueryKey = fetchKey;
+        }
       }
       loading = false;
       refetching = false;

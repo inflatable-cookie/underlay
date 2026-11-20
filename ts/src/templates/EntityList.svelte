@@ -529,11 +529,14 @@
         !filterOptionsLoading[filter.id] &&
         !filterOptionsFailed[filter.id]
       ) {
+        const expectedLoadKey = currentLoadKey;
         filterOptionsLoading = { ...filterOptionsLoading, [filter.id]: true };
         filter.loadOptions().then((options) => {
+          if (filterLoadKeys[filter.id] !== expectedLoadKey) return;
           loadedFilterOptions = { ...loadedFilterOptions, [filter.id]: options };
           filterOptionsLoading = { ...filterOptionsLoading, [filter.id]: false };
         }).catch(() => {
+          if (filterLoadKeys[filter.id] !== expectedLoadKey) return;
           filterOptionsFailed = { ...filterOptionsFailed, [filter.id]: true };
           filterOptionsLoading = { ...filterOptionsLoading, [filter.id]: false };
         });
@@ -821,6 +824,11 @@
       return;
     }
 
+    for (const timer of searchDebounceTimers.values()) {
+      clearTimeout(timer);
+    }
+    searchDebounceTimers.clear();
+
     setQuery({
       ...currentQuery,
       filters: [],
@@ -1069,6 +1077,9 @@
   });
 
   function handleKeydown(event: KeyboardEvent) {
+    if (event.defaultPrevented) {
+      return;
+    }
     if (event.key === "Escape") {
       if (pendingDialogAction || batch.confirmingAction) {
         return;

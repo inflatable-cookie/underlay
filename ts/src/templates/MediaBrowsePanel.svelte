@@ -50,7 +50,7 @@
     <div class="underlay-media-browse-panel__state" role="status" aria-live="polite">
       <p>Loading media...</p>
     </div>
-  {:else if error}
+  {:else if error && items.length === 0}
     <Callout tone="danger" message={error} announceMode="polite" />
   {:else if items.length === 0}
     <div class="underlay-media-browse-panel__state">
@@ -85,6 +85,10 @@
         </button>
       {/each}
     </div>
+
+    {#if error}
+      <Callout tone="danger" message={error} announceMode="polite" />
+    {/if}
 
     {#if hasMore}
       <div class="underlay-media-browse-panel__actions">

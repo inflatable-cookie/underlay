@@ -46,6 +46,12 @@
   let step = $state<LoginStep>("credentials");
   let activeMethod = $state<LoginMethod>(untrack(() => methods[0] ?? "password"));
 
+  $effect(() => {
+    if (methods.length > 0 && !methods.includes(activeMethod)) {
+      activeMethod = methods[0];
+    }
+  });
+
   let email = $state("");
   let password = $state("");
   let passkeyEmail = $state("");
@@ -153,12 +159,15 @@
     step = "credentials";
     loginStateId = undefined;
     isEmailVerification = false;
+    hadTotpConfigured = false;
+    usedEmailFallback = false;
+    twoFactorEmail = undefined;
     code = "";
     error = null;
   }
 
-  async function handleRequestEmailCode() {
-    if (!loginStateId || !onRequestEmailCode) return;
+  async function handleRequestEmailCode(): Promise<boolean> {
+    if (!loginStateId || !onRequestEmailCode) return false;
 
     error = null;
     loading = true;
@@ -170,8 +179,10 @@
       twoFactorEmail = outcome.twoFactorEmail;
       isEmailVerification = outcome.isEmailVerification;
       usedEmailFallback = outcome.usedEmailFallback;
+      return true;
     } catch (e) {
       error = e instanceof Error ? e.message : "Failed to send verification code";
+      return false;
     } finally {
       loading = false;
     }
@@ -193,7 +204,7 @@
   }
 
   function handleSetupNow() {
-    if (setupHref) {
+    if (setupHref && setupHref.startsWith("/") && !setupHref.startsWith("//")) {
       window.location.href = setupHref;
     }
   }

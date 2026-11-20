@@ -159,12 +159,15 @@
       </Button>
     {:else}
       <!-- Fallback: plain text input when no media context is configured -->
-      <TextInput
-        id={`${uid}-media-id`}
-        placeholder="Media ID"
-        value={mediaId}
-        onValueChange={(nextValue) => emit({ media_id: nextValue })}
-      />
+      <label class="underlay-media-editor__field" for={`${uid}-media-id`}>
+        <span class="underlay-media-editor__label">Media ID</span>
+        <TextInput
+          id={`${uid}-media-id`}
+          placeholder="Media ID"
+          value={mediaId}
+          onValueChange={(nextValue) => emit({ media_id: nextValue })}
+        />
+      </label>
     {/if}
     {#if pickError}
       <p class="underlay-media-editor__error" role="alert">{pickError}</p>
@@ -174,24 +177,33 @@
   <!-- Fields (only shown when media is selected) -->
   {#if mediaId}
     <div class="underlay-media-editor__fields">
-      <TextInput
-        id={`${uid}-media-caption`}
-        placeholder="Caption (optional)"
-        value={caption}
-        onValueChange={(nextValue) => emit({ caption: nextValue })}
-      />
-      <TextInput
-        id={`${uid}-media-alt`}
-        placeholder="Alt text (optional)"
-        value={alt}
-        onValueChange={(nextValue) => emit({ alt: nextValue })}
-      />
-      <Select
-        value={display}
-        options={displayOptions}
-        onValueChange={(value) => emit({ display: value })}
-        placeholder="Display mode"
-      />
+      <label class="underlay-media-editor__field" for={`${uid}-media-caption`}>
+        <span class="underlay-media-editor__label">Caption</span>
+        <TextInput
+          id={`${uid}-media-caption`}
+          placeholder="Caption (optional)"
+          value={caption}
+          onValueChange={(nextValue) => emit({ caption: nextValue })}
+        />
+      </label>
+      <label class="underlay-media-editor__field" for={`${uid}-media-alt`}>
+        <span class="underlay-media-editor__label">Alt text</span>
+        <TextInput
+          id={`${uid}-media-alt`}
+          placeholder="Alt text (optional)"
+          value={alt}
+          onValueChange={(nextValue) => emit({ alt: nextValue })}
+        />
+      </label>
+      <label class="underlay-media-editor__field">
+        <span class="underlay-media-editor__label">Display mode</span>
+        <Select
+          value={display}
+          options={displayOptions}
+          onValueChange={(value) => emit({ display: value })}
+          placeholder="Display mode"
+        />
+      </label>
     </div>
   {/if}
 </div>
@@ -211,6 +223,17 @@
     margin: 0;
     font-size: var(--underlay-font-size-sm, 0.8rem);
     color: var(--underlay-color-error, #dc2626);
+  }
+
+  .underlay-media-editor__field {
+    display: grid;
+    gap: var(--underlay-space-1, 0.25rem);
+  }
+
+  .underlay-media-editor__label {
+    font-size: var(--underlay-font-size-xs, 0.75rem);
+    font-weight: 500;
+    color: var(--underlay-color-text-muted, #4b5563);
   }
 
   .underlay-media-editor__preview {

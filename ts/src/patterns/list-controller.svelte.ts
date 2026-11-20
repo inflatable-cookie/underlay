@@ -208,10 +208,12 @@ export function createListController<T, F extends Record<string, unknown> = Reco
   let error = $state<string | null>(null);
   let filters = $state<F>((options.initialFilters ?? {}) as F);
   let _fetched = $state(false);
+  let _inFlight = false;
   let requestSeq = 0;
 
   const doFetch = async (isRefetch = false) => {
     const seq = ++requestSeq;
+    _inFlight = true;
     // Resolve auth lazily (fetch path only) so setup stays SSR-safe; a
     // misconfiguration surfaces as the controller's error state.
     const resolved = tryResolveAuthFetchHandlers("createListController", options);
@@ -257,6 +259,7 @@ export function createListController<T, F extends Record<string, unknown> = Reco
       }
     } finally {
       if (seq === requestSeq) {
+        _inFlight = false;
         loading = false;
         refetching = false;
       }
@@ -276,7 +279,7 @@ export function createListController<T, F extends Record<string, unknown> = Reco
 
   const setFilters = (newFilters: Partial<F>) => {
     filters = { ...filters, ...newFilters };
-    if (autoFetchOnFilterChange && _fetched) {
+    if (autoFetchOnFilterChange && (_fetched || _inFlight)) {
       doFetch(true);
     }
   };

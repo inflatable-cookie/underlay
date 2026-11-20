@@ -14,7 +14,7 @@
     submitLabel?: string;
     backLabel?: string;
     onVerify?: (code: string) => void;
-    onRequestEmailCode?: () => void;
+    onRequestEmailCode?: () => void | boolean | Promise<void | boolean>;
     onResendEmailCode?: () => void;
     onBack?: () => void;
   }
@@ -50,9 +50,13 @@
     }
   });
 
+  const uid = $props.id();
+
   async function handleRequestEmailCode() {
-    await onRequestEmailCode?.();
-    emailCodeRequested = true;
+    const sent = await onRequestEmailCode?.();
+    if (sent !== false) {
+      emailCodeRequested = true;
+    }
   }
 
   function handleSubmit(event: SubmitEvent) {
@@ -108,10 +112,10 @@
         onValueChange={(value) => { code = value; }}
       />
     {:else if activeMethod === "backup"}
-      <Field id="backup-code" label="Backup code" required>
+      <Field id={`${uid}-backup-code`} label="Backup code" required>
         {#snippet control({ describedBy })}
           <TextInput
-            id="backup-code"
+            id={`${uid}-backup-code`}
             value={code}
             describedBy={describedBy}
             placeholder="XXXXX-XXXXX"

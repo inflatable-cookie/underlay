@@ -164,8 +164,16 @@ export function createMediaUploadFlow(
 
   // Actions
   function setFile(f: File) {
+    runGeneration += 1;
+    abortController?.abort();
+    abortController = null;
     fileError = null;
     file = null;
+    fileHash = null;
+    step = "select";
+    progress = 0;
+    error = null;
+    duplicateMedia = null;
 
     // validateFile returns a result object; it never throws.
     const result = validateFile(f, maxFileSize);
@@ -194,8 +202,12 @@ export function createMediaUploadFlow(
     createdMedia = null;
   }
 
+  function isUploadActive(): boolean {
+    return step === "checking" || step === "uploading" || step === "finalising";
+  }
+
   async function startUpload(metadata?: Partial<CreateMediaRequest>) {
-    if (!file || isUploading) return;
+    if (!file || isUploadActive()) return;
 
     const generation = ++runGeneration;
     const targetFile = file;
@@ -240,7 +252,7 @@ export function createMediaUploadFlow(
   }
 
   async function proceedWithUpload(metadata?: Partial<CreateMediaRequest>) {
-    if (!file || !fileHash || isUploading) return;
+    if (!file || !fileHash || isUploadActive()) return;
     const generation = ++runGeneration;
     await proceedWithUploadInternal(metadata, generation);
   }
@@ -294,7 +306,8 @@ export function createMediaUploadFlow(
         objectKey: "",
       };
 
-      abortController = new AbortController();
+      const controller = new AbortController();
+      abortController = controller;
       try {
         await uploadToBlob(plan, targetFile, {
           onProgress: (p) => {
@@ -302,10 +315,12 @@ export function createMediaUploadFlow(
               progress = p.percent;
             }
           },
-          signal: abortController.signal,
+          signal: controller.signal,
         });
       } finally {
-        abortController = null;
+        if (abortController === controller) {
+          abortController = null;
+        }
       }
       if (generation !== runGeneration) return;
 
@@ -322,6 +337,7 @@ export function createMediaUploadFlow(
       step = "complete";
       onComplete?.(finaliseResponse.media);
     } catch (e) {
+      if (generation !== runGeneration) return;
       if ((e as { code?: string } | null)?.code === "UPLOAD_ABORTED") {
         // User-initiated cancel: back to selection, keep the chosen file.
         if (file !== null) {
@@ -330,7 +346,6 @@ export function createMediaUploadFlow(
         }
         return;
       }
-      if (generation !== runGeneration) return;
 
       console.error("Upload failed", e);
       error = e instanceof Error ? e.message : "Upload failed";
@@ -343,7 +358,7 @@ export function createMediaUploadFlow(
     runGeneration += 1;
     abortController?.abort();
     abortController = null;
-    if (isUploading) {
+    if (isUploadActive()) {
       step = "select";
       progress = 0;
     }
