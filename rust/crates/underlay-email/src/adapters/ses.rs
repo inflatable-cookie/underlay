@@ -1,7 +1,10 @@
 //! AWS SES email adapter.
 
 use async_trait::async_trait;
-use aws_sdk_sesv2::types::{Body, Content, Destination, EmailContent, Message as SesMessage};
+use aws_sdk_sesv2::error::ProvideErrorMetadata;
+use aws_sdk_sesv2::types::{
+    Body, Content, Destination, EmailContent, Message as SesMessage, MessageHeader,
+};
 use aws_sdk_sesv2::Client;
 
 use crate::adapter::EmailAdapter;
@@ -45,6 +48,7 @@ impl SesAdapter {
 
     /// Build the SES email content from our Email type.
     fn build_content(email: &Email) -> EmailResult<EmailContent> {
+        email.validate_headers()?;
         let subject = Content::builder()
             .data(&email.subject)
             .charset("UTF-8")
@@ -77,9 +81,19 @@ impl SesAdapter {
 
         let body = body_builder.build();
 
-        let message = SesMessage::builder().subject(subject).body(body).build();
+        let mut message = SesMessage::builder().subject(subject).body(body);
+        for (name, value) in &email.headers {
+            let header = MessageHeader::builder()
+                .name(name)
+                .value(value)
+                .build()
+                .map_err(|e| {
+                    EmailError::ConfigError(format!("Failed to build email header: {e}"))
+                })?;
+            message = message.headers(header);
+        }
 
-        Ok(EmailContent::builder().simple(message).build())
+        Ok(EmailContent::builder().simple(message.build()).build())
     }
 
     /// Build the SES destination from our Email type.
@@ -133,19 +147,16 @@ impl EmailAdapter for SesAdapter {
             Err(e) => {
                 let error_msg = e.to_string();
 
-                // Categorize SES-specific errors
-                if error_msg.contains("MessageRejected") {
-                    Err(EmailError::Rejected(error_msg))
-                } else if error_msg.contains("Throttling") || error_msg.contains("rate") {
-                    Err(EmailError::RateLimited(error_msg))
-                } else if error_msg.contains("credentials")
-                    || error_msg.contains("AccessDenied")
-                    || error_msg.contains("InvalidClientTokenId")
-                {
-                    Err(EmailError::AuthenticationFailed(error_msg))
-                } else {
-                    Err(EmailError::TransportError(error_msg))
-                }
+                Err(match e.code() {
+                    Some("MessageRejected") => EmailError::Rejected(error_msg),
+                    Some("Throttling" | "ThrottlingException" | "TooManyRequestsException") => {
+                        EmailError::RateLimited(error_msg)
+                    }
+                    Some("AccessDenied" | "AccessDeniedException" | "InvalidClientTokenId") => {
+                        EmailError::AuthenticationFailed(error_msg)
+                    }
+                    _ => EmailError::TransportError(error_msg),
+                })
             }
         }
     }

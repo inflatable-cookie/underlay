@@ -39,7 +39,7 @@ pub trait SessionRepository: Send + Sync {
     async fn insert_session(&self, session: &SessionRecord) -> AuthResult<()>;
 
     /// Atomically rotate to `session`'s new token state, but only while the
-    /// stored refresh lineage still matches `expected_refresh_token_id` and
+    /// stored session is active and its refresh lineage still matches `expected_refresh_token_id` and
     /// `expected_refresh_token_version`. Returns `true` if this call won the
     /// rotation; `false` if a concurrent refresh rotated first (a benign
     /// double-submit race, not reuse).
@@ -51,6 +51,15 @@ pub trait SessionRepository: Send + Sync {
     ) -> AuthResult<bool>;
 
     async fn revoke_session(&self, session_id: Uuid, reason: &str) -> AuthResult<()>;
+
+    /// Atomically revoke only if the stored session is still active and its
+    /// user ID, refresh token fingerprint, ID, and version match `expected`.
+    /// Return `false` if any of these conditions no longer hold.
+    async fn revoke_session_if_current(
+        &self,
+        expected: &SessionRecord,
+        reason: &str,
+    ) -> AuthResult<bool>;
 
     async fn list_sessions_for_user(&self, user_id: Uuid) -> AuthResult<Vec<SessionRecord>>;
 

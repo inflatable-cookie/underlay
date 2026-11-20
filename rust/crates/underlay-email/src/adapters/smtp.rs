@@ -1,8 +1,12 @@
 //! SMTP email adapter using lettre.
 
 use async_trait::async_trait;
-use lettre::message::{header::ContentType, Mailbox, MultiPart, SinglePart};
+use lettre::message::{
+    header::{ContentType, HeaderName, HeaderValue},
+    Mailbox, MultiPart, SinglePart,
+};
 use lettre::transport::smtp::authentication::Credentials;
+use lettre::transport::smtp::client::{Tls, TlsParameters};
 use lettre::{AsyncSmtpTransport, AsyncTransport, Message, Tokio1Executor};
 
 use crate::adapter::EmailAdapter;
@@ -24,8 +28,10 @@ impl SmtpAdapter {
                     .map_err(|e| EmailError::ConfigError(format!("SMTP relay error: {}", e)))?
             }
             TlsMode::Opportunistic => {
-                AsyncSmtpTransport::<Tokio1Executor>::starttls_relay(config.host())
-                    .map_err(|e| EmailError::ConfigError(format!("SMTP relay error: {}", e)))?
+                let tls = TlsParameters::new(config.host().to_string())
+                    .map_err(|e| EmailError::ConfigError(format!("SMTP relay error: {}", e)))?;
+                AsyncSmtpTransport::<Tokio1Executor>::builder_dangerous(config.host())
+                    .tls(Tls::Opportunistic(tls))
             }
             TlsMode::None => AsyncSmtpTransport::<Tokio1Executor>::builder_dangerous(config.host()),
         };
@@ -55,6 +61,7 @@ impl SmtpAdapter {
 
     /// Build a lettre Message from our Email type.
     fn build_message(email: &Email) -> EmailResult<Message> {
+        email.validate_headers()?;
         let from = Self::to_mailbox(&email.from)?;
 
         // Build the To header
@@ -68,6 +75,12 @@ impl SmtpAdapter {
             .from(from)
             .subject(&email.subject)
             .message_id(Some(format!("<{}@underlay>", email.id)));
+
+        for (name, value) in &email.headers {
+            let name = HeaderName::new_from_ascii(name.clone())
+                .map_err(|e| EmailError::ConfigError(e.to_string()))?;
+            builder = builder.raw_header(HeaderValue::new(name, value.clone()));
+        }
 
         // Add recipients
         for mailbox in to_mailboxes {

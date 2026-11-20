@@ -49,7 +49,8 @@ impl SessionRepository for InMemoryRepo {
         let Some(current) = sessions.get(&session.id) else {
             return Ok(false);
         };
-        if current.refresh_token_id != expected_refresh_token_id
+        if !current.is_active
+            || current.refresh_token_id != expected_refresh_token_id
             || current.refresh_token_version != expected_refresh_token_version
         {
             return Ok(false);
@@ -67,6 +68,29 @@ impl SessionRepository for InMemoryRepo {
             session.is_active = false;
         }
         Ok(())
+    }
+
+    async fn revoke_session_if_current(
+        &self,
+        expected: &SessionRecord,
+        reason: &str,
+    ) -> AuthResult<bool> {
+        let mut sessions = self.sessions.lock().unwrap();
+        let Some(current) = sessions.get_mut(&expected.id) else {
+            return Ok(false);
+        };
+        if !current.is_active
+            || current.user_id != expected.user_id
+            || current.refresh_token_fingerprint != expected.refresh_token_fingerprint
+            || current.refresh_token_id != expected.refresh_token_id
+            || current.refresh_token_version != expected.refresh_token_version
+        {
+            return Ok(false);
+        }
+        current.is_active = false;
+        current.revoked_at = Some(chrono::Utc::now());
+        current.revoked_reason = Some(reason.to_string());
+        Ok(true)
     }
 
     async fn list_sessions_for_user(&self, user_id: Uuid) -> AuthResult<Vec<SessionRecord>> {
@@ -209,6 +233,31 @@ async fn replayed_refresh_token_revokes_family() {
         "family not revoked after reuse"
     );
     let _ = session;
+}
+
+#[tokio::test]
+async fn logout_rejects_a_superseded_refresh_token_and_accepts_the_current_one() {
+    let (service, _) = service_with(AccountStatus::Active, &["user"]);
+    let user_id = Uuid::new_v7();
+    let (tokens, _) = service.create_session(user_id, vec![], None).await.unwrap();
+    let rotated = service.refresh(&tokens.refresh_token, None).await.unwrap();
+
+    assert!(matches!(
+        service.logout(&tokens.refresh_token).await,
+        Err(AuthError::TokenFingerprintMismatch)
+    ));
+    assert!(service
+        .verify_access_principal(&rotated.tokens.access_token)
+        .await
+        .is_ok());
+
+    service.logout(&rotated.tokens.refresh_token).await.unwrap();
+    assert!(matches!(
+        service
+            .verify_access_principal(&rotated.tokens.access_token)
+            .await,
+        Err(AuthError::SessionRevoked)
+    ));
 }
 
 #[tokio::test]

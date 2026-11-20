@@ -31,13 +31,13 @@ fn test_build_message_text_only() {
         .from(EmailAddress::new("sender@example.com").unwrap())
         .to(EmailAddress::new("recipient@example.com").unwrap())
         .subject("Test Subject")
+        .header("X-Trace", "smtp-test")
         .text_body("Hello, World!")
         .build()
         .unwrap();
 
     let message = SmtpAdapter::build_message(&email).unwrap();
-    // Message builds successfully
-    assert!(message.headers().get_raw("Subject").is_some());
+    assert_eq!(message.headers().get_raw("X-Trace"), Some("smtp-test"));
 }
 
 #[test]

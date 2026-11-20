@@ -37,10 +37,17 @@ fn admin_manages_only_lower_levels() {
         h.can_manage(&["admin"], "admin", false),
         Err(RoleHierarchyError::InsufficientPrivileges { .. })
     ));
-    assert!(matches!(
-        h.can_manage(&["admin"], "superadmin", false),
-        Err(RoleHierarchyError::InsufficientPrivileges { .. })
-    ));
+}
+
+#[test]
+fn super_role_is_protected_independent_of_numeric_level() {
+    let h = RoleHierarchy::new(&[("owner", 10), ("admin", 15), ("support", 5)], "owner");
+    for role in ["owner", "admin", "support"] {
+        assert_eq!(
+            h.can_manage(&[role], "owner", false),
+            Err(RoleHierarchyError::CannotManageSuperRole)
+        );
+    }
 }
 
 #[test]

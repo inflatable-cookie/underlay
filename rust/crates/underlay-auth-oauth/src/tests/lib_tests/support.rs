@@ -184,10 +184,15 @@ impl underlay_auth::CredentialRepository for MemoryRepo {
         };
 
         if credential_type == CredentialType::OAuthGoogle {
-            self.oauth_by_user_id
-                .lock()
-                .await
-                .insert(user_id, credential.clone());
+            let mut oauth = self.oauth_by_user_id.lock().await;
+            match oauth.entry(user_id) {
+                std::collections::hash_map::Entry::Vacant(entry) => {
+                    entry.insert(credential.clone());
+                }
+                std::collections::hash_map::Entry::Occupied(_) => {
+                    return Err(AuthError::OAuthAlreadyConnected);
+                }
+            }
         }
 
         Ok(credential)
@@ -219,6 +224,31 @@ impl underlay_auth::CredentialRepository for MemoryRepo {
 
     async fn delete_all_for_user(&self, _user_id: Uuid) -> underlay_auth::RepoResult<()> {
         Ok(())
+    }
+}
+
+#[async_trait::async_trait]
+impl GoogleOAuthCredentialRepository for MemoryRepo {
+    async fn replace_google_refresh_token(
+        &self,
+        credential_id: Uuid,
+        google_user_id: &str,
+        secret_encrypted: &str,
+    ) -> AuthResult<Option<Credential>> {
+        let mut oauth = self.oauth_by_user_id.lock().await;
+        let credential = oauth.values_mut().find(|credential| {
+            credential.id == credential_id
+                && matches!(
+                    &credential.metadata,
+                    CredentialMetadata::OAuthGoogle { google_user_id: stored, .. }
+                        if stored == google_user_id
+                )
+        });
+        Ok(credential.map(|credential| {
+            credential.secret_encrypted = secret_encrypted.to_string();
+            credential.updated_at = chrono::Utc::now();
+            credential.clone()
+        }))
     }
 }
 

@@ -27,23 +27,35 @@ impl JobRepository {
     }
 
     /// Reset a stalled job back to pending for retry, or mark it failed when
-    /// it has already reached `max_attempts`.
+    /// it has already reached `max_attempts`. Failed jobs are dead-lettered
+    /// in the same statement as the status change.
     #[instrument(skip(self))]
     pub async fn reset_stalled(&self, job_id: Uuid) -> Result<()> {
         sqlx::query(
             r#"
-            UPDATE platform.job
-            SET status = CASE WHEN attempts < max_attempts THEN 'pending' ELSE 'failed' END,
-                claimed_at = NULL,
-                claimed_by = NULL,
-                started_at = NULL,
-                heartbeat_at = NULL,
-                finished_at = CASE WHEN attempts < max_attempts THEN NULL ELSE NOW() END,
-                last_error = CASE
-                    WHEN attempts < max_attempts THEN 'Job stalled and was reset'
-                    ELSE 'Job stalled and exceeded max_attempts'
-                END
-            WHERE id = $1 AND status IN ('claimed', 'running')
+            WITH reset AS (
+                UPDATE platform.job
+                SET status = CASE WHEN attempts < max_attempts THEN 'pending' ELSE 'failed' END,
+                    claimed_at = NULL,
+                    claimed_by = NULL,
+                    started_at = NULL,
+                    heartbeat_at = NULL,
+                    finished_at = CASE WHEN attempts < max_attempts THEN NULL ELSE NOW() END,
+                    last_error = CASE
+                        WHEN attempts < max_attempts THEN 'Job stalled and was reset'
+                        ELSE 'Job stalled and exceeded max_attempts'
+                    END
+                WHERE id = $1 AND status IN ('claimed', 'running')
+                RETURNING *
+            )
+            INSERT INTO platform.job_dead_letter (
+                id, original_job_id, job_type, payload, attempts, max_attempts,
+                priority, last_error, error_history, failed_at
+            )
+            SELECT gen_random_uuid(), id, job_type, payload, attempts, max_attempts,
+                   priority, last_error, error_history, finished_at
+            FROM reset
+            WHERE status = 'failed'
             "#,
         )
         .bind(to_raw(job_id))
