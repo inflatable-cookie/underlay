@@ -25,8 +25,6 @@ Primary:
 
 - standalone repository `github.com/inflatable-cookie/nightfire`, root npm
   package `@inflatable-cookie/nightfire`, and Rust crate `nightfire`
-- [`rust/crates/underlay-nightfire/src/lib.rs`](../../../rust/crates/underlay-nightfire/src/lib.rs)
-  for the historical Rust crate-name facade
 - [`ts/src/nightfire/`](../../../ts/src/nightfire/) for historical TypeScript
   subpath facades and the Underlay-owned media-picker context/editor adapter
 - [`rust/crates/underlay-migration-core/src/lib.rs`](../../../rust/crates/underlay-migration-core/src/lib.rs)
@@ -66,7 +64,7 @@ The goal is shared protocol and discipline, not a universal CMS.
 ### Nightfire durable value protocol
 
 Standalone Rust crate `nightfire` owns the canonical structured-content value
-model. `underlay-nightfire` is only a compatibility facade.
+model. The `underlay-nightfire` Rust facade is retired.
 
 Core pieces:
 
@@ -223,7 +221,7 @@ Rules:
 
 - move the implementation; do not maintain long-lived copies in both repos
 - Underlay depends on the released Nightfire tag, contains no generic Rust or
-  TS implementation copy, and re-exports the old crate name and subpaths
+  TS implementation copy, and retains the TypeScript compatibility subpaths
 - new consumers import `nightfire` and `@inflatable-cookie/nightfire/*`
 - Froyo must prove its installed and bundled dependency graph contains no
   `@inflatable-cookie/underlay` edge before Bovine Desktop removes Underlay
@@ -242,7 +240,7 @@ Nightfire owns:
 - strategy-loading runtime shell
 
 Underlay owns its media traversal integration, validation-to-HTTP adaptation,
-and temporary compatibility facades. Those are consumers of Nightfire, not
+and temporary TypeScript compatibility facades. Those are consumers of Nightfire, not
 part of its generic core.
 
 Apps own:

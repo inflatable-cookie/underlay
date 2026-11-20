@@ -17,14 +17,25 @@ const packageManifest = JSON.parse(
 ) as { version?: unknown };
 const packageVersion = packageManifest.version;
 
-if (typeof cargoVersion !== "string" || typeof packageVersion !== "string") {
-	console.error("Release version sync check failed: Cargo.toml or package.json has no string version");
+const openapi = Bun.YAML.parse(
+	fs.readFileSync(path.join(repoRoot, "contracts/openapi/underlay.openapi.yaml"), "utf8"),
+);
+const openapiVersion: unknown = openapi?.info?.version;
+
+if (
+	typeof cargoVersion !== "string" ||
+	typeof packageVersion !== "string" ||
+	typeof openapiVersion !== "string"
+) {
+	console.error(
+		"Release version sync check failed: Cargo.toml, package.json, or OpenAPI info has no string version",
+	);
 	process.exit(1);
 }
 
-if (cargoVersion !== packageVersion) {
+if (cargoVersion !== packageVersion || cargoVersion !== openapiVersion) {
 	console.error(
-		`Release version sync check failed: Cargo.toml is ${cargoVersion}, package.json is ${packageVersion}`,
+		`Release version sync check failed: Cargo.toml is ${cargoVersion}, package.json is ${packageVersion}, OpenAPI is ${openapiVersion}`,
 	);
 	process.exit(1);
 }

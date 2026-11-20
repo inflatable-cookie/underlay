@@ -77,6 +77,9 @@ if [[ -f "$REQUIRED_FILE" ]]; then
     if [[ -f "$ENV_FILE" ]]; then
       value="$(awk -F= -v k="$key" '$1==k{print substr($0,index($0,"=")+1)}' "$ENV_FILE" | tail -n 1)"
     fi
+    if [[ "$value" == '""' || "$value" == "''" ]]; then
+      value=""
+    fi
     if [[ -z "$value" ]]; then
       value="${!key:-}"
     fi
