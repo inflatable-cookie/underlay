@@ -16,7 +16,7 @@ describe("client/query", () => {
 			orderByToSortFields([
 				{ key: "title", direction: "asc" },
 				{ key: "created_at", direction: "desc" },
-			])
+			]),
 		).toEqual([
 			{ field: "title", direction: "asc" },
 			{ field: "created_at", direction: "desc" },
@@ -70,13 +70,13 @@ describe("client/query", () => {
 			appendQueryParams("/v1/items", {
 				page: 1,
 				limit: 10,
-			})
+			}),
 		).toBe("/v1/items?page=1&limit=10");
 
 		expect(
 			appendQueryParams("/v1/items?archived=true", {
 				page: 3,
-			})
+			}),
 		).toBe("/v1/items?archived=true&page=3");
 
 		expect(appendQueryParams("/v1/items", {})).toBe("/v1/items");
@@ -87,7 +87,7 @@ describe("client/query", () => {
 			appendQueryParams("/v1/items?variant=all&limit=10", {
 				variant: "pending",
 				limit: 20,
-			})
+			}),
 		).toBe("/v1/items?variant=pending&limit=20");
 	});
 
@@ -96,20 +96,20 @@ describe("client/query", () => {
 			appendQueryParams("/v1/items#section", {
 				page: 2,
 				limit: 10,
-			})
+			}),
 		).toBe("/v1/items?page=2&limit=10#section");
 
 		expect(
 			appendQueryParams("/v1/items?archived=true&limit=5#top", {
 				limit: 20,
 				page: 3,
-			})
+			}),
 		).toBe("/v1/items?archived=true&limit=20&page=3#top");
 
 		expect(
 			appendQueryParams("/v1/items#frag?not-query=1", {
 				page: 1,
-			})
+			}),
 		).toBe("/v1/items?page=1#frag?not-query=1");
 	});
 
@@ -119,7 +119,7 @@ describe("client/query", () => {
 				variant: "pending",
 				filters: [{ field: "status", value: "active" }],
 				page: 1,
-			})
+			}),
 		).toEqual({
 			variant: "pending",
 			"filter[status]": "active",
@@ -144,7 +144,7 @@ describe("client/query", () => {
 
 	it("parses query params back to structured values", () => {
 		const params = new URLSearchParams(
-			"variant=pending&sort=title:asc,created_at:desc&filter[status]=active&filter[weight][gte]=10&page=3&limit=25"
+			"variant=pending&sort=title:asc,created_at:desc&filter[status]=active&filter[weight][gte]=10&page=3&limit=25",
 		);
 		expect(parseQueryParams(params)).toEqual({
 			variant: "pending",
@@ -168,7 +168,7 @@ describe("client/query", () => {
 
 	it("supports hyphenated and dotted field names while ignoring malformed filter keys", () => {
 		const params = new URLSearchParams(
-			"filter[created-at][gte]=2026-01-01&filter[user.email][like]=%40example.com&filter[meta.zip-code]=12345&filter[bad key]=x&filter[]=y&filter[a..b]=z&page=1&limit=20"
+			"filter[created-at][gte]=2026-01-01&filter[user.email][like]=%40example.com&filter[meta.zip-code]=12345&filter[bad key]=x&filter[]=y&filter[a..b]=z&page=1&limit=20",
 		);
 		expect(parseQueryParams(params)).toEqual({
 			filters: [
@@ -183,7 +183,7 @@ describe("client/query", () => {
 
 	it("rejects unknown filter operators and non-numeric pagination values", () => {
 		const params = new URLSearchParams(
-			"filter[weight][evil]=10&filter[status][eq]=active&page=abc&limit=12abc&sort=,"
+			"filter[weight][evil]=10&filter[status][eq]=active&page=abc&limit=12abc&sort=,",
 		);
 		expect(parseQueryParams(params)).toEqual({
 			filters: [{ field: "status", operator: "eq", value: "active" }],

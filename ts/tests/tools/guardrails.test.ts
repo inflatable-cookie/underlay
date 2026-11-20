@@ -28,7 +28,7 @@ describe("tools/guardrails", () => {
 			path.join(dir, "sample.ts"),
 			[
 				"const width = window.innerWidth;",
-				"const safe = typeof window !== \"undefined\" ? window.innerWidth : 0;",
+				'const safe = typeof window !== "undefined" ? window.innerWidth : 0;',
 				"function handler() { return window.innerWidth; }",
 			].join("\n"),
 		);
@@ -53,7 +53,7 @@ describe("tools/guardrails", () => {
 				// declaration: must NOT be flagged
 				"export function configureAuth(cfg: unknown) { return cfg; }",
 				// guarded call: must NOT be flagged
-				"if (typeof window !== \"undefined\") { configureAuth({}); }",
+				'if (typeof window !== "undefined") { configureAuth({}); }',
 				// function-local call: must NOT be flagged",
 				"function setup() { configureNightfireStrategies({}); }",
 				// unguarded module-scope calls: 2 flagged
@@ -116,18 +116,13 @@ describe("tools/guardrails", () => {
 		const config = await loadConfig(configPath);
 
 		expect(config.srcDir).toBe(dir);
-		expect(config.bannedPatterns.map((rule) => rule.name)).toContain(
-			["window", "alert"].join("."),
-		);
+		expect(config.bannedPatterns.map((rule) => rule.name)).toContain(["window", "alert"].join("."));
 		expect(config.moduleScopeChecks.map((rule) => rule.name)).toContain("window.*");
 	});
 
 	it("applies banned API template rules", async () => {
 		const dir = await makeTempDir();
-		await writeFile(
-			path.join(dir, "sample.ts"),
-			`${["window", "alert"].join(".")}('stop');`,
-		);
+		await writeFile(path.join(dir, "sample.ts"), `${["window", "alert"].join(".")}('stop');`);
 		vi.spyOn(console, "error").mockImplementation(() => undefined);
 
 		const failures = await scanFiles({

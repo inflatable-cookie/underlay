@@ -39,12 +39,12 @@ describe("client/route-protection", () => {
 		const withDefault = createLoginRedirect(source);
 		expect(withDefault.status).toBe(302);
 		expect(withDefault.headers.get("location")).toBe(
-			"https://example.com/login?redirectTo=%2Fadmin%2Fusers"
+			"https://example.com/login?redirectTo=%2Fadmin%2Fusers",
 		);
 
 		const withStringConfig = createLoginRedirect(source, "/sign-in");
 		expect(withStringConfig.headers.get("location")).toBe(
-			"https://example.com/sign-in?redirectTo=%2Fadmin%2Fusers"
+			"https://example.com/sign-in?redirectTo=%2Fadmin%2Fusers",
 		);
 
 		const withCustomQuery = createLoginRedirect(source, {
@@ -53,7 +53,7 @@ describe("client/route-protection", () => {
 			redirectToParam: "next",
 		});
 		expect(withCustomQuery.headers.get("location")).toBe(
-			"https://example.com/sign-in?next=%2Fadmin%2Fusers"
+			"https://example.com/sign-in?next=%2Fadmin%2Fusers",
 		);
 
 		const noRedirectTo = createLoginRedirect(source, { useRedirectTo: false });

@@ -56,7 +56,7 @@ describe("client/sveltekit refresh adapter", () => {
 			refresh({
 				rawRequest,
 				getRefreshToken: vi.fn().mockResolvedValue("rt"),
-			})
+			}),
 		).resolves.toEqual({
 			success: true,
 			accessToken: "a2",
@@ -73,7 +73,7 @@ describe("client/sveltekit refresh adapter", () => {
 			refresh({
 				rawRequest,
 				getRefreshToken: vi.fn().mockResolvedValue(null),
-			})
+			}),
 		).resolves.toEqual({
 			success: false,
 			accessToken: null,
@@ -139,7 +139,7 @@ describe("client/sveltekit refresh adapter", () => {
 				rawRequest,
 				rawRequestWithMeta,
 				getRefreshToken: vi.fn().mockResolvedValue("rt"),
-			})
+			}),
 		).resolves.toEqual({ success: true, accessToken: "a3", refreshToken: "r3" });
 		expect(rawRequest).toHaveBeenCalledTimes(6);
 		expect(rawRequestWithMeta).toHaveBeenCalledTimes(2);
@@ -165,12 +165,12 @@ describe("client/sveltekit refresh adapter", () => {
 		const refreshRequest = vi.fn(async ({ rawHttp }) => {
 			observedPostMeta = await rawHttp.requestWithMeta(
 				{ method: "POST", path: "/refresh-check" },
-				{ acceptedStatuses: [202] }
+				{ acceptedStatuses: [202] },
 			);
 			observedGetMeta = await rawHttp.getWithMeta(
 				"/session-check",
 				{ "x-test": "1" },
-				{ acceptedStatuses: [304] }
+				{ acceptedStatuses: [304] },
 			);
 			return { accessToken: "a4", refreshToken: "r4" };
 		});
@@ -192,7 +192,11 @@ describe("client/sveltekit refresh adapter", () => {
 
 		const rawRequestWithMeta = vi
 			.fn()
-			.mockResolvedValueOnce({ status: 202, headers: { "x-accepted": "yes" }, body: { queued: true } })
+			.mockResolvedValueOnce({
+				status: 202,
+				headers: { "x-accepted": "yes" },
+				body: { queued: true },
+			})
 			.mockResolvedValueOnce({ status: 304, headers: { etag: '"v1"' }, body: null });
 
 		await expect(
@@ -200,7 +204,7 @@ describe("client/sveltekit refresh adapter", () => {
 				rawRequest: vi.fn(),
 				rawRequestWithMeta,
 				getRefreshToken: vi.fn().mockResolvedValue("rt"),
-			})
+			}),
 		).resolves.toEqual({ success: true, accessToken: "a4", refreshToken: "r4" });
 
 		expect(observedPostMeta).toEqual({
@@ -216,12 +220,12 @@ describe("client/sveltekit refresh adapter", () => {
 		expect(rawRequestWithMeta).toHaveBeenNthCalledWith(
 			1,
 			{ method: "POST", path: "/refresh-check" },
-			{ acceptedStatuses: [202] }
+			{ acceptedStatuses: [202] },
 		);
 		expect(rawRequestWithMeta).toHaveBeenNthCalledWith(
 			2,
 			{ method: "GET", path: "/session-check", headers: { "x-test": "1" } },
-			{ acceptedStatuses: [304] }
+			{ acceptedStatuses: [304] },
 		);
 
 		// Missing rawRequestWithMeta fails closed instead of fabricating { status: 200, headers: {} }
@@ -229,7 +233,7 @@ describe("client/sveltekit refresh adapter", () => {
 			refresh({
 				rawRequest: vi.fn(),
 				getRefreshToken: vi.fn().mockResolvedValue("rt"),
-			})
+			}),
 		).resolves.toEqual({ success: false, accessToken: null, refreshToken: null });
 	});
 
@@ -273,16 +277,16 @@ describe("client/sveltekit refresh adapter", () => {
 			.mockRejectedValueOnce(rejected403);
 
 		await expect(
-			refresh({ rawRequest, getRefreshToken: vi.fn().mockResolvedValue("rt") })
+			refresh({ rawRequest, getRefreshToken: vi.fn().mockResolvedValue("rt") }),
 		).rejects.toBe(serverOutage);
 		await expect(
-			refresh({ rawRequest, getRefreshToken: vi.fn().mockResolvedValue("rt") })
+			refresh({ rawRequest, getRefreshToken: vi.fn().mockResolvedValue("rt") }),
 		).rejects.toBe(networkOutage);
 		await expect(
-			refresh({ rawRequest, getRefreshToken: vi.fn().mockResolvedValue("rt") })
+			refresh({ rawRequest, getRefreshToken: vi.fn().mockResolvedValue("rt") }),
 		).resolves.toEqual({ success: false, accessToken: null, refreshToken: null });
 		await expect(
-			refresh({ rawRequest, getRefreshToken: vi.fn().mockResolvedValue("rt") })
+			refresh({ rawRequest, getRefreshToken: vi.fn().mockResolvedValue("rt") }),
 		).resolves.toEqual({ success: false, accessToken: null, refreshToken: null });
 	});
 });

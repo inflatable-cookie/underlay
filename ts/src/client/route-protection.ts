@@ -1,39 +1,39 @@
 export interface RouteProtectionConfig {
-  publicPaths: string[];
-  loginPath?: string;
-  useRedirectTo?: boolean;
-  redirectToParam?: string;
+	publicPaths: string[];
+	loginPath?: string;
+	useRedirectTo?: boolean;
+	redirectToParam?: string;
 }
 
 export interface LoginRedirectOptions {
-  loginPath?: string;
-  useRedirectTo?: boolean;
-  redirectToParam?: string;
+	loginPath?: string;
+	useRedirectTo?: boolean;
+	redirectToParam?: string;
 }
 
 const MAX_DECODE_ITERATIONS = 3;
 
 function decodeToFixpoint(value: string): string | null {
-  let decoded = value;
-  for (let i = 0; i < MAX_DECODE_ITERATIONS; i++) {
-    let next: string;
-    try {
-      next = decodeURIComponent(decoded);
-    } catch {
-      return null;
-    }
-    if (next === decoded) {
-      return decoded;
-    }
-    decoded = next;
-  }
+	let decoded = value;
+	for (let i = 0; i < MAX_DECODE_ITERATIONS; i++) {
+		let next: string;
+		try {
+			next = decodeURIComponent(decoded);
+		} catch {
+			return null;
+		}
+		if (next === decoded) {
+			return decoded;
+		}
+		decoded = next;
+	}
 
-  // Reject inputs that still change (or become malformed) after max iterations.
-  try {
-    return decodeURIComponent(decoded) === decoded ? decoded : null;
-  } catch {
-    return null;
-  }
+	// Reject inputs that still change (or become malformed) after max iterations.
+	try {
+		return decodeURIComponent(decoded) === decoded ? decoded : null;
+	} catch {
+		return null;
+	}
 }
 
 /**
@@ -41,31 +41,31 @@ function decodeToFixpoint(value: string): string | null {
  * bypassed with encodings like `%2e%2e` or embedded traversal.
  */
 export function normalizePath(path: string): string {
-  const decoded = decodeToFixpoint(path);
-  if (decoded === null) {
-    return "";
-  }
+	const decoded = decodeToFixpoint(path);
+	if (decoded === null) {
+		return "";
+	}
 
-  const withForwardSlashes = decoded.replace(/\\/g, "/");
-  const segments = withForwardSlashes.split("/");
-  const out: string[] = [];
-  for (const segment of segments) {
-    if (segment === "" || segment === ".") {
-      continue;
-    }
-    if (segment === "..") {
-      out.pop();
-      continue;
-    }
-    out.push(segment);
-  }
+	const withForwardSlashes = decoded.replace(/\\/g, "/");
+	const segments = withForwardSlashes.split("/");
+	const out: string[] = [];
+	for (const segment of segments) {
+		if (segment === "" || segment === ".") {
+			continue;
+		}
+		if (segment === "..") {
+			out.pop();
+			continue;
+		}
+		out.push(segment);
+	}
 
-  const normalized = `/${out.join("/")}`;
-  return withForwardSlashes.endsWith("/") && normalized !== "/" ? `${normalized}/` : normalized;
+	const normalized = `/${out.join("/")}`;
+	return withForwardSlashes.endsWith("/") && normalized !== "/" ? `${normalized}/` : normalized;
 }
 
 function stripTrailingSlash(path: string): string {
-  return path.length > 1 && path.endsWith("/") ? path.slice(0, -1) : path;
+	return path.length > 1 && path.endsWith("/") ? path.slice(0, -1) : path;
 }
 
 /**
@@ -75,103 +75,91 @@ function stripTrailingSlash(path: string): string {
  * with a scheme, control characters, and encoded traversal. Returns `fallback`
  * for anything unsafe.
  */
-export function resolveRedirectTo(
-  target: string | null | undefined,
-  fallback = "/",
-): string {
-  if (typeof target !== "string" || target.length === 0) {
-    return fallback;
-  }
+export function resolveRedirectTo(target: string | null | undefined, fallback = "/"): string {
+	if (typeof target !== "string" || target.length === 0) {
+		return fallback;
+	}
 
-  const decoded = decodeToFixpoint(target);
-  if (decoded === null) {
-    return fallback;
-  }
+	const decoded = decodeToFixpoint(target);
+	if (decoded === null) {
+		return fallback;
+	}
 
-  // eslint-disable-next-line no-control-regex
-  if (/[\u0000-\u001f\u007f]/.test(decoded)) {
-    return fallback;
-  }
-  if (decoded.includes("\\")) {
-    return fallback;
-  }
-  if (!decoded.startsWith("/") || decoded.startsWith("//")) {
-    return fallback;
-  }
-  const pathOnly = decoded.split(/[?#]/, 1)[0] ?? "";
-  if (pathOnly.split("/").some((segment) => segment === "..")) {
-    return fallback;
-  }
+	// eslint-disable-next-line no-control-regex
+	if (/[\u0000-\u001f\u007f]/.test(decoded)) {
+		return fallback;
+	}
+	if (decoded.includes("\\")) {
+		return fallback;
+	}
+	if (!decoded.startsWith("/") || decoded.startsWith("//")) {
+		return fallback;
+	}
+	const pathOnly = decoded.split(/[?#]/, 1)[0] ?? "";
+	if (pathOnly.split("/").some((segment) => segment === "..")) {
+		return fallback;
+	}
 
-  const normalizedPath = normalizePath(pathOnly);
-  if (!normalizedPath.startsWith("/") || normalizedPath.startsWith("//")) {
-    return fallback;
-  }
+	const normalizedPath = normalizePath(pathOnly);
+	if (!normalizedPath.startsWith("/") || normalizedPath.startsWith("//")) {
+		return fallback;
+	}
 
-  const suffix = decoded.slice(pathOnly.length);
-  return `${normalizedPath}${suffix}`;
+	const suffix = decoded.slice(pathOnly.length);
+	return `${normalizedPath}${suffix}`;
 }
 
 export function isPublicPath(path: string, publicPaths: string[]): boolean {
-  const normalized = normalizePath(path);
-  if (!normalized) {
-    return false;
-  }
-  const normalizedNoTrailing = stripTrailingSlash(normalized);
+	const normalized = normalizePath(path);
+	if (!normalized) {
+		return false;
+	}
+	const normalizedNoTrailing = stripTrailingSlash(normalized);
 
-  return publicPaths.some((publicPath) => {
-    if (publicPath.endsWith("/*")) {
-      const base = stripTrailingSlash(publicPath.slice(0, -2));
-      if (base === "") {
-        return normalizedNoTrailing.startsWith("/");
-      }
-      return (
-        normalizedNoTrailing === base ||
-        normalizedNoTrailing.startsWith(`${base}/`)
-      );
-    }
-    return normalizedNoTrailing === stripTrailingSlash(publicPath);
-  });
+	return publicPaths.some((publicPath) => {
+		if (publicPath.endsWith("/*")) {
+			const base = stripTrailingSlash(publicPath.slice(0, -2));
+			if (base === "") {
+				return normalizedNoTrailing.startsWith("/");
+			}
+			return normalizedNoTrailing === base || normalizedNoTrailing.startsWith(`${base}/`);
+		}
+		return normalizedNoTrailing === stripTrailingSlash(publicPath);
+	});
 }
 
-export function shouldProtectRoute(
-  path: string,
-  publicPaths: string[],
-): boolean {
-  return !isPublicPath(path, publicPaths);
+export function shouldProtectRoute(path: string, publicPaths: string[]): boolean {
+	return !isPublicPath(path, publicPaths);
 }
 
-export function createLoginRedirect(
-  url: URL,
-  config?: LoginRedirectOptions | string,
-): Response {
-  const {
-    loginPath = "/login",
-    useRedirectTo = true,
-    redirectToParam = "redirectTo",
-  } = typeof config === "string" ? { loginPath: config } : (config ?? {});
+export function createLoginRedirect(url: URL, config?: LoginRedirectOptions | string): Response {
+	const {
+		loginPath = "/login",
+		useRedirectTo = true,
+		redirectToParam = "redirectTo",
+	} = typeof config === "string" ? { loginPath: config } : (config ?? {});
 
-  const loginUrl = new URL(loginPath, url.origin);
+	const loginUrl = new URL(loginPath, url.origin);
 
-  if (useRedirectTo && url.pathname !== loginPath) {
-    // Guard the producer too: a protocol-relative pathname (`//evil.com`)
-    // must never be written into the redirect param.
-    const safeTarget = resolveRedirectTo(url.pathname, "");
-    if (safeTarget) {
-      loginUrl.searchParams.set(redirectToParam, safeTarget);
-    }
-  }
+	if (useRedirectTo && url.pathname !== loginPath) {
+		// Guard the producer too: a protocol-relative pathname (`//evil.com`)
+		// must never be written into the redirect param.
+		const safeTarget = resolveRedirectTo(url.pathname, "");
+		if (safeTarget) {
+			loginUrl.searchParams.set(redirectToParam, safeTarget);
+		}
+	}
 
-  return Response.redirect(loginUrl, 302);
+	return Response.redirect(loginUrl, 302);
 }
 
 export function createRouteProtection(config: RouteProtectionConfig) {
-  const { publicPaths, ...redirectConfig } = config;
+	const { publicPaths, ...redirectConfig } = config;
 
-  return function protectRoute(url: URL): Response | null {
-    if (shouldProtectRoute(url.pathname, publicPaths)) {
-      return createLoginRedirect(url, redirectConfig);
-    }
-    return null;
-  };
+	return function protectRoute(url: URL): Response | null {
+		if (shouldProtectRoute(url.pathname, publicPaths)) {
+			return createLoginRedirect(url, redirectConfig);
+		}
+		return null;
+	};
 }

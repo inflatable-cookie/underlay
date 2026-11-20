@@ -1,202 +1,210 @@
 import { writable, type Readable } from "svelte/store";
 
 import { UnderlayHttpError } from "./errors";
-import type { AuthCommands, AuthSession, PasswordAuthParams, PassKeyAuthParams, RegisterParams, SessionInfo } from "./auth";
+import type {
+	AuthCommands,
+	AuthSession,
+	PasswordAuthParams,
+	PassKeyAuthParams,
+	RegisterParams,
+	SessionInfo,
+} from "./auth";
 import type { TokenStore } from "./http";
 
 export type AuthStatus = "unknown" | "anonymous" | "authenticated";
 
 export type AuthState = {
-  status: AuthStatus;
-  session: SessionInfo | null;
-  loading: boolean;
-  error: UnderlayHttpError | null;
+	status: AuthStatus;
+	session: SessionInfo | null;
+	loading: boolean;
+	error: UnderlayHttpError | null;
 };
 
 export type AuthStore = {
-  state: Readable<AuthState>;
+	state: Readable<AuthState>;
 
-  init: () => Promise<void>;
-  register: (params: RegisterParams) => Promise<AuthSession>;
-  loginWithPassword: (params: PasswordAuthParams & { code?: string }) => Promise<AuthSession>;
-  loginWithPasskey: (params: PassKeyAuthParams) => Promise<AuthSession>;
-  refresh: () => Promise<AuthSession>;
-  logout: () => Promise<void>;
+	init: () => Promise<void>;
+	register: (params: RegisterParams) => Promise<AuthSession>;
+	loginWithPassword: (params: PasswordAuthParams & { code?: string }) => Promise<AuthSession>;
+	loginWithPasskey: (params: PassKeyAuthParams) => Promise<AuthSession>;
+	refresh: () => Promise<AuthSession>;
+	logout: () => Promise<void>;
 };
 
 export interface CreateAuthStoreOptions {
-  commands: AuthCommands;
-  tokenStore: TokenStore;
+	commands: AuthCommands;
+	tokenStore: TokenStore;
 
-  /**
-   * If true, `init()` will attempt a refresh on 401.
-   *
-   * Defaults to true.
-   */
-  refreshOnUnauthorized?: boolean;
+	/**
+	 * If true, `init()` will attempt a refresh on 401.
+	 *
+	 * Defaults to true.
+	 */
+	refreshOnUnauthorized?: boolean;
 }
 
 export function createAuthStore(options: CreateAuthStoreOptions): AuthStore {
-  const refreshOnUnauthorized = options.refreshOnUnauthorized ?? true;
+	const refreshOnUnauthorized = options.refreshOnUnauthorized ?? true;
 
-  const state = writable<AuthState>({
-    status: "unknown",
-    session: null,
-    loading: false,
-    error: null,
-  });
+	const state = writable<AuthState>({
+		status: "unknown",
+		session: null,
+		loading: false,
+		error: null,
+	});
 
-  function stripTokens(info: SessionInfo): SessionInfo {
-    const {
-      accessToken: _accessToken,
-      refreshToken: _refreshToken,
-      ...rest
-    } = info as SessionInfo &
-      Partial<Pick<AuthSession, "accessToken" | "refreshToken">>;
-    return rest;
-  }
+	function stripTokens(info: SessionInfo): SessionInfo {
+		const {
+			accessToken: _accessToken,
+			refreshToken: _refreshToken,
+			...rest
+		} = info as SessionInfo & Partial<Pick<AuthSession, "accessToken" | "refreshToken">>;
+		return rest;
+	}
 
-  function setAuthenticated(session: SessionInfo) {
-    state.set({
-      status: "authenticated",
-      session: stripTokens(session),
-      loading: false,
-      error: null,
-    });
-  }
+	function setAuthenticated(session: SessionInfo) {
+		state.set({
+			status: "authenticated",
+			session: stripTokens(session),
+			loading: false,
+			error: null,
+		});
+	}
 
-  async function setTokens(session: AuthSession) {
-    await options.tokenStore.setAccessToken(session.accessToken);
-    await options.tokenStore.setRefreshToken(session.refreshToken);
-  }
+	async function setTokens(session: AuthSession) {
+		await options.tokenStore.setAccessToken(session.accessToken);
+		await options.tokenStore.setRefreshToken(session.refreshToken);
+	}
 
-  async function clearTokens() {
-    await options.tokenStore.clear();
-  }
+	async function clearTokens() {
+		await options.tokenStore.clear();
+	}
 
-  function setAnonymous(error: UnderlayHttpError | null = null) {
-    state.set({ status: "anonymous", session: null, loading: false, error });
-  }
+	function setAnonymous(error: UnderlayHttpError | null = null) {
+		state.set({ status: "anonymous", session: null, loading: false, error });
+	}
 
-  async function init() {
-    state.update((s) => ({ ...s, loading: true, error: null }));
+	async function init() {
+		state.update((s) => ({ ...s, loading: true, error: null }));
 
-    try {
-      // Session GET carries no token material; tokens only move on
-      // login/refresh. Do not write to the token store here.
-      const session = await options.commands.session();
-      setAuthenticated(session);
-    } catch (err) {
-      if (err instanceof UnderlayHttpError && err.status === 401) {
-        if (refreshOnUnauthorized) {
-          try {
-            const refreshed = await options.commands.refresh();
-            await setTokens(refreshed);
-            setAuthenticated(refreshed);
-            return;
-          } catch (refreshErr) {
-            await clearTokens();
-            setAnonymous(refreshErr instanceof UnderlayHttpError ? refreshErr : null);
-            return;
-          }
-        }
+		try {
+			// Session GET carries no token material; tokens only move on
+			// login/refresh. Do not write to the token store here.
+			const session = await options.commands.session();
+			setAuthenticated(session);
+		} catch (err) {
+			if (err instanceof UnderlayHttpError && err.status === 401) {
+				if (refreshOnUnauthorized) {
+					try {
+						const refreshed = await options.commands.refresh();
+						await setTokens(refreshed);
+						setAuthenticated(refreshed);
+						return;
+					} catch (refreshErr) {
+						await clearTokens();
+						setAnonymous(refreshErr instanceof UnderlayHttpError ? refreshErr : null);
+						return;
+					}
+				}
 
-        await clearTokens();
-        setAnonymous(err);
-        return;
-      }
+				await clearTokens();
+				setAnonymous(err);
+				return;
+			}
 
-      setAnonymous(err instanceof UnderlayHttpError ? err : null);
-    }
-  }
+			setAnonymous(err instanceof UnderlayHttpError ? err : null);
+		}
+	}
 
-  async function register(params: RegisterParams): Promise<AuthSession> {
-    state.update((s) => ({ ...s, loading: true, error: null }));
+	async function register(params: RegisterParams): Promise<AuthSession> {
+		state.update((s) => ({ ...s, loading: true, error: null }));
 
-    try {
-      const session = await options.commands.register(params);
-      await setTokens(session);
-      setAuthenticated(session);
-      return session;
-    } catch (err) {
-      const e = err instanceof UnderlayHttpError ? err : null;
-      state.update((s) => ({ ...s, loading: false, error: e }));
-      throw err;
-    }
-  }
+		try {
+			const session = await options.commands.register(params);
+			await setTokens(session);
+			setAuthenticated(session);
+			return session;
+		} catch (err) {
+			const e = err instanceof UnderlayHttpError ? err : null;
+			state.update((s) => ({ ...s, loading: false, error: e }));
+			throw err;
+		}
+	}
 
-  async function loginWithPassword(params: PasswordAuthParams & { code?: string }): Promise<AuthSession> {
-    state.update((s) => ({ ...s, loading: true, error: null }));
+	async function loginWithPassword(
+		params: PasswordAuthParams & { code?: string },
+	): Promise<AuthSession> {
+		state.update((s) => ({ ...s, loading: true, error: null }));
 
-    try {
-      const session = await options.commands.loginWithPassword({
-        email: params.email,
-        password: params.password,
-        ...(params.code ? { code: params.code } : {}),
-      });
-      await setTokens(session);
-      setAuthenticated(session);
-      return session;
-    } catch (err) {
-      const e = err instanceof UnderlayHttpError ? err : null;
-      state.update((s) => ({ ...s, loading: false, error: e }));
-      throw err;
-    }
-  }
+		try {
+			const session = await options.commands.loginWithPassword({
+				email: params.email,
+				password: params.password,
+				...(params.code ? { code: params.code } : {}),
+			});
+			await setTokens(session);
+			setAuthenticated(session);
+			return session;
+		} catch (err) {
+			const e = err instanceof UnderlayHttpError ? err : null;
+			state.update((s) => ({ ...s, loading: false, error: e }));
+			throw err;
+		}
+	}
 
-  async function loginWithPasskey(params: PassKeyAuthParams): Promise<AuthSession> {
-    state.update((s) => ({ ...s, loading: true, error: null }));
+	async function loginWithPasskey(params: PassKeyAuthParams): Promise<AuthSession> {
+		state.update((s) => ({ ...s, loading: true, error: null }));
 
-    try {
-      const session = await options.commands.loginWithPasskey(params);
-      await setTokens(session);
-      setAuthenticated(session);
-      return session;
-    } catch (err) {
-      const e = err instanceof UnderlayHttpError ? err : null;
-      state.update((s) => ({ ...s, loading: false, error: e }));
-      throw err;
-    }
-  }
+		try {
+			const session = await options.commands.loginWithPasskey(params);
+			await setTokens(session);
+			setAuthenticated(session);
+			return session;
+		} catch (err) {
+			const e = err instanceof UnderlayHttpError ? err : null;
+			state.update((s) => ({ ...s, loading: false, error: e }));
+			throw err;
+		}
+	}
 
-  async function refresh(): Promise<AuthSession> {
-    state.update((s) => ({ ...s, loading: true, error: null }));
+	async function refresh(): Promise<AuthSession> {
+		state.update((s) => ({ ...s, loading: true, error: null }));
 
-    try {
-      const session = await options.commands.refresh();
-      await setTokens(session);
-      setAuthenticated(session);
-      return session;
-    } catch (err) {
-      if (err instanceof UnderlayHttpError && err.status === 401) {
-        await clearTokens();
-        setAnonymous(err);
-      } else {
-        const e = err instanceof UnderlayHttpError ? err : null;
-        state.update((s) => ({ ...s, loading: false, error: e }));
-      }
-      throw err;
-    }
-  }
+		try {
+			const session = await options.commands.refresh();
+			await setTokens(session);
+			setAuthenticated(session);
+			return session;
+		} catch (err) {
+			if (err instanceof UnderlayHttpError && err.status === 401) {
+				await clearTokens();
+				setAnonymous(err);
+			} else {
+				const e = err instanceof UnderlayHttpError ? err : null;
+				state.update((s) => ({ ...s, loading: false, error: e }));
+			}
+			throw err;
+		}
+	}
 
-  async function logout(): Promise<void> {
-    state.update((s) => ({ ...s, loading: true, error: null }));
+	async function logout(): Promise<void> {
+		state.update((s) => ({ ...s, loading: true, error: null }));
 
-    try {
-      await options.commands.logout();
-    } finally {
-      await clearTokens();
-      setAnonymous(null);
-    }
-  }
+		try {
+			await options.commands.logout();
+		} finally {
+			await clearTokens();
+			setAnonymous(null);
+		}
+	}
 
-  return {
-    state,
-    init,
-    register,
-    loginWithPassword,
-    loginWithPasskey,
-    refresh,
-    logout,
-  };
+	return {
+		state,
+		init,
+		register,
+		loginWithPassword,
+		loginWithPasskey,
+		refresh,
+		logout,
+	};
 }
