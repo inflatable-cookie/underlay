@@ -113,12 +113,12 @@ pub(crate) fn extract_bearer(header: Option<&http::HeaderValue>) -> Option<Strin
     let value = header?.to_str().ok()?;
     let value = value.trim();
 
-    let prefix = "Bearer ";
-    if !value.starts_with(prefix) {
+    let (scheme, rest) = value.split_once(' ')?;
+    if !scheme.eq_ignore_ascii_case("bearer") {
         return None;
     }
 
-    let token = value[prefix.len()..].trim();
+    let token = rest.trim();
     if token.is_empty() {
         return None;
     }

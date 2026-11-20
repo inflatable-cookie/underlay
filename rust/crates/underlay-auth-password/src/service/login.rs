@@ -80,13 +80,6 @@ where
             }
         };
 
-        if user.status == UserStatus::Suspended {
-            return Err(AuthError::AccountSuspended.into());
-        }
-        if user.status == UserStatus::Deleted {
-            return Err(AuthError::AccountDeleted.into());
-        }
-
         if let Some(retry_after_seconds) = self
             .repository
             .get_lockout_remaining_seconds(user.id)
@@ -119,6 +112,15 @@ where
             .verify_password(password.as_bytes(), password_hash)?;
 
         if is_valid {
+            // Check account status only AFTER verifying credentials so
+            // unauthenticated callers cannot enumerate suspended/deleted
+            // accounts via error codes or fast-path timing.
+            if user.status == UserStatus::Suspended {
+                return Err(AuthError::AccountSuspended.into());
+            }
+            if user.status == UserStatus::Deleted {
+                return Err(AuthError::AccountDeleted.into());
+            }
             self.repository.reset_failed_logins(user.id).await?;
             Ok(user)
         } else {

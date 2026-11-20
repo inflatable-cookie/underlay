@@ -26,7 +26,7 @@ impl TotpService {
             issuer: self.config.issuer().to_string(),
             algorithm: self.config.algorithm().as_str().to_string(),
             digits: self.config.digits() as u8,
-            period: self.config.period_seconds() as u8,
+            period: self.config.period_seconds().min(u8::MAX as u64) as u8,
         }
     }
 
@@ -97,7 +97,7 @@ impl TotpService {
         now: SystemTime,
     ) -> AuthResult<TwoFactorVerified> {
         let check = limiter
-            .check(rate_limit_key, rate_limit_config)
+            .check_and_increment(rate_limit_key, rate_limit_config)
             .await
             .map_err(|e| AuthError::Internal(format!("rate limit error: {e}")))?;
         if check.is_denied() {
@@ -112,10 +112,7 @@ impl TotpService {
                 let _ = limiter.reset(rate_limit_key).await;
                 Ok(verified)
             }
-            Err(err) => {
-                let _ = limiter.increment(rate_limit_key, rate_limit_config).await;
-                Err(err)
-            }
+            Err(err) => Err(err),
         }
     }
 }

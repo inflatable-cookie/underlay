@@ -120,7 +120,7 @@ where
             .await?
             .ok_or(AuthError::SessionRevoked)?;
 
-        if !session.is_active {
+        if !session.is_active || session.user_id != claims.common.subject {
             return Err(AuthError::SessionRevoked);
         }
 
@@ -270,7 +270,7 @@ where
             .await?
             .ok_or(AuthError::SessionRevoked)?;
 
-        if !session.is_active {
+        if !session.is_active || session.user_id != claims.common.subject {
             return Err(AuthError::SessionRevoked);
         }
 

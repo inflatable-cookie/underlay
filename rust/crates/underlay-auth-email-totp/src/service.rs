@@ -205,48 +205,7 @@ where
         purpose: &str,
         code: &str,
     ) -> EmailTotpResult<VerificationSession> {
-        // Get the active code
-        let stored_code = self
-            .code_repository
-            .get_active_code(user_id, purpose)
-            .await?
-            .ok_or(EmailTotpError::NoActiveCode)?;
-
-        // Check expiry
-        if stored_code.expires_at < Utc::now() {
-            return Err(EmailTotpError::CodeExpired);
-        }
-
-        // Check attempts
-        if stored_code.attempts >= stored_code.max_attempts {
-            return Err(EmailTotpError::TooManyAttempts);
-        }
-
-        // Verify the code
-        let is_valid = self
-            .hasher
-            .verify_password(code.trim().as_bytes(), &stored_code.code_hash)
-            .unwrap_or(false);
-
-        if !is_valid {
-            // Increment attempts
-            let new_attempts = self
-                .code_repository
-                .increment_attempts(&stored_code.id)
-                .await?;
-
-            warn!(
-                user_id = %user_id,
-                attempts = new_attempts,
-                max_attempts = stored_code.max_attempts,
-                "Invalid email TOTP code attempt"
-            );
-
-            return Err(EmailTotpError::InvalidCode);
-        }
-
-        // Mark code as used
-        self.code_repository.mark_code_used(&stored_code.id).await?;
+        self.verify_code_only(user_id, purpose, code).await?;
 
         // Create verification session
         let session_expires_at =
@@ -294,8 +253,16 @@ where
             return Err(EmailTotpError::CodeExpired);
         }
 
-        // Check attempts
+        // Check attempts before and atomically consume an attempt slot before KDF
+        // to close concurrent brute-force TOCTOU races.
         if stored_code.attempts >= stored_code.max_attempts {
+            return Err(EmailTotpError::TooManyAttempts);
+        }
+        let attempt_num = self
+            .code_repository
+            .increment_attempts(&stored_code.id)
+            .await?;
+        if attempt_num > stored_code.max_attempts {
             return Err(EmailTotpError::TooManyAttempts);
         }
 
@@ -303,18 +270,12 @@ where
         let is_valid = self
             .hasher
             .verify_password(code.trim().as_bytes(), &stored_code.code_hash)
-            .unwrap_or(false);
+            .map_err(|e| EmailTotpError::Storage(format!("failed to verify code hash: {e}")))?;
 
         if !is_valid {
-            // Increment attempts
-            let new_attempts = self
-                .code_repository
-                .increment_attempts(&stored_code.id)
-                .await?;
-
             warn!(
                 user_id = %user_id,
-                attempts = new_attempts,
+                attempts = attempt_num,
                 max_attempts = stored_code.max_attempts,
                 "Invalid email TOTP code attempt"
             );
@@ -328,7 +289,7 @@ where
         info!(
             user_id = %user_id,
             purpose = %purpose,
-            "Email TOTP verification for login successful"
+            "Email TOTP verification successful"
         );
 
         Ok(())

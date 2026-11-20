@@ -12,7 +12,7 @@ use std::fmt;
 pub enum RoleHierarchyError {
     /// Callers may not manage their own account (self-demotion/suspension).
     CannotManageSelf,
-    /// Super-role accounts may only be managed by other super-role callers.
+    /// Super-role accounts cannot be modified through standard user management.
     CannotManageSuperRole,
     /// Callers may only manage users strictly below their own level.
     InsufficientPrivileges {
@@ -42,7 +42,7 @@ impl fmt::Display for RoleHierarchyError {
             Self::CannotManageSuperRole => {
                 write!(
                     f,
-                    "only super-role accounts can manage other super-role accounts"
+                    "super-role accounts cannot be modified through standard user management"
                 )
             }
             Self::InsufficientPrivileges { .. } => {

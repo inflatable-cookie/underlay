@@ -153,11 +153,9 @@ impl WebAuthnService {
             .or_else(|| Self::passkey_counter_from_json(&stored.passkey_json));
 
         let new_counter = result.counter();
-        if new_counter > 0 {
-            if let Some(old_counter) = stored_counter {
-                if new_counter <= old_counter {
-                    return Err(AuthError::PassKeyCounterRegression);
-                }
+        if let Some(old_counter) = stored_counter {
+            if (new_counter > 0 || old_counter > 0) && new_counter <= old_counter {
+                return Err(AuthError::PassKeyCounterRegression);
             }
         }
 

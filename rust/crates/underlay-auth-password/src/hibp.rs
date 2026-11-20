@@ -124,11 +124,14 @@ fn hibp_range_body_contains_suffix(body: &str, suffix: &str) -> bool {
             continue;
         }
 
-        let Some((candidate_suffix, _count)) = line.split_once(':') else {
+        let Some((candidate_suffix, count_str)) = line.split_once(':') else {
             continue;
         };
 
-        if candidate_suffix.trim().eq_ignore_ascii_case(suffix) {
+        // HIBP `Add-Padding: true` appends synthetic `SUFFIX:0` lines; only
+        // count > 0 represents an actual breach match.
+        let count: u64 = count_str.trim().parse().unwrap_or(0);
+        if count > 0 && candidate_suffix.trim().eq_ignore_ascii_case(suffix) {
             return true;
         }
     }

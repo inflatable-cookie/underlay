@@ -51,14 +51,15 @@ impl TotpService {
         now: SystemTime,
         last_counter: Option<u64>,
     ) -> Result<VerifiedTotp, TotpError> {
-        let code = normalize_numeric_code(code)?;
+        let code = normalize_numeric_code(code, self.config.digits())?;
 
         let now_secs = now
             .duration_since(UNIX_EPOCH)
             .map_err(|_| TotpError::InvalidCode)?
             .as_secs();
 
-        let current_counter = now_secs / self.config.period_seconds();
+        let period = self.config.period_seconds().max(1);
+        let current_counter = now_secs / period;
 
         for step in -self.config.skew_steps()..=self.config.skew_steps() {
             let counter = if step.is_negative() {
@@ -88,9 +89,9 @@ impl TotpService {
     }
 }
 
-fn normalize_numeric_code(code: &str) -> Result<u32, TotpError> {
+fn normalize_numeric_code(code: &str, expected_digits: u32) -> Result<u32, TotpError> {
     let trimmed = code.trim();
-    if trimmed.is_empty() {
+    if trimmed.len() != expected_digits as usize {
         return Err(TotpError::InvalidCode);
     }
 

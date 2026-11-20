@@ -12,6 +12,7 @@ serde_json = { workspace = true }
 sqlx = { workspace = true }
 thiserror = { workspace = true }
 underlay-core = { path = "../underlay-core" }
+underlay-db = { path = "../underlay-db" }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt", "time"] }

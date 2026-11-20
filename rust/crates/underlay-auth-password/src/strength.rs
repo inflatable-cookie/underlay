@@ -201,7 +201,7 @@ impl PasswordStrengthAnalyzer {
 
     /// Analyze a password and return its strength.
     pub fn analyze(&self, password: &str) -> PasswordAnalysis {
-        let length = password.len();
+        let length = password.chars().count();
         let has_lowercase = password.chars().any(|c| c.is_ascii_lowercase());
         let has_uppercase = password.chars().any(|c| c.is_ascii_uppercase());
         let has_digits = password.chars().any(|c| c.is_ascii_digit());
@@ -211,9 +211,10 @@ impl PasswordStrengthAnalyzer {
         let unique_chars = password.chars().collect::<HashSet<_>>().len();
         let is_common = self.is_common_password(password);
 
-        // Prefer zxcvbn score for overall strength.
-        // It is more robust than composition rules (and is still fully offline).
-        let entropy = zxcvbn(password, &[]);
+        // Prefer zxcvbn score for overall strength. Cap input to 128 chars to
+        // avoid superlinear CPU spikes on huge passwords.
+        let zxcvbn_input: String = password.chars().take(128).collect();
+        let entropy = zxcvbn(&zxcvbn_input, &[]);
         let (zxcvbn_score, zxcvbn_guesses, zxcvbn_feedback) = (
             entropy.score() as u8,
             entropy.guesses(),

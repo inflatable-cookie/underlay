@@ -116,12 +116,12 @@ impl JwtConfig {
     }
 
     pub fn with_access_token_lifetime_minutes(mut self, minutes: i64) -> Self {
-        self.access_token_lifetime_minutes = minutes;
+        self.access_token_lifetime_minutes = minutes.max(1);
         self
     }
 
     pub fn with_refresh_token_lifetime_days(mut self, days: i64) -> Self {
-        self.refresh_token_lifetime_days = days;
+        self.refresh_token_lifetime_days = days.max(1);
         self
     }
 

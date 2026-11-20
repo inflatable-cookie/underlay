@@ -3,27 +3,19 @@ use serde::{de::DeserializeOwned, Serialize};
 use sqlx::Row;
 
 use underlay_core::Uuid;
+use underlay_db::QualifiedTableName;
 
 const DEFAULT_AUTH_STATE_TABLE: &str = "auth.auth_state";
 
-/// Validate a schema-qualified table name before it is interpolated into SQL.
-/// Allows only `[A-Za-z0-9_.]+`.
-fn validate_table_name(table: &str) -> Result<(), AuthStateError> {
-    let valid = !table.is_empty()
-        && table
-            .chars()
-            .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '.');
-    if valid {
-        Ok(())
-    } else {
-        Err(AuthStateError::InvalidTableName(table.to_string()))
-    }
+fn validate_table_name(table: &str) -> Result<QualifiedTableName, AuthStateError> {
+    QualifiedTableName::parse(table)
+        .map_err(|_| AuthStateError::InvalidTableName(table.to_string()))
 }
 
 #[derive(Debug, Clone)]
 pub struct AuthStateStore {
     pool: sqlx::PgPool,
-    table: String,
+    table: QualifiedTableName,
 }
 
 impl AuthStateStore {
@@ -31,21 +23,20 @@ impl AuthStateStore {
     pub fn new(pool: sqlx::PgPool) -> Self {
         Self {
             pool,
-            table: DEFAULT_AUTH_STATE_TABLE.to_string(),
+            table: QualifiedTableName::parse(DEFAULT_AUTH_STATE_TABLE)
+                .expect("default auth state table name is a valid SQL identifier"),
         }
     }
 
     /// Create a store with a custom (schema-qualified) table name, for
     /// consumers whose auth-state table does not live in the `auth` schema.
     ///
-    /// The name is validated to `[A-Za-z0-9_.]+` because it is interpolated
-    /// into SQL.
+    /// The name is validated and quoted via [`QualifiedTableName`].
     pub fn with_table(
         pool: sqlx::PgPool,
         table: impl Into<String>,
     ) -> Result<Self, AuthStateError> {
-        let table = table.into();
-        validate_table_name(&table)?;
+        let table = validate_table_name(&table.into())?;
         Ok(Self { pool, table })
     }
 
@@ -68,7 +59,7 @@ impl AuthStateStore {
             INSERT INTO {} (id, user_id, state_type, state, created_at, expires_at)
             VALUES ($1, $2, $3, $4, $5, $6)
             "#,
-            self.table
+            self.table.quoted()
         )))
         .bind(id.into_inner())
         .bind(user_id.map(|u| u.into_inner()))
@@ -118,7 +109,7 @@ impl AuthStateStore {
             FROM {}
             WHERE id = $1 AND user_id IS NOT DISTINCT FROM $2 AND state_type = $3 AND expires_at > $4
             "#,
-            self.table
+            self.table.quoted()
         )))
         .bind(state_id.into_inner())
         .bind(user_id.map(|u| u.into_inner()))
@@ -162,7 +153,7 @@ impl AuthStateStore {
             SET state = $3
             WHERE id = $1 AND user_id IS NULL AND state_type = $2 AND expires_at > $4
             "#,
-            self.table
+            self.table.quoted()
         )))
         .bind(state_id.into_inner())
         .bind(state_type)
@@ -185,7 +176,7 @@ impl AuthStateStore {
             DELETE FROM {}
             WHERE id = $1
             "#,
-            self.table
+            self.table.quoted()
         )))
         .bind(state_id.into_inner())
         .execute(&self.pool)
@@ -201,13 +192,29 @@ impl AuthStateStore {
         user_id: Option<Uuid>,
         state_type: &str,
     ) -> Result<Option<serde_json::Value>, AuthStateError> {
-        let state = self.load(state_id, user_id, state_type).await?;
-        if state.is_none() {
-            return Ok(None);
-        }
+        let now = Utc::now();
 
-        self.delete(state_id).await?;
-        Ok(state)
+        let row = sqlx::query(sqlx::AssertSqlSafe(format!(
+            r#"
+            DELETE FROM {}
+            WHERE id = $1 AND user_id IS NOT DISTINCT FROM $2 AND state_type = $3 AND expires_at > $4
+            RETURNING state
+            "#,
+            self.table.quoted()
+        )))
+        .bind(state_id.into_inner())
+        .bind(user_id.map(|u| u.into_inner()))
+        .bind(state_type)
+        .bind(now)
+        .fetch_optional(&self.pool)
+        .await
+        .map_err(AuthStateError::Db)?;
+
+        row.map(|r| {
+            r.try_get::<serde_json::Value, _>("state")
+                .map_err(AuthStateError::Db)
+        })
+        .transpose()
     }
 
     pub async fn consume_public(

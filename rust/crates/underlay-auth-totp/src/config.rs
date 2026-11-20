@@ -80,7 +80,7 @@ impl TotpConfig {
     ///
     /// Default is 30 seconds. Some apps use 60 seconds.
     pub fn with_period_seconds(mut self, seconds: u64) -> Self {
-        self.period_seconds = seconds;
+        self.period_seconds = seconds.max(1);
         self
     }
 
@@ -90,7 +90,7 @@ impl TotpConfig {
     /// A value of 0 only accepts the current code (strict).
     /// A value of 2 provides more tolerance for clock drift.
     pub fn with_skew_steps(mut self, steps: i64) -> Self {
-        self.skew_steps = steps;
+        self.skew_steps = steps.max(0);
         self
     }
 

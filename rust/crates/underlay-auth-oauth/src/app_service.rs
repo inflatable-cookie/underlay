@@ -92,6 +92,8 @@ where
         let email = userinfo
             .email
             .clone()
+            .map(|e| e.trim().to_ascii_lowercase())
+            .filter(|e| !e.is_empty())
             .ok_or_else(|| AuthError::OAuthError("google userinfo missing email".into()))?;
 
         if self.require_verified_email && userinfo.email_verified != Some(true) {
@@ -101,7 +103,15 @@ where
         }
 
         let (user, is_new_user) = match repo.find_by_email(&email).await? {
-            Some(existing) => (existing, false),
+            Some(existing) => {
+                if existing.is_suspended() {
+                    return Err(AuthError::AccountSuspended);
+                }
+                if existing.is_deleted() {
+                    return Err(AuthError::AccountDeleted);
+                }
+                (existing, false)
+            }
             None => {
                 let display_name = derive_display_name(&userinfo, &email);
                 (
@@ -114,8 +124,14 @@ where
         let existing_oauth = repo
             .find_oauth_by_user_and_provider(user.id, CredentialType::OAuthGoogle)
             .await?;
-        if existing_oauth.is_some() {
-            return Err(AuthError::OAuthAlreadyConnected);
+        if let Some(credential) = existing_oauth {
+            return Ok(OAuthLoginResult {
+                user,
+                is_new_user,
+                credential,
+                token_set,
+                userinfo,
+            });
         }
 
         let refresh_token = token_set.refresh_token.clone().unwrap_or_default();

@@ -74,6 +74,7 @@ pub enum CredentialType {
     /// PassKey / WebAuthn credential.
     Passkey,
     /// OAuth2 connection (e.g., Google).
+    #[serde(rename = "oauth_google")]
     OAuthGoogle,
 }
 
@@ -118,7 +119,7 @@ pub enum CredentialMetadata {
         last_counter: u32,
     },
     /// OAuth connection metadata.
-    #[serde(rename_all = "snake_case")]
+    #[serde(rename = "oauth_google", rename_all = "snake_case")]
     OAuthGoogle {
         /// Google user ID.
         google_user_id: String,
