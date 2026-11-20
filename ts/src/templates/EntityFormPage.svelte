@@ -3,7 +3,7 @@
   import type { HTMLFormAttributes } from "svelte/elements";
   import { untrack } from "svelte";
   import { setFormFieldErrors } from "./form-field-errors";
-  import { getBackButtonInfo } from "../patterns/navigation";
+  import { useTemplateBackInfo } from "./template-back-info.svelte";
   import { resolveRedirectTo } from "../client/route-protection";
   import {
     Card,
@@ -98,37 +98,13 @@
 
   const hasFieldErrors = $derived(Boolean(fieldErrors && Object.keys(fieldErrors).length > 0));
   const visibleError = $derived(hasFieldErrors ? null : error);
-  let resolvedBackInfo = $state<{ href: string; label: string; contextual: boolean } | null>(null);
-
-  $effect(() => {
-    let nextResolvedBackInfo: { href: string; label: string; contextual: boolean } | null;
-
-    if (!backHref) {
-      nextResolvedBackInfo = null;
-    } else if (!resolveBackContext) {
-      nextResolvedBackInfo = {
-        href: backHref,
-        label: backLabel,
-        contextual: backIsContextual
-      };
-    } else {
-      const contextualBackInfo = getBackButtonInfo(backLabel, backHref);
-      nextResolvedBackInfo = {
-        href: contextualBackInfo.href,
-        label: contextualBackInfo.label,
-        contextual: Boolean(contextualBackInfo.isContextual || backIsContextual)
-      };
-    }
-
-    const current = resolvedBackInfo;
-    if (
-      current?.href !== nextResolvedBackInfo?.href ||
-      current?.label !== nextResolvedBackInfo?.label ||
-      current?.contextual !== nextResolvedBackInfo?.contextual
-    ) {
-      resolvedBackInfo = nextResolvedBackInfo;
-    }
-  });
+  const getResolvedBackInfo = useTemplateBackInfo(() => ({
+    href: backHref,
+    label: backLabel,
+    contextual: backIsContextual,
+    resolveContext: resolveBackContext
+  }));
+  const resolvedBackInfo = $derived(getResolvedBackInfo());
 
   const defaultNavigate: SpaNavigateFn = (url: string) => {
     window.location.href = url;

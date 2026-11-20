@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="ts" generics="T = unknown">
   import {
     Callout,
     EmptyState,
@@ -6,7 +6,7 @@
     PageHeader,
     PageLoading
   } from "@inflatable-cookie/poodle-svelte";
-  import { getBackButtonInfo } from "../patterns/navigation";
+  import { useTemplateBackInfo } from "./template-back-info.svelte";
   import type { TemplateSurface } from "./template.types";
 
   interface Props {
@@ -25,7 +25,7 @@
     statusMessage?: string | null;
     statusTone?: "danger" | "info" | "success" | "neutral" | "warning";
     beforeItems?: TemplateSurface;
-    items: unknown[];
+    items: T[];
     renderItem: TemplateSurface;
     emptyTitle: string;
     emptyMessage: string;
@@ -57,41 +57,23 @@
     minItemWidth = "var(--underlay-list-grid-min, 20rem)"
   }: Props = $props();
 
-  let resolvedBackInfo = $state<{ href: string; label: string; contextual: boolean } | null>(null);
+  const getResolvedBackInfo = useTemplateBackInfo(() => ({
+    href: backHref,
+    label: backLabel,
+    contextual: backIsContextual,
+    resolveContext: resolveBackContext
+  }));
+  const resolvedBackInfo = $derived(getResolvedBackInfo());
 
-  function getItemKey(item: unknown, index: number): string | number {
+  function getItemKey(item: T, index: number): string | number {
     if (typeof item === "object" && item !== null && "id" in item) {
-      const id = (item as { id?: unknown }).id;
+      const { id } = item;
       if (typeof id === "string" || typeof id === "number") {
         return id;
       }
     }
     return index;
   }
-
-  $effect(() => {
-    if (!backHref) {
-      resolvedBackInfo = null;
-      return;
-    }
-
-    const fallbackLabel = backLabel ?? "Back";
-    if (!resolveBackContext) {
-      resolvedBackInfo = {
-        href: backHref,
-        label: fallbackLabel,
-        contextual: backIsContextual
-      };
-      return;
-    }
-
-    const contextualBackInfo = getBackButtonInfo(fallbackLabel, backHref);
-    resolvedBackInfo = {
-      href: contextualBackInfo.href,
-      label: contextualBackInfo.label,
-      contextual: Boolean(contextualBackInfo.isContextual || backIsContextual)
-    };
-  });
 </script>
 
 <PageHeader
@@ -108,11 +90,11 @@
 {#if loading}
   <PageLoading message={loadingMessage} />
 {:else if error}
-  <Callout tone="danger" message={error} />
+  <Callout tone="danger" message={error} announceMode="polite" />
 {:else}
   <div class="underlay-entity-trash-page">
     {#if statusMessage}
-      <Callout tone={statusTone} message={statusMessage} />
+      <Callout tone={statusTone} message={statusMessage} announceMode="polite" />
     {/if}
 
     {#if beforeItems}
