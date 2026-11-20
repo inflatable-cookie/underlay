@@ -55,10 +55,6 @@ impl PostgresBackend {
         RateLimitError::Backend(err.to_string())
     }
 
-    fn to_result(config: &RateLimitConfig, count: u64, elapsed_secs: f64) -> RateLimitResult {
-        Self::to_result_from_decision(config, count <= config.max_requests(), count, elapsed_secs)
-    }
-
     fn to_result_from_decision(
         config: &RateLimitConfig,
         allowed: bool,
