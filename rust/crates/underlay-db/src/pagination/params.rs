@@ -26,7 +26,7 @@ pub struct CursorPaginationParams {
     #[serde(default = "default_page")]
     pub page: i64,
 
-    /// Number of items per page (default: 50, max: 100).
+    /// Number of items per page (default: 30, max: 100).
     #[serde(default = "default_limit")]
     pub limit: i64,
 

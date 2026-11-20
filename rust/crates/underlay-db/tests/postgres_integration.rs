@@ -1,5 +1,8 @@
 use underlay_core::Uuid;
-use underlay_db::{create_pool, drop_schemas, validate_schema_name, DbConfig, DestructiveGuard};
+use underlay_db::{
+    create_pool, drop_schemas, run_sql_dir_with_options, validate_schema_name, DbConfig,
+    DestructiveGuard, SqlDirOptions,
+};
 
 // These tests require a Docker-compatible runtime.
 // On macOS, Colima works well:
@@ -9,8 +12,8 @@ use underlay_db::{create_pool, drop_schemas, validate_schema_name, DbConfig, Des
 // Run with:
 //   oxide test -p underlay-db --test postgres_integration -- --ignored
 
-use testcontainers::runners::SyncRunner;
-use testcontainers::Container;
+use testcontainers::runners::AsyncRunner;
+use testcontainers::ContainerAsync;
 use testcontainers_modules::postgres::Postgres;
 
 fn assert_docker_available() {
@@ -33,29 +36,38 @@ macOS (Homebrew):\n\
     }
 }
 
-fn postgres_database_url(node: &Container<Postgres>) -> String {
+/// Start one Postgres container for a test.
+///
+/// These tests run inside `#[tokio::test]`, so they use `testcontainers`'
+/// async runner. The sync `Container` blocks and cleans up on its own runtime,
+/// which panics when it is dropped inside a foreign tokio runtime. The returned
+/// container must stay alive for the duration of the test.
+async fn postgres_fixture() -> (ContainerAsync<Postgres>, String) {
+    assert_docker_available();
+
     // Using testcontainers so we don't require any preinstalled Postgres.
     // The Docker runtime can be Docker Desktop, Colima, OrbStack, etc.
     //
     // IMPORTANT: We intentionally keep these tests `#[ignore]` by default.
+    let node = Postgres::default()
+        .start()
+        .await
+        .expect("failed to start postgres test container");
 
     // e.g. postgres://postgres:postgres@127.0.0.1:<port>/postgres
-    format!(
-        "postgres://postgres:postgres@127.0.0.1:{}/postgres",
-        node.get_host_port_ipv4(5432)
-            .expect("postgres port 5432 should be mapped")
-    )
+    let port = node
+        .get_host_port_ipv4(5432)
+        .await
+        .expect("postgres port 5432 should be mapped");
+    let database_url = format!("postgres://postgres:postgres@127.0.0.1:{port}/postgres");
+
+    (node, database_url)
 }
 
 #[tokio::test]
 #[ignore]
 async fn create_pool_connects() {
-    assert_docker_available();
-    let node = Postgres::default()
-        .start()
-        .expect("failed to start postgres test container");
-
-    let database_url = postgres_database_url(&node);
+    let (_node, database_url) = postgres_fixture().await;
     let config = DbConfig::new(database_url).with_max_connections(5);
 
     let pool = create_pool(&config).await.expect("create_pool");
@@ -69,12 +81,7 @@ async fn create_pool_connects() {
 #[tokio::test]
 #[ignore]
 async fn drop_schemas_requires_guard() {
-    assert_docker_available();
-    let node = Postgres::default()
-        .start()
-        .expect("failed to start postgres test container");
-
-    let database_url = postgres_database_url(&node);
+    let (_node, database_url) = postgres_fixture().await;
     let config = DbConfig::new(database_url).with_max_connections(5);
 
     let pool = create_pool(&config).await.expect("create_pool");
@@ -98,12 +105,7 @@ async fn drop_schemas_requires_guard() {
 #[tokio::test]
 #[ignore]
 async fn drop_schemas_drops_schema() {
-    assert_docker_available();
-    let node = Postgres::default()
-        .start()
-        .expect("failed to start postgres test container");
-
-    let database_url = postgres_database_url(&node);
+    let (_node, database_url) = postgres_fixture().await;
     let config = DbConfig::new(database_url).with_max_connections(5);
 
     let pool = create_pool(&config).await.expect("create_pool");
@@ -143,12 +145,7 @@ async fn drop_schemas_drops_schema() {
 #[tokio::test]
 #[ignore]
 async fn drop_schemas_rejects_invalid_schema_name() {
-    assert_docker_available();
-    let node = Postgres::default()
-        .start()
-        .expect("failed to start postgres test container");
-
-    let database_url = postgres_database_url(&node);
+    let (_node, database_url) = postgres_fixture().await;
     let config = DbConfig::new(database_url).with_max_connections(5);
 
     let pool = create_pool(&config).await.expect("create_pool");
@@ -164,4 +161,50 @@ async fn drop_schemas_rejects_invalid_schema_name() {
         .to_string()
         .to_ascii_lowercase()
         .contains("invalid schema name"));
+}
+
+#[tokio::test]
+#[ignore]
+async fn sql_dir_runs_multi_statement_scripts_unsplit() {
+    let (_node, database_url) = postgres_fixture().await;
+    let config = DbConfig::new(database_url).with_max_connections(5);
+
+    let pool = create_pool(&config).await.expect("create_pool");
+
+    let schema_id = format!("test_{}", Uuid::new_v7().to_string().replace('-', ""));
+    let script_dir = std::env::temp_dir().join(format!("underlay-sql-dir-{schema_id}"));
+    std::fs::create_dir_all(&script_dir).expect("create script fixture dir");
+    std::fs::write(
+        script_dir.join("010_seed.sql"),
+        format!(
+            r#"
+CREATE SCHEMA {schema_id};
+CREATE TABLE {schema_id}.items (id INT PRIMARY KEY);
+DO $$
+BEGIN
+    INSERT INTO {schema_id}.items (id) VALUES (1);
+    INSERT INTO {schema_id}.items (id) VALUES (2);
+END $$;
+"#
+        ),
+    )
+    .expect("write script fixture");
+
+    run_sql_dir_with_options(
+        &pool,
+        &script_dir,
+        SqlDirOptions::new().with_split_on_semicolon(false),
+    )
+    .await
+    .expect("run unsplit script");
+
+    let (count,): (i64,) = sqlx::query_as(sqlx::AssertSqlSafe(format!(
+        "SELECT COUNT(*)::BIGINT FROM {schema_id}.items"
+    )))
+    .fetch_one(&pool)
+    .await
+    .expect("count seeded rows");
+    assert_eq!(count, 2);
+
+    std::fs::remove_dir_all(&script_dir).expect("remove script fixture");
 }

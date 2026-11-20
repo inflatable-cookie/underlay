@@ -108,13 +108,34 @@ fn test_keyset_condition() {
     let params = CursorPaginationParams::new();
     let builder = PaginationBuilder::new(params);
     assert_eq!(
-        builder.keyset_condition("updated_at", 1, true),
-        "(updated_at, id) < ($1, $2)"
+        builder.keyset_condition("updated_at", 1, true).unwrap(),
+        "(\"updated_at\", id) < ($1, $2)"
     );
     assert_eq!(
-        builder.keyset_condition("weight", 3, false),
-        "(weight, id) > ($3, $4)"
+        builder.keyset_condition("weight", 3, false).unwrap(),
+        "(\"weight\", id) > ($3, $4)"
     );
+}
+
+#[test]
+fn test_keyset_condition_quotes_and_trims_identifier() {
+    let builder = PaginationBuilder::new(CursorPaginationParams::new());
+    assert_eq!(
+        builder.keyset_condition(" _rank ", 2, true).unwrap(),
+        "(\"_rank\", id) < ($2, $3)"
+    );
+}
+
+#[test]
+fn test_keyset_helpers_reject_invalid_identifiers() {
+    let builder = PaginationBuilder::new(CursorPaginationParams::new());
+
+    assert!(builder
+        .keyset_condition("updated_at; DROP TABLE items", 1, true)
+        .is_err());
+    assert!(builder.keyset_condition("", 1, true).is_err());
+    assert!(builder.keyset_order_by("Updated_At", true).is_err());
+    assert!(builder.keyset_order_by("updated-at", true).is_err());
 }
 
 #[test]
@@ -122,12 +143,12 @@ fn test_keyset_order_by() {
     let params = CursorPaginationParams::new();
     let builder = PaginationBuilder::new(params);
     assert_eq!(
-        builder.keyset_order_by("updated_at", true),
-        "updated_at DESC, id DESC"
+        builder.keyset_order_by("updated_at", true).unwrap(),
+        "\"updated_at\" DESC, id DESC"
     );
     assert_eq!(
-        builder.keyset_order_by("weight", false),
-        "weight ASC, id ASC"
+        builder.keyset_order_by("weight", false).unwrap(),
+        "\"weight\" ASC, id ASC"
     );
 }
 
@@ -137,8 +158,8 @@ fn test_keyset_order_by_backward() {
     let builder = PaginationBuilder::new(params);
     // Backward pagination reverses the order
     assert_eq!(
-        builder.keyset_order_by("updated_at", true),
-        "updated_at ASC, id ASC"
+        builder.keyset_order_by("updated_at", true).unwrap(),
+        "\"updated_at\" ASC, id ASC"
     );
 }
 

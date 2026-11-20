@@ -64,3 +64,12 @@ fn test_validation_to_app_error_multiple_fields() {
         Some(&"Invalid email format".to_string())
     );
 }
+
+#[test]
+fn test_validation_to_app_error_omits_empty_field_errors() {
+    let errors = validator::ValidationErrors::new();
+
+    let app_error = validation_to_app_error(&errors, "test.validation_failed", "Validation failed");
+
+    assert!(app_error.field_errors.is_none());
+}

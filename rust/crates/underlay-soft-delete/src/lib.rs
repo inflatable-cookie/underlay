@@ -30,9 +30,10 @@
 //!     async fn soft_delete_in_tx(
 //!         tx: &mut Transaction<'_, Postgres>,
 //!         id: Uuid,
-//!         batch_id: Uuid,
-//!     ) -> Result<bool, sqlx::Error> {
-//!         // Custom cascade logic here
+//!         batch_id: DeleteBatchId,
+//!     ) -> Result<SoftDeleteResult, sqlx::Error> {
+//!         // Custom cascade logic here. Report whether the row was missing,
+//!         // already deleted, or deleted by this call.
 //!     }
 //! }
 //! ```
@@ -50,7 +51,17 @@
 
 use async_trait::async_trait;
 use sqlx::{PgPool, Postgres, Transaction};
-use underlay_core::Uuid;
+pub use underlay_core::Uuid;
+
+/// Re-exported so the macros can name `async_trait` without the consumer
+/// depending on it directly.
+#[doc(hidden)]
+pub use async_trait as __async_trait;
+
+/// Re-exported so the macros can name `sqlx` without the consumer depending on
+/// it directly.
+#[doc(hidden)]
+pub use sqlx as __sqlx;
 
 pub const DELETED_AT_COLUMN: &str = "deleted_at";
 pub const DELETE_BATCH_ID_COLUMN: &str = "delete_batch_id";
@@ -60,6 +71,7 @@ pub const DELETE_BATCH_ID_COLUMN: &str = "delete_batch_id";
 /// In reference implementations this is stored in `delete_batch_id`.
 pub type DeleteBatchId = Uuid;
 
+/// Outcome of a soft-delete operation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SoftDeleteResult {
     /// The target row does not exist.
@@ -139,15 +151,17 @@ pub fn new_delete_batch_id() -> DeleteBatchId {
 pub trait SoftDeletable: Send + Sync {
     /// Soft delete an entity within an existing transaction.
     ///
-    /// Returns `true` if the entity was deleted, `false` if not found or already deleted.
+    /// Returns [`SoftDeleteResult::Deleted`] when this call marked the row,
+    /// [`SoftDeleteResult::AlreadyDeleted`] when the row exists but was already
+    /// soft-deleted, and [`SoftDeleteResult::NotFound`] when no row exists.
     ///
     /// For cascade deletes, this method should delete the entity and all its
     /// dependent entities within the same transaction.
     async fn soft_delete_in_tx(
         tx: &mut Transaction<'_, Postgres>,
-        id: uuid::Uuid,
-        batch_id: uuid::Uuid,
-    ) -> Result<bool, sqlx::Error>;
+        id: Uuid,
+        batch_id: DeleteBatchId,
+    ) -> Result<SoftDeleteResult, sqlx::Error>;
 }
 
 /// Soft delete a single entity.
@@ -156,20 +170,9 @@ pub trait SoftDeletable: Send + Sync {
 /// [`SoftDeletable::soft_delete_in_tx`] implementation.
 pub async fn soft_delete<T: SoftDeletable>(
     pool: &PgPool,
-    id: uuid::Uuid,
+    id: Uuid,
 ) -> Result<SoftDeleteResult, sqlx::Error> {
-    let batch_id = new_delete_batch_id();
-    let mut tx = pool.begin().await?;
-
-    let deleted = T::soft_delete_in_tx(&mut tx, id, batch_id.into_inner()).await?;
-
-    tx.commit().await?;
-
-    if deleted {
-        Ok(SoftDeleteResult::Deleted { batch_id })
-    } else {
-        Ok(SoftDeleteResult::NotFound)
-    }
+    soft_delete_with_batch_id::<T>(pool, id, new_delete_batch_id()).await
 }
 
 /// Soft delete a single entity with a provided batch ID.
@@ -177,54 +180,42 @@ pub async fn soft_delete<T: SoftDeletable>(
 /// Use this when you want to control the batch ID (e.g., for grouping related deletes).
 pub async fn soft_delete_with_batch_id<T: SoftDeletable>(
     pool: &PgPool,
-    id: uuid::Uuid,
+    id: Uuid,
     batch_id: DeleteBatchId,
 ) -> Result<SoftDeleteResult, sqlx::Error> {
     let mut tx = pool.begin().await?;
 
-    let deleted = T::soft_delete_in_tx(&mut tx, id, batch_id.into_inner()).await?;
+    let result = T::soft_delete_in_tx(&mut tx, id, batch_id).await?;
 
     tx.commit().await?;
-
-    if deleted {
-        Ok(SoftDeleteResult::Deleted { batch_id })
-    } else {
-        Ok(SoftDeleteResult::NotFound)
-    }
+    Ok(result)
 }
 
 /// Batch soft delete multiple entities.
 ///
 /// All entities share the same delete batch ID, enabling bulk restore.
-/// Returns the count of entities that were successfully deleted.
+/// Returns the count of entities that were successfully deleted and the batch
+/// ID. Rows that were missing or already deleted are not counted.
 pub async fn batch_soft_delete<T: SoftDeletable>(
     pool: &PgPool,
-    ids: &[uuid::Uuid],
+    ids: &[Uuid],
 ) -> Result<(i64, DeleteBatchId), sqlx::Error> {
-    if ids.is_empty() {
-        return Ok((0, new_delete_batch_id()));
-    }
-
     let batch_id = new_delete_batch_id();
-    let mut tx = pool.begin().await?;
-    let mut count: i64 = 0;
-
-    for &id in ids {
-        if T::soft_delete_in_tx(&mut tx, id, batch_id.into_inner()).await? {
-            count += 1;
-        }
+    if ids.is_empty() {
+        return Ok((0, batch_id));
     }
 
-    tx.commit().await?;
+    let count = batch_soft_delete_with_batch_id::<T>(pool, ids, batch_id).await?;
     Ok((count, batch_id))
 }
 
 /// Batch soft delete multiple entities with a provided batch ID.
 ///
-/// Use this when you want to control the batch ID.
+/// Use this when you want to control the batch ID. Rows that were missing or
+/// already deleted are not counted.
 pub async fn batch_soft_delete_with_batch_id<T: SoftDeletable>(
     pool: &PgPool,
-    ids: &[uuid::Uuid],
+    ids: &[Uuid],
     batch_id: DeleteBatchId,
 ) -> Result<i64, sqlx::Error> {
     if ids.is_empty() {
@@ -235,7 +226,10 @@ pub async fn batch_soft_delete_with_batch_id<T: SoftDeletable>(
     let mut count: i64 = 0;
 
     for &id in ids {
-        if T::soft_delete_in_tx(&mut tx, id, batch_id.into_inner()).await? {
+        if matches!(
+            T::soft_delete_in_tx(&mut tx, id, batch_id).await?,
+            SoftDeleteResult::Deleted { .. }
+        ) {
             count += 1;
         }
     }
@@ -245,13 +239,51 @@ pub async fn batch_soft_delete_with_batch_id<T: SoftDeletable>(
 }
 
 // ============================================================================
+// Implementation details for generated macros
+// ============================================================================
+
+/// Implementation details used by the generated macro implementations.
+///
+/// This module is not part of the public contract; `#[macro_export]` macros
+/// need a `$crate::`-reachable path for their shared logic.
+#[doc(hidden)]
+pub mod __private {
+    use super::{SoftDeleteResult, Uuid};
+
+    /// Classify the outcome of a soft-delete `UPDATE`.
+    ///
+    /// `rows_affected` is the update's affected row count and `row_exists` is
+    /// whether the target row still exists, which is what distinguishes
+    /// [`SoftDeleteResult::AlreadyDeleted`] from
+    /// [`SoftDeleteResult::NotFound`].
+    pub fn classify_update(
+        rows_affected: u64,
+        row_exists: bool,
+        batch_id: Uuid,
+    ) -> SoftDeleteResult {
+        if rows_affected > 0 {
+            SoftDeleteResult::Deleted { batch_id }
+        } else if row_exists {
+            SoftDeleteResult::AlreadyDeleted
+        } else {
+            SoftDeleteResult::NotFound
+        }
+    }
+}
+
+// ============================================================================
 // Macros
 // ============================================================================
 
 /// Generates a [`SoftDeletable`] implementation for a simple single-table entity.
 ///
 /// This macro creates an implementation that updates a single row in the specified
-/// table, setting `deleted_at` and `delete_batch_id`.
+/// table, setting `deleted_at` and `delete_batch_id`. When the update matches no
+/// row, the generated implementation checks whether the row still exists so
+/// callers can tell an already-deleted row from a missing one.
+///
+/// All crate paths are hygienic (`$crate::`), so the consuming crate does not
+/// need to depend on `sqlx`, `async-trait`, or `uuid` directly.
 ///
 /// # Example
 ///
@@ -266,24 +298,44 @@ pub async fn batch_soft_delete_with_batch_id<T: SoftDeletable>(
 #[macro_export]
 macro_rules! impl_soft_deletable {
     ($type:ty, $table:literal) => {
-        #[async_trait::async_trait]
+        #[$crate::__async_trait::async_trait]
         impl $crate::SoftDeletable for $type {
             async fn soft_delete_in_tx(
-                tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
-                id: uuid::Uuid,
-                batch_id: uuid::Uuid,
-            ) -> Result<bool, sqlx::Error> {
-                let result = sqlx::query(concat!(
+                tx: &mut $crate::__sqlx::Transaction<'_, $crate::__sqlx::Postgres>,
+                id: $crate::Uuid,
+                batch_id: $crate::Uuid,
+            ) -> ::core::result::Result<$crate::SoftDeleteResult, $crate::__sqlx::Error> {
+                let result = $crate::__sqlx::query(::core::concat!(
                     "UPDATE ",
                     $table,
                     " SET deleted_at = NOW(), delete_batch_id = $2 WHERE id = $1 AND deleted_at IS NULL"
                 ))
-                .bind(id)
-                .bind(batch_id)
+                .bind(id.into_inner())
+                .bind(batch_id.into_inner())
                 .execute(&mut **tx)
                 .await?;
 
-                Ok(result.rows_affected() > 0)
+                let rows_affected = result.rows_affected();
+                if rows_affected > 0 {
+                    return ::core::result::Result::Ok($crate::SoftDeleteResult::Deleted {
+                        batch_id,
+                    });
+                }
+
+                let row_exists: bool = $crate::__sqlx::query_scalar(::core::concat!(
+                    "SELECT EXISTS(SELECT 1 FROM ",
+                    $table,
+                    " WHERE id = $1)"
+                ))
+                .bind(id.into_inner())
+                .fetch_one(&mut **tx)
+                .await?;
+
+                ::core::result::Result::Ok($crate::__private::classify_update(
+                    rows_affected,
+                    row_exists,
+                    batch_id,
+                ))
             }
         }
     };
@@ -296,7 +348,7 @@ macro_rules! impl_soft_deletable {
 /// Generates a function to restore a single soft-deleted row by ID.
 ///
 /// The generated function clears `deleted_at` and `delete_batch_id` for the row
-/// where `id` matches and `deleted_at IS NOT NULL`.
+/// where `id` matches and `deleted_at IS NOT NULL`. Crate paths are hygienic.
 ///
 /// # Example
 ///
@@ -310,19 +362,19 @@ macro_rules! impl_soft_deletable {
 macro_rules! impl_restore_single {
     ($fn_name:ident, $table:literal) => {
         pub async fn $fn_name(
-            pool: &sqlx::PgPool,
-            id: uuid::Uuid,
-        ) -> Result<u64, sqlx::Error> {
-            let result = sqlx::query(concat!(
+            pool: &$crate::__sqlx::PgPool,
+            id: $crate::Uuid,
+        ) -> ::core::result::Result<u64, $crate::__sqlx::Error> {
+            let result = $crate::__sqlx::query(::core::concat!(
                 "UPDATE ",
                 $table,
                 " SET deleted_at = NULL, delete_batch_id = NULL WHERE id = $1 AND deleted_at IS NOT NULL"
             ))
-            .bind(id)
+            .bind(id.into_inner())
             .execute(pool)
             .await?;
 
-            Ok(result.rows_affected())
+            ::core::result::Result::Ok(result.rows_affected())
         }
     };
 }
@@ -330,7 +382,7 @@ macro_rules! impl_restore_single {
 /// Generates a function to permanently delete a single soft-deleted row by ID.
 ///
 /// The generated function deletes the row where `id` matches and `deleted_at IS NOT NULL`.
-/// This ensures only already-soft-deleted rows can be purged.
+/// This ensures only already-soft-deleted rows can be purged. Crate paths are hygienic.
 ///
 /// # Example
 ///
@@ -343,17 +395,20 @@ macro_rules! impl_restore_single {
 #[macro_export]
 macro_rules! impl_purge_single {
     ($fn_name:ident, $table:literal) => {
-        pub async fn $fn_name(pool: &sqlx::PgPool, id: uuid::Uuid) -> Result<u64, sqlx::Error> {
-            let result = sqlx::query(concat!(
+        pub async fn $fn_name(
+            pool: &$crate::__sqlx::PgPool,
+            id: $crate::Uuid,
+        ) -> ::core::result::Result<u64, $crate::__sqlx::Error> {
+            let result = $crate::__sqlx::query(::core::concat!(
                 "DELETE FROM ",
                 $table,
                 " WHERE id = $1 AND deleted_at IS NOT NULL"
             ))
-            .bind(id)
+            .bind(id.into_inner())
             .execute(pool)
             .await?;
 
-            Ok(result.rows_affected())
+            ::core::result::Result::Ok(result.rows_affected())
         }
     };
 }

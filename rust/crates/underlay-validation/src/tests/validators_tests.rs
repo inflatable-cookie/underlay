@@ -128,3 +128,35 @@ fn test_unique_items_detailed() {
     let err = unique_items_detailed(&["a", "b", "a", "c", "a"]).unwrap_err();
     assert!(err.message.contains("2 duplicate"));
 }
+
+#[test]
+fn test_range_rejects_nan() {
+    assert!(range(f64::NAN, Some(0.0), Some(10.0)).is_err());
+    assert!(range(f64::NAN, Some(0.0), None).is_err());
+    assert!(range(f64::NAN, None, Some(10.0)).is_err());
+    assert!(range(f64::NAN, None, None).is_err());
+    assert!(range(f32::NAN, Some(0.0_f32), Some(10.0_f32)).is_err());
+
+    let err = range(f64::NAN, Some(0.0), Some(10.0)).expect_err("NaN must not pass range");
+    assert_eq!(err.code.as_deref(), Some("range.nan"));
+}
+
+#[test]
+fn test_pattern_reuses_cached_compilation() {
+    assert!(pattern("ABC123", r"^[A-Z]+\d+$", "Invalid").is_ok());
+    assert!(pattern("ABCDEF456", r"^[A-Z]+\d+$", "Invalid").is_ok());
+    assert!(pattern("123ABC", r"^[A-Z]+\d+$", "Invalid").is_err());
+    assert!(pattern("anything", "(", "Invalid").is_err());
+    assert!(pattern("anything", "(", "Invalid").is_err());
+}
+
+#[test]
+fn test_pattern_cache_is_bounded() {
+    let capacity = super::pattern::pattern_cache_capacity();
+    for index in 0..capacity * 2 {
+        let candidate = format!(r"^cached-{index}$");
+        assert!(pattern("no-match", &candidate, "Invalid").is_err());
+    }
+
+    assert!(super::pattern::cached_pattern_count() <= capacity);
+}
