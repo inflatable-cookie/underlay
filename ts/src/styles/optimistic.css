@@ -94,7 +94,7 @@
 	padding: 0.75rem 1rem;
 	background: var(--underlay-color-danger-bg, #fef2f2);
 	border: 1px solid var(--underlay-color-danger-border, #fecaca);
-	border-radius: var(--underlay-radius-md, 0.375rem);
+	border-radius: var(--underlay-radius-md, 0.75rem);
 	color: var(--underlay-color-danger, #dc2626);
 	font-size: 0.875rem;
 }
@@ -113,7 +113,7 @@
 	padding: 0.375rem 0.625rem;
 	font-size: 0.75rem;
 	font-weight: 500;
-	border-radius: var(--underlay-radius-sm, 0.25rem);
+	border-radius: var(--underlay-radius-sm, 0.35rem);
 	border: 1px solid currentColor;
 	background: transparent;
 	color: inherit;
@@ -123,7 +123,7 @@
 
 .underlay-optimistic-error button:hover {
 	background: var(--underlay-color-danger, #dc2626);
-	color: white;
+	color: var(--underlay-color-on-danger, #ffffff);
 	border-color: var(--underlay-color-danger, #dc2626);
 }
 

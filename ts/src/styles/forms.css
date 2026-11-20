@@ -5,7 +5,7 @@
 .underlay-form-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--underlay-space-6, 2.5rem);
+  gap: var(--underlay-space-6, 2rem);
   width: 100%;
   max-width: 40em;
   margin: 0 auto;

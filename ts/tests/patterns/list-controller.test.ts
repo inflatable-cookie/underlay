@@ -116,6 +116,45 @@ describe("patterns/list-controller.svelte.ts", () => {
 		expect(onItemsChange).toHaveBeenCalled();
 	});
 
+	it("starts one initial fetch and requires an explicit retry after failure", async () => {
+		const { createListController } = await loadListControllerModule();
+		let rejectFetch: (reason: Error) => void = () => {};
+		const fetcher = vi.fn(() => new Promise<{ id: number }[]>((_resolve, reject) => {
+			rejectFetch = reject;
+		}));
+		const controller = createListController(fetcher, { getToken: () => "token" });
+		const user = { id: "u1" };
+
+		const first = controller.tryFetch(false, user);
+		const concurrent = controller.tryFetch(false, user);
+		expect(fetcher).toHaveBeenCalledTimes(1);
+
+		rejectFetch(new Error("Request failed"));
+		await Promise.all([first, concurrent]);
+		await controller.tryFetch(false, user);
+		expect(fetcher).toHaveBeenCalledTimes(1);
+		expect(controller.fetched).toBe(true);
+		expect(controller.error).toBe("Request failed");
+
+		fetcher.mockResolvedValueOnce([{ id: 1 }]);
+		await controller.refresh();
+		expect(controller.items).toEqual([{ id: 1 }]);
+	});
+
+	it("removes string and numeric IDs across either representation", async () => {
+		const { createListController } = await loadListControllerModule();
+		const controller = createListController(async () => [
+			{ id: 10, slug: "20" },
+			{ id: "11", slug: "21" },
+			{ id: 12 },
+		], { getToken: () => "token" });
+
+		await controller.tryFetch(false, { id: "u1" });
+		controller.removeItem("10");
+		controller.removeItem(21, "slug");
+		expect(controller.items).toEqual([{ id: 12 }]);
+	});
+
 	it("supports manual filter mode when autoFetchOnFilterChange is disabled", async () => {
 		const { createListController } = await loadListControllerModule();
 		const fetcher = vi.fn(async () => [{ id: "1" }]);

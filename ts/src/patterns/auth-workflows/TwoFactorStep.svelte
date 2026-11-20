@@ -35,13 +35,28 @@
 
   let activeMethod = $state<Method>(untrack(() => (hasTotpSetup ? "totp" : "email")));
   let emailCodeRequested = $state(untrack(() => !hasTotpSetup));
-  let previousMethod = $state<Method>(untrack(() => activeMethod));
+  let previousMethod = untrack(() => activeMethod);
+  let previousTotpSetup = untrack(() => hasTotpSetup);
+  let requestingEmailCode = $state(false);
+  let emailRequestError = $state<string | null>(null);
+  let emailRequestId = 0;
 
   const methodTabs = $derived<TabItem[]>([
     { value: "totp", label: "Authenticator" },
     { value: "backup", label: "Backup Code" },
     { value: "email", label: "Email" },
   ]);
+
+  $effect(() => {
+    if (hasTotpSetup === previousTotpSetup) return;
+    previousTotpSetup = hasTotpSetup;
+    activeMethod = hasTotpSetup ? "totp" : "email";
+    emailCodeRequested = !hasTotpSetup;
+    emailRequestId += 1;
+    requestingEmailCode = false;
+    emailRequestError = null;
+    code = "";
+  });
 
   $effect(() => {
     if (activeMethod !== previousMethod) {
@@ -53,9 +68,24 @@
   const uid = $props.id();
 
   async function handleRequestEmailCode() {
-    const sent = await onRequestEmailCode?.();
-    if (sent !== false) {
-      emailCodeRequested = true;
+    if (loading || requestingEmailCode) return;
+    const requestId = ++emailRequestId;
+    requestingEmailCode = true;
+    emailRequestError = null;
+    try {
+      const sent = await onRequestEmailCode?.();
+      if (requestId === emailRequestId && sent !== false) {
+        emailCodeRequested = true;
+      }
+    } catch (cause) {
+      if (requestId === emailRequestId) {
+        emailRequestError =
+          cause instanceof Error ? cause.message : "Failed to send verification code";
+      }
+    } finally {
+      if (requestId === emailRequestId) {
+        requestingEmailCode = false;
+      }
     }
   }
 
@@ -81,7 +111,9 @@
       size="sm"
       ariaLabel="Two-factor verification methods"
       onValueChange={(value) => {
-        activeMethod = value as Method;
+        if (value === "totp" || value === "backup" || value === "email") {
+          activeMethod = value;
+        }
       }}
     />
   </div>
@@ -135,8 +167,8 @@
         error={error ?? undefined}
         onValueChange={(value) => { code = value; }}
       />
-    {:else}
-      <Callout tone="info" message={emailHintPending} />
+    {:else if emailRequestError || error}
+      <Callout tone="danger" message={emailRequestError ?? error ?? ""} announceMode="assertive" />
     {/if}
 
     <FormActions align="between" showTopBorder>
@@ -148,8 +180,8 @@
 
       <div class="underlay-two-factor-step__actions">
         {#if activeMethod === "email" && !emailCodeRequested}
-          <Button type="button" variant="primary" onClick={handleRequestEmailCode} loading={loading}>
-            {loading ? "Sending..." : "Send code"}
+          <Button type="button" variant="primary" onClick={handleRequestEmailCode} loading={loading || requestingEmailCode}>
+            {loading || requestingEmailCode ? "Sending..." : "Send code"}
           </Button>
         {:else}
           <Button type="submit" variant="primary" loading={loading} disabled={!code.trim()}>

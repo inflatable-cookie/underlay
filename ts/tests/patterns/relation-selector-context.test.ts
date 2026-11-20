@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { createSelectionHistory } from "../../src/patterns/selection-history.js";
 
 type Item = { id: string; label: string };
 
@@ -12,9 +13,11 @@ async function loadContextModule() {
 	(globalThis as any).$effect = (fn: () => void) => fn();
 
 	const contextStore = new Map<symbol, unknown>();
-	vi.doMock("svelte", () => ({
-		setContext: (key: symbol, value: unknown) => {
+	vi.doMock("svelte", async (importOriginal) => ({
+		...await importOriginal<typeof import("svelte")>(),
+		setContext: <T>(key: symbol, value: T) => {
 			contextStore.set(key, value);
+			return value;
 		},
 		getContext: (key: symbol) => contextStore.get(key),
 	}));
@@ -39,9 +42,11 @@ async function loadContextModuleWithDrillDownMock(drillDownActions: Record<strin
 		}),
 	}));
 	const contextStore = new Map<symbol, unknown>();
-	vi.doMock("svelte", () => ({
-		setContext: (key: symbol, value: unknown) => {
+	vi.doMock("svelte", async (importOriginal) => ({
+		...await importOriginal<typeof import("svelte")>(),
+		setContext: <T>(key: symbol, value: T) => {
 			contextStore.set(key, value);
+			return value;
 		},
 		getContext: (key: symbol) => contextStore.get(key),
 	}));
@@ -70,7 +75,6 @@ describe("patterns/RelationSelector/context.svelte.ts", () => {
 			getRecentIds: vi.fn(() => ["recent-1"]),
 		};
 
-		const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
 		const ctx = mod.createRelationSelectorContext<Item>({
 			mode: "single",
 			label: "Relations",
@@ -146,6 +150,7 @@ describe("patterns/RelationSelector/context.svelte.ts", () => {
 		expect(onCreate).toHaveBeenCalledWith({ id: "new", label: "New" });
 
 		await ctx.loadSuggestions();
+		expect(ctx.state.suggestionsError).toBe("no suggestions");
 		expect(history.getRecentIds).toHaveBeenCalled();
 		expect(suggestions).toHaveBeenCalledWith({
 			recentHints: ["recent-1"],
@@ -154,14 +159,15 @@ describe("patterns/RelationSelector/context.svelte.ts", () => {
 
 		await ctx.retrySuggestions();
 		expect(ctx.state.suggestionItems).toEqual([]);
-		errorSpy.mockRestore();
+		expect(ctx.state.suggestionsError).toBeNull();
 	});
 
 	it("supports multi-select actions, filtering, and useRelationSelector retrieval/errors", async () => {
 		const { mod, contextStore } = await loadContextModule();
 		const search = vi.fn(async () => ({ items: [{ id: "a", label: "A" }], total: 1 }));
-		const suggestions = vi.fn(async () => [{ id: "b", label: "B" }]);
+		const suggestions = vi.fn(async () => [{ id: "b", label: "B" }, { id: "c", label: "C" }]);
 		const onchangeMulti = vi.fn();
+		const track = vi.fn();
 
 		const ctx = mod.createRelationSelectorContext<Item>({
 			mode: "multi",
@@ -171,6 +177,7 @@ describe("patterns/RelationSelector/context.svelte.ts", () => {
 			search: search as any,
 			suggestions: suggestions as any,
 			onchangeMulti,
+			selectionHistory: { ...createSelectionHistory("relation-test"), track },
 		});
 
 		ctx.selectItem({ id: "a", label: "A" });
@@ -199,6 +206,12 @@ describe("patterns/RelationSelector/context.svelte.ts", () => {
 		ctx.setFilter("kind", undefined);
 		await Promise.resolve();
 		expect(suggestions).toHaveBeenCalled();
+
+		onchangeMulti.mockClear();
+		track.mockClear();
+		ctx.setMultiSelection(["c", "b"]);
+		expect(onchangeMulti).toHaveBeenCalledExactlyOnceWith(["c", "b"]);
+		expect(track.mock.calls).toEqual([["c"], ["b"]]);
 
 		const fromContext = mod.useRelationSelector<Item>();
 		expect(fromContext).toBe(ctx);
