@@ -149,6 +149,46 @@ fn from_values_uses_supplied_behavior_without_env() {
 }
 
 #[test]
+fn from_values_clamps_nonpositive_lifetimes() {
+    let behavior = JwtBehaviorDefaults {
+        access_token_lifetime_minutes: 0,
+        refresh_token_lifetime_days: -5,
+        ..JwtBehaviorDefaults::default()
+    };
+
+    let config = JwtConfig::from_values("private".into(), "public".into(), behavior);
+    assert_eq!(config.access_token_lifetime_minutes(), 1);
+    assert_eq!(config.refresh_token_lifetime_days(), 1);
+}
+
+#[test]
+fn from_env_clamps_nonpositive_overrides_and_typed_defaults() {
+    let _lock = ENV_LOCK.lock().unwrap();
+    let prev_priv = with_env_var("AUTH_JWT_PRIVATE_KEY", Some("private"));
+    let prev_pub = with_env_var("AUTH_JWT_PUBLIC_KEY", Some("public"));
+    let prev_leeway = with_env_var("AUTH_JWT_LEEWAY_SECONDS", None);
+    let prev_access = with_env_var("AUTH_ACCESS_TOKEN_LIFETIME_MINUTES", Some("-5"));
+    let prev_refresh = with_env_var("AUTH_REFRESH_TOKEN_LIFETIME_DAYS", None);
+    let defaults = JwtBehaviorDefaults {
+        access_token_lifetime_minutes: 42,
+        refresh_token_lifetime_days: 0,
+        ..JwtBehaviorDefaults::default()
+    };
+
+    let config = JwtConfig::from_env_with_defaults(&defaults);
+
+    restore_env_var("AUTH_JWT_PRIVATE_KEY", prev_priv);
+    restore_env_var("AUTH_JWT_PUBLIC_KEY", prev_pub);
+    restore_env_var("AUTH_JWT_LEEWAY_SECONDS", prev_leeway);
+    restore_env_var("AUTH_ACCESS_TOKEN_LIFETIME_MINUTES", prev_access);
+    restore_env_var("AUTH_REFRESH_TOKEN_LIFETIME_DAYS", prev_refresh);
+
+    let config = config.unwrap();
+    assert_eq!(config.access_token_lifetime_minutes(), 1);
+    assert_eq!(config.refresh_token_lifetime_days(), 1);
+}
+
+#[test]
 fn from_env_rejects_invalid_numbers() {
     let _lock = ENV_LOCK.lock().unwrap();
 

@@ -146,10 +146,13 @@ where
         let code = generate_code(self.config.code_length());
 
         // Hash the code for storage
-        let code_hash = self
-            .hasher
-            .hash_password(code.as_bytes())
-            .map_err(|e| EmailTotpError::Storage(format!("failed to hash code: {}", e)))?;
+        let hasher = self.hasher.clone();
+        let code_to_hash = code.clone();
+        let code_hash =
+            tokio::task::spawn_blocking(move || hasher.hash_password(code_to_hash.as_bytes()))
+                .await
+                .map_err(|e| EmailTotpError::Storage(format!("code hashing task failed: {e}")))?
+                .map_err(|e| EmailTotpError::Storage(format!("failed to hash code: {e}")))?;
 
         // Calculate expiry
         let expires_at = Utc::now() + Duration::minutes(self.config.code_expiry_minutes() as i64);
@@ -267,10 +270,16 @@ where
         }
 
         // Verify the code
-        let is_valid = self
-            .hasher
-            .verify_password(code.trim().as_bytes(), &stored_code.code_hash)
-            .map_err(|e| EmailTotpError::Storage(format!("failed to verify code hash: {e}")))?;
+        let hasher = self.hasher.clone();
+        let code = code.trim().as_bytes().to_vec();
+        let code_hash = stored_code.code_hash;
+        let is_valid =
+            tokio::task::spawn_blocking(move || hasher.verify_password(&code, &code_hash))
+                .await
+                .map_err(|e| {
+                    EmailTotpError::Storage(format!("code verification task failed: {e}"))
+                })?
+                .map_err(|e| EmailTotpError::Storage(format!("failed to verify code hash: {e}")))?;
 
         if !is_valid {
             warn!(
@@ -283,8 +292,9 @@ where
             return Err(EmailTotpError::InvalidCode);
         }
 
-        // Mark code as used
-        self.code_repository.mark_code_used(&stored_code.id).await?;
+        if !self.code_repository.mark_code_used(&stored_code.id).await? {
+            return Err(EmailTotpError::NoActiveCode);
+        }
 
         info!(
             user_id = %user_id,

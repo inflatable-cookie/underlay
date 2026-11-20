@@ -11,8 +11,8 @@ use super::{PasswordAuthRepository, PasswordAuthService};
 impl<R, H, V, L> PasswordAuthService<R, H, V, L>
 where
     R: PasswordAuthRepository,
-    H: PasswordHasherExt,
-    V: PasswordVerifierExt,
+    H: PasswordHasherExt + 'static,
+    V: PasswordVerifierExt + 'static,
     L: RateLimitBackend,
 {
     /// Verify login credentials.
@@ -75,7 +75,7 @@ where
                 // Equalize timing: run one KDF pass so an unknown email costs
                 // the same as a real verify. Without this, the fast miss path
                 // is an account-existence oracle.
-                self.dummy_verify();
+                self.dummy_verify().await;
                 return Err(PasswordAuthError::CredentialNotFound);
             }
         };
@@ -93,13 +93,13 @@ where
         let credential = match self.repository.find_password_credential(user.id).await? {
             Some(c) => c,
             None => {
-                self.dummy_verify();
+                self.dummy_verify().await;
                 return Err(PasswordAuthError::CredentialNotFound);
             }
         };
 
-        let password_hash = match &credential.metadata {
-            CredentialMetadata::Password { .. } => &credential.secret_encrypted,
+        let password_hash = match credential.metadata {
+            CredentialMetadata::Password { .. } => credential.secret_encrypted,
             _ => {
                 return Err(PasswordAuthError::Internal(
                     "Invalid credential type".to_string(),
@@ -107,9 +107,7 @@ where
             }
         };
 
-        let is_valid = self
-            .verifier
-            .verify_password(password.as_bytes(), password_hash)?;
+        let is_valid = self.verify_password(password, password_hash).await?;
 
         if is_valid {
             // Check account status only AFTER verifying credentials so
@@ -149,9 +147,7 @@ where
 
     /// Burn one KDF computation to equalize the timing of account-miss paths
     /// against a real password verify. The result is intentionally discarded.
-    fn dummy_verify(&self) {
-        let _ = self
-            .hasher
-            .hash_password(b"underlay-login-timing-equalizer");
+    async fn dummy_verify(&self) {
+        let _ = self.hash_password("underlay-login-timing-equalizer").await;
     }
 }

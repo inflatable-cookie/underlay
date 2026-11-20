@@ -197,6 +197,12 @@ where
         session.roles = account.roles.clone();
 
         // Issue the new token pair.
+        let next_version = claims
+            .version
+            .checked_add(1)
+            .ok_or(AuthError::TokenInvalid)?;
+        let stored_next_version =
+            i32::try_from(next_version).map_err(|_| AuthError::TokenInvalid)?;
         let (new_access_token, access_claims) = self
             .jwt
             .issue_access_token(session.user_id, session.id, account.roles.clone())
@@ -207,15 +213,14 @@ where
                 session.user_id,
                 session.id,
                 Some(session.refresh_token_id),
-                claims.version + 1,
+                next_version,
             )
             .map_err(AuthError::from)?;
 
         session.access_token_fingerprint = token_fingerprint(&new_access_token);
         session.refresh_token_fingerprint = token_fingerprint(&new_refresh_token);
         session.refresh_token_id = refresh_claims.common.token_id;
-        session.refresh_token_version =
-            i32::try_from(refresh_claims.version).map_err(|_| AuthError::TokenInvalid)?;
+        session.refresh_token_version = stored_next_version;
         session.access_token_expires_at = timestamp_to_datetime(access_claims.common.expires_at);
         session.refresh_token_expires_at = timestamp_to_datetime(refresh_claims.common.expires_at);
         session.updated_at = Utc::now();

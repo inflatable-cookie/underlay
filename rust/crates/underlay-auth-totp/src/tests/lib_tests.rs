@@ -110,6 +110,11 @@ fn backup_codes_generate_and_verify() {
 
     assert_eq!(codes.len(), 5);
     assert_eq!(hashes.len(), 5);
+    for code in &codes {
+        let groups: Vec<_> = code.split('-').collect();
+        assert_eq!(groups.len(), 4);
+        assert!(groups.iter().all(|group| group.len() == 4));
+    }
 
     let idx = service.verify_backup_code(&codes[2], &hashes).unwrap();
     assert_eq!(idx, 2);
@@ -118,6 +123,13 @@ fn backup_codes_generate_and_verify() {
         service.verify_backup_code("WRONG-CODE", &hashes),
         Err(AuthError::BackupCodeInvalid)
     ));
+}
+
+#[test]
+fn legacy_backup_code_hash_still_verifies() {
+    let service = TotpService::new(None);
+    let hashes = vec!["82a15347a056ccbf451fbd1c865eed21ec190069eedd32b0c9dc6452887811cc".into()];
+    assert_eq!(service.verify_backup_code("abcde-23456", &hashes), Ok(0));
 }
 
 #[test]

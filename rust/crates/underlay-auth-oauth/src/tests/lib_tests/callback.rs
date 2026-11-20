@@ -1,5 +1,6 @@
 use super::super::{
-    AuthError, CredentialRepository, CredentialType, GoogleOAuthAppService, NO_GOOGLE_REFRESH_TOKEN,
+    AuthError, CredentialRepository, CredentialType, GoogleOAuthAppService, UserRepository,
+    NO_GOOGLE_REFRESH_TOKEN,
 };
 use super::support::{
     basic_token_set, callback_request, login_state, token_set_with_refresh, unverified_userinfo,
@@ -122,6 +123,46 @@ async fn callback_rejects_a_different_google_subject_for_the_same_email() {
             .unwrap(),
         Some(linked.credential)
     );
+}
+
+#[tokio::test]
+async fn linked_google_subject_wins_when_the_email_belongs_to_another_user() {
+    let repo = MemoryRepo::new();
+    let other_user = UserRepository::create(&repo, "changed@example.com", None)
+        .await
+        .unwrap();
+    let mut provider = StubProvider {
+        token_set: basic_token_set(),
+        userinfo: verified_userinfo(),
+    };
+    let linked = GoogleOAuthAppService::new(provider.clone())
+        .handle_google_callback(
+            &repo,
+            callback_request("state"),
+            login_state("state"),
+            |_| panic!("no refresh token to encrypt"),
+        )
+        .await
+        .unwrap();
+
+    provider.userinfo.email = Some(other_user.email);
+    let returning = GoogleOAuthAppService::new(provider)
+        .handle_google_callback(
+            &repo,
+            callback_request("state"),
+            login_state("state"),
+            |_| panic!("no refresh token to encrypt"),
+        )
+        .await
+        .unwrap();
+    assert!(!returning.is_new_user);
+    assert_eq!(returning.user, linked.user);
+    assert_eq!(returning.credential.id, linked.credential.id);
+    assert!(repo
+        .find_oauth_by_user_and_provider(other_user.id, CredentialType::OAuthGoogle)
+        .await
+        .unwrap()
+        .is_none());
 }
 
 #[tokio::test]

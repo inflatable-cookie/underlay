@@ -126,8 +126,11 @@ pub trait EmailTotpCodeRepository: Send + Sync {
     /// Returns the new attempt count.
     async fn increment_attempts(&self, code_id: &str) -> EmailTotpResult<i32>;
 
-    /// Mark a code as used.
-    async fn mark_code_used(&self, code_id: &str) -> EmailTotpResult<()>;
+    /// Atomically mark the active, unused code with this ID as used.
+    ///
+    /// Return true only when this call transitions the row to used. Return
+    /// false if the code was consumed, superseded, expired, or no longer exists.
+    async fn mark_code_used(&self, code_id: &str) -> EmailTotpResult<bool>;
 }
 
 /// Repository trait for verification sessions.

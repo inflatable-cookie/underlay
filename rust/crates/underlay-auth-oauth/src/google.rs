@@ -60,7 +60,7 @@ impl GoogleOAuthService {
                 .connect_timeout(std::time::Duration::from_secs(10))
                 .timeout(std::time::Duration::from_secs(30))
                 .build()
-                .unwrap_or_else(|_| reqwest::Client::new()),
+                .map_err(|_| OAuthServiceError::InvalidConfig)?,
             token_url,
             userinfo_url,
             client_id,
@@ -175,6 +175,7 @@ impl OAuthProvider for GoogleOAuthService {
             .map_err(|_| OAuthServiceError::ExchangeFailed)?;
 
         if !resp.status().is_success() {
+            tracing::warn!(status = %resp.status(), "Google OAuth code exchange failed");
             return Err(OAuthServiceError::ExchangeFailed.into());
         }
 
@@ -201,6 +202,7 @@ impl OAuthProvider for GoogleOAuthService {
             .map_err(|_| OAuthServiceError::RefreshFailed)?;
 
         if !resp.status().is_success() {
+            tracing::warn!(status = %resp.status(), "Google OAuth token refresh failed");
             return Err(OAuthServiceError::RefreshFailed.into());
         }
 
@@ -222,6 +224,7 @@ impl OAuthProvider for GoogleOAuthService {
             .map_err(|_| OAuthServiceError::UserInfoFailed)?;
 
         if !resp.status().is_success() {
+            tracing::warn!(status = %resp.status(), "Google OAuth userinfo request failed");
             return Err(OAuthServiceError::UserInfoFailed.into());
         }
 

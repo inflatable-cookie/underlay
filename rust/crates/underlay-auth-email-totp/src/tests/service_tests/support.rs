@@ -1,5 +1,6 @@
 use chrono::{DateTime, Duration, Utc};
 use std::sync::Mutex;
+use tokio::sync::Barrier;
 use underlay_auth::hashing::{Argon2Hasher, PasswordHasherExt};
 
 use super::super::{EmailTotpSender, VERIFICATION_METHOD_EMAIL_TOTP};
@@ -40,12 +41,14 @@ impl Default for MockCodeRepoState {
 
 pub(crate) struct MockCodeRepo {
     pub(crate) state: Mutex<MockCodeRepoState>,
+    pub(crate) active_code_read_barrier: Option<Barrier>,
 }
 
 impl MockCodeRepo {
     pub(crate) fn new(state: MockCodeRepoState) -> Self {
         Self {
             state: Mutex::new(state),
+            active_code_read_barrier: None,
         }
     }
 }
@@ -90,7 +93,11 @@ impl EmailTotpCodeRepository for MockCodeRepo {
         _user_id: &str,
         _purpose: &str,
     ) -> EmailTotpResult<Option<StoredCode>> {
-        Ok(self.state.lock().expect("lock").active_code.clone())
+        let active_code = self.state.lock().expect("lock").active_code.clone();
+        if let Some(barrier) = &self.active_code_read_barrier {
+            barrier.wait().await;
+        }
+        Ok(active_code)
     }
 
     async fn increment_attempts(&self, code_id: &str) -> EmailTotpResult<i32> {
@@ -99,13 +106,18 @@ impl EmailTotpCodeRepository for MockCodeRepo {
         Ok(state.increment_attempts_result)
     }
 
-    async fn mark_code_used(&self, code_id: &str) -> EmailTotpResult<()> {
-        self.state
-            .lock()
-            .expect("lock")
-            .marked_used
-            .push(code_id.to_string());
-        Ok(())
+    async fn mark_code_used(&self, code_id: &str) -> EmailTotpResult<bool> {
+        let mut state = self.state.lock().expect("lock");
+        if !state
+            .active_code
+            .as_ref()
+            .is_some_and(|code| code.id == code_id && code.expires_at > Utc::now())
+        {
+            return Ok(false);
+        }
+        state.active_code = None;
+        state.marked_used.push(code_id.to_string());
+        Ok(true)
     }
 }
 

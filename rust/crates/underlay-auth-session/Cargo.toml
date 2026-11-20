@@ -16,7 +16,7 @@ underlay-auth-jwt = { path = "../underlay-auth-jwt" }
 underlay-core = { path = "../underlay-core" }
 
 [dev-dependencies]
-tokio = { workspace = true, features = ["macros", "rt"] }
+tokio = { workspace = true, features = ["macros", "rt", "sync"] }
 
 [lints]
 workspace = true
