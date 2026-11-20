@@ -415,6 +415,7 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
   return setContext(RELATION_SELECTOR_CONTEXT_KEY, Object.assign(context, {
     getResolvedItem: (id: string) => resolvedItems.get(id),
     getPickerFilters: () => pickerFilters,
+    isPickerAtFinalLevel: () => pickerAtFinalLevel,
     setPickerDrillContext,
     setMultiSelection,
   }));

@@ -208,6 +208,7 @@
   }
 
   function resolveBrowseState(): BrowseState {
+    if (!ctx.isPickerAtFinalLevel()) return "ready";
     const loading = usesSearchResults ? ctx.state.isSearching : ctx.state.isSuggestionsLoading;
     if (loading) return "loading";
     if (browseError !== null && browseError !== undefined) return "error";

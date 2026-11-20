@@ -104,6 +104,10 @@ describe("RelationSelector", () => {
 		const hydration = new Promise<SelectableRelation[]>((resolve) => {
 			finishHydration = resolve;
 		});
+		let finishLevel: (items: SelectableRelation[]) => void = () => {};
+		const level = new Promise<SelectableRelation[]>((resolve) => {
+			finishLevel = resolve;
+		});
 		const suggestions = vi.fn(async (options?: SuggestionOptions) =>
 			options?.filters?.area === "north" ? [{ id: "hall", label: "Community hall" }] : hydration,
 		);
@@ -117,7 +121,7 @@ describe("RelationSelector", () => {
 					{
 						key: "area",
 						label: "Area",
-						suggestions: async () => [{ id: "north", label: "North" }],
+						suggestions: () => level,
 						search: async () => ({ items: [], total: 0 }),
 					},
 				],
@@ -125,6 +129,9 @@ describe("RelationSelector", () => {
 		});
 
 		await fireEvent.click(screen.getByText("Select..."));
+		expect(await screen.findByText("Loading items...")).toBeDefined();
+		expect(screen.queryByText("No suggestions")).toBeNull();
+		finishLevel([{ id: "north", label: "North" }]);
 		await fireEvent.click(await screen.findByRole("button", { name: "North" }));
 		expect(await screen.findByRole("button", { name: "Community hall" })).toBeDefined();
 		finishHydration([{ id: "existing", label: "Previously selected" }]);

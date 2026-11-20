@@ -1,4 +1,4 @@
-- Preserve full relation records in custom picker rows, hydrate existing drill-down selections, and show suggestion errors.
+- Preserve full relation records in custom picker rows, hydrate existing drill-down selections, and show accurate loading and suggestion error messages.
 - Prevent duplicate initial list fetches, keep authenticated refetches independent of the initial request, and ignore fetch results after unmount.
 - Surface email verification and duplicate media upload errors, and reset completed upload state when choosing a new file.
 - Label the media display control, scope shared sizing styles, and add dark theme tokens and keyboard focus for thumbnail links.
