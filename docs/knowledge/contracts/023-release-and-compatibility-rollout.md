@@ -382,9 +382,3 @@ Bad outcomes:
 - aliases stay live with no sunset or inventory
 - retirements happen before consumer callers are moved
 - broad shared changes are merged with only local-repo proof and no fleet read
-
-## Next Task
-
-Keep deprecated API retirement outside the doctor-error repair. Use this
-contract when caller proof is ready and the consumer migration, release, and
-sunset sequence can be planned together.

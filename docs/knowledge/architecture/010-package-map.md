@@ -7,8 +7,9 @@ Underlay is split by layer, mirroring how consuming apps are structured.
 The current crate map is the live implementation shape. The target
 reference-grade reset is documented in
 [020-reference-grade-underlay-architecture.md](020-reference-grade-underlay-architecture.md).
-During `g06`, crate roots and adapter/tooling boundaries may change in
-controlled breaking batches with six-consumer proof.
+Crate roots and adapter/tooling boundaries change only in controlled breaking
+batches, proven against the four-consumer fleet: `underlay-reference`,
+`compli-me`, `acowtancy`, and `songsprout`.
 
 ### Core
 
@@ -81,7 +82,9 @@ Several crates use feature flags to keep optional dependencies out of the defaul
 | `underlay-http` | `tracing`, `error-logging`, `openapi`, `opentelemetry` | Modular HTTP features |
 | `underlay-jobs` | none | Core job contracts |
 | `underlay-jobs-postgres` | none | PostgreSQL job adapter |
-| `underlay-media` | `renditions`, `nightfire`, `full` | Storage + processing |
+| `underlay-media` | `renditions`, `nightfire`, `object-keys`, `full` | Storage + processing; `object-keys` adds no dependencies |
+| `underlay-observability` | `opentelemetry` | OpenTelemetry integration gate; adds no dependencies |
+| `underlay-ratelimit` | `postgres` | Postgres-backed rate-limit backend (`sqlx`, `underlay-db`) |
 | `underlay-testing` | `db`, `server`, `full` | Test infrastructure scope |
 | `underlay-validation` | `derive`, `axum` | Macro + framework integration |
 | `underlay-auth-password` | `hibp` | Have I Been Pwned breach check |

@@ -409,7 +409,7 @@ but the migration discipline itself is defined here.
 ## Invariants
 
 - Nightfire durable content must be schema-tagged
-- block hashes must derive from serialized block content, not runtime identity
+- block identity is the assigned `nf_<uuid7>` id; the envelope carries no content hash
 - strategy cardinality must agree with stored value shape
 - registry-based extension points must stay app-extensible and project-agnostic
 - server-side validation remains authoritative over TS convenience validation
@@ -440,8 +440,3 @@ Resolved assessment:
   some of that surface become too broad for a shared foundation crate
 - do the decision-memory, audit, and replay artifacts actually fulfil the goal
   of deterministic, reviewable migration runs in practice
-
-## Next Task
-
-Release the Underlay compatibility adoption before Acowtancy removes its
-remaining `underlay-media` and `underlay-validation` bridges.

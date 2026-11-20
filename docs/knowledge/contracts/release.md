@@ -13,8 +13,11 @@ asks, and never pushes a tag on its own.
 
 - Pre-1.0: a breaking change takes the minor version, and anything else takes
   the patch.
-- The version lives in `Cargo.toml` under `[workspace.package]`, and is synced
-  to `Cargo.lock` and `package.json`.
+- The version lives in `Cargo.toml` under `[workspace.package]`. Three files
+  must carry the same version: `Cargo.toml`, `package.json`, and `info.version`
+  in `contracts/openapi/underlay.openapi.yaml`.
+  `ts/scripts/check-release-version-sync.ts` enforces that match, and it is the
+  `version-sync` gate.
 - Roadmap or plan numbering never decides a version.
 
 ## Steps
@@ -23,12 +26,16 @@ asks, and never pushes a tag on its own.
 2. Add the `CHANGELOG.md` entry. A consumer-affecting release needs the
    contract 023 upgrade block: impact class, exact consumer actions, any
    deprecation window, validation commands, and a rollback tag.
-3. Check readiness: `effigy release status --check-gates`. The gates are
-   version sync, `effigy validate`, `effigy rust:check` and
-   `effigy rust:clippy`.
+3. Check readiness: `effigy release status --check-gates`. It runs the six
+   gates declared in `effigy.toml` under `[release.gates]`: `version-sync`
+   (`effigy check:release-version-sync`), `validate` (`effigy validate`),
+   `rust-check` (`effigy rust:check`), `rust-clippy` (`effigy rust:clippy`),
+   `rust-test` (`effigy rust:test`), and `docs` (`effigy qa:docs`).
 4. Prepare: `effigy release prepare --plan` to review, then
-   `effigy release prepare`. This bumps the version and syncs the lock and
-   package files.
+   `effigy release prepare`. This bumps the version and syncs `Cargo.lock` and
+   `package.json`. Those are the only `sync-files` in `effigy.toml`, so bump
+   `info.version` in `contracts/openapi/underlay.openapi.yaml` in the same
+   change, or the `version-sync` gate fails.
 5. **Check `Cargo.lock` before executing.** Accept only workspace-crate version
    bumps. `v0.9.11` failed because the bump also moved a third-party crate
    (`rsa`) to a version not on crates.io, and `v0.9.12` had to be cut to fix it.
