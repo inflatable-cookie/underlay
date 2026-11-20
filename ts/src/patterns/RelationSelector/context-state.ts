@@ -21,6 +21,7 @@ export function createInitialRelationSelectorState<
     searchTotal: 0,
     isSuggestionsLoading: false,
     suggestionItems: [],
+    suggestionsError: null,
     createFormOpen: false,
     searchError: null,
     activeFilters: getInitialFilterValues(filters),

@@ -5,18 +5,23 @@ type AuthDataModule = typeof import("../../src/patterns/authenticated-data.svelt
 async function loadAuthDataModule(options?: {
 	globalConfig?: Record<string, unknown> | null;
 	captureEffects?: boolean;
-}): Promise<{ mod: AuthDataModule; runEffects: () => void }> {
+}): Promise<{ mod: AuthDataModule; runEffects: () => void; dispose: () => void }> {
 	vi.resetModules();
-	const effects: Array<() => void> = [];
+	const effects: Array<() => void | (() => void)> = [];
+	const teardowns = new Map<(typeof effects)[number], () => void>();
+	const runEffect = (effect: (typeof effects)[number]) => {
+		const teardown = effect();
+		if (teardown) teardowns.set(effect, teardown);
+	};
 
 	(globalThis as any).$state = <T>(initial: T) => initial;
 	(globalThis as any).$derived = Object.assign(
 		<T>(value: T) => value,
 		{ by: <T>(fn: () => T) => fn() }
 	);
-	(globalThis as any).$effect = (fn: () => void) => {
+	(globalThis as any).$effect = (fn: (typeof effects)[number]) => {
 		effects.push(fn);
-		fn();
+		runEffect(fn);
 	};
 
 	vi.doMock("../../src/patterns/auth", () => ({
@@ -28,7 +33,13 @@ async function loadAuthDataModule(options?: {
 		mod,
 		runEffects: () => {
 			if (!options?.captureEffects) return;
-			for (const effect of effects) effect();
+			for (const effect of effects) {
+				if (!teardowns.has(effect)) runEffect(effect);
+			}
+		},
+		dispose: () => {
+			for (const teardown of teardowns.values()) teardown();
+			teardowns.clear();
 		},
 	};
 }
@@ -171,5 +182,70 @@ describe("patterns/authenticated-data.svelte.ts", () => {
 		runEffects();
 		await flush();
 		expect(fetcher).toHaveBeenCalledTimes(2);
+	});
+
+	it("settles the initial request while a coalesced refetch is still running", async () => {
+		const { mod } = await loadAuthDataModule();
+		let finishRefetch: (value: string) => void = () => {};
+		const refetchResult = new Promise<string>((resolve) => {
+			finishRefetch = resolve;
+		});
+		const fetcher = vi.fn<() => Promise<string>>()
+			.mockResolvedValueOnce("initial")
+			.mockReturnValueOnce(refetchResult);
+		const data = mod.useAuthenticatedData(fetcher, { getToken: () => "token" });
+
+		const initial = data.tryFetch(false, { id: "u1" });
+		const queued = data.refetch();
+		const coalesced = data.refetch();
+		await initial;
+		expect(data.data).toBe("initial");
+		expect(data.refetching).toBe(true);
+		expect(fetcher).toHaveBeenCalledTimes(2);
+
+		finishRefetch("updated");
+		await Promise.all([queued, coalesced]);
+		expect(data.data).toBe("updated");
+	});
+
+	it("surfaces rejected success callbacks without replaying the request", async () => {
+		const { mod } = await loadAuthDataModule();
+		const fetcher = vi.fn(async () => "loaded");
+		const onRefresh = vi.fn(async () => "new-token");
+		const data = mod.useAuthenticatedData(fetcher, {
+			getToken: () => "token",
+			onRefresh,
+			onSuccess: async () => {
+				throw Object.assign(new Error("Post-load action failed"), { status: 401 });
+			},
+		});
+
+		await data.tryFetch(false, { id: "u1" });
+		expect(data.data).toBe("loaded");
+		expect(data.error).toBe("Post-load action failed");
+		expect(onRefresh).not.toHaveBeenCalled();
+		expect(fetcher).toHaveBeenCalledTimes(1);
+	});
+
+	it("settles queued work on disposal and ignores late fetch results", async () => {
+		const { mod, dispose } = await loadAuthDataModule();
+		let finishFetch: (value: string) => void = () => {};
+		const fetcher = vi.fn(() => new Promise<string>((resolve) => {
+			finishFetch = resolve;
+		}));
+		const onSuccess = vi.fn();
+		const data = mod.useAuthenticatedData(fetcher, { getToken: () => "token", onSuccess });
+
+		const active = data.tryFetch(false, { id: "u1" });
+		const queued = data.refetch();
+		dispose();
+		await queued;
+		finishFetch("late result");
+		await active;
+		await data.refetch();
+
+		expect(onSuccess).not.toHaveBeenCalled();
+		expect(data.data).toBeUndefined();
+		expect(fetcher).toHaveBeenCalledTimes(1);
 	});
 });

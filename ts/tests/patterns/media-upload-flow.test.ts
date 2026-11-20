@@ -124,6 +124,12 @@ describe("patterns/media-upload-flow.svelte.ts", () => {
 		expect(onComplete).toHaveBeenCalledTimes(1);
 		expect(onError).not.toHaveBeenCalled();
 
+		const nextFile = fakeFile({ name: "another.jpg" });
+		flow.setFile(nextFile);
+		expect(flow.file).toBe(nextFile);
+		expect(flow.step).toBe("select");
+		expect(flow.createdMedia).toBeNull();
+
 		const replaceFlow = mod.createMediaUploadFlow({
 			checkDuplicate: vi.fn(async () => ({ exists: false })),
 			createMedia: vi.fn() as any,
@@ -136,17 +142,23 @@ describe("patterns/media-upload-flow.svelte.ts", () => {
 		expect(replaceFlow.step).toBe("complete");
 		expect(replaceFlow.createdMedia?.id).toBe("media-1");
 
+		const onDuplicateVersion = vi.fn();
 		const existingHashFlow = mod.createMediaUploadFlow({
 			checkDuplicate: vi.fn(async () => ({ exists: false })),
 			createMedia: vi.fn() as any,
 			initiateUpload: vi.fn() as any,
 			finaliseUpload: vi.fn() as any,
+			existingMediaId: "existing-media",
 			existingVersionHashes: ["hash-1"],
+			onError: onDuplicateVersion,
 		});
 		existingHashFlow.setFile(fakeFile());
 		await existingHashFlow.startUpload();
 		expect(existingHashFlow.step).toBe("error");
 		expect(existingHashFlow.error).toMatch(/already been uploaded/);
+		expect(onDuplicateVersion).toHaveBeenCalledExactlyOnceWith(
+			new Error("This file has already been uploaded as a version of this media item."),
+		);
 
 		const failingFlow = mod.createMediaUploadFlow({
 			checkDuplicate: vi.fn(async () => ({ exists: false })),

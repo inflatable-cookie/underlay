@@ -185,7 +185,7 @@ export interface ListControllerResult<T, F extends Record<string, unknown>> {
    * @param id - ID of item to remove
    * @param idField - Field name containing the ID (default: 'id')
    */
-  removeItem: (id: string, idField?: string) => void;
+  removeItem: (id: string | number, idField?: string) => void;
 }
 
 /**
@@ -218,6 +218,7 @@ export function createListController<T, F extends Record<string, unknown> = Reco
     const resolved = tryResolveAuthFetchHandlers("createListController", options);
     if (!resolved.handlers) {
       if (seq === requestSeq) {
+        _inFlight = false;
         error = resolved.error;
         loading = false;
         refetching = false;
@@ -254,8 +255,8 @@ export function createListController<T, F extends Record<string, unknown> = Reco
         },
       });
 
-      if (!attempted && seq === requestSeq) {
-        loading = false;
+      if (attempted && seq === requestSeq) {
+        _fetched = true;
       }
     } finally {
       if (seq === requestSeq) {
@@ -267,7 +268,7 @@ export function createListController<T, F extends Record<string, unknown> = Reco
   };
 
   const tryFetch = async (authLoading: boolean, currentUser: unknown) => {
-    if (shouldSkipAuthReadyFetch(_fetched, authLoading, currentUser)) {
+    if (_inFlight || shouldSkipAuthReadyFetch(_fetched, authLoading, currentUser)) {
       return;
     }
     await doFetch(false);
@@ -298,10 +299,17 @@ export function createListController<T, F extends Record<string, unknown> = Reco
     options.onItemsChange?.(items);
   };
 
-  const removeItem = (id: string, idField = 'id') => {
+  const removeItem = (id: string | number, idField = 'id') => {
+    const normalizedId = String(id);
     items = items.filter((item) => {
-      const itemId = (item as Record<string, unknown>)[idField];
-      return itemId !== id;
+      if (item === null || (typeof item !== "object" && typeof item !== "function")) {
+        return true;
+      }
+      const itemId: unknown = Reflect.get(item, idField);
+      return (
+        (typeof itemId !== "string" && typeof itemId !== "number") ||
+        String(itemId) !== normalizedId
+      );
     });
     options.onItemsChange?.(items);
   };

@@ -1,13 +1,14 @@
-import { setContext } from "svelte";
+import { setContext, untrack } from "svelte";
 import type {
   SelectableRelation,
   RelationSelectorProps,
   SearchResult,
 } from "./types.js";
+import type { DrillDownContext } from "./drilldown-types.js";
 import { createDrillDownContext } from "./drilldown-context.svelte.js";
 import { RELATION_SELECTOR_CONTEXT_KEY } from "./context-key.js";
-import type { RelationSelectorContext } from "./context-types.js";
 import { createInitialRelationSelectorState } from "./context-state.js";
+import { getInitialFilterValues } from "./context-filters.js";
 import {
   mergeResolvedItem,
   mergeResolvedItems,
@@ -27,13 +28,17 @@ export { useRelationSelector } from "./context-use.js";
  */
 export function createRelationSelectorContext<T extends SelectableRelation>(
   props: RelationSelectorProps<T>,
-): RelationSelectorContext<T> {
-  const ddCtx = createDrillDownContext(() => props.drillDown);
+  drillDownNavigation: "context" | "picker" = "context",
+) {
+  const pickerOwnsNavigation = drillDownNavigation === "picker";
+  const ddCtx = createDrillDownContext(() =>
+    pickerOwnsNavigation ? undefined : props.drillDown,
+  );
 
-  let state = $state(
+  const state = $state(
     createInitialRelationSelectorState<T>(
       props.filters,
-      props.drillDown ? ddCtx.state : null,
+      !pickerOwnsNavigation && props.drillDown ? ddCtx.state : null,
     ),
   );
 
@@ -41,7 +46,7 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
 
   $effect(() => {
     const newResolved = mergeResolvedItem(
-      resolvedItems,
+      untrack(() => resolvedItems),
       props.initialSelection,
     );
     if (newResolved) {
@@ -51,7 +56,7 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
 
   $effect(() => {
     const newResolved = mergeResolvedItems(
-      resolvedItems,
+      untrack(() => resolvedItems),
       props.initialSelections,
     );
     if (newResolved) {
@@ -62,6 +67,15 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
   let lastSearchQuery = $state<string>("");
   let searchSeq = 0;
   let suggestionsSeq = 0;
+  let pickerDrillContext = $state<DrillDownContext>({});
+
+  const pickerAtFinalLevel = $derived(
+    props.drillDown?.levels.every(({ key }) => Object.hasOwn(pickerDrillContext, key)) ?? true,
+  );
+  const pickerFilters = $derived(
+    (pickerAtFinalLevel && props.drillDown?.finalLevelFilters?.(pickerDrillContext)) ||
+      props.filters,
+  );
 
   const isMultiSelect = $derived(props.mode === "multi");
 
@@ -112,19 +126,93 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
     // Load suggestions if we have a value but haven't loaded suggestions yet
     if (hasValue && props.suggestions && !state.isSuggestionsLoading) {
       hasLoadedInitialSuggestions = true;
-      void loadSuggestions();
+      void untrack(() => loadSuggestions(getBrowseFilters(), true));
     }
   });
 
   const uiActions = createRelationSelectorUiActions({
     state,
     drillDown: ddCtx.actions,
-    hasDrillDown: () => !!props.drillDown,
-    hasSuggestions: () => !!props.suggestions,
+    hasDrillDown: () => !pickerOwnsNavigation && !!props.drillDown,
+    hasSuggestions: () => !pickerOwnsNavigation && !!props.suggestions,
     loadSuggestions: () => {
       void loadSuggestions();
     },
   });
+
+  if (pickerOwnsNavigation) {
+    $effect(() => {
+      if (!state.popoverOpen || !pickerAtFinalLevel) return;
+
+      const query = state.searchQuery;
+      const filters = getBrowseFilters();
+      const searchByDefault = props.drillDown && !props.suggestions;
+      if (!query.trim()) {
+        untrack(() => {
+          if (searchByDefault) {
+            void performSearch(query, filters);
+          } else if (!state.suggestionItems.length && !state.isSuggestionsLoading) {
+            void loadSuggestions(filters);
+          }
+        });
+        return;
+      }
+
+      const timer = setTimeout(() => void performSearch(query, filters), 250);
+      return () => clearTimeout(timer);
+    });
+  }
+
+  function getBrowseFilters() {
+    if (!props.drillDown) return state.activeFilters;
+    const drillFilters = pickerOwnsNavigation
+      ? pickerDrillContext
+      : ddCtx.actions.getDrillDownFilters();
+    return { ...drillFilters, ...state.activeFilters };
+  }
+
+  function resetSearch(): void {
+    searchSeq += 1;
+    state.searchResults = [];
+    state.searchTotal = 0;
+    state.searchError = null;
+    state.isSearching = false;
+  }
+
+  function resetSuggestions(): void {
+    suggestionsSeq += 1;
+    state.suggestionItems = [];
+    state.suggestionsError = null;
+    state.isSuggestionsLoading = false;
+  }
+
+  function setPickerDrillContext(nextContext: DrillDownContext): void {
+    const currentContext = untrack(() => pickerDrillContext);
+    const keys = Object.keys(nextContext);
+    if (
+      keys.length === Object.keys(currentContext).length &&
+      keys.every((key) => nextContext[key] === currentContext[key])
+    ) return;
+
+    pickerDrillContext = nextContext;
+    state.activeFilters = untrack(() => getInitialFilterValues(pickerFilters));
+    state.searchQuery = "";
+    resetSearch();
+    resetSuggestions();
+  }
+
+  function setSearchQuery(query: string): void {
+    if (pickerOwnsNavigation && query !== state.searchQuery) resetSearch();
+    uiActions.setSearchQuery(query);
+  }
+
+  function closePopover(): void {
+    uiActions.closePopover();
+    if (pickerOwnsNavigation) {
+      setPickerDrillContext({});
+      resetSearch();
+    }
+  }
 
   function selectItem(item: T) {
     const newResolved = new Map(resolvedItems);
@@ -139,11 +227,22 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
     } else {
       props.onchange?.(item.id);
       if (state.popoverOpen) {
-        uiActions.closePopover();
+        closePopover();
       } else {
         uiActions.closeModal();
       }
     }
+  }
+
+  function setMultiSelection(nextIds: string[]): void {
+    const previousIds = new Set(props.values);
+    for (const id of nextIds) {
+      if (!previousIds.has(id) && resolvedItems.has(id)) {
+        props.selectionHistory?.track(id);
+        previousIds.add(id);
+      }
+    }
+    props.onchangeMulti?.(nextIds);
   }
 
   function deselectItem(itemId: string) {
@@ -169,13 +268,9 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
     }
   }
 
-  async function performSearch(query: string): Promise<void> {
-    if (!query.trim()) {
-      searchSeq += 1;
-      state.searchResults = [];
-      state.searchTotal = 0;
-      state.searchError = null;
-      state.isSearching = false;
+  async function performSearch(query: string, filters = getBrowseFilters()): Promise<void> {
+    if (!query.trim() && !(pickerOwnsNavigation && props.drillDown && pickerAtFinalLevel)) {
+      resetSearch();
       return;
     }
 
@@ -185,13 +280,10 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
     state.searchError = null;
 
     try {
-      const mergedFilters = props.drillDown
-        ? { ...ddCtx.actions.getDrillDownFilters(), ...state.activeFilters }
-        : state.activeFilters;
       const result: SearchResult<T> = await props.search(query, {
         limit: 20,
         offset: 0,
-        filters: mergedFilters,
+        filters,
       });
 
       if (seq !== searchSeq) return;
@@ -223,23 +315,29 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
     }
   }
 
-  async function loadSuggestions(): Promise<void> {
+  async function loadSuggestions(filters = getBrowseFilters(), hydrateSelection = false): Promise<void> {
     if (!props.suggestions) return;
 
     const seq = ++suggestionsSeq;
     state.isSuggestionsLoading = true;
+    state.suggestionsError = null;
 
     try {
       const recentHints = props.selectionHistory?.getRecentIds();
-      const mergedFilters = props.drillDown
-        ? { ...ddCtx.actions.getDrillDownFilters(), ...state.activeFilters }
-        : state.activeFilters;
       const items = await props.suggestions({
         recentHints,
-        filters: mergedFilters,
+        filters,
       });
 
-      if (seq !== suggestionsSeq) return;
+      if (seq !== suggestionsSeq) {
+        // Entering a drill level can supersede the browse list while the
+        // initial suggestions are still needed to label the selected IDs.
+        if (hydrateSelection) {
+          const newResolved = mergeResolvedItems(resolvedItems, items.filter(({ id }) => isSelected(id)));
+          if (newResolved) resolvedItems = newResolved;
+        }
+        return;
+      }
 
       state.suggestionItems = items;
 
@@ -250,7 +348,8 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
       resolvedItems = newResolved;
     } catch (error) {
       if (seq !== suggestionsSeq) return;
-      console.error("Failed to load suggestions:", error);
+      state.suggestionsError =
+        error instanceof Error ? error.message : "Failed to load suggestions";
       state.suggestionItems = [];
     } finally {
       if (seq === suggestionsSeq) {
@@ -275,6 +374,11 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
       ...state.activeFilters,
       [filterKey]: optionId,
     };
+    if (pickerOwnsNavigation) {
+      resetSearch();
+      resetSuggestions();
+      return;
+    }
     state.searchResults = [];
     state.suggestionItems = [];
     if (state.searchQuery.trim()) {
@@ -292,6 +396,8 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
     getIsMultiSelect: () => isMultiSelect,
     actions: {
       ...uiActions,
+      closePopover,
+      setSearchQuery,
       selectItem,
       deselectItem,
       clearSelection,
@@ -306,6 +412,11 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
     drillDown: ddCtx.actions,
   });
 
-  setContext(RELATION_SELECTOR_CONTEXT_KEY, context);
-  return context;
+  return setContext(RELATION_SELECTOR_CONTEXT_KEY, Object.assign(context, {
+    getResolvedItem: (id: string) => resolvedItems.get(id),
+    getPickerFilters: () => pickerFilters,
+    isPickerAtFinalLevel: () => pickerAtFinalLevel,
+    setPickerDrillContext,
+    setMultiSelection,
+  }));
 }

@@ -218,6 +218,8 @@ export interface RelationSelectorState<T extends SelectableRelation> {
   isSuggestionsLoading: boolean;
   /** Loaded suggestions */
   suggestionItems: T[];
+  /** Suggestion loading error, when available */
+  suggestionsError?: string | null;
   /** Whether the create form is expanded */
   createFormOpen: boolean;
   /** Search error message */

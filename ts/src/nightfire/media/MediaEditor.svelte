@@ -1,7 +1,6 @@
 <script lang="ts">
   import { Button, MediaThumbnail } from "@inflatable-cookie/poodle-svelte";
   import { Select, TextInput } from "@inflatable-cookie/poodle-svelte";
-  import { type MediaKind } from "../../patterns/media-types/enums";
   import { useNightfireMedia, type NightfireMediaPickResult } from "./context";
 
   type MediaBlock = {
@@ -104,7 +103,7 @@
     emit({ media_id: "" });
   }
 
-  function toPoodleMediaKind(kind: MediaKind | null): "image" | "audio" | "video" | "document" | "embed" {
+  function toPoodleMediaKind(kind: string | null): "image" | "audio" | "video" | "document" {
     if (kind === "image") return "image";
     if (kind === "audio") return "audio";
     if (kind === "video") return "video";
@@ -118,7 +117,7 @@
     {#if mediaId}
       <div class="underlay-media-editor__preview">
         <MediaThumbnail
-          kind={toPoodleMediaKind(selectedKind as MediaKind | null)}
+          kind={toPoodleMediaKind(selectedKind)}
           presentation="compact"
           aspectRatio="square"
           ariaLabel={selectedTitle ?? "Selected media"}
@@ -133,7 +132,7 @@
         </MediaThumbnail>
         <div class="underlay-media-editor__preview-info">
           <span class="underlay-media-editor__preview-title">
-            {selectedTitle ?? mediaId}
+            {selectedTitle || "Selected media"}
           </span>
           <span class="underlay-media-editor__preview-id">{mediaId}</span>
           <div class="underlay-media-editor__preview-actions">
@@ -195,9 +194,10 @@
           onValueChange={(nextValue) => emit({ alt: nextValue })}
         />
       </label>
-      <label class="underlay-media-editor__field">
+      <label class="underlay-media-editor__field" for={`${uid}-media-display`}>
         <span class="underlay-media-editor__label">Display mode</span>
         <Select
+          id={`${uid}-media-display`}
           value={display}
           options={displayOptions}
           onValueChange={(value) => emit({ display: value })}
@@ -242,7 +242,7 @@
     align-items: flex-start;
     padding: var(--underlay-space-3, 0.75rem);
     border: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.35));
-    border-radius: var(--underlay-radius-md, 0.375rem);
+    border-radius: var(--underlay-radius-md, 0.75rem);
     background: var(--underlay-color-surface-secondary, rgba(255, 255, 255, 0.03));
   }
 

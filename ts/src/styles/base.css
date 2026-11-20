@@ -1,19 +1,17 @@
-:root {
-  --underlay-radius: 0.75rem;
-  --underlay-details-section-min-width: 12rem;
-}
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
+@layer underlay.reset {
+  :where([class^="underlay-"], [class*=" underlay-"]),
+  :where([class^="underlay-"], [class*=" underlay-"]) *,
+  :where([class^="underlay-"], [class*=" underlay-"], [class^="underlay-"] *, [class*=" underlay-"] *)::before,
+  :where([class^="underlay-"], [class*=" underlay-"], [class^="underlay-"] *, [class*=" underlay-"] *)::after {
+    box-sizing: border-box;
+  }
 }
 
 /* Generic vertical stack utility for page sections */
 .underlay-page-stack {
   display: flex;
   flex-direction: column;
-  gap: var(--underlay-space-6, 1.5rem);
+  gap: var(--underlay-space-6, 2rem);
 }
 
 .underlay-page-stack-tight {
@@ -28,7 +26,7 @@
   Components inside can use .span-full to span both columns.
 */
 .underlay-details-content {
-  --underlay-details-content-gap: var(--underlay-space-6, 1.5rem);
+  --underlay-details-content-gap: var(--underlay-space-6, 2rem);
   --underlay-details-content-min-width: 22rem;
 
   display: grid;
@@ -108,7 +106,7 @@
 .underlay-preview-shell {
   background: var(--underlay-color-surface-muted, rgba(255, 255, 255, 0.02));
   border: 1px solid var(--underlay-color-border-subtle, rgba(148, 163, 184, 0.25));
-  border-radius: var(--underlay-radius-md, 0.5rem);
+  border-radius: var(--underlay-radius-md, 0.75rem);
   overflow: hidden;
 }
 
@@ -131,11 +129,16 @@
 /* Shared thumbnail link treatment for detail pages */
 .underlay-thumbnail-link {
   display: inline-block;
-  border-radius: var(--underlay-radius-md, 0.375rem);
+  border-radius: var(--underlay-radius-md, 0.75rem);
   overflow: hidden;
   transition: opacity 0.15s ease;
 }
 
 .underlay-thumbnail-link:hover {
   opacity: 0.8;
+}
+
+.underlay-thumbnail-link:focus-visible {
+  outline: var(--underlay-focus-ring-width, 2px) solid var(--underlay-color-primary, #2563eb);
+  outline-offset: var(--underlay-focus-ring-offset, 2px);
 }

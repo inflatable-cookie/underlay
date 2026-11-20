@@ -1,5 +1,6 @@
 import { getAuthConfig } from "./auth";
 import {
+  errorFromUnknown,
   runAuthenticatedFetch,
   shouldSkipAuthReadyFetch,
   tryResolveAuthFetchHandlers,
@@ -219,26 +220,34 @@ export function useAuthenticatedData<T>(
   let refetching = $state(false);
   let error = $state<string | null>(null);
   let _fetched = false;
+  let disposed = false;
+  let requestSeq = 0;
   let _inFlight: Promise<void> | null = null;
-  let _queuedRefetch = false;
-  let _queuedRefetchPromise: Promise<void> | null = null;
-  let _resolveQueuedRefetch: (() => void) | null = null;
+  let queuedRefetch: { promise: Promise<void>; resolve: () => void } | null = null;
 
   // Query key tracking: capture the key at fetch start so failed or superseded
   // fetches never mask subsequent queryKey changes.
   let _previousQueryKey: string | null = null;
   const _onSuccessHook = options.onSuccess;
 
+  $effect(() => () => {
+    disposed = true;
+    queuedRefetch?.resolve();
+    queuedRefetch = null;
+  });
+
   const doFetch = async (isRefetch = false): Promise<void> => {
+    if (disposed) return;
     if (_inFlight) {
       if (isRefetch) {
-        _queuedRefetch = true;
-        if (!_queuedRefetchPromise) {
-          _queuedRefetchPromise = new Promise<void>((resolve) => {
-            _resolveQueuedRefetch = resolve;
+        if (!queuedRefetch) {
+          let resolve = () => {};
+          const promise = new Promise<void>((settle) => {
+            resolve = settle;
           });
+          queuedRefetch = { promise, resolve };
         }
-        return _queuedRefetchPromise;
+        return queuedRefetch.promise;
       }
       return _inFlight;
     }
@@ -256,10 +265,6 @@ export function useAuthenticatedData<T>(
     }
     const { getToken, onRefresh } = resolved.handlers;
 
-    const fetchKey = options.queryKey ? options.queryKey() : null;
-    if (options.queryKey && _previousQueryKey === null) {
-      _previousQueryKey = fetchKey;
-    }
     if (isRefetch) {
       refetching = true;
     } else {
@@ -267,51 +272,62 @@ export function useAuthenticatedData<T>(
     }
     error = null;
 
-    let attemptedFetch = false;
-    const run = (async () => {
-      const attempted = await runAuthenticatedFetch({
-        getToken,
-        onRefresh,
-        fetcher: (token) => fetcher(fetch, token),
-        onSuccess: (result) => {
-          data = result;
-          _onSuccessHook?.(result);
-        },
-        onError: (fetchError) => {
-          error = fetchError.message;
-        },
-        preserveRefreshFailureError: true,
-      });
-
-      if (!attempted) {
-        loading = false;
+    const seq = ++requestSeq;
+    const reportSuccessHookError = (cause: unknown) => {
+      if (!disposed && seq === requestSeq) {
+        error = errorFromUnknown(cause, "Post-load action failed").message;
       }
-      attemptedFetch = attempted;
+    };
+    const run = (async () => {
+      try {
+        const fetchKey = options.queryKey?.() ?? null;
+        if (_previousQueryKey === null) {
+          _previousQueryKey = fetchKey;
+        }
+        const attempted = await runAuthenticatedFetch({
+          getToken,
+          onRefresh: onRefresh && (async (fetchFn) => {
+            if (disposed) return null;
+            const token = await onRefresh(fetchFn);
+            return disposed ? null : token;
+          }),
+          fetcher: (token) => fetcher(fetch, token),
+          onSuccess: (result) => {
+            if (disposed) return;
+            data = result;
+            if (!_onSuccessHook) return;
+            // A post-load callback may reject, including after a subsequent request starts.
+            try {
+              void Promise.resolve(_onSuccessHook(result)).catch(reportSuccessHookError);
+            } catch (cause) {
+              reportSuccessHookError(cause);
+            }
+          },
+          onError: (fetchError) => {
+            if (!disposed) error = fetchError.message;
+          },
+          preserveRefreshFailureError: true,
+        });
+        if (attempted) {
+          // An explicit refetch can retry a failed request.
+          _fetched = true;
+        }
+      } catch (cause) {
+        if (!disposed) error = errorFromUnknown(cause, "Failed to load data").message;
+      }
     })();
 
     _inFlight = run;
-    try {
-      await run;
-    } finally {
-      if (attemptedFetch) {
-        // Mark as fetched even on error to prevent tryFetch from auto-retrying.
-        // Users can still explicitly call refetch() to retry.
-        _fetched = true;
-      }
-      loading = false;
-      refetching = false;
-      _inFlight = null;
-      if (_queuedRefetch) {
-        _queuedRefetch = false;
-        const resolveQueued = _resolveQueuedRefetch;
-        _queuedRefetchPromise = null;
-        _resolveQueuedRefetch = null;
-        try {
-          await doFetch(true);
-        } finally {
-          resolveQueued?.();
-        }
-      }
+    await run;
+    _inFlight = null;
+    if (disposed) return;
+
+    loading = false;
+    refetching = false;
+    if (queuedRefetch) {
+      const { resolve } = queuedRefetch;
+      queuedRefetch = null;
+      void doFetch(true).then(() => resolve());
     }
   };
 
@@ -335,7 +351,7 @@ export function useAuthenticatedData<T>(
     const resolvedGetCurrentUser = options.getCurrentUser ?? globalConfig?.getCurrentUser;
 
     if (resolvedGetAuthLoading && resolvedGetCurrentUser) {
-      tryFetch(resolvedGetAuthLoading(), resolvedGetCurrentUser());
+      void tryFetch(resolvedGetAuthLoading(), resolvedGetCurrentUser());
     }
   });
 
@@ -347,7 +363,7 @@ export function useAuthenticatedData<T>(
       const currentKey = queryKeyGetter();
       if (_previousQueryKey !== null && _previousQueryKey !== currentKey) {
         _previousQueryKey = currentKey;
-        refetch();
+        void refetch();
       }
     });
   }

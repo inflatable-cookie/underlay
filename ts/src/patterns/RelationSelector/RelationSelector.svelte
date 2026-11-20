@@ -1,5 +1,4 @@
 <script lang="ts" generics="T extends SelectableRelation">
-  import type { Snippet } from "svelte";
   import {
     Dialog,
     Icon,
@@ -94,7 +93,7 @@
       return search;
     },
     get suggestions() {
-      return drillDown ? undefined : suggestions;
+      return suggestions;
     },
     get selectionHistory() {
       return selectionHistory;
@@ -103,7 +102,7 @@
       return filters;
     },
     get drillDown() {
-      return undefined;
+      return drillDown;
     },
     get label() {
       return label;
@@ -149,11 +148,7 @@
     },
   };
 
-  const ctx = createRelationSelectorContext(contextProps);
-
-  let searchTimer: ReturnType<typeof setTimeout> | null = null;
-  let drillContext = $state<DrillDownContext>({});
-  let drillFinalItems = $state<T[]>([]);
+  const ctx = createRelationSelectorContext(contextProps, "picker");
 
   const isMultiSelect = $derived(mode === "multi");
   const selectedIds = $derived(isMultiSelect ? values ?? [] : value ? [value] : []);
@@ -171,56 +166,22 @@
   const showClearButton = $derived(!required && hasSelection && !disabled && triggerVariant === "field");
   const showInlineCreate = $derived(allowCreate && !!createForm);
 
-  const effectiveFilters = $derived.by(() => {
-    if (drillDown && Object.keys(drillContext).length >= drillDown.levels.length) {
-      return drillDown.finalLevelFilters?.(drillContext) ?? filters;
-    }
-
-    return filters;
-  });
-
-  const pickerFilters = $derived(toPickerFilters(effectiveFilters));
-  const pickerItems = $derived(toPickerItems(getDisplayItems()));
+  const isSearching = $derived(!!ctx.state.searchQuery.trim());
+  const usesSearchResults = $derived(isSearching || (!!drillDown && !suggestions));
+  const displayItems = $derived(
+    usesSearchResults ? ctx.state.searchResults : ctx.state.suggestionItems,
+  );
+  const displayItemsById = $derived(new Map(displayItems.map((item) => [item.id, item])));
+  const browseError = $derived(
+    usesSearchResults ? ctx.state.searchError : ctx.state.suggestionsError,
+  );
+  const pickerFilters = $derived(toPickerFilters(ctx.getPickerFilters()));
+  const pickerItems = $derived(toPickerItems(displayItems));
   const pickerSelectedItems = $derived(toPickerItems(selectedItems));
   const pickerDrillDown = $derived(toPickerDrillDown());
   const browseState = $derived(resolveBrowseState());
   const stateTitle = $derived(resolveStateTitle());
   const stateMessage = $derived(resolveStateMessage());
-  const pickerRenderItem = $derived(
-    renderItem
-      ? (poodleRenderItem as unknown as Snippet<[PickerItem, boolean]>)
-      : undefined,
-  );
-
-  $effect(() => {
-    if (!ctx.state.popoverOpen || drillDown) {
-      return;
-    }
-
-    const query = ctx.state.searchQuery;
-
-    if (searchTimer) {
-      clearTimeout(searchTimer);
-    }
-
-    searchTimer = setTimeout(() => {
-      if (query.trim()) {
-        void ctx.performSearch(query);
-      } else if (
-        ctx.state.suggestionItems.length === 0 &&
-        !ctx.state.isSuggestionsLoading
-      ) {
-        void ctx.loadSuggestions();
-      }
-    }, 250);
-
-    return () => {
-      if (searchTimer) {
-        clearTimeout(searchTimer);
-        searchTimer = null;
-      }
-    };
-  });
 
   function toPickerItem(item: SelectableRelation): PickerItem {
     return {
@@ -246,51 +207,29 @@
     }));
   }
 
-  function getDisplayItems(): T[] {
-    if (drillDown) {
-      return drillFinalItems;
-    }
-
-    if (ctx.state.searchQuery.trim()) {
-      return ctx.state.searchResults;
-    }
-
-    return ctx.state.suggestionItems;
-  }
-
   function resolveBrowseState(): BrowseState {
-    if (drillDown) {
-      return "ready";
-    }
-
-    if (ctx.state.isSearching || ctx.state.isSuggestionsLoading) {
-      return "loading";
-    }
-
-    if (ctx.state.searchError) {
-      return "error";
-    }
-
-    if (ctx.state.searchQuery.trim() && ctx.state.searchResults.length === 0) {
-      return "no-results";
-    }
-
-    if (!ctx.state.searchQuery.trim() && ctx.state.suggestionItems.length === 0) {
-      return "empty";
-    }
-
-    return "ready";
+    if (!ctx.isPickerAtFinalLevel()) return "ready";
+    const loading = usesSearchResults ? ctx.state.isSearching : ctx.state.isSuggestionsLoading;
+    if (loading) return "loading";
+    if (browseError !== null && browseError !== undefined) return "error";
+    if (displayItems.length > 0) return "ready";
+    return isSearching ? "no-results" : "empty";
   }
 
   function resolveStateTitle(): string | null {
-    if (ctx.state.searchError) return "Relation search failed";
+    if (browseState === "error") {
+      return usesSearchResults ? "Relation search failed" : "Could not load suggestions";
+    }
     if (browseState === "no-results") return emptyMessage ?? "No results found";
-    if (browseState === "empty") return suggestionsLabel ? `No ${suggestionsLabel.toLowerCase()}` : "No suggestions";
+    if (browseState === "empty") {
+      if (usesSearchResults) return emptyMessage ?? "No results found";
+      return suggestionsLabel ? `No ${suggestionsLabel.toLowerCase()}` : "No suggestions";
+    }
     return null;
   }
 
   function resolveStateMessage(): string | null {
-    if (ctx.state.searchError) return ctx.state.searchError;
+    if (browseState === "error") return browseError ?? null;
     if (browseState === "no-results") return "Try a different search or clear the filters.";
     if (browseState === "empty") return "Start typing to search available records.";
     return null;
@@ -307,24 +246,12 @@
 
   function handleSelectionChange(nextIds: string[]): void {
     if (isMultiSelect) {
-      const previousIds = values ?? [];
-      const addedId = nextIds.find((id) => !previousIds.includes(id));
-      if (addedId) {
-        const addedItem = getDisplayItems().find((item) => item.id === addedId);
-        if (addedItem) {
-          ctx.selectItem(addedItem);
-          return;
-        }
-      }
-
-      values = nextIds;
-      onchangeMulti?.(nextIds);
-      onChangeMulti?.(nextIds);
+      ctx.setMultiSelection(nextIds);
       return;
     }
 
     const nextId = nextIds[0] ?? null;
-    const nextItem = nextId ? getDisplayItems().find((item) => item.id === nextId) : null;
+    const nextItem = nextId ? getOriginalItem(nextId) : null;
     if (nextItem) {
       ctx.selectItem(nextItem);
       return;
@@ -334,6 +261,10 @@
     onchange?.(nextId);
     onChange?.(nextId);
     ctx.closePopover();
+  }
+
+  function getOriginalItem(id: string): T | undefined {
+    return displayItemsById.get(id) ?? ctx.getResolvedItem(id);
   }
 
   function handleClearClick(event?: MouseEvent): void {
@@ -357,8 +288,6 @@
       return null;
     }
 
-    const filterFingerprint = JSON.stringify(ctx.state.activeFilters);
-
     return {
       levels: drillDown.levels.map((level) => ({
         key: level.key,
@@ -373,32 +302,16 @@
           return toPickerItems(result.items);
         },
       })),
-      finalItems: async (query: string, context: DrillDownContext) => {
-        filterFingerprint;
-
-        const result = await search(query, {
-          limit: 20,
-          offset: 0,
-          filters: {
-            ...context,
-            ...ctx.state.activeFilters,
-          },
-        });
-
-        drillFinalItems = result.items;
-        return toPickerItems(result.items);
-      },
     };
-  }
-
-  function handleDrillContext(nextContext: DrillDownContext): void {
-    drillContext = nextContext;
   }
 </script>
 
 {#snippet poodleRenderItem(item: PickerItem, selected: boolean)}
-  {#if renderItem}
-    {@render renderItem(item as T, selected)}
+  {@const original = getOriginalItem(item.id)}
+  {#if renderItem && original}
+    {@render renderItem(original, selected)}
+  {:else}
+    {item.label}
   {/if}
 {/snippet}
 
@@ -471,13 +384,13 @@
         confirmLabel={`Done (${selectedIds.length})`}
         cancelLabel="Cancel"
         drillDown={pickerDrillDown}
-        renderItem={pickerRenderItem}
+        renderItem={renderItem ? poodleRenderItem : undefined}
         onQueryChange={(nextQuery) => ctx.setSearchQuery(nextQuery)}
         onFilterChange={(key, nextValue) => ctx.setFilter(key, nextValue)}
         onSelectionChange={handleSelectionChange}
         onConfirm={() => ctx.closePopover()}
         onCancel={() => ctx.closePopover()}
-        onDrillContext={handleDrillContext}
+        onDrillContext={ctx.setPickerDrillContext}
       />
     </Popover>
 

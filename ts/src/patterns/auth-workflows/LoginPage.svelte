@@ -72,6 +72,7 @@
 
   async function handlePasswordLogin(event: SubmitEvent) {
     event.preventDefault();
+    if (loading || passkeyLoading) return;
     error = null;
     loading = true;
 
@@ -102,6 +103,7 @@
   }
 
   async function handleTwoFactorVerify(inputCode: string) {
+    if (loading) return;
     error = null;
     loading = true;
 
@@ -127,6 +129,7 @@
   }
 
   async function handlePasskeyLogin() {
+    if (loading || passkeyLoading) return;
     passkeyError = null;
     passkeyLoading = true;
 
@@ -142,6 +145,7 @@
   }
 
   async function handleGoogleLogin() {
+    if (loading || passkeyLoading) return;
     error = null;
     loading = true;
 
@@ -167,7 +171,7 @@
   }
 
   async function handleRequestEmailCode(): Promise<boolean> {
-    if (!loginStateId || !onRequestEmailCode) return false;
+    if (loading || !loginStateId || !onRequestEmailCode) return false;
 
     error = null;
     loading = true;
@@ -189,7 +193,7 @@
   }
 
   async function handleResendEmailCode() {
-    if (!loginStateId || !onResendEmailCode) return;
+    if (loading || !loginStateId || !onResendEmailCode) return;
 
     error = null;
     loading = true;

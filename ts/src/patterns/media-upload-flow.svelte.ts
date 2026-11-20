@@ -174,6 +174,7 @@ export function createMediaUploadFlow(
     progress = 0;
     error = null;
     duplicateMedia = null;
+    createdMedia = null;
 
     // validateFile returns a result object; it never throws.
     const result = validateFile(f, maxFileSize);
@@ -223,9 +224,7 @@ export function createMediaUploadFlow(
       // Step 2: Check for duplicates
       // For replace flow, first check against existing versions
       if (existingVersionHashes.includes(fileHash)) {
-        error = "This file has already been uploaded as a version of this media item.";
-        step = "error";
-        return;
+        throw new Error("This file has already been uploaded as a version of this media item.");
       }
 
       // Check global duplicates (for new upload flow)
