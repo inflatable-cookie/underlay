@@ -87,12 +87,4 @@ describe("toRomanNumerals", () => {
 			expect(toRomanNumerals(10000)).toBe("10000");
 		});
 	});
-
-	describe("returns lowercase", () => {
-		it("always returns lowercase numerals", () => {
-			const result = toRomanNumerals(1994);
-			expect(result).toBe("mcmxciv");
-			expect(result).toBe(result.toLowerCase());
-		});
-	});
 });

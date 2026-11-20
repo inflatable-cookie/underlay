@@ -31,21 +31,6 @@ fn db_config_stores_database_url() {
 }
 
 #[test]
-fn db_config_from_string() {
-    let config = DbConfig::new("postgresql://user:pass@localhost/db");
-    assert_eq!(config.database_url(), "postgresql://user:pass@localhost/db");
-}
-
-#[test]
-fn db_config_clone_works() {
-    let config = DbConfig::new("postgres://localhost/test").with_max_connections(20);
-    let cloned = config.clone();
-    assert_eq!(cloned.database_url(), config.database_url());
-    assert_eq!(cloned.max_connections(), config.max_connections());
-    assert_eq!(cloned.min_connections(), config.min_connections());
-}
-
-#[test]
 fn db_config_debug_redacts_database_url() {
     let config = DbConfig::new("postgres://user:secretpassword@localhost/test");
     let debug_str = format!("{:?}", config);

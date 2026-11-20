@@ -1,57 +1,42 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-
-const sanitizeMock = vi.hoisted(() => vi.fn((input: string) => `sanitized:${input}`));
-
-vi.mock("isomorphic-dompurify", () => ({
-	default: {
-		sanitize: sanitizeMock,
-	},
-}));
-
-import { sanitizeEmbedHtml, sanitizeHtml, sanitizeSvgHtml } from "../../src/utils/html";
+import { describe, expect, it } from "vitest";
+import {
+  sanitizeEmbedHtml,
+  sanitizeHtml,
+  sanitizeSvgHtml,
+} from "../../src/utils/html";
 
 describe("utils/html", () => {
-	beforeEach(() => {
-		sanitizeMock.mockClear();
-	});
+  it("strips script tags, event handlers, and javascript: URLs and handles nullish input", () => {
+    const out = sanitizeHtml(
+      '<p>Hello</p><script>alert(1)</script><img src=x onerror="alert(2)"><a href="javascript:alert(3)">click</a>',
+    );
+    expect(out).toContain("<p>Hello</p>");
+    expect(out).not.toContain("<script");
+    expect(out).not.toContain("onerror");
+    expect(out).not.toContain("javascript:");
+    expect(sanitizeHtml(null)).toBe("");
+    expect(sanitizeHtml(undefined)).toBe("");
+  });
 
-	it("sanitizes generic html with html profile and safe null fallback", () => {
-		expect(sanitizeHtml("<p>Hello</p>")).toBe("sanitized:<p>Hello</p>");
-		expect(sanitizeHtml(null)).toBe("sanitized:");
+  it("preserves iframe sandbox attribute while stripping scripts in embeds", () => {
+    const out = sanitizeEmbedHtml(
+      '<iframe src="https://example.com/embed" sandbox="allow-scripts" onload="evil()"></iframe><script>x</script>',
+    );
+    expect(out).toContain("<iframe");
+    expect(out).toContain('sandbox="allow-scripts"');
+    expect(out).not.toContain("onload");
+    expect(out).not.toContain("<script");
+  });
 
-		expect(sanitizeMock).toHaveBeenNthCalledWith(
-			1,
-			"<p>Hello</p>",
-			{ USE_PROFILES: { html: true } }
-		);
-		expect(sanitizeMock).toHaveBeenNthCalledWith(
-			2,
-			"",
-			{ USE_PROFILES: { html: true } }
-		);
-	});
-
-	it("sanitizes embed html with explicit media allowlist", () => {
-		const result = sanitizeEmbedHtml("<iframe src=\"https://example.com\"></iframe>");
-		expect(result).toContain("sanitized:");
-		expect(sanitizeMock).toHaveBeenCalledWith(
-			"<iframe src=\"https://example.com\"></iframe>",
-			expect.objectContaining({
-				ALLOWED_TAGS: ["iframe", "audio", "video", "source"],
-				ALLOW_UNKNOWN_PROTOCOLS: false,
-			})
-		);
-	});
-
-	it("sanitizes svg html with svg profile and forbidden tags", () => {
-		const result = sanitizeSvgHtml(undefined);
-		expect(result).toBe("sanitized:");
-		expect(sanitizeMock).toHaveBeenCalledWith(
-			"",
-			expect.objectContaining({
-				USE_PROFILES: { svg: true, svgFilters: true },
-				FORBID_TAGS: ["script", "foreignObject"],
-			})
-		);
-	});
+  it("strips foreignObject, script, and style attributes from SVGs", () => {
+    const out = sanitizeSvgHtml(
+      '<svg viewBox="0 0 10 10"><path d="M0 0" style="fill:url(javascript:alert(1))"/><foreignObject><body>hi</body></foreignObject><script>alert(1)</script></svg>',
+    );
+    expect(out).toContain("<svg");
+    expect(out).toContain("<path");
+    expect(out).not.toContain("style=");
+    expect(out).not.toContain("foreignObject");
+    expect(out).not.toContain("<script");
+    expect(sanitizeSvgHtml(undefined)).toBe("");
+  });
 });

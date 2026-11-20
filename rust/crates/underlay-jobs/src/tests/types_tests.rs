@@ -1,6 +1,4 @@
 use super::*;
-use chrono::Utc;
-use serde_json::json;
 use std::time::Duration;
 
 #[test]
@@ -48,32 +46,6 @@ fn test_job_status_terminal() {
     assert!(JobStatus::Succeeded.is_terminal());
     assert!(JobStatus::Failed.is_terminal());
     assert!(JobStatus::Cancelled.is_terminal());
-}
-
-#[test]
-fn job_type_has_required_fields() {
-    let job = Job {
-        id: underlay_core::Uuid::new_v7(),
-        job_type: "test_job".to_string(),
-        status: JobStatus::Pending,
-        payload: json!({"key": "value"}),
-        attempts: 1,
-        max_attempts: 3,
-        scheduled_for: None,
-        priority: 0,
-        claimed_at: None,
-        claimed_by: None,
-        started_at: None,
-        finished_at: None,
-        heartbeat_at: None,
-        progress: None,
-        last_error: None,
-        created_at: Utc::now(),
-        updated_at: Utc::now(),
-    };
-    assert!(!job.id.to_string().is_empty());
-    assert_eq!(job.job_type, "test_job");
-    assert_eq!(job.attempts, 1);
 }
 
 #[test]

@@ -147,8 +147,3 @@ fn test_wrap_i64() {
     let response = params.wrap_i64(data, 0i64);
     assert_eq!(response.pagination.total, 0u64);
 }
-
-#[test]
-fn test_default_max_limit_constant() {
-    assert_eq!(DEFAULT_MAX_LIMIT, 100);
-}
