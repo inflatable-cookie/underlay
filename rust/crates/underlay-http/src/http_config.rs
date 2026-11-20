@@ -160,7 +160,11 @@ impl HttpServerConfig {
     ///
     /// Note: Does not include a trailing slash.
     pub fn base_url(&self, scheme: &str) -> String {
-        format!("{}://{}", scheme, format_host_port(&self.public_host, self.port))
+        format!(
+            "{}://{}",
+            scheme,
+            format_host_port(&self.public_host, self.port)
+        )
     }
 
     /// Get the HTTP base URL (http://...).

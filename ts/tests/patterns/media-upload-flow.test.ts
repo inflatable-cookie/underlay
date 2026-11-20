@@ -21,10 +21,6 @@ async function loadMediaUploadModule(mocks?: {
 				})
 		),
 	}));
-	vi.doMock("../../src/patterns/media-types.js", () => ({
-		MediaKind: { Image: "Image", Pdf: "Pdf" },
-		MediaVisibility: { Public: "Public" },
-	}));
 
 	const mod = await import("../../src/patterns/media-upload-flow.svelte");
 	const blob = await import("../../src/patterns/blob-upload.js");

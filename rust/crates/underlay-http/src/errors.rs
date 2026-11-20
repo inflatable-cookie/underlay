@@ -46,7 +46,11 @@ pub type ApiResult<T> = Result<T, ApiError>;
 
 impl std::fmt::Display for ApiError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} ({}): {}", self.status, self.err.code, self.err.message)
+        write!(
+            f,
+            "{} ({}): {}",
+            self.status, self.err.code, self.err.message
+        )
     }
 }
 

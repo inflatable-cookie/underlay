@@ -38,7 +38,7 @@ impl JobRepository {
                 claimed_by = NULL,
                 started_at = NULL,
                 heartbeat_at = NULL,
-                completed_at = CASE WHEN attempts < max_attempts THEN NULL ELSE NOW() END,
+                finished_at = CASE WHEN attempts < max_attempts THEN NULL ELSE NOW() END,
                 last_error = CASE
                     WHEN attempts < max_attempts THEN 'Job stalled and was reset'
                     ELSE 'Job stalled and exceeded max_attempts'
@@ -58,7 +58,7 @@ impl JobRepository {
     pub async fn archive_completed(&self, older_than_days: i32) -> Result<u64> {
         let result = sqlx::query_scalar::<_, i64>(
             r#"
-            SELECT platform.archive_completed_jobs($1 || ' days')
+            SELECT platform.archive_completed_jobs(($1 || ' days')::interval)
             "#,
         )
         .bind(older_than_days)
@@ -73,7 +73,7 @@ impl JobRepository {
     pub async fn purge_history(&self, older_than_days: i32) -> Result<u64> {
         let result = sqlx::query_scalar::<_, i64>(
             r#"
-            SELECT platform.purge_job_history($1 || ' days')
+            SELECT platform.purge_job_history(($1 || ' days')::interval)
             "#,
         )
         .bind(older_than_days)

@@ -14,9 +14,7 @@ mod types;
 
 pub use adapter::{EmailAdapter, NoopAdapter};
 pub use error::{EmailError, EmailResult};
-pub use manager::{
-    AdapterType, EmailManager, EmailManagerConfig, SesConfig, SmtpConfig, TlsMode,
-};
+pub use manager::{AdapterType, EmailManager, EmailManagerConfig, SesConfig, SmtpConfig, TlsMode};
 pub use types::{Email, EmailAddress, EmailBuilder, SendResult};
 
 #[cfg(feature = "smtp")]

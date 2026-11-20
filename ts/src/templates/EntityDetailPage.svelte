@@ -191,12 +191,20 @@
 
   // --- Actions ---
 
+  function invokeActionHandler(action: DetailActionConfig) {
+    Promise.resolve()
+      .then(() => action.handler())
+      .catch((err) => {
+        console.error(`Action "${action.label}" failed`, err);
+      });
+  }
+
   function handleAction(action: DetailActionConfig) {
     if (action.confirm) {
       pendingAction = action;
       showConfirmDialog = true;
     } else {
-      action.handler();
+      invokeActionHandler(action);
     }
   }
 
@@ -210,8 +218,9 @@
 
   function handleConfirm() {
     if (pendingAction) {
-      pendingAction.handler();
+      const action = pendingAction;
       pendingAction = null;
+      invokeActionHandler(action);
     }
     showConfirmDialog = false;
   }

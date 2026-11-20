@@ -59,6 +59,16 @@
 
   let resolvedBackInfo = $state<{ href: string; label: string; contextual: boolean } | null>(null);
 
+  function getItemKey(item: unknown, index: number): string | number {
+    if (typeof item === "object" && item !== null && "id" in item) {
+      const id = (item as { id?: unknown }).id;
+      if (typeof id === "string" || typeof id === "number") {
+        return id;
+      }
+    }
+    return index;
+  }
+
   $effect(() => {
     if (!backHref) {
       resolvedBackInfo = null;
@@ -118,7 +128,7 @@
       </div>
     {:else}
       <ListGrid minItemWidth={minItemWidth}>
-        {#each items as item}
+        {#each items as item, index (getItemKey(item, index))}
           {@render renderItem(item)}
         {/each}
       </ListGrid>

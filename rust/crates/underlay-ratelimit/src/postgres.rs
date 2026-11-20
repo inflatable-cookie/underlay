@@ -18,8 +18,9 @@ use crate::error::{RateLimitError, Result};
 const DEFAULT_TABLE: &str = "auth.rate_limit_counters";
 
 fn validate_table_name(table: &str) -> Result<QualifiedTableName> {
-    QualifiedTableName::parse(table)
-        .map_err(|err| RateLimitError::Config(format!("invalid rate limit table name `{table}`: {err}")))
+    QualifiedTableName::parse(table).map_err(|err| {
+        RateLimitError::Config(format!("invalid rate limit table name `{table}`: {err}"))
+    })
 }
 
 /// Postgres-backed fixed-window rate limiter.

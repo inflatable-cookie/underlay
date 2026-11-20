@@ -214,8 +214,6 @@ export function useAuthenticatedData<T>(
   fetcher: (fetchFn: typeof fetch, token: string) => Promise<T>,
   options: AuthenticatedDataOptions<T>
 ): AuthenticatedDataResult<T> {
-  const globalConfig = getAuthConfig();
-
   let data = $state<T | undefined>(options.defaultValue);
   let loading = $state(true);
   let refetching = $state(false);
@@ -315,15 +313,18 @@ export function useAuthenticatedData<T>(
     await doFetch(true);
   };
 
-  // --- Auto-fetch: create $effect for tryFetch when auth getters are available ---
-  const resolvedGetAuthLoading = options.getAuthLoading ?? globalConfig?.getAuthLoading;
-  const resolvedGetCurrentUser = options.getCurrentUser ?? globalConfig?.getCurrentUser;
+  // --- Auto-fetch: resolve auth getters lazily inside $effect so components
+  // that mount before a root layout's onMount(() => configureAuth(...)) still
+  // pick up global auth getters once configured. ---
+  $effect(() => {
+    const globalConfig = getAuthConfig();
+    const resolvedGetAuthLoading = options.getAuthLoading ?? globalConfig?.getAuthLoading;
+    const resolvedGetCurrentUser = options.getCurrentUser ?? globalConfig?.getCurrentUser;
 
-  if (resolvedGetAuthLoading && resolvedGetCurrentUser) {
-    $effect(() => {
+    if (resolvedGetAuthLoading && resolvedGetCurrentUser) {
       tryFetch(resolvedGetAuthLoading(), resolvedGetCurrentUser());
-    });
-  }
+    }
+  });
 
   // --- Query key watching: create $effect that refetches on genuine key changes ---
   if (options.queryKey) {

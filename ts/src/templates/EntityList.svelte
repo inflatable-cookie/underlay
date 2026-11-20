@@ -326,6 +326,7 @@
   // Async filter options
   let loadedFilterOptions = $state<Record<string, { value: string; label: string }[]>>({});
   let filterOptionsLoading = $state<Record<string, boolean>>({});
+  let filterOptionsFailed = $state<Record<string, boolean>>({});
   let filterLoadKeys = $state<Record<string, string>>({});
 
   // Selection mode (internal or external)
@@ -515,18 +516,25 @@
           delete nextOptions[filter.id];
           loadedFilterOptions = nextOptions;
         }
+        if (filterOptionsFailed[filter.id]) {
+          const nextFailed = { ...filterOptionsFailed };
+          delete nextFailed[filter.id];
+          filterOptionsFailed = nextFailed;
+        }
       }
       if (
         filter.loadOptions &&
         !filter.searchable &&
         !loadedFilterOptions[filter.id] &&
-        !filterOptionsLoading[filter.id]
+        !filterOptionsLoading[filter.id] &&
+        !filterOptionsFailed[filter.id]
       ) {
         filterOptionsLoading = { ...filterOptionsLoading, [filter.id]: true };
         filter.loadOptions().then((options) => {
           loadedFilterOptions = { ...loadedFilterOptions, [filter.id]: options };
           filterOptionsLoading = { ...filterOptionsLoading, [filter.id]: false };
         }).catch(() => {
+          filterOptionsFailed = { ...filterOptionsFailed, [filter.id]: true };
           filterOptionsLoading = { ...filterOptionsLoading, [filter.id]: false };
         });
       }

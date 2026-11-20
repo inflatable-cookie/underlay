@@ -440,5 +440,4 @@ mod tests {
         assert!(config.allow_any_origin());
         assert!(!config.allow_credentials());
     }
-
 }

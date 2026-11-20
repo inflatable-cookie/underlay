@@ -38,9 +38,9 @@ import {
   type InitiateUploadResponse,
   type FinaliseUploadRequest,
   type FinaliseUploadResponse,
-  MediaKind,
-  MediaVisibility,
 } from "./media-types.js";
+import { MediaVisibility } from "./media-types/enums.js";
+import { detectMediaKindFromMimeType } from "./media-types/labels.js";
 
 /**
  * Upload step in the state machine
@@ -161,13 +161,7 @@ export function createMediaUploadFlow(
     step === "checking" || step === "uploading" || step === "finalising"
   );
 
-  // Helpers
-  function detectMediaKind(f: File): MediaKind {
-    if (f.type.startsWith("image/")) return MediaKind.Image;
-    if (f.type === "application/pdf") return MediaKind.Pdf;
-    return MediaKind.Image;
-  }
-
+  // Actions
   function setFile(f: File) {
     fileError = null;
     file = null;
@@ -245,17 +239,14 @@ export function createMediaUploadFlow(
       progress = 0;
 
       let mediaId: string;
-      let media: MediaDetail;
 
       if (existingMediaId) {
         // Replace flow - use existing media ID
         mediaId = existingMediaId;
-        // We don't have the full media detail in replace flow, but we'll get it after finalise
-        media = null as unknown as MediaDetail;
       } else {
         // New upload flow - create media item first
-        media = await createMedia({
-          kind: detectMediaKind(file),
+        const media = await createMedia({
+          kind: detectMediaKindFromMimeType(file.type),
           visibility: defaultVisibility,
           title: metadata?.title ?? file.name.replace(/\.[^/.]+$/, ""),
           originalFilename: metadata?.originalFilename ?? file.name,
