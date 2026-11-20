@@ -1,5 +1,8 @@
 use underlay_core::Uuid;
-use underlay_db::{create_pool, drop_schemas, validate_schema_name, DbConfig, DestructiveGuard};
+use underlay_db::{
+    create_pool, drop_schemas, run_sql_dir_with_options, validate_schema_name, DbConfig,
+    DestructiveGuard, SqlDirOptions,
+};
 
 // These tests require a Docker-compatible runtime.
 // On macOS, Colima works well:
@@ -164,4 +167,55 @@ async fn drop_schemas_rejects_invalid_schema_name() {
         .to_string()
         .to_ascii_lowercase()
         .contains("invalid schema name"));
+}
+
+#[tokio::test]
+#[ignore]
+async fn sql_dir_runs_multi_statement_scripts_unsplit() {
+    assert_docker_available();
+    let node = Postgres::default()
+        .start()
+        .expect("failed to start postgres test container");
+
+    let database_url = postgres_database_url(&node);
+    let config = DbConfig::new(database_url).with_max_connections(5);
+
+    let pool = create_pool(&config).await.expect("create_pool");
+
+    let schema_id = Uuid::new_v7().to_string().replace('-', "");
+    let script_dir = std::env::temp_dir().join(format!("underlay-sql-dir-{schema_id}"));
+    std::fs::create_dir_all(&script_dir).expect("create script fixture dir");
+    std::fs::write(
+        script_dir.join("010_seed.sql"),
+        format!(
+            r#"
+CREATE SCHEMA {schema_id};
+CREATE TABLE {schema_id}.items (id INT PRIMARY KEY);
+DO $$
+BEGIN
+    INSERT INTO {schema_id}.items (id) VALUES (1);
+    INSERT INTO {schema_id}.items (id) VALUES (2);
+END $$;
+"#
+        ),
+    )
+    .expect("write script fixture");
+
+    run_sql_dir_with_options(
+        &pool,
+        &script_dir,
+        SqlDirOptions::new().with_split_on_semicolon(false),
+    )
+    .await
+    .expect("run unsplit script");
+
+    let (count,): (i64,) = sqlx::query_as(sqlx::AssertSqlSafe(format!(
+        "SELECT COUNT(*)::BIGINT FROM {schema_id}.items"
+    )))
+    .fetch_one(&pool)
+    .await
+    .expect("count seeded rows");
+    assert_eq!(count, 2);
+
+    std::fs::remove_dir_all(&script_dir).expect("remove script fixture");
 }

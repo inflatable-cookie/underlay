@@ -1,12 +1,24 @@
 use std::env;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde::Deserialize;
 use toml::Value;
 
 use crate::{discover_config_dir, ConfigError, ConfigStack};
+
+/// `discover_config_dir` reads the process working directory, so every test
+/// that moves it holds this lock. A poisoned lock only means another cwd test
+/// panicked; the tests recover the guard rather than cascading.
+static CWD_LOCK: Mutex<()> = Mutex::new(());
+
+fn cwd_guard() -> std::sync::MutexGuard<'static, ()> {
+    CWD_LOCK
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+}
 
 #[derive(Debug, Deserialize, PartialEq, Eq)]
 struct AppConfig {
@@ -248,6 +260,7 @@ audience = "clients"
 
 #[test]
 fn discovers_parent_config_dir_when_local_dir_missing() {
+    let _guard = cwd_guard();
     let root = temp_config_dir("discover");
     let app = root.join("app");
     let config = root.join("config");
@@ -255,12 +268,90 @@ fn discovers_parent_config_dir_when_local_dir_missing() {
     fs::create_dir_all(&config).expect("create config dir");
     fs::write(config.join("default.toml"), "[server]\nhost='127.0.0.1'\n").expect("write default");
 
-    let previous_dir = env::current_dir().expect("current dir");
-    env::set_current_dir(&app).expect("enter app dir");
-    let discovered = discover_config_dir(None);
-    env::set_current_dir(previous_dir).expect("restore dir");
+    let discovered = from_working_dir(&app, || discover_config_dir(None));
 
     assert_eq!(discovered, PathBuf::from("../config"));
+}
+
+#[test]
+fn discovers_parent_config_dir_inside_the_checkout_root() {
+    let _guard = cwd_guard();
+    let root = temp_config_dir("discover-in-root");
+    let app = root.join("apps/api");
+    fs::create_dir_all(&app).expect("create app dir");
+    fs::create_dir_all(root.join(".git")).expect("mark checkout root");
+    fs::create_dir_all(root.join("config")).expect("create config dir");
+    fs::write(root.join("config/default.toml"), "[server]\n").expect("write default");
+
+    let discovered = from_working_dir(&app, || discover_config_dir(None));
+
+    // `../config` resolves to `apps/config`, which does not exist, so the
+    // ancestor scan finds the checkout-root config inside the boundary.
+    assert_eq!(discovered, root.join("config"));
+}
+
+#[test]
+fn checkout_root_does_not_probe_config_outside_the_repository() {
+    let _guard = cwd_guard();
+    let outer = temp_config_dir("root-boundary");
+    let checkout = outer.join("repo");
+    fs::create_dir_all(checkout.join(".git")).expect("mark checkout root");
+    fs::create_dir_all(outer.join("config")).expect("create outside config");
+    fs::write(outer.join("config/default.toml"), "[server]\n").expect("write outside default");
+
+    let discovered = from_working_dir(&checkout, || discover_config_dir(None));
+
+    assert_ne!(discovered, PathBuf::from("../config"));
+    assert_eq!(discovered, PathBuf::from("config"));
+}
+
+#[test]
+fn boundary_check_is_lexical_and_component_wise() {
+    let repo = Path::new("/repos/underlay");
+
+    assert!(crate::discovery::resolves_inside_checkout_for_test(
+        repo,
+        repo,
+        Path::new("config")
+    ));
+    assert!(crate::discovery::resolves_inside_checkout_for_test(
+        &repo.join("apps/api"),
+        repo,
+        Path::new("../config")
+    ));
+    assert!(!crate::discovery::resolves_inside_checkout_for_test(
+        repo,
+        repo,
+        Path::new("../config")
+    ));
+    assert!(!crate::discovery::resolves_inside_checkout_for_test(
+        &repo.join("apps/api"),
+        &repo.join("apps/api"),
+        Path::new("../config")
+    ));
+    // A sibling whose name merely shares a prefix is not inside the checkout.
+    assert!(!crate::discovery::resolves_inside_checkout_for_test(
+        Path::new("/repos/underlay-other/app"),
+        repo,
+        Path::new("config")
+    ));
+}
+
+/// Run `f` with the process working directory set to `dir`, restoring the
+/// previous directory even if `f` panics.
+fn from_working_dir<T>(dir: &Path, f: impl FnOnce() -> T) -> T {
+    struct RestoreCwd(PathBuf);
+
+    impl Drop for RestoreCwd {
+        fn drop(&mut self) {
+            let _ = env::set_current_dir(&self.0);
+        }
+    }
+
+    let previous = env::current_dir().expect("current dir");
+    env::set_current_dir(dir).expect("enter working dir");
+    let _restore = RestoreCwd(previous);
+    f()
 }
 
 fn temp_config_dir(name: &str) -> PathBuf {

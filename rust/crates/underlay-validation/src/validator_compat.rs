@@ -27,7 +27,9 @@ use validator::ValidationErrors;
 /// Convert validator errors to an AppError with field errors.
 ///
 /// Extracts the first error message for each field and creates an `AppError`
-/// suitable for returning as an API response.
+/// suitable for returning as an API response. The transport envelope omits
+/// `fieldErrors` entirely when no field-scoped feedback exists, so an empty
+/// map is normalised to `None`.
 ///
 /// # Arguments
 /// * `validation_err` - The ValidationErrors from the validator crate
@@ -38,22 +40,20 @@ pub fn validation_to_app_error(
     error_code: &'static str,
     message: &str,
 ) -> AppError {
-    let mut field_errors = HashMap::new();
-
-    for (field, errors) in validation_err.field_errors() {
-        if let Some(err) = errors.first() {
-            let msg = err
-                .message
-                .clone()
-                .unwrap_or_else(|| "Invalid value".into());
-            field_errors.insert(field.to_string(), msg.to_string());
-        }
-    }
+    let field_errors = validation_err
+        .field_errors()
+        .iter()
+        .filter_map(|(field, errors)| {
+            let err = errors.first()?;
+            let msg = err.message.as_deref().unwrap_or("Invalid value");
+            Some((field.to_string(), msg.to_string()))
+        })
+        .collect::<HashMap<_, _>>();
 
     AppError {
         code: error_code,
         message: message.to_string(),
-        field_errors: Some(field_errors),
+        field_errors: (!field_errors.is_empty()).then_some(field_errors),
     }
 }
 

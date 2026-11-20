@@ -84,14 +84,19 @@ pub async fn run_sql_dir_with_options(
 
     let entries = std::fs::read_dir(dir).map_err(sqlx::Error::Io)?;
 
-    let mut sql_files = entries
-        .filter_map(|entry| entry.ok())
-        .map(|entry| entry.path())
-        .filter(|path| {
-            path.extension()
-                .is_some_and(|ext| ext == options.extension())
-        })
-        .collect::<Vec<_>>();
+    // A `read_dir` entry can fail independently (for example on a removed or
+    // unreadable entry). Propagate that instead of silently skipping the file.
+    let mut sql_files = Vec::new();
+    for entry in entries {
+        let entry = entry.map_err(sqlx::Error::Io)?;
+        let path = entry.path();
+        if path
+            .extension()
+            .is_some_and(|ext| ext == options.extension())
+        {
+            sql_files.push(path);
+        }
+    }
 
     if options.sort() {
         sql_files.sort_by(|a, b| a.file_name().cmp(&b.file_name()));
@@ -107,29 +112,18 @@ pub async fn run_sql_dir_with_options(
                     continue;
                 }
 
-                if let Err(err) = sqlx::query(sqlx::AssertSqlSafe(trimmed))
+                // SQL failures stay real `sqlx::Error` values so callers keep
+                // the database error kind instead of a wrapped IO error.
+                sqlx::query(sqlx::AssertSqlSafe(trimmed))
                     .execute(pool)
-                    .await
-                {
-                    let file_name = path
-                        .file_name()
-                        .and_then(|n| n.to_str())
-                        .unwrap_or("<unknown>");
-
-                    return Err(sqlx::Error::Io(std::io::Error::other(format!(
-                        "sql dir execution failed in {file_name}: {err}"
-                    ))));
-                }
+                    .await?;
             }
-        } else if let Err(err) = sqlx::query(sqlx::AssertSqlSafe(sql)).execute(pool).await {
-            let file_name = path
-                .file_name()
-                .and_then(|n| n.to_str())
-                .unwrap_or("<unknown>");
-
-            return Err(sqlx::Error::Io(std::io::Error::other(format!(
-                "sql dir execution failed in {file_name}: {err}"
-            ))));
+        } else {
+            // Run the whole file as one script so procedural blocks containing
+            // semicolons (`DO $$ ... $$`, function bodies) stay intact.
+            sqlx::raw_sql(sqlx::AssertSqlSafe(sql.as_str()))
+                .execute(pool)
+                .await?;
         }
     }
 
@@ -138,7 +132,26 @@ pub async fn run_sql_dir_with_options(
 
 #[cfg(test)]
 mod tests {
-    use super::SqlDirOptions;
+    use std::path::PathBuf;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    use super::{run_sql_dir_with_options, SqlDirOptions};
+
+    fn lazy_pool() -> crate::DbPool {
+        // A lazy pool never connects, which is enough for tests that fail
+        // before any statement executes.
+        sqlx::postgres::PgPoolOptions::new()
+            .connect_lazy("postgres://underlay:underlay@127.0.0.1:1/underlay")
+            .expect("lazy pool")
+    }
+
+    fn unique_dir(name: &str) -> PathBuf {
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("time")
+            .as_nanos();
+        std::env::temp_dir().join(format!("underlay-sql-dir-{name}-{nanos}"))
+    }
 
     #[test]
     fn sql_dir_options_builders_expose_read_only_values() {
@@ -150,5 +163,29 @@ mod tests {
         assert_eq!(options.extension(), "seed");
         assert!(!options.sort());
         assert!(!options.split_on_semicolon());
+    }
+
+    #[tokio::test]
+    async fn missing_directory_reports_io_error() {
+        let dir = unique_dir("missing");
+        let err = run_sql_dir_with_options(&lazy_pool(), &dir, SqlDirOptions::new())
+            .await
+            .expect_err("missing directory must fail");
+
+        assert!(matches!(err, sqlx::Error::Io(_)));
+    }
+
+    #[tokio::test]
+    async fn unreadable_sql_path_reports_io_error() {
+        let dir = unique_dir("unreadable");
+        // A directory with a `.sql` extension is selected like a script and
+        // then fails to read as UTF-8 text.
+        std::fs::create_dir_all(dir.join("nested.sql")).expect("create unreadable entry");
+        let err = run_sql_dir_with_options(&lazy_pool(), &dir, SqlDirOptions::new())
+            .await
+            .expect_err("unreadable sql path must fail");
+
+        assert!(matches!(err, sqlx::Error::Io(_)));
+        std::fs::remove_dir_all(&dir).expect("remove fixture");
     }
 }

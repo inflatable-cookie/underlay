@@ -3,6 +3,7 @@ use super::errors::CursorError;
 use super::params::{CursorPaginationParams, PaginationDirection};
 use super::response::PaginatedResponse;
 use super::typed_cursors::{TimestampCursor, WeightCursor};
+use crate::identifiers::{IdentifierError, SqlIdentifier};
 
 /// Helper for building paginated queries with a common pattern.
 ///
@@ -83,40 +84,46 @@ impl PaginationBuilder {
 
     /// Generate the keyset WHERE clause fragment for a two-column cursor.
     ///
-    /// Returns a SQL fragment like `(col, id) < ($1, $2)` suitable for keyset pagination.
+    /// Returns a SQL fragment like `("col", id) < ($1, $2)` suitable for keyset
+    /// pagination. The sort column is validated and quoted as a
+    /// [`SqlIdentifier`], so an invalid column name is an error rather than a
+    /// panic or an injection path.
     ///
     /// # Arguments
     /// * `column` - The primary sort column name (e.g., "updated_at", "weight").
-    ///   Must be a valid [`SqlIdentifier`](crate::identifiers::SqlIdentifier);
-    ///   pass static strings only.
+    ///   Must be a valid [`SqlIdentifier`](crate::identifiers::SqlIdentifier).
     /// * `param_offset` - Starting parameter number (1-indexed for PostgreSQL)
     /// * `descending` - Whether the primary sort is descending
     ///
-    /// # Panics
-    /// Panics if `column` is not a valid SQL identifier.
+    /// # Errors
+    /// Returns [`IdentifierError`] when `column` is not a valid SQL identifier.
     ///
     /// # Example
     /// ```rust,ignore
     /// // For a query with existing WHERE clause
-    /// let keyset = builder.keyset_condition("updated_at", 1, true);
-    /// // Returns: "(updated_at, id) < ($1, $2)"
+    /// let keyset = builder.keyset_condition("updated_at", 1, true)?;
+    /// // Returns: `("updated_at", id) < ($1, $2)`
     ///
     /// let sql = format!(
     ///     "SELECT * FROM items WHERE deleted_at IS NULL AND {} LIMIT $3",
     ///     keyset
     /// );
     /// ```
-    pub fn keyset_condition(&self, column: &str, param_offset: usize, descending: bool) -> String {
+    pub fn keyset_condition(
+        &self,
+        column: &str,
+        param_offset: usize,
+        descending: bool,
+    ) -> Result<String, IdentifierError> {
         let op = self.keyset_operator(descending);
-        let column = crate::identifiers::SqlIdentifier::parse(column)
-            .expect("keyset_condition column must be a valid SQL identifier");
-        format!(
+        let column = SqlIdentifier::parse(column)?;
+        Ok(format!(
             "({}, id) {} (${}, ${})",
-            column,
+            column.quoted(),
             op,
             param_offset,
             param_offset + 1
-        )
+        ))
     }
 
     /// Get the ORDER BY direction string.
@@ -136,25 +143,31 @@ impl PaginationBuilder {
 
     /// Generate the ORDER BY clause for a two-column keyset.
     ///
+    /// The sort column is validated and quoted as a [`SqlIdentifier`], so an
+    /// invalid column name is an error rather than a panic or an injection
+    /// path.
+    ///
     /// # Arguments
     /// * `column` - The primary sort column name. Must be a valid
-    ///   [`SqlIdentifier`](crate::identifiers::SqlIdentifier); pass static
-    ///   strings only.
+    ///   [`SqlIdentifier`](crate::identifiers::SqlIdentifier).
     /// * `descending` - Whether the primary sort is descending
     ///
-    /// # Panics
-    /// Panics if `column` is not a valid SQL identifier.
+    /// # Errors
+    /// Returns [`IdentifierError`] when `column` is not a valid SQL identifier.
     ///
     /// # Example
     /// ```rust,ignore
-    /// let order = builder.keyset_order_by("updated_at", true);
-    /// // Returns: "updated_at DESC, id DESC"
+    /// let order = builder.keyset_order_by("updated_at", true)?;
+    /// // Returns: `"updated_at" DESC, id DESC`
     /// ```
-    pub fn keyset_order_by(&self, column: &str, descending: bool) -> String {
+    pub fn keyset_order_by(
+        &self,
+        column: &str,
+        descending: bool,
+    ) -> Result<String, IdentifierError> {
         let dir = self.order_direction(descending);
-        let column = crate::identifiers::SqlIdentifier::parse(column)
-            .expect("keyset_order_by column must be a valid SQL identifier");
-        format!("{} {}, id {}", column, dir, dir)
+        let column = SqlIdentifier::parse(column)?;
+        Ok(format!("{} {}, id {}", column.quoted(), dir, dir))
     }
 
     /// Build response from fetched items.

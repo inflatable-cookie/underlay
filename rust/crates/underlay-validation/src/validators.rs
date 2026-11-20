@@ -5,11 +5,11 @@
 
 mod collection;
 mod numeric;
-mod pattern;
+pub(crate) mod pattern;
 mod string;
 
 pub use collection::{collection_length, not_empty, unique_items, unique_items_detailed};
-pub use numeric::{non_negative, positive, range};
+pub use numeric::{non_negative, positive, range, RangeNumeric};
 pub use pattern::{one_of, pattern};
 pub use string::{alphanumeric, email, length, required, slug, url, username, uuid};
 

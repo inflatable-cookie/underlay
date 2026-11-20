@@ -5710,7 +5710,6 @@ dependencies = [
  "async-trait",
  "sqlx",
  "underlay-core",
- "uuid",
 ]
 
 [[package]]
