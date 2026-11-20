@@ -77,6 +77,19 @@ fn if_match_matches_exact_or_wildcard() {
     assert!(!if_match_matches(&headers, current));
 }
 
+#[test]
+fn etag_matchers_inspect_all_header_values() {
+    let mut headers = HeaderMap::new();
+    headers.append(IF_NONE_MATCH, HeaderValue::from_static("W/\"first\""));
+    headers.append(IF_NONE_MATCH, HeaderValue::from_static("W/\"second\""));
+    assert!(if_none_match_matches(&headers, "W/\"second\""));
+
+    let mut headers = HeaderMap::new();
+    headers.append(IF_MATCH, HeaderValue::from_static("\"first\""));
+    headers.append(IF_MATCH, HeaderValue::from_static("\"second\""));
+    assert!(if_match_matches(&headers, "\"second\""));
+}
+
 #[tokio::test]
 async fn singleflight_leader_cancellation_does_not_deadlock_waiters() {
     let sf = Arc::new(SingleFlight::<usize>::new());

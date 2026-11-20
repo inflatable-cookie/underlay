@@ -10,6 +10,10 @@ use crate::backend::RateLimitBackend;
 use crate::config::{RateLimitConfig, RateLimitResult};
 use crate::error::Result;
 
+/// Default maximum number of keys tracked in memory before expired or existing
+/// entries are evicted to bound memory growth under key churn.
+pub const DEFAULT_MAX_KEYS: usize = 100_000;
+
 /// Entry in the rate limit store.
 #[derive(Debug, Clone)]
 struct RateLimitEntry {
@@ -30,8 +34,9 @@ impl RateLimitEntry {
         }
     }
 
-    /// Check if the window has expired and reset if needed.
-    fn maybe_reset(&mut self) {
+    /// Update the window duration if config changed, and reset if expired.
+    fn maybe_reset(&mut self, window_duration: Duration) {
+        self.window_duration = window_duration;
         if self.window_start.elapsed() >= self.window_duration {
             self.count = 0;
             self.window_start = Instant::now();
@@ -96,6 +101,7 @@ impl Drop for CleanupGuard {
 #[derive(Debug, Clone)]
 pub struct InMemoryBackend {
     entries: Arc<DashMap<String, RateLimitEntry>>,
+    max_keys: usize,
     _cleanup_guard: Arc<CleanupGuard>,
 }
 
@@ -106,10 +112,11 @@ impl Default for InMemoryBackend {
 }
 
 impl InMemoryBackend {
-    /// Create a new in-memory backend.
+    /// Create a new in-memory backend with the default key cap ([`DEFAULT_MAX_KEYS`]).
     pub fn new() -> Self {
         Self {
             entries: Arc::new(DashMap::new()),
+            max_keys: DEFAULT_MAX_KEYS,
             _cleanup_guard: Arc::new(CleanupGuard(None)),
         }
     }
@@ -123,6 +130,19 @@ impl InMemoryBackend {
     /// rather than an accidental default.
     pub fn single_instance() -> Self {
         Self::new()
+    }
+
+    /// Configure the maximum number of tracked keys before eviction occurs.
+    ///
+    /// Clamped to at least 1 so the backend always tracks active keys.
+    pub fn with_max_keys(mut self, max_keys: usize) -> Self {
+        self.max_keys = max_keys.max(1);
+        self
+    }
+
+    /// Maximum number of keys tracked by this backend.
+    pub fn max_keys(&self) -> usize {
+        self.max_keys
     }
 
     /// Create a new in-memory backend with periodic cleanup.
@@ -149,7 +169,26 @@ impl InMemoryBackend {
 
         Self {
             entries,
+            max_keys: DEFAULT_MAX_KEYS,
             _cleanup_guard: Arc::new(CleanupGuard(Some(handle))),
+        }
+    }
+
+    /// Evict expired (and, if still full, arbitrary) entries before inserting a
+    /// new key so tracked keys remain bounded under key churn.
+    fn evict_if_full(&self, incoming_key: &str) {
+        if self.entries.len() < self.max_keys || self.entries.contains_key(incoming_key) {
+            return;
+        }
+
+        self.entries
+            .retain(|_, entry| entry.window_start.elapsed() < entry.window_duration);
+
+        while self.entries.len() >= self.max_keys {
+            let Some(victim) = self.entries.iter().next().map(|entry| entry.key().clone()) else {
+                break;
+            };
+            self.entries.remove(&victim);
         }
     }
 
@@ -176,12 +215,17 @@ impl RateLimitBackend for InMemoryBackend {
             return Ok(RateLimitResult::allowed(config.max_requests(), 0));
         };
 
-        if entry.window_start.elapsed() >= entry.window_duration {
+        let elapsed = entry.window_start.elapsed();
+        let window = config.window();
+        if elapsed >= window {
             return Ok(RateLimitResult::allowed(config.max_requests(), 0));
         }
 
         if entry.count >= config.max_requests() {
-            Ok(RateLimitResult::denied(entry.count, entry.time_remaining()))
+            Ok(RateLimitResult::denied(
+                entry.count,
+                window.saturating_sub(elapsed),
+            ))
         } else {
             let remaining = config.max_requests() - entry.count;
             Ok(RateLimitResult::allowed(remaining, entry.count))
@@ -189,12 +233,14 @@ impl RateLimitBackend for InMemoryBackend {
     }
 
     async fn increment(&self, key: &str, config: &RateLimitConfig) -> Result<u64> {
+        self.evict_if_full(key);
+
         let mut entry = self
             .entries
             .entry(key.to_string())
             .or_insert_with(|| RateLimitEntry::new(config.window()));
 
-        entry.maybe_reset();
+        entry.maybe_reset(config.window());
         entry.count += 1;
 
         Ok(entry.count)
@@ -210,12 +256,14 @@ impl RateLimitBackend for InMemoryBackend {
         key: &str,
         config: &RateLimitConfig,
     ) -> Result<RateLimitResult> {
+        self.evict_if_full(key);
+
         let mut entry = self
             .entries
             .entry(key.to_string())
             .or_insert_with(|| RateLimitEntry::new(config.window()));
 
-        entry.maybe_reset();
+        entry.maybe_reset(config.window());
 
         if entry.count >= config.max_requests() {
             return Ok(RateLimitResult::denied(entry.count, entry.time_remaining()));

@@ -71,7 +71,7 @@ pub use crate::entry::{AuditAction, AuditEntry, AuditLogRow};
 pub use crate::error::{AuditError, AuditResult};
 pub use crate::query::{
     count_audit_logs_from_table, get_audit_log_by_id_from_table, list_audit_logs_from_table,
-    AuditLogFilters,
+    AuditLogFilters, DEFAULT_AUDIT_LOG_LIMIT, MAX_AUDIT_LOG_LIMIT,
 };
 pub use crate::tables::AuditTable;
 pub use crate::writer::{append_audit_log_to_table, append_audit_log_to_table_async};

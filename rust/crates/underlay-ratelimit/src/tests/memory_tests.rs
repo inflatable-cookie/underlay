@@ -83,3 +83,50 @@ async fn test_separate_keys() {
         .unwrap();
     assert!(result.is_allowed());
 }
+
+#[tokio::test]
+async fn test_window_duration_updates_when_config_changes() {
+    let backend = InMemoryBackend::new();
+    let long_window = RateLimitConfig::new(1, Duration::from_secs(60));
+    let short_window = RateLimitConfig::new(1, Duration::from_millis(30));
+
+    let res = backend
+        .check_and_increment("key", &long_window)
+        .await
+        .unwrap();
+    assert!(res.is_allowed());
+
+    let denied = backend
+        .check_and_increment("key", &long_window)
+        .await
+        .unwrap();
+    assert!(denied.is_denied());
+
+    tokio::time::sleep(Duration::from_millis(40)).await;
+
+    // Switching to the shorter window should immediately expire the entry.
+    let res = backend
+        .check_and_increment("key", &short_window)
+        .await
+        .unwrap();
+    assert!(res.is_allowed());
+}
+
+#[tokio::test]
+async fn test_max_keys_caps_tracked_entries_under_churn() {
+    let backend = InMemoryBackend::new().with_max_keys(10);
+    let config = RateLimitConfig::new(5, Duration::from_secs(60));
+
+    for i in 0..50 {
+        let key = format!("churn:{i}");
+        let res = backend.check_and_increment(&key, &config).await.unwrap();
+        assert!(res.is_allowed());
+        assert!(
+            backend.len() <= 10,
+            "tracked key count {} exceeded cap 10",
+            backend.len()
+        );
+    }
+
+    assert_eq!(backend.len(), 10);
+}

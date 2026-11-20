@@ -20,7 +20,8 @@
 //! let inner: &reqwest::Client = client.inner();
 //! ```
 
-use std::net::{IpAddr, ToSocketAddrs};
+use std::net::{IpAddr, SocketAddr, ToSocketAddrs};
+use std::sync::Arc;
 use std::time::Duration;
 
 pub use reqwest;
@@ -88,17 +89,20 @@ impl HttpClient {
 
     /// Build a client for **untrusted / user-influenced** outbound targets.
     ///
-    /// Adds SSRF protection on top of the default timeouts: redirects are
-    /// capped at [`EXTERNAL_MAX_REDIRECTS`] and every hop's host is
-    /// re-checked, rejecting private, loopback, link-local, and unspecified
-    /// addresses (including the cloud metadata endpoint `169.254.169.254`).
+    /// Adds SSRF protection on top of the default timeouts:
+    /// - Installs a custom async DNS resolver that validates every resolved IP
+    ///   at connect time, rejecting private, loopback, link-local, and
+    ///   unspecified addresses (closing the DNS-rebinding TOCTOU window).
+    /// - Caps redirects at [`EXTERNAL_MAX_REDIRECTS`] and rejects any hop that
+    ///   targets a non-http(s) scheme or non-public IP literal with an error.
     ///
     /// Callers should still pass each request URL through
-    /// [`validate_external_url`] before sending, since DNS for the initial
-    /// host is resolved there; the redirect policy covers subsequent hops.
+    /// [`validate_external_url`] before sending so IP-literal targets and bad
+    /// schemes fail before any network I/O.
     pub fn external() -> Result<Self, HttpClientError> {
         let inner = base_builder(concat!("underlay/", env!("CARGO_PKG_VERSION")).to_string())
             .redirect(external_redirect_policy())
+            .dns_resolver(Arc::new(ExternalDnsResolver))
             .build()?;
         Ok(Self { inner })
     }
@@ -153,16 +157,75 @@ fn bounded_fallback(build_error: reqwest::Error) -> HttpClient {
     HttpClient { inner }
 }
 
+/// Async DNS resolver for [`HttpClient::external`] that validates all resolved
+/// addresses at connect time, avoiding blocking `ToSocketAddrs` calls on Tokio
+/// worker threads and closing the DNS-rebinding TOCTOU window.
+struct ExternalDnsResolver;
+
+impl reqwest::dns::Resolve for ExternalDnsResolver {
+    fn resolve(&self, name: reqwest::dns::Name) -> reqwest::dns::Resolving {
+        Box::pin(async move {
+            let host = name.as_str();
+            let addrs: Vec<SocketAddr> = tokio::net::lookup_host((host, 0))
+                .await
+                .map_err(|err| -> Box<dyn std::error::Error + Send + Sync> {
+                    Box::new(HttpClientError::InvalidUrl(format!("{host}: {err}")))
+                })?
+                .collect();
+
+            if addrs.is_empty() {
+                return Err(Box::new(HttpClientError::InvalidUrl(format!(
+                    "{host}: no addresses resolved"
+                )))
+                    as Box<dyn std::error::Error + Send + Sync>);
+            }
+
+            if addrs.iter().any(|addr| !is_public_ip(addr.ip())) {
+                return Err(Box::new(HttpClientError::BlockedTarget(host.to_string()))
+                    as Box<dyn std::error::Error + Send + Sync>);
+            }
+
+            let addrs: reqwest::dns::Addrs = Box::new(addrs.into_iter());
+            Ok(addrs)
+        })
+    }
+}
+
+fn validate_redirect_target(url: &reqwest::Url) -> Result<(), HttpClientError> {
+    match url.scheme() {
+        "http" | "https" => {}
+        other => {
+            return Err(HttpClientError::InvalidUrl(format!(
+                "unsupported scheme: {other}"
+            )));
+        }
+    }
+
+    let host = url
+        .host()
+        .ok_or_else(|| HttpClientError::InvalidUrl(url.to_string()))?;
+
+    match host {
+        url::Host::Ipv4(v4) if !is_public_ip(IpAddr::V4(v4)) => {
+            Err(HttpClientError::BlockedTarget(v4.to_string()))
+        }
+        url::Host::Ipv6(v6) if !is_public_ip(IpAddr::V6(v6)) => {
+            Err(HttpClientError::BlockedTarget(v6.to_string()))
+        }
+        // Public IP literals are allowed; domain names are validated
+        // asynchronously at connect time by `ExternalDnsResolver`.
+        url::Host::Ipv4(_) | url::Host::Ipv6(_) | url::Host::Domain(_) => Ok(()),
+    }
+}
+
 fn external_redirect_policy() -> reqwest::redirect::Policy {
     reqwest::redirect::Policy::custom(|attempt| {
         if attempt.previous().len() >= EXTERNAL_MAX_REDIRECTS {
             return attempt.error("too many redirects");
         }
-        match host_is_blocked(attempt.url()) {
-            Ok(true) => attempt.stop(),
-            Ok(false) => attempt.follow(),
-            // Unresolvable host on a redirect: refuse rather than follow.
-            Err(_) => attempt.stop(),
+        match validate_redirect_target(attempt.url()) {
+            Ok(()) => attempt.follow(),
+            Err(err) => attempt.error(err),
         }
     })
 }

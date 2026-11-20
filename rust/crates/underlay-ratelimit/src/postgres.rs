@@ -56,8 +56,17 @@ impl PostgresBackend {
     }
 
     fn to_result(config: &RateLimitConfig, count: u64, elapsed_secs: f64) -> RateLimitResult {
-        if count <= config.max_requests() {
-            RateLimitResult::allowed(config.max_requests() - count, count)
+        Self::to_result_from_decision(config, count <= config.max_requests(), count, elapsed_secs)
+    }
+
+    fn to_result_from_decision(
+        config: &RateLimitConfig,
+        allowed: bool,
+        count: u64,
+        elapsed_secs: f64,
+    ) -> RateLimitResult {
+        if allowed {
+            RateLimitResult::allowed(config.max_requests().saturating_sub(count), count)
         } else {
             let window_secs = config.window().as_secs_f64();
             let remaining = (window_secs - elapsed_secs).max(0.0).ceil() as u64;
@@ -92,22 +101,15 @@ impl RateLimitBackend for PostgresBackend {
                     .try_get::<i64, _>("count")
                     .map_err(Self::map_err)?
                     .max(0) as u64;
-                let elapsed: f64 = row.try_get::<f64, _>("elapsed").unwrap_or(0.0);
+                let elapsed: f64 = row.try_get::<f64, _>("elapsed").map_err(Self::map_err)?;
                 // check() is non-incrementing: a count already at the limit
                 // means the next request would exceed it.
-                if count < config.max_requests() {
-                    Ok(RateLimitResult::allowed(
-                        config.max_requests() - count,
-                        count,
-                    ))
-                } else {
-                    let window_secs = config.window().as_secs_f64();
-                    let remaining = (window_secs - elapsed).max(0.0).ceil() as u64;
-                    Ok(RateLimitResult::denied(
-                        count,
-                        std::time::Duration::from_secs(remaining.max(1)),
-                    ))
-                }
+                Ok(Self::to_result_from_decision(
+                    config,
+                    count < config.max_requests(),
+                    count,
+                    elapsed,
+                ))
             }
         }
     }
@@ -161,42 +163,70 @@ impl RateLimitBackend for PostgresBackend {
         key: &str,
         config: &RateLimitConfig,
     ) -> Result<RateLimitResult> {
+        if config.max_requests() == 0 {
+            let retry_after = config.window().max(std::time::Duration::from_secs(1));
+            return Ok(RateLimitResult::denied(0, retry_after));
+        }
+
         let table = self.table.quoted();
-        // Single atomic upsert: no check-then-set race across replicas.
+        let max_requests = i64::try_from(config.max_requests()).unwrap_or(i64::MAX);
+        // Single atomic statement: only increments when the window has expired
+        // or count is still below max_requests, stopping over-limit counter
+        // inflation while keeping concurrent replicas race-free.
         let query = format!(
             r#"
-            INSERT INTO {table} (key, window_started_at, count)
-            VALUES ($1, NOW(), 1)
-            ON CONFLICT (key) DO UPDATE SET
-                count = CASE
-                    WHEN {table}.window_started_at <= NOW() - make_interval(secs => $2)
-                    THEN 1
-                    ELSE {table}.count + 1
-                END,
-                window_started_at = CASE
-                    WHEN {table}.window_started_at <= NOW() - make_interval(secs => $2)
-                    THEN NOW()
-                    ELSE {table}.window_started_at
-                END
-            RETURNING count,
+            WITH attempted AS (
+                INSERT INTO {table} (key, window_started_at, count)
+                VALUES ($1, NOW(), 1)
+                ON CONFLICT (key) DO UPDATE SET
+                    count = CASE
+                        WHEN {table}.window_started_at <= NOW() - make_interval(secs => $2)
+                        THEN 1
+                        ELSE {table}.count + 1
+                    END,
+                    window_started_at = CASE
+                        WHEN {table}.window_started_at <= NOW() - make_interval(secs => $2)
+                        THEN NOW()
+                        ELSE {table}.window_started_at
+                    END
+                WHERE {table}.window_started_at <= NOW() - make_interval(secs => $2)
+                   OR {table}.count < $3
+                RETURNING count,
+                    EXTRACT(EPOCH FROM (NOW() - window_started_at))::float8 AS elapsed
+            )
+            SELECT TRUE AS allowed, count, elapsed FROM attempted
+            UNION ALL
+            SELECT FALSE AS allowed, count,
                 EXTRACT(EPOCH FROM (NOW() - window_started_at))::float8 AS elapsed
+            FROM {table}
+            WHERE key = $1 AND NOT EXISTS (SELECT 1 FROM attempted)
+            LIMIT 1
             "#
         );
 
         let row = sqlx::query(sqlx::AssertSqlSafe(query))
             .bind(key)
             .bind(config.window().as_secs_f64())
-            .fetch_one(&self.pool)
+            .bind(max_requests)
+            .fetch_optional(&self.pool)
             .await
             .map_err(Self::map_err)?;
 
+        let Some(row) = row else {
+            let retry_after = config.window().max(std::time::Duration::from_secs(1));
+            return Ok(RateLimitResult::denied(config.max_requests(), retry_after));
+        };
+
+        let allowed: bool = row.try_get::<bool, _>("allowed").map_err(Self::map_err)?;
         let count = row
             .try_get::<i64, _>("count")
             .map_err(Self::map_err)?
             .max(0) as u64;
-        let elapsed: f64 = row.try_get::<f64, _>("elapsed").unwrap_or(0.0);
+        let elapsed: f64 = row.try_get::<f64, _>("elapsed").map_err(Self::map_err)?;
 
-        Ok(Self::to_result(config, count, elapsed))
+        Ok(Self::to_result_from_decision(
+            config, allowed, count, elapsed,
+        ))
     }
 }
 

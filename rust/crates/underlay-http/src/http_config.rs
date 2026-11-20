@@ -104,7 +104,8 @@ impl HttpServerConfig {
             .and_then(|raw| raw.parse::<u16>().ok())
             .unwrap_or(3000);
 
-        let bind_addr = env::var("HOST").unwrap_or_else(|_| {
+        let host_env = env::var("HOST").ok();
+        let bind_addr = host_env.clone().unwrap_or_else(|| {
             // In local dev/test without explicit PORT, bind only to localhost
             // Otherwise bind publicly (needed for containers, proxies, etc.)
             let should_bind_publicly = !env.is_local_dev() || env::var("PORT").is_ok();
@@ -116,9 +117,13 @@ impl HttpServerConfig {
             }
         });
 
-        // Public host defaults to HOST value, which itself defaults appropriately
-        // For local dev, set HOST=localhost in .env for browser-compatible URLs
-        let public_host = env::var("PUBLIC_HOST").unwrap_or_else(|_| bind_addr.clone());
+        let public_host = env::var("PUBLIC_HOST").unwrap_or_else(|_| {
+            if env.is_local_dev() && host_env.is_none() {
+                "localhost".to_string()
+            } else {
+                bind_addr.clone()
+            }
+        });
 
         Self {
             bind_addr,
@@ -136,7 +141,8 @@ impl HttpServerConfig {
             Err(_) => 3000,
         };
 
-        let bind_addr = env::var("HOST").unwrap_or_else(|_| {
+        let host_env = env::var("HOST").ok();
+        let bind_addr = host_env.clone().unwrap_or_else(|| {
             let should_bind_publicly = !env.is_local_dev() || env::var("PORT").is_ok();
 
             if should_bind_publicly {
@@ -146,7 +152,13 @@ impl HttpServerConfig {
             }
         });
 
-        let public_host = env::var("PUBLIC_HOST").unwrap_or_else(|_| bind_addr.clone());
+        let public_host = env::var("PUBLIC_HOST").unwrap_or_else(|_| {
+            if env.is_local_dev() && host_env.is_none() {
+                "localhost".to_string()
+            } else {
+                bind_addr.clone()
+            }
+        });
 
         Self::try_new(bind_addr, port, public_host)
     }

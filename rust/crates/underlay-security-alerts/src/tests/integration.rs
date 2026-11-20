@@ -14,9 +14,11 @@ use uuid::Uuid;
 use underlay_testing::TestDb;
 
 use crate::store::{
-    has_recent_alert_in_table, has_recent_scoped_alert_in_table, insert_alert_event_into_table,
-    insert_scoped_alert_event_into_table, load_account_signal_counts_from_table,
-    load_global_signal_counts_from_table, load_ip_signal_counts_from_table,
+    has_recent_alert_in_table, has_recent_scoped_alert_in_table,
+    insert_alert_event_if_not_in_cooldown, insert_alert_event_into_table,
+    insert_scoped_alert_event_if_not_in_cooldown, insert_scoped_alert_event_into_table,
+    load_account_signal_counts_from_table, load_global_signal_counts_from_table,
+    load_ip_signal_counts_from_table,
 };
 use crate::tables::{LoginAttemptsTable, SecurityAlertEventsTable};
 use crate::types::{
@@ -268,4 +270,82 @@ async fn scoped_alert_insert_and_cooldown() {
     )
     .await
     .expect("scoped cooldown"));
+}
+
+#[tokio::test]
+#[ignore = "requires a Postgres test database (UNDERLAY_TEST_DATABASE_URL or Docker)"]
+async fn atomic_cooldown_insert_deduplicates_concurrent_requests() {
+    let fx = setup().await;
+    let now = Utc::now();
+    let input = SecurityAlertEventInput {
+        alert_type: SecurityAlertType::LoginFailuresFromIp,
+        ip_address: "203.0.113.99".to_string(),
+        window_started_at: now - Duration::minutes(5),
+        window_ended_at: now,
+        counts: LoginAttemptSignalCounts {
+            failed_attempts: 10,
+            distinct_users: 2,
+            lockouts: 0,
+        },
+        details: json!({}),
+    };
+
+    let (first, second) = tokio::join!(
+        insert_alert_event_if_not_in_cooldown(
+            fx.db.pool(),
+            &fx.alert_events,
+            &input,
+            Duration::minutes(30),
+            now,
+        ),
+        insert_alert_event_if_not_in_cooldown(
+            fx.db.pool(),
+            &fx.alert_events,
+            &input,
+            Duration::minutes(30),
+            now,
+        ),
+    );
+
+    let inserted = [first.expect("first"), second.expect("second")]
+        .into_iter()
+        .flatten()
+        .count();
+    assert_eq!(inserted, 1, "exactly one concurrent IP alert should insert");
+
+    let scoped_input = ScopedSecurityAlertEventInput {
+        alert_type: SecurityAlertType::LoginFailuresForAccount,
+        scope_key: format!("account:{}", Uuid::now_v7()),
+        ip_address: None,
+        window_started_at: now - Duration::minutes(5),
+        window_ended_at: now,
+        failed_attempts: 15,
+        details: json!({}),
+    };
+
+    let (s1, s2) = tokio::join!(
+        insert_scoped_alert_event_if_not_in_cooldown(
+            fx.db.pool(),
+            &fx.alert_events,
+            &scoped_input,
+            Duration::minutes(30),
+            now,
+        ),
+        insert_scoped_alert_event_if_not_in_cooldown(
+            fx.db.pool(),
+            &fx.alert_events,
+            &scoped_input,
+            Duration::minutes(30),
+            now,
+        ),
+    );
+
+    let scoped_inserted = [s1.expect("first scoped"), s2.expect("second scoped")]
+        .into_iter()
+        .flatten()
+        .count();
+    assert_eq!(
+        scoped_inserted, 1,
+        "exactly one concurrent scoped alert should insert"
+    );
 }

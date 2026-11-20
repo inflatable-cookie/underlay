@@ -240,41 +240,34 @@ pub fn weak_etag_for_bytes(payload: &[u8]) -> String {
 /// Matches `If-None-Match` header values against a current ETag using RFC 9110
 /// weak comparison.
 pub fn if_none_match_matches(headers: &HeaderMap, current_etag: &str) -> bool {
-    let Some(raw) = headers.get(axum::http::header::IF_NONE_MATCH) else {
-        return false;
-    };
-
-    let Ok(raw_str) = raw.to_str() else {
-        return false;
-    };
-
     let current_opaque = strip_weak_prefix(current_etag.trim());
 
-    raw_str
-        .split(',')
-        .map(|part| part.trim())
+    headers
+        .get_all(axum::http::header::IF_NONE_MATCH)
+        .iter()
+        .filter_map(|raw| raw.to_str().ok())
+        .flat_map(|raw_str| raw_str.split(','))
+        .map(str::trim)
         .any(|candidate| candidate == "*" || strip_weak_prefix(candidate) == current_opaque)
 }
 
 /// Matches `If-Match` header values against a current ETag using RFC 9110
 /// strong comparison (weak ETags never match).
 pub fn if_match_matches(headers: &HeaderMap, current_etag: &str) -> bool {
-    let Some(raw) = headers.get(axum::http::header::IF_MATCH) else {
-        return false;
-    };
-
-    let Ok(raw_str) = raw.to_str() else {
-        return false;
-    };
-
     let current = current_etag.trim();
 
-    raw_str.split(',').map(|part| part.trim()).any(|candidate| {
-        if candidate == "*" {
-            return true;
-        }
-        !is_weak_etag(candidate) && !is_weak_etag(current) && candidate == current
-    })
+    headers
+        .get_all(axum::http::header::IF_MATCH)
+        .iter()
+        .filter_map(|raw| raw.to_str().ok())
+        .flat_map(|raw_str| raw_str.split(','))
+        .map(str::trim)
+        .any(|candidate| {
+            if candidate == "*" {
+                return true;
+            }
+            !is_weak_etag(candidate) && !is_weak_etag(current) && candidate == current
+        })
 }
 
 pub fn etag_header_value(etag: &str) -> Option<HeaderValue> {

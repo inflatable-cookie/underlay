@@ -278,3 +278,64 @@ async fn timeout_fires_on_stalled_server() {
         .expect_err("stalled server must not succeed");
     assert!(err.is_timeout(), "expected a timeout error, got: {err}");
 }
+
+async fn redirect_server(location: &'static str) -> std::net::SocketAddr {
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+        .await
+        .expect("bind");
+    let addr = listener.local_addr().expect("addr");
+    tokio::spawn(async move {
+        if let Ok((mut socket, _)) = listener.accept().await {
+            let mut buf = [0u8; 1024];
+            let _ = socket.read(&mut buf).await;
+            let response = format!(
+                "HTTP/1.1 302 Found\r\nLocation: {location}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
+            );
+            let _ = socket.write_all(response.as_bytes()).await;
+        }
+    });
+    addr
+}
+
+#[tokio::test]
+async fn external_client_returns_error_on_blocked_redirect_ip() {
+    let addr = redirect_server("http://169.254.169.254/latest/meta-data/").await;
+    let client = HttpClient::external().expect("external client should build");
+
+    let err = client
+        .get(format!("http://{addr}/start"))
+        .send()
+        .await
+        .expect_err("redirect to metadata IP must return Err, not Ok(302)");
+    assert!(err.is_redirect(), "expected redirect error, got: {err}");
+}
+
+#[tokio::test]
+async fn external_client_returns_error_on_blocked_redirect_hostname() {
+    let addr = redirect_server("http://localhost:1/internal").await;
+    let client = HttpClient::external().expect("external client should build");
+
+    let err = client
+        .get(format!("http://{addr}/start"))
+        .send()
+        .await
+        .expect_err("redirect to localhost must return Err, not Ok(302)");
+    assert!(
+        err.is_connect() || err.is_redirect(),
+        "expected connect/redirect error, got: {err}"
+    );
+}
+
+#[tokio::test]
+async fn external_client_blocks_loopback_hostname_at_connect_time() {
+    let client = HttpClient::external().expect("external client should build");
+
+    let err = client
+        .get("http://localhost:1/")
+        .send()
+        .await
+        .expect_err("connect-time DNS resolver must reject loopback hostname");
+    assert!(err.is_connect(), "expected connect error, got: {err}");
+}

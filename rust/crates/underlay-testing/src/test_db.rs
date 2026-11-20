@@ -164,9 +164,9 @@ impl TestDb {
     /// Load a SQL fixture file
     ///
     /// The fixture content should be valid SQL that will be executed
-    /// in the test schema.
+    /// in the test schema. Supports multi-statement SQL scripts.
     pub async fn load_fixture(&self, sql: &str) -> Result<(), sqlx::Error> {
-        sqlx::query(sqlx::AssertSqlSafe(sql))
+        sqlx::raw_sql(sqlx::AssertSqlSafe(sql))
             .execute(&self.pool)
             .await?;
         Ok(())
@@ -229,7 +229,7 @@ impl TestDb {
 
         for entry in entries {
             let sql = fs::read_to_string(entry.path())?;
-            sqlx::query(sqlx::AssertSqlSafe(sql))
+            sqlx::raw_sql(sqlx::AssertSqlSafe(sql.as_str()))
                 .execute(&self.pool)
                 .await
                 .map_err(|e| format!("Migration {:?} failed: {}", entry.file_name(), e))?;

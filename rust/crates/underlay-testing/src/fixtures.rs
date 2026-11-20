@@ -21,19 +21,26 @@ impl Fixtures {
 
     /// Generate a unique email address for testing
     pub fn email(prefix: &str) -> String {
-        let id = Uuid::now_v7().to_string()[..8].to_string();
+        let id = Self::random_suffix();
         format!("{prefix}-{id}@test.example.com")
     }
 
     /// Generate a unique username for testing
     pub fn username(prefix: &str) -> String {
-        let id = Uuid::now_v7().to_string()[..8].to_string();
+        let id = Self::random_suffix();
         format!("{prefix}_{id}")
     }
 
     /// Generate a test password (not for production use!)
     pub fn password() -> String {
-        format!("TestPassword123!_{}", &Uuid::now_v7().to_string()[..8])
+        format!("TestPassword123!_{}", Self::random_suffix())
+    }
+
+    /// Extract the random suffix of a UUIDv7 (last 16 hex chars / 62 random bits)
+    /// so calls within the same millisecond do not collide.
+    fn random_suffix() -> String {
+        let simple = Uuid::now_v7().simple().to_string();
+        simple[16..].to_string()
     }
 }
 

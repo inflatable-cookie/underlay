@@ -65,6 +65,34 @@ async fn test_headers() {
 }
 
 #[tokio::test]
+async fn test_multi_value_headers_are_preserved_case_insensitively() {
+    use axum::http::HeaderMap;
+
+    async fn echo_cookies(headers: HeaderMap) -> Json<Vec<String>> {
+        let values = headers
+            .get_all("cookie")
+            .iter()
+            .filter_map(|v| v.to_str().ok().map(str::to_string))
+            .collect();
+        Json(values)
+    }
+
+    let app = Router::new().route("/cookies", get(echo_cookies));
+    let server = TestServer::new(app);
+
+    let response = server
+        .get("/cookies")
+        .header("Cookie", "a=1")
+        .header("cookie", "b=2")
+        .send()
+        .await;
+
+    response.assert_ok();
+    let values: Vec<String> = response.json();
+    assert_eq!(values, vec!["a=1".to_string(), "b=2".to_string()]);
+}
+
+#[tokio::test]
 async fn test_json_body() {
     use axum::routing::post;
 

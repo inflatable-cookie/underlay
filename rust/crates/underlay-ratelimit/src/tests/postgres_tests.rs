@@ -62,3 +62,13 @@ fn to_result_denied_retry_after_is_at_least_one() {
     assert!(result.is_denied());
     assert_eq!(result.retry_after_secs(), 1);
 }
+
+#[test]
+fn to_result_from_decision_denies_at_limit_without_inflating_count() {
+    let config = RateLimitConfig::new(5, Duration::from_secs(60));
+    let result = PostgresBackend::to_result_from_decision(&config, false, 5, 10.0);
+    assert!(result.is_denied());
+    assert_eq!(result.count, 5);
+    assert_eq!(result.remaining, 0);
+    assert_eq!(result.retry_after_secs(), 50);
+}
