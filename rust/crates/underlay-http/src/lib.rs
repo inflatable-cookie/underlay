@@ -77,7 +77,7 @@ pub use crate::pagination::{PagePaginationParams, Paginated, PaginationMeta};
 pub use crate::path::{parse_uuid_path, parse_uuid_path_raw};
 pub use crate::query::{
     parse_sort_string, FieldMapping, FilterField, FilterOperator, ListQueryParams, QueryParams,
-    SortDirection, SortField, SqlValue, WhereBuilder,
+    SortDirection, SortField, WhereBuilder,
 };
 // Preserve `underlay_http::field_mapping!` after the model moved to
 // underlay-query.

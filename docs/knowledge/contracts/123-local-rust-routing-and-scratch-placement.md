@@ -28,7 +28,6 @@ anything.
 - [`rust/scripts/test-check-coverage.sh`](../../../rust/scripts/test-check-coverage.sh)
   — fake-tool proof of that route
 - [`scripts/test-consumer-conformance-fixtures.sh`](../../../scripts/test-consumer-conformance-fixtures.sh)
-  and [`scripts/auth-webauthn-manual-dossier.sh`](../../../scripts/auth-webauthn-manual-dossier.sh)
   — proof scratch placement
 - [`AGENTS.md`](../../../AGENTS.md), [`rust/AGENTS.md`](../../../rust/AGENTS.md)
 
@@ -121,9 +120,6 @@ directory, a drive root, or the checkout.
   no real coverage run.
 - `effigy check:consumer-conformance-fixtures` exercises the scratch placement
   end to end when the Builds volume is mounted.
-- `scripts/auth-webauthn-manual-dossier.sh` needs live consumer apps, so it is
-  covered here by syntax and placement review only; running it is a real
-  qualification run, not a routine check.
 
 ## Related
 

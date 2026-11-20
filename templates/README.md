@@ -1,6 +1,8 @@
 # Underlay Project Templates
 
 This directory contains template files for setting up new Underlay-based projects.
+For workspace topology, bootstrap, and bring-up rules, see
+`docs/knowledge/contracts/024-new-app-bootstrap-and-bring-up.md`.
 
 ## Placeholders
 
@@ -40,43 +42,6 @@ sed -i 's/{{DB_PASSWORD}}/postgres/g' docker-compose.yml
 docker compose up -d
 ```
 
-### scripts/setup.sh
-
-One-time setup script for new developers:
-
-1. Checks prerequisites (Docker, Rust, Bun)
-2. Starts Docker services
-3. Creates `.env` files from examples
-4. Runs database migrations
-5. Generates JWT keys
-6. Installs frontend dependencies
-
-Usage:
-```bash
-# Copy and customize
-cp templates/scripts/setup.sh ./scripts/setup.sh
-chmod +x ./scripts/setup.sh
-
-# Edit placeholders
-# Then run:
-./scripts/setup.sh
-```
-
-### scripts/reset-db.sh
-
-Database reset script for development:
-
-1. Drops existing database
-2. Creates fresh database
-3. Runs migrations
-4. Optionally runs seed data
-
-Usage:
-```bash
-./scripts/reset-db.sh         # Reset and migrate
-./scripts/reset-db.sh --seed  # Also run seeds
-```
-
 ## Quick Start
 
 For a new project named "MyApp":
@@ -84,20 +49,16 @@ For a new project named "MyApp":
 ```bash
 # 1. Create project structure
 mkdir myapp && cd myapp
-mkdir -p scripts
 
-# 2. Copy templates
+# 2. Copy docker template
 cp /path/to/underlay/templates/docker/docker-compose.dev.yml ./docker-compose.yml
-cp /path/to/underlay/templates/scripts/setup.sh ./scripts/
-cp /path/to/underlay/templates/scripts/reset-db.sh ./scripts/
-chmod +x scripts/*.sh
 
 # 3. Replace placeholders (macOS)
-sed -i '' 's/{{PROJECT_NAME}}/MyApp/g' docker-compose.yml scripts/*.sh
-sed -i '' 's/{{PROJECT_SLUG}}/myapp/g' docker-compose.yml scripts/*.sh
-sed -i '' 's/{{DB_NAME}}/myapp/g' docker-compose.yml scripts/*.sh
-sed -i '' 's/{{DB_USER}}/root/g' docker-compose.yml scripts/*.sh
-sed -i '' 's/{{DB_PASSWORD}}/postgres/g' docker-compose.yml scripts/*.sh
+sed -i '' 's/{{PROJECT_NAME}}/MyApp/g' docker-compose.yml
+sed -i '' 's/{{PROJECT_SLUG}}/myapp/g' docker-compose.yml
+sed -i '' 's/{{DB_NAME}}/myapp/g' docker-compose.yml
+sed -i '' 's/{{DB_USER}}/root/g' docker-compose.yml
+sed -i '' 's/{{DB_PASSWORD}}/postgres/g' docker-compose.yml
 sed -i '' 's/{{API_PORT}}/3000/g' scripts/*.sh
 sed -i '' 's/{{ADMIN_PORT}}/3001/g' scripts/*.sh
 sed -i '' 's/{{FRONT_PORT}}/3002/g' scripts/*.sh

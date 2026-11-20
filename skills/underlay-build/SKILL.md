@@ -149,7 +149,7 @@ skeleton that compiles and typechecks
 Use when you need to know the contract for a specific system area, or to check
 if an implementation is on-contract.
 
-**Opens:** `underlay/docs/contracts/contract-index.md`
+**Opens:** `underlay/docs/knowledge/contracts/README.md`
 
 **Quick map:**
 

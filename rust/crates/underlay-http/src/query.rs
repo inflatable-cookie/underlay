@@ -17,7 +17,7 @@ pub use params::{ListQueryParams, QueryParams};
 // from `underlay_http::query` are unaffected by the relocation.
 pub use underlay_query::{
     field_mapping, parse_sort_string, FieldMapping, FilterField, FilterOperator, SortDirection,
-    SortField, SqlValue, WhereBuilder,
+    SortField, WhereBuilder,
 };
 
 #[cfg(test)]

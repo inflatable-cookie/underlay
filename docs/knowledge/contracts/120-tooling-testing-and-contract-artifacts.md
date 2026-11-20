@@ -55,16 +55,9 @@ Primary machine-readable artifacts:
   the two surfaces declare different envelopes or required fields).
 - [`api-surface/endpoint-family-matrix.csv`](api-surface/endpoint-family-matrix.csv)
 
-Historical audit snapshots (from the `g01` poodle-adoption wave; retained for the
-archival record, read by no live check — do not treat as authoritative):
-
-- [`../../contracts/ui/poodle-underlay-coexistence-contract.json`](../../../contracts/ui/poodle-underlay-coexistence-contract.json)
-- [`../../contracts/ui/poodle-adoption-underlay-surface-groups.json`](../../../contracts/ui/poodle-adoption-underlay-surface-groups.json)
-- [`../../contracts/ui/poodle-prop-normalization-manifest.json`](../../../contracts/ui/poodle-prop-normalization-manifest.json)
-
 Supporting:
 
-- [`contract-index.md`](contract-index.md)
+- [`README.md`](README.md)
 - [`../architecture/system-inventory.md`](../architecture/system-inventory.md)
 
 If these diverge, the code and machine-readable artifacts win over planning
@@ -283,12 +276,6 @@ Core families:
 - `openapi/underlay.openapi.yaml` (envelope schema; drift-checked against
   `ts/src/client/envelopes.ts`)
 - `docs/knowledge/contracts/api-surface/endpoint-family-matrix.csv`
-
-Historical (g01 poodle-adoption snapshots, read by no live check):
-
-- `ui/poodle-underlay-coexistence-contract.json`
-- `ui/poodle-adoption-underlay-surface-groups.json`
-- `ui/poodle-prop-normalization-manifest.json`
 
 Rules:
 

@@ -1,48 +1,6 @@
 use crate::filter::FilterField;
 use std::collections::HashMap;
 
-/// A typed value to bind into a SQL parameter.
-///
-/// The string-based [`WhereBuilder`] API remains the default; `SqlValue` lets
-/// callers express non-text binds explicitly rather than stringifying them.
-#[derive(Debug, Clone, PartialEq)]
-pub enum SqlValue {
-    /// Text value.
-    Text(String),
-    /// Signed integer value.
-    Int(i64),
-    /// Floating-point value.
-    Float(f64),
-    /// Boolean value.
-    Bool(bool),
-    /// SQL NULL.
-    Null,
-}
-
-impl From<&str> for SqlValue {
-    fn from(v: &str) -> Self {
-        SqlValue::Text(v.to_string())
-    }
-}
-
-impl From<String> for SqlValue {
-    fn from(v: String) -> Self {
-        SqlValue::Text(v)
-    }
-}
-
-impl From<i64> for SqlValue {
-    fn from(v: i64) -> Self {
-        SqlValue::Int(v)
-    }
-}
-
-impl From<bool> for SqlValue {
-    fn from(v: bool) -> Self {
-        SqlValue::Bool(v)
-    }
-}
-
 /// Builder for constructing SQL WHERE clauses from filters
 ///
 /// Handles parameter binding safely to prevent SQL injection.

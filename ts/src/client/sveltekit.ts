@@ -191,11 +191,6 @@ export function createAuthHandle(options: SvelteKitAuthOptions): Handle {
   return async ({ event, resolve }) => {
     const tokenStore = createCookieTokenStore(event, options.cookies);
 
-    const rawHttp = createHttpClient({
-      baseUrl: options.baseUrl,
-      fetch: event.fetch,
-    });
-
     const http = createHttpClient({
       baseUrl: options.baseUrl,
       fetch: event.fetch,

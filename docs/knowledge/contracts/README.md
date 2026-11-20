@@ -43,10 +43,8 @@ machine-readable policy files.
 | [122-rust-public-api-inventory.md](122-rust-public-api-inventory.md) | M | Rust public API classification and first typed-boundary migration gates for the `g06` platform-contract transition |
 | [123-local-rust-routing-and-scratch-placement.md](123-local-rust-routing-and-scratch-placement.md) | L | Local-host Oxide routing for this checkout, the remaining Cargo uses by class, and agent/proof scratch placement on the Builds volume |
 
-## Index
+## Supporting artifacts
 
-- [contract-index.md](contract-index.md) is the canonical planning index for
-  the current and planned contract surface.
 - [app-review/underlay-app-review-checklist.json](app-review/underlay-app-review-checklist.json)
   is the retained machine-readable review checklist artifact for consumer-app
   audits.

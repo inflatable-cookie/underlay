@@ -5625,20 +5625,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "underlay-media-postgres"
-version = "0.10.5"
-dependencies = [
- "async-trait",
- "chrono",
- "sqlx",
- "tokio",
- "underlay-db",
- "underlay-media",
- "underlay-testing",
- "uuid",
-]
-
-[[package]]
 name = "underlay-metrics"
 version = "0.10.5"
 dependencies = [

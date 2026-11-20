@@ -269,15 +269,6 @@ pub enum AuthStateError {
     InvalidTableName(String),
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub struct AuthStateRow {
-    pub id: Uuid,
-    pub user_id: Option<Uuid>,
-    pub state_type: String,
-    pub state: serde_json::Value,
-}
-
 #[cfg(test)]
 #[path = "tests/integration.rs"]
 mod integration;
