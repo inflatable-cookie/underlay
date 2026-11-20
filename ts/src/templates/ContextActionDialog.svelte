@@ -151,10 +151,18 @@
       }
     }
     validationError = null;
+    const resolvedValues: Record<string, unknown> = { ...values };
+    if (!activeForm && action.fields) {
+      for (const field of action.fields) {
+        if (resolvedValues[field.id] === undefined && field.defaultValue !== undefined) {
+          resolvedValues[field.id] = field.defaultValue;
+        }
+      }
+    }
     const model = resolvedModel();
     onSubmit?.({
       action,
-      values,
+      values: resolvedValues,
       selectedProviderKey: model.providerKey,
       selectedModelId: model.modelId
     });
@@ -209,11 +217,12 @@
       {/if}
 
       {#if activeForm}
+        {@const model = resolvedModel()}
         {@render activeForm({
           action,
           values,
-          selectedProviderKey: selectedProviderKey || undefined,
-          selectedModelId: selectedModelId || undefined,
+          selectedProviderKey: model.providerKey,
+          selectedModelId: model.modelId,
           setValue,
           submit,
           cancel

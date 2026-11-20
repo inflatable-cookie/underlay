@@ -435,7 +435,7 @@
       {eyebrow}
       {subtitle}
       showSubtitleWithBreadcrumbs={shouldShowSubtitleWithBreadcrumbs}
-      backHref={resolvedBackInfo?.href ?? null}
+      backHref={resolvedBackInfo?.href ?? backHref ?? null}
       backLabel={resolvedBackInfo?.label ?? backLabel}
       backIsContextual={resolvedBackInfo?.contextual ?? false}
       bannerMessage={bannerMessage}

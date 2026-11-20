@@ -213,7 +213,6 @@ export function createListController<T, F extends Record<string, unknown> = Reco
 
   const doFetch = async (isRefetch = false) => {
     const seq = ++requestSeq;
-    _inFlight = true;
     // Resolve auth lazily (fetch path only) so setup stays SSR-safe; a
     // misconfiguration surfaces as the controller's error state.
     const resolved = tryResolveAuthFetchHandlers("createListController", options);
@@ -226,6 +225,7 @@ export function createListController<T, F extends Record<string, unknown> = Reco
       return;
     }
     const { getToken, onRefresh } = resolved.handlers;
+    _inFlight = true;
 
     // On initial load, show loading. On refetch, show refetching (keeps existing data visible)
     if (isRefetch) {

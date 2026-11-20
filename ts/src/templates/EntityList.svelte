@@ -1081,7 +1081,7 @@
       return;
     }
     if (event.key === "Escape") {
-      if (pendingDialogAction || batch.confirmingAction) {
+      if (pendingDialogAction || batch.pendingAction) {
         return;
       }
       if (selectionMode) {

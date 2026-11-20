@@ -100,7 +100,7 @@
   {subtitle}
   {eyebrow}
   level={headerLevel}
-  backHref={resolvedBackInfo?.href ?? null}
+  backHref={resolvedBackInfo?.href ?? backHref ?? null}
   backLabel={resolvedBackInfo?.label ?? backLabel}
   backIsContextual={resolvedBackInfo?.contextual ?? false}
 />

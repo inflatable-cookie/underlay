@@ -257,6 +257,9 @@ export function useAuthenticatedData<T>(
     const { getToken, onRefresh } = resolved.handlers;
 
     const fetchKey = options.queryKey ? options.queryKey() : null;
+    if (options.queryKey && _previousQueryKey === null) {
+      _previousQueryKey = fetchKey;
+    }
     if (isRefetch) {
       refetching = true;
     } else {
@@ -294,9 +297,6 @@ export function useAuthenticatedData<T>(
         // Mark as fetched even on error to prevent tryFetch from auto-retrying.
         // Users can still explicitly call refetch() to retry.
         _fetched = true;
-        if (options.queryKey && _previousQueryKey === null) {
-          _previousQueryKey = fetchKey;
-        }
       }
       loading = false;
       refetching = false;
@@ -327,9 +327,8 @@ export function useAuthenticatedData<T>(
     await doFetch(true);
   };
 
-  // --- Auto-fetch: resolve auth getters lazily inside $effect so components
-  // that mount before a root layout's onMount(() => configureAuth(...)) still
-  // pick up global auth getters once configured. ---
+  // --- Auto-fetch: resolve auth getters when the effect runs so configureAuth()
+  // called before mount is picked up without requiring setup-time ordering. ---
   $effect(() => {
     const globalConfig = getAuthConfig();
     const resolvedGetAuthLoading = options.getAuthLoading ?? globalConfig?.getAuthLoading;

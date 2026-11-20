@@ -92,7 +92,7 @@
 
     {#if hasMore}
       <div class="underlay-media-browse-panel__actions">
-        <Button variant="secondary" onClick={() => onLoadMore?.()} disabled={loading}>
+        <Button type="button" variant="secondary" onClick={() => onLoadMore?.()} disabled={loading}>
           {loading ? "Loading..." : loadMoreLabel}
         </Button>
       </div>

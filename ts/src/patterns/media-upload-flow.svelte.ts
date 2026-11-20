@@ -338,14 +338,6 @@ export function createMediaUploadFlow(
       onComplete?.(finaliseResponse.media);
     } catch (e) {
       if (generation !== runGeneration) return;
-      if ((e as { code?: string } | null)?.code === "UPLOAD_ABORTED") {
-        // User-initiated cancel: back to selection, keep the chosen file.
-        if (file !== null) {
-          step = "select";
-          progress = 0;
-        }
-        return;
-      }
 
       console.error("Upload failed", e);
       error = e instanceof Error ? e.message : "Upload failed";

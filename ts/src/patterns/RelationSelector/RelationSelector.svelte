@@ -206,7 +206,10 @@
     searchTimer = setTimeout(() => {
       if (query.trim()) {
         void ctx.performSearch(query);
-      } else {
+      } else if (
+        ctx.state.suggestionItems.length === 0 &&
+        !ctx.state.isSuggestionsLoading
+      ) {
         void ctx.loadSuggestions();
       }
     }, 250);
