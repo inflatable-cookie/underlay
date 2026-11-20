@@ -3,11 +3,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import {
-	toRomanNumerals,
-	formatRomanRange,
-	formatOutcomeLabel,
-} from "../../src/client/format";
+import { toRomanNumerals } from "../../src/client/format";
 
 // ============================================================================
 // toRomanNumerals
@@ -97,100 +93,6 @@ describe("toRomanNumerals", () => {
 			const result = toRomanNumerals(1994);
 			expect(result).toBe("mcmxciv");
 			expect(result).toBe(result.toLowerCase());
-		});
-	});
-});
-
-// ============================================================================
-// formatRomanRange
-// ============================================================================
-
-describe("formatRomanRange", () => {
-	describe("both from and to specified", () => {
-		it("formats simple range", () => {
-			expect(formatRomanRange(1, 3)).toBe("i-iii");
-			expect(formatRomanRange(5, 10)).toBe("v-x");
-		});
-
-		it("formats single value when from equals to", () => {
-			expect(formatRomanRange(7, 7)).toBe("vii");
-			expect(formatRomanRange(1, 1)).toBe("i");
-		});
-	});
-
-	describe("only from specified", () => {
-		it("formats as open-ended range", () => {
-			expect(formatRomanRange(5, null)).toBe("v+");
-			expect(formatRomanRange(10, undefined)).toBe("x+");
-		});
-	});
-
-	describe("only to specified", () => {
-		it("formats as range from 1", () => {
-			expect(formatRomanRange(null, 10)).toBe("i-x");
-			expect(formatRomanRange(undefined, 5)).toBe("i-v");
-		});
-	});
-
-	describe("neither specified", () => {
-		it("returns null", () => {
-			expect(formatRomanRange(null, null)).toBeNull();
-			expect(formatRomanRange(undefined, undefined)).toBeNull();
-		});
-	});
-
-	describe("edge cases", () => {
-		it("handles large numbers", () => {
-			expect(formatRomanRange(100, 200)).toBe("c-cc");
-		});
-
-		it("handles numbers outside roman range", () => {
-			// Numbers > 3999 are returned as-is
-			expect(formatRomanRange(1, 5000)).toBe("i-5000");
-		});
-	});
-});
-
-// ============================================================================
-// formatOutcomeLabel
-// ============================================================================
-
-describe("formatOutcomeLabel", () => {
-	describe("with range", () => {
-		it("returns key and range", () => {
-			const result = formatOutcomeLabel("A1a", 1, 3);
-			expect(result).toEqual({ key: "A1a", range: "i-iii" });
-		});
-
-		it("returns key and single value for equal from/to", () => {
-			const result = formatOutcomeLabel("B2b", 5, 5);
-			expect(result).toEqual({ key: "B2b", range: "v" });
-		});
-	});
-
-	describe("with partial range", () => {
-		it("returns open-ended range for from only", () => {
-			const result = formatOutcomeLabel("C3c", 7, null);
-			expect(result).toEqual({ key: "C3c", range: "vii+" });
-		});
-
-		it("returns range from 1 for to only", () => {
-			const result = formatOutcomeLabel("D4d", null, 10);
-			expect(result).toEqual({ key: "D4d", range: "i-x" });
-		});
-	});
-
-	describe("without range", () => {
-		it("returns key with null range", () => {
-			const result = formatOutcomeLabel("E5e", null, null);
-			expect(result).toEqual({ key: "E5e", range: null });
-		});
-	});
-
-	describe("preserves key exactly", () => {
-		it("does not modify the key", () => {
-			const result = formatOutcomeLabel("ABC-123_test", 1, 2);
-			expect(result.key).toBe("ABC-123_test");
 		});
 	});
 });

@@ -23,9 +23,8 @@ describe("client/sveltekit auth handle", () => {
 	it("creates auth handle that decorates locals and resolves when unprotected", async () => {
 		const { createAuthHandle } = await import("../../../src/client/sveltekit");
 
-		const rawHttp = { post: vi.fn() };
 		const authedHttp = { request: vi.fn() };
-		mocks.createHttpClient.mockReturnValueOnce(rawHttp).mockReturnValueOnce(authedHttp);
+		mocks.createHttpClient.mockReturnValueOnce(authedHttp);
 		mocks.createAuthCommands.mockReturnValue({ session: vi.fn().mockResolvedValue({ id: "ok" }) });
 
 		const cookies = createCookiesMock();

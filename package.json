@@ -102,74 +102,14 @@
       "types": "./ts/src/runtime/index.ts",
       "default": "./ts/src/runtime/index.ts"
     },
-    "./nightfire": {
-      "svelte": "./ts/src/nightfire/index.ts",
-      "types": "./ts/src/nightfire/index.ts",
-      "default": "./ts/src/nightfire/index.ts"
-    },
     "./nightfire/editor": {
       "svelte": "./ts/src/nightfire/editor.ts",
       "types": "./ts/src/nightfire/editor.ts",
       "default": "./ts/src/nightfire/editor.ts"
     },
-    "./nightfire/renderer": {
-      "svelte": "./ts/src/nightfire/renderer.ts",
-      "types": "./ts/src/nightfire/renderer.ts",
-      "default": "./ts/src/nightfire/renderer.ts"
-    },
-    "./nightfire/block-editor": {
-      "svelte": "./ts/src/nightfire/block-editor.ts",
-      "types": "./ts/src/nightfire/block-editor.ts",
-      "default": "./ts/src/nightfire/block-editor.ts"
-    },
-    "./nightfire/block-registration": {
-      "types": "./ts/src/nightfire/block-registration.ts",
-      "default": "./ts/src/nightfire/block-registration.ts"
-    },
-    "./nightfire/markdown": {
-      "svelte": "./ts/src/nightfire/markdown.ts",
-      "types": "./ts/src/nightfire/markdown.ts",
-      "default": "./ts/src/nightfire/markdown.ts"
-    },
-    "./nightfire/editor-registry": {
-      "types": "./ts/src/nightfire/editor-registry.ts",
-      "default": "./ts/src/nightfire/editor-registry.ts"
-    },
-    "./nightfire/render-registry": {
-      "types": "./ts/src/nightfire/render-registry.ts",
-      "default": "./ts/src/nightfire/render-registry.ts"
-    },
-    "./nightfire/validator-registry": {
-      "types": "./ts/src/nightfire/validator-registry.ts",
-      "default": "./ts/src/nightfire/validator-registry.ts"
-    },
-    "./nightfire/strategies": {
-      "types": "./ts/src/nightfire/strategies.ts",
-      "default": "./ts/src/nightfire/strategies.ts"
-    },
     "./nightfire/media": {
       "types": "./ts/src/nightfire/media/context.ts",
       "default": "./ts/src/nightfire/media/context.ts"
-    },
-    "./nightfire/media-locator": {
-      "types": "./ts/src/nightfire/media-locator.ts",
-      "default": "./ts/src/nightfire/media-locator.ts"
-    },
-    "./nightfire/block-ids": {
-      "types": "./ts/src/nightfire/block-ids.ts",
-      "default": "./ts/src/nightfire/block-ids.ts"
-    },
-    "./nightfire/block-versions": {
-      "types": "./ts/src/nightfire/block-versions.ts",
-      "default": "./ts/src/nightfire/block-versions.ts"
-    },
-    "./nightfire/utils": {
-      "types": "./ts/src/nightfire/utils.ts",
-      "default": "./ts/src/nightfire/utils.ts"
-    },
-    "./nightfire/validation": {
-      "types": "./ts/src/nightfire/validation.ts",
-      "default": "./ts/src/nightfire/validation.ts"
     },
     "./styles": {
       "svelte": "./ts/src/styles/index.ts",
@@ -235,10 +175,6 @@
     "./client/types": {
       "types": "./ts/src/client/types.ts",
       "default": "./ts/src/client/types.ts"
-    },
-    "./client/soft-delete": {
-      "types": "./ts/src/client/soft-delete.ts",
-      "default": "./ts/src/client/soft-delete.ts"
     },
     "./client/sveltekit": {
       "types": "./ts/src/client/sveltekit.ts",

@@ -1,8 +1,8 @@
 <script lang="ts">
   import { Card } from "@inflatable-cookie/poodle-svelte";
 
-  import { NightfireRenderer } from "../nightfire/renderer";
-  import { isEmptyNightfire, normaliseNightfireValue } from "../nightfire/utils";
+  import { NightfireRenderer } from "@inflatable-cookie/nightfire/renderer";
+  import { isEmptyNightfire, normaliseNightfireValue } from "@inflatable-cookie/nightfire/utils";
 
   interface Props {
     title?: string;

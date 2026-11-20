@@ -40,7 +40,7 @@ describe("client/sveltekit refresh adapter", () => {
 		});
 
 		await handle({ event, resolve } as any);
-		const cfg = mocks.createHttpClient.mock.calls[1][0];
+		const cfg = mocks.createHttpClient.mock.calls[0][0];
 		const refresh = cfg.auth.refresh as (ctx: {
 			rawRequest: (req: any) => Promise<any>;
 			getRefreshToken: () => Promise<string | null>;
@@ -120,7 +120,7 @@ describe("client/sveltekit refresh adapter", () => {
 		});
 
 		await handle({ event, resolve } as any);
-		const cfg = mocks.createHttpClient.mock.calls[1][0];
+		const cfg = mocks.createHttpClient.mock.calls[0][0];
 		const refresh = cfg.auth.refresh as (ctx: {
 			rawRequest: (req: any) => Promise<any>;
 			getRefreshToken: () => Promise<string | null>;

@@ -18,7 +18,7 @@ import {
   checkWorkspaceShape,
   runWorkspaceShapeCli,
 } from "@inflatable-cookie/underlay/tools/workspace-shape";
-import { getBlockEditor } from "@inflatable-cookie/underlay/nightfire";
+import { createNightfireMediaContext } from "@inflatable-cookie/underlay/nightfire/media";
 
 describe("package compatibility barrels", () => {
   it("exposes retained client, runtime, and nightfire compatibility subpaths", () => {
@@ -48,7 +48,7 @@ describe("package compatibility barrels", () => {
       "/items?limit=10",
     );
     expect(response.data).toEqual(["item"]);
-    expect(getBlockEditor("missing", "missing")).toBeNull();
+    expect(typeof createNightfireMediaContext).toBe("function");
   });
 
   it("exposes retained runtime, testing, and tools public subpaths", () => {

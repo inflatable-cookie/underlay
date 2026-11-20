@@ -2,7 +2,7 @@ import MediaEditor from "./MediaEditor.svelte";
 import {
   registerBlockEditor,
   registerBlockEmptyChecker
-} from "../editor-registry";
+} from "@inflatable-cookie/nightfire/editor-registry";
 
 // Keep the historical Underlay media-library picker available to any schema
 // whose Nightfire strategy admits the `media` block type.

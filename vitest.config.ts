@@ -31,6 +31,7 @@ export default defineConfig({
 		},
 	resolve: {
 		alias: {
+			'@inflatable-cookie/underlay/nightfire/media': resolve(import.meta.dirname, './ts/src/nightfire/media/context.ts'),
 			'@inflatable-cookie/underlay': resolve(import.meta.dirname, './ts/src'),
 			'@inflatable-cookie/underlay/client': resolve(import.meta.dirname, './ts/src/client'),
 			'@inflatable-cookie/underlay/patterns': resolve(import.meta.dirname, './ts/src/patterns'),
