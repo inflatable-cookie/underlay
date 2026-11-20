@@ -96,10 +96,6 @@ pub enum AuthError {
     /// Token fingerprint does not match (possible token theft).
     TokenFingerprintMismatch,
 
-    // Backward-compatible alias for TokenInvalid (used by extractors)
-    /// @deprecated Use TokenInvalid instead
-    InvalidToken,
-
     // PassKey/WebAuthn errors
     /// PassKey registration failed.
     PassKeyRegistrationFailed,
@@ -173,8 +169,6 @@ impl AuthError {
             AuthError::TokenMalformed => "auth.token_malformed",
             AuthError::TokenNotYetValid => "auth.token_not_yet_valid",
             AuthError::TokenFingerprintMismatch => "auth.token_fingerprint_mismatch",
-            // Backward-compatible alias
-            AuthError::InvalidToken => "auth.token_invalid",
 
             // PassKey
             AuthError::PassKeyRegistrationFailed => "auth.passkey_registration_failed",
@@ -238,7 +232,6 @@ impl AuthError {
             AuthError::TokenMalformed => "Malformed authentication token.".into(),
             AuthError::TokenNotYetValid => "Authentication token is not yet valid.".into(),
             AuthError::TokenFingerprintMismatch => "Session mismatch. Please sign in again.".into(),
-            AuthError::InvalidToken => "Invalid authentication token.".into(),
             AuthError::PassKeyRegistrationFailed => {
                 "PassKey registration failed. Please try again.".into()
             }

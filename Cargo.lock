@@ -5557,7 +5557,6 @@ dependencies = [
  "tracing",
  "underlay-core",
  "underlay-db",
- "underlay-http-client",
  "underlay-observability",
  "underlay-query",
  "underlay-testing",
@@ -5646,13 +5645,6 @@ dependencies = [
  "thiserror 2.0.21",
  "tokio",
  "underlay-core",
-]
-
-[[package]]
-name = "underlay-nightfire"
-version = "0.10.5"
-dependencies = [
- "nightfire",
 ]
 
 [[package]]

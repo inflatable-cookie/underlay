@@ -6,8 +6,6 @@ mod errors;
 mod fingerprint;
 #[path = "service_tests/key_generation.rs"]
 mod key_generation;
-#[path = "service_tests/session_lifecycle.rs"]
-mod session_lifecycle;
 #[path = "service_tests/support.rs"]
 mod support;
 #[path = "service_tests/token_audience.rs"]

@@ -51,7 +51,6 @@ where
                     AuthError::BadRequest(_) => StatusCode::BAD_REQUEST,
                     AuthError::Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
                     AuthError::Unauthorized
-                    | AuthError::InvalidToken
                     | AuthError::TokenInvalid
                     | AuthError::TokenMalformed
                     | AuthError::TokenNotYetValid
@@ -87,7 +86,6 @@ where
                     AuthError::BadRequest(_) => StatusCode::BAD_REQUEST,
                     AuthError::Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
                     AuthError::Unauthorized
-                    | AuthError::InvalidToken
                     | AuthError::TokenInvalid
                     | AuthError::TokenMalformed
                     | AuthError::TokenNotYetValid

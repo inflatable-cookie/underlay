@@ -20,9 +20,6 @@ mod db_errors;
 #[cfg(feature = "error-logging")]
 pub use crate::db_errors::internal_db_error;
 
-#[cfg(feature = "embed")]
-pub mod embed;
-
 #[cfg(feature = "openapi")]
 pub mod openapi;
 
@@ -71,8 +68,6 @@ pub use crate::errors::{
 };
 pub use crate::http_config::{HttpServerConfig, HttpServerConfigError};
 pub use crate::page_list::PageList;
-#[allow(deprecated)]
-pub use crate::pagination::PaginationParams;
 pub use crate::pagination::{PagePaginationParams, Paginated, PaginationMeta};
 pub use crate::path::{parse_uuid_path, parse_uuid_path_raw};
 pub use crate::query::{
@@ -91,11 +86,6 @@ pub use crate::error_logging::{
     append_error_log, count_error_logs, error_logging_middleware, get_error_log_by_id,
     list_error_logs, DbErrorLogSink, ErrorLogFilters, ErrorLogRow, ErrorLogStatusClass,
     ErrorLoggingConfig, ERROR_CONTEXT_HEADER,
-};
-
-#[cfg(feature = "embed")]
-pub use crate::embed::{
-    lookup_audioboom, lookup_embed_metadata, lookup_metadata, EmbedMetaRequest, EmbedMetaResponse,
 };
 
 #[cfg(feature = "openapi")]

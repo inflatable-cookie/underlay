@@ -129,13 +129,3 @@ impl CursorPaginationParams {
         }
     }
 }
-
-/// Deprecated alias for [`CursorPaginationParams`].
-///
-/// Renamed to remove the collision with `underlay_http`'s offset-model
-/// `PaginationParams` (g08.017). Migrate to `CursorPaginationParams`; this
-/// alias is scheduled for removal in `g09`.
-#[deprecated(
-    note = "renamed to CursorPaginationParams to resolve the underlay_http collision;             removal planned for g09"
-)]
-pub type PaginationParams = CursorPaginationParams;

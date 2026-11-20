@@ -28,9 +28,6 @@ chrono = { workspace = true, optional = true }
 tokio = { workspace = true, features = ["sync"] }
 urlencoding = { version = "2.1" }
 
-# Optional embed metadata proxy
-underlay-http-client = { workspace = true, optional = true }
-
 # Optional OpenAPI schema types
 utoipa = { workspace = true, optional = true }
 
@@ -38,7 +35,6 @@ utoipa = { workspace = true, optional = true }
 default = []
 tracing = ["dep:tracing"]
 error-logging = ["underlay-db", "sqlx", "chrono", "tokio/rt", "tracing"]
-embed = ["underlay-http-client"]
 openapi = ["dep:utoipa"]
 opentelemetry = ["underlay-observability/opentelemetry"]
 

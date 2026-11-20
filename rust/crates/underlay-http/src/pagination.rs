@@ -156,17 +156,6 @@ impl Default for PagePaginationParams {
     }
 }
 
-/// Deprecated alias for [`PagePaginationParams`].
-///
-/// Renamed to remove the collision with `underlay_db::pagination`'s
-/// cursor-model `PaginationParams` (g08.017). Migrate to
-/// `PagePaginationParams`; this alias is scheduled for removal in `g09`.
-#[deprecated(
-    note = "renamed to PagePaginationParams to resolve the underlay_db collision; \
-            removal planned for g09"
-)]
-pub type PaginationParams = PagePaginationParams;
-
 /// Paginated response wrapper
 #[derive(Debug, Clone, Serialize)]
 pub struct Paginated<T> {

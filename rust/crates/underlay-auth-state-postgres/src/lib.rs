@@ -1,5 +1,5 @@
 use chrono::{Duration, Utc};
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde::{de::DeserializeOwned, Serialize};
 use sqlx::Row;
 
 use underlay_core::Uuid;

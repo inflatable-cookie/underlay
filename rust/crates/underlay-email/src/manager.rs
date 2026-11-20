@@ -88,8 +88,6 @@ pub enum AdapterType {
     Smtp(SmtpConfig),
     /// AWS SES adapter.
     Ses(SesConfig),
-    /// Development capture adapter (saves to database).
-    DevCapture(DevCaptureConfig),
 }
 
 /// SMTP adapter configuration.
@@ -126,15 +124,6 @@ pub struct SesConfig {
     region: String,
     /// Optional configuration set name.
     configuration_set: Option<String>,
-}
-
-/// Development capture adapter configuration.
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
-pub struct DevCaptureConfig {
-    /// Email addresses that should also be sent via a real adapter.
-    whitelist: Vec<String>,
-    /// Whether to use a fallback adapter for whitelisted addresses.
-    use_fallback: bool,
 }
 
 impl Default for SmtpConfig {
@@ -278,45 +267,6 @@ impl SesConfig {
     /// Return the optional SES configuration set name.
     pub fn configuration_set(&self) -> Option<&str> {
         self.configuration_set.as_deref()
-    }
-}
-
-impl DevCaptureConfig {
-    /// Create development capture configuration with no whitelist and no fallback.
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    /// Replace the whitelist.
-    pub fn with_whitelist<I, S>(mut self, whitelist: I) -> Self
-    where
-        I: IntoIterator<Item = S>,
-        S: Into<String>,
-    {
-        self.whitelist = whitelist.into_iter().map(Into::into).collect();
-        self
-    }
-
-    /// Add one address to the whitelist.
-    pub fn with_whitelisted_address(mut self, address: impl Into<String>) -> Self {
-        self.whitelist.push(address.into());
-        self
-    }
-
-    /// Enable fallback delivery for whitelisted addresses.
-    pub fn with_fallback(mut self) -> Self {
-        self.use_fallback = true;
-        self
-    }
-
-    /// Return the whitelist.
-    pub fn whitelist(&self) -> &[String] {
-        &self.whitelist
-    }
-
-    /// Return whether fallback delivery is enabled.
-    pub fn use_fallback(&self) -> bool {
-        self.use_fallback
     }
 }
 

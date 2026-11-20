@@ -43,8 +43,4 @@ fn test_config_defaults() {
 
     let ses = SesConfig::default();
     assert_eq!(ses.region(), "us-east-1");
-
-    let dev = DevCaptureConfig::default();
-    assert!(dev.whitelist().is_empty());
-    assert!(!dev.use_fallback());
 }
