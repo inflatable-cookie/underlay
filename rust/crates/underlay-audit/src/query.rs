@@ -8,6 +8,12 @@ use chrono::{DateTime, Utc};
 use tracing::instrument;
 use uuid::Uuid;
 
+/// Default page size for audit log queries.
+pub const DEFAULT_AUDIT_LOG_LIMIT: i64 = 50;
+
+/// Maximum page size allowed for audit log queries.
+pub const MAX_AUDIT_LOG_LIMIT: i64 = 1_000;
+
 /// Filters for listing audit log entries.
 #[derive(Debug, Clone)]
 pub struct AuditLogFilters {
@@ -45,7 +51,7 @@ impl AuditLogFilters {
             resource_id: None,
             since: None,
             until: None,
-            limit: 50,
+            limit: DEFAULT_AUDIT_LOG_LIMIT,
             offset: 0,
         }
     }
@@ -81,10 +87,10 @@ impl AuditLogFilters {
         self
     }
 
-    /// Set pagination.
+    /// Set pagination, clamping `limit` to `1..=MAX_AUDIT_LOG_LIMIT` and `offset` to `>= 0`.
     pub fn with_pagination(mut self, limit: i64, offset: i64) -> Self {
-        self.limit = limit;
-        self.offset = offset;
+        self.limit = limit.clamp(1, MAX_AUDIT_LOG_LIMIT);
+        self.offset = offset.max(0);
         self
     }
 }
@@ -135,8 +141,8 @@ pub async fn list_audit_logs_from_table(
         .bind(filters.resource_id)
         .bind(filters.since)
         .bind(filters.until)
-        .bind(filters.limit)
-        .bind(filters.offset)
+        .bind(filters.limit.clamp(1, MAX_AUDIT_LOG_LIMIT))
+        .bind(filters.offset.max(0))
         .fetch_all(pool)
         .await?)
 }

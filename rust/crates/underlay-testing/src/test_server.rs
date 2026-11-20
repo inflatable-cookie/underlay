@@ -27,10 +27,10 @@
 
 use axum::body::Body;
 use axum::Router;
-use http::{Method, Request, StatusCode};
+use http::header::{HeaderName, HeaderValue, CONTENT_TYPE};
+use http::{HeaderMap, Method, Request, StatusCode};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
-use std::collections::HashMap;
 use tower::ServiceExt;
 
 /// A test server that wraps an Axum router for in-memory testing.
@@ -78,7 +78,7 @@ pub struct RequestBuilder {
     router: Router,
     method: Method,
     path: String,
-    headers: HashMap<String, String>,
+    headers: HeaderMap,
     body: Option<Vec<u8>>,
 }
 
@@ -88,14 +88,19 @@ impl RequestBuilder {
             router,
             method,
             path: path.to_string(),
-            headers: HashMap::new(),
+            headers: HeaderMap::new(),
             body: None,
         }
     }
 
-    /// Add a header to the request
+    /// Add a header to the request.
+    ///
+    /// Supports multi-value headers (appends rather than overwriting) with
+    /// case-insensitive header names.
     pub fn header(mut self, key: &str, value: &str) -> Self {
-        self.headers.insert(key.to_string(), value.to_string());
+        let name = HeaderName::from_bytes(key.as_bytes()).expect("Invalid header name");
+        let val = HeaderValue::from_str(value).expect("Invalid header value");
+        self.headers.append(name, val);
         self
     }
 
@@ -165,7 +170,7 @@ impl RequestBuilder {
     pub fn json<T: Serialize>(mut self, body: &T) -> Self {
         self.body = Some(serde_json::to_vec(body).expect("Failed to serialize JSON body"));
         self.headers
-            .insert("Content-Type".to_string(), "application/json".to_string());
+            .insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
         self
     }
 

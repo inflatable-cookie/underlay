@@ -76,3 +76,27 @@ fn extract_csrf_token_with_prefix() {
     let token = extract_csrf_token(&headers, &config);
     assert_eq!(token, Some("my-csrf".to_string()));
 }
+
+#[test]
+fn extract_tokens_across_multiple_cookie_headers() {
+    let config = AuthCookieConfig::default();
+    let mut headers = HeaderMap::new();
+    headers.append(header::COOKIE, HeaderValue::from_static("theme=dark"));
+    headers.append(
+        header::COOKIE,
+        HeaderValue::from_static("refresh_token=h2-refresh"),
+    );
+    headers.append(
+        header::COOKIE,
+        HeaderValue::from_static("csrf_token=h2-csrf"),
+    );
+
+    assert_eq!(
+        extract_refresh_token(&headers, &config),
+        Some("h2-refresh".to_string())
+    );
+    assert_eq!(
+        extract_csrf_token(&headers, &config),
+        Some("h2-csrf".to_string())
+    );
+}

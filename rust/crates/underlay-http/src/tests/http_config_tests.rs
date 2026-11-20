@@ -1,4 +1,8 @@
+use std::sync::Mutex;
+
 use super::*;
+
+static ENV_LOCK: Mutex<()> = Mutex::new(());
 
 #[test]
 fn test_default_config() {
@@ -66,6 +70,7 @@ fn test_base_url() {
 
 #[test]
 fn test_local_defaults() {
+    let _guard = ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
     // Clear env vars to test defaults
     env::remove_var("HOST");
     env::remove_var("PORT");
@@ -74,12 +79,33 @@ fn test_local_defaults() {
     let config = HttpServerConfig::from_env(Environment::Local);
     assert_eq!(config.bind_addr(), "127.0.0.1");
     assert_eq!(config.port(), 3000);
-    // public_host defaults to bind_addr
-    assert_eq!(config.public_host(), "127.0.0.1");
+    assert_eq!(config.public_host(), "localhost");
+}
+
+#[test]
+fn test_local_with_port_and_unset_host_defaults_public_host_to_localhost() {
+    let _guard = ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    env::remove_var("HOST");
+    env::remove_var("PUBLIC_HOST");
+    env::set_var("PORT", "8080");
+
+    let from_env = HttpServerConfig::from_env(Environment::Local);
+    assert_eq!(from_env.bind_addr(), "0.0.0.0");
+    assert_eq!(from_env.port(), 8080);
+    assert_eq!(from_env.public_host(), "localhost");
+
+    let try_from_env =
+        HttpServerConfig::try_from_env(Environment::Local).expect("valid local config");
+    assert_eq!(try_from_env.bind_addr(), "0.0.0.0");
+    assert_eq!(try_from_env.port(), 8080);
+    assert_eq!(try_from_env.public_host(), "localhost");
+
+    env::remove_var("PORT");
 }
 
 #[test]
 fn test_try_from_env_rejects_invalid_port() {
+    let _guard = ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
     env::set_var("PORT", "not-a-port");
     env::remove_var("HOST");
     env::remove_var("PUBLIC_HOST");

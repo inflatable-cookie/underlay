@@ -29,7 +29,7 @@ fn table_name_validation_accepts_safe_and_rejects_unsafe() {
 #[test]
 fn to_result_allows_below_limit() {
     let config = RateLimitConfig::new(5, Duration::from_secs(60));
-    let result = PostgresBackend::to_result(&config, 3, 10.0);
+    let result = PostgresBackend::to_result_from_decision(&config, true, 3, 10.0);
     assert!(result.is_allowed());
     assert_eq!(result.remaining, 2);
     assert_eq!(result.count, 3);
@@ -38,7 +38,7 @@ fn to_result_allows_below_limit() {
 #[test]
 fn to_result_allows_at_limit() {
     let config = RateLimitConfig::new(5, Duration::from_secs(60));
-    let result = PostgresBackend::to_result(&config, 5, 10.0);
+    let result = PostgresBackend::to_result_from_decision(&config, true, 5, 10.0);
     assert!(result.is_allowed());
     assert_eq!(result.remaining, 0);
 }
@@ -47,7 +47,7 @@ fn to_result_allows_at_limit() {
 fn to_result_denies_above_limit_with_retry_after() {
     let config = RateLimitConfig::new(5, Duration::from_secs(60));
     // 20s into a 60s window: ~40s remaining.
-    let result = PostgresBackend::to_result(&config, 6, 20.0);
+    let result = PostgresBackend::to_result_from_decision(&config, false, 5, 20.0);
     assert!(result.is_denied());
     assert_eq!(result.remaining, 0);
     let retry = result.retry_after_secs();
@@ -58,7 +58,17 @@ fn to_result_denies_above_limit_with_retry_after() {
 fn to_result_denied_retry_after_is_at_least_one() {
     let config = RateLimitConfig::new(5, Duration::from_secs(60));
     // Window already elapsed; clamp keeps retry-after >= 1.
-    let result = PostgresBackend::to_result(&config, 6, 120.0);
+    let result = PostgresBackend::to_result_from_decision(&config, false, 5, 120.0);
     assert!(result.is_denied());
     assert_eq!(result.retry_after_secs(), 1);
+}
+
+#[test]
+fn to_result_from_decision_denies_at_limit_without_inflating_count() {
+    let config = RateLimitConfig::new(5, Duration::from_secs(60));
+    let result = PostgresBackend::to_result_from_decision(&config, false, 5, 10.0);
+    assert!(result.is_denied());
+    assert_eq!(result.count, 5);
+    assert_eq!(result.remaining, 0);
+    assert_eq!(result.retry_after_secs(), 50);
 }

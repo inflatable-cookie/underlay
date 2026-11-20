@@ -82,4 +82,44 @@ mod tests {
         assert_eq!(detail.context["operation"], "update_user");
         assert_eq!(detail.context["cause"], "connection timeout");
     }
+
+    #[test]
+    fn api_error_with_context_merges_into_existing_cause() {
+        let res = ApiError::internal("db.update_failed", "Failed to update user")
+            .with_cause(&"connection refused")
+            .with_context(serde_json::json!({ "diagnostic": "Failed to update user. Cause: connection refused" }))
+            .into_response();
+
+        let detail = res
+            .extensions()
+            .get::<ErrorDetail>()
+            .expect("error detail should be attached");
+        assert_eq!(detail.context["cause"], "connection refused");
+        assert_eq!(
+            detail.context["diagnostic"],
+            "Failed to update user. Cause: connection refused"
+        );
+    }
+
+    #[cfg(feature = "error-logging")]
+    #[test]
+    fn internal_db_error_preserves_both_cause_and_diagnostic() {
+        let err = std::io::Error::other("connection refused");
+        let res = crate::internal_db_error("db.update_failed", "Failed to update user", &err)
+            .into_response();
+
+        assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
+
+        let detail = res
+            .extensions()
+            .get::<ErrorDetail>()
+            .expect("error detail should be attached");
+        assert_eq!(detail.message, "Failed to update user");
+        assert_eq!(detail.context["cause"], "connection refused");
+        let diagnostic = detail.context["diagnostic"]
+            .as_str()
+            .expect("diagnostic should be a string");
+        assert!(diagnostic.contains("Failed to update user"));
+        assert!(diagnostic.contains("connection refused"));
+    }
 }

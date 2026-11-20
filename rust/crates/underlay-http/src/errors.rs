@@ -100,7 +100,25 @@ impl ApiError {
     }
 
     pub fn with_context(mut self, context: serde_json::Value) -> Self {
-        self.context = context;
+        match (&mut self.context, context) {
+            (serde_json::Value::Object(existing), serde_json::Value::Object(incoming)) => {
+                existing.extend(incoming);
+            }
+            (serde_json::Value::Object(existing), other) if existing.is_empty() => {
+                self.context = other;
+            }
+            (serde_json::Value::Object(existing), other) => {
+                existing.insert("context".to_string(), other);
+            }
+            (_, serde_json::Value::Object(mut incoming)) => {
+                let previous = std::mem::replace(&mut self.context, serde_json::Value::Null);
+                incoming.entry("context".to_string()).or_insert(previous);
+                self.context = serde_json::Value::Object(incoming);
+            }
+            (_, other) => {
+                self.context = other;
+            }
+        }
         self
     }
 

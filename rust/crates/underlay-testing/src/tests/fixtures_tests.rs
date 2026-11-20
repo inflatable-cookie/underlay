@@ -21,6 +21,28 @@ fn test_fixtures_username_format() {
 }
 
 #[test]
+fn test_fixtures_unique_within_same_millisecond() {
+    use std::collections::HashSet;
+
+    let count = 64;
+    let emails: HashSet<String> = (0..count).map(|_| Fixtures::email("user")).collect();
+    let usernames: HashSet<String> = (0..count).map(|_| Fixtures::username("user")).collect();
+    let passwords: HashSet<String> = (0..count).map(|_| Fixtures::password()).collect();
+
+    assert_eq!(emails.len(), count, "emails collided within tight loop");
+    assert_eq!(
+        usernames.len(),
+        count,
+        "usernames collided within tight loop"
+    );
+    assert_eq!(
+        passwords.len(),
+        count,
+        "passwords collided within tight loop"
+    );
+}
+
+#[test]
 fn test_timestamp_past_days() {
     let past = TimestampFixtures::past_days(7);
     let now = Utc::now();
