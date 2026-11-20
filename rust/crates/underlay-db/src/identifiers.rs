@@ -1,13 +1,26 @@
 use std::fmt;
 use std::str::FromStr;
 
+/// PostgreSQL limits identifiers to `NAMEDATALEN - 1` (63 bytes).
+pub const MAX_PG_IDENTIFIER_BYTES: usize = 63;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum IdentifierError {
     Empty,
     EmptyPart,
     TooManyParts,
-    InvalidStart { value: String },
-    InvalidChar { value: String, ch: char },
+    TooLong {
+        value: String,
+        len: usize,
+        max: usize,
+    },
+    InvalidStart {
+        value: String,
+    },
+    InvalidChar {
+        value: String,
+        ch: char,
+    },
 }
 
 impl fmt::Display for IdentifierError {
@@ -16,6 +29,12 @@ impl fmt::Display for IdentifierError {
             Self::Empty => write!(f, "identifier is empty"),
             Self::EmptyPart => write!(f, "qualified identifier contains an empty part"),
             Self::TooManyParts => write!(f, "qualified identifier has too many parts"),
+            Self::TooLong { value, len, max } => {
+                write!(
+                    f,
+                    "identifier exceeds {max}-byte PostgreSQL limit ({len} bytes): {value}"
+                )
+            }
             Self::InvalidStart { value } => {
                 write!(
                     f,
@@ -36,7 +55,7 @@ pub struct SqlIdentifier(String);
 
 impl SqlIdentifier {
     pub fn parse(value: impl AsRef<str>) -> Result<Self, IdentifierError> {
-        let value = value.as_ref().trim();
+        let value = value.as_ref();
         validate_sql_identifier(value)?;
         Ok(Self(value.to_string()))
     }
@@ -72,7 +91,7 @@ pub struct QualifiedTableName {
 
 impl QualifiedTableName {
     pub fn parse(value: impl AsRef<str>) -> Result<Self, IdentifierError> {
-        let value = value.as_ref().trim();
+        let value = value.as_ref();
         validate_qualified_table_name(value)?;
         let parts = value.split('.').collect::<Vec<_>>();
         match parts.as_slice() {
@@ -132,9 +151,16 @@ impl FromStr for QualifiedTableName {
 }
 
 pub fn validate_sql_identifier(value: &str) -> Result<(), IdentifierError> {
-    let value = value.trim();
     if value.is_empty() {
         return Err(IdentifierError::Empty);
+    }
+
+    if value.len() > MAX_PG_IDENTIFIER_BYTES {
+        return Err(IdentifierError::TooLong {
+            value: value.to_string(),
+            len: value.len(),
+            max: MAX_PG_IDENTIFIER_BYTES,
+        });
     }
 
     let mut chars = value.chars();
@@ -161,7 +187,6 @@ pub fn validate_sql_identifier(value: &str) -> Result<(), IdentifierError> {
 }
 
 pub fn validate_qualified_table_name(value: &str) -> Result<(), IdentifierError> {
-    let value = value.trim();
     if value.is_empty() {
         return Err(IdentifierError::Empty);
     }

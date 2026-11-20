@@ -188,10 +188,13 @@ impl TypedExistsCheck {
 
     /// Execute the existence check.
     ///
-    /// Returns `true` if a matching record exists.
+    /// Returns `true` if a matching record exists, or an error if no conditions
+    /// were configured.
     pub async fn check(self, pool: &PgPool) -> Result<bool, sqlx::Error> {
         if self.conditions.is_empty() {
-            return Ok(false);
+            return Err(sqlx::Error::Configuration(
+                "TypedExistsCheck requires at least one condition".into(),
+            ));
         }
 
         let query = self.query();

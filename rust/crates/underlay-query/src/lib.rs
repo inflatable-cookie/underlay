@@ -12,8 +12,8 @@ pub mod sort;
 pub mod where_builder;
 
 pub use field_mapping::FieldMapping;
-pub use filter::{FilterField, FilterOperator};
-pub use sort::{parse_sort_string, SortDirection, SortField};
+pub use filter::{FilterField, FilterOperator, ParseFilterOperatorError};
+pub use sort::{parse_sort_string, ParseSortDirectionError, SortDirection, SortField};
 pub use where_builder::WhereBuilder;
 
 /// Create a [`FieldMapping`] with a concise syntax.

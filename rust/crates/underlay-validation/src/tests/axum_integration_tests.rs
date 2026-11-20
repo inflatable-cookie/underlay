@@ -1,4 +1,5 @@
 use super::*;
+use crate::FieldError;
 use axum::{body::to_bytes, extract::FromRequest};
 
 fn response_json(response: Response) -> serde_json::Value {
@@ -83,4 +84,60 @@ fn validation_error_without_fields_omits_field_errors() {
     );
     assert!(error.get("fieldErrors").is_none());
     assert!(error.get("field_errors").is_none());
+}
+
+#[test]
+fn validation_error_preserves_field_error_codes() {
+    let mut error = ValidationError::with_message("Validation failed");
+    error.add_field(
+        "email",
+        FieldError::with_code("Invalid email", "email.invalid"),
+    );
+    error.add_field("note", "Too short");
+
+    let response = ValidatedJsonRejection::ValidationError(error).into_response();
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+
+    let json = response_json(response);
+    let err_obj = json["error"].as_object().expect("error object");
+    assert_eq!(
+        err_obj.get("fieldErrors").and_then(|v| v["email"].as_str()),
+        Some("Invalid email")
+    );
+    assert_eq!(
+        err_obj
+            .get("fieldErrorCodes")
+            .and_then(|v| v["email"].as_str()),
+        Some("email.invalid")
+    );
+    assert!(err_obj
+        .get("fieldErrorCodes")
+        .and_then(|v| v.get("note"))
+        .is_none());
+}
+
+#[test]
+fn missing_json_content_type_maps_to_415_unsupported_media_type() {
+    let request = Request::builder()
+        .body(axum::body::Body::from("{}"))
+        .expect("request");
+
+    let rejection = tokio::runtime::Runtime::new()
+        .expect("runtime")
+        .block_on(async move { Json::<serde_json::Value>::from_request(request, &()).await })
+        .expect_err("missing content-type should reject");
+
+    let response = ValidatedJsonRejection::JsonRejection(rejection).into_response();
+    assert_eq!(response.status(), StatusCode::UNSUPPORTED_MEDIA_TYPE);
+
+    let json = response_json(response);
+    let err_obj = json["error"].as_object().expect("error object");
+    assert_eq!(
+        err_obj.get("code").and_then(serde_json::Value::as_str),
+        Some("json.unsupported_media_type")
+    );
+    assert_eq!(
+        err_obj.get("message").and_then(serde_json::Value::as_str),
+        Some("Expected request with Content-Type: application/json")
+    );
 }

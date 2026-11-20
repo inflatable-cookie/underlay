@@ -82,13 +82,12 @@ pub async fn run_sql_dir_with_options(
 ) -> Result<(), sqlx::Error> {
     let dir = dir.as_ref();
 
-    let entries = std::fs::read_dir(dir).map_err(sqlx::Error::Io)?;
+    let mut entries = tokio::fs::read_dir(dir).await.map_err(sqlx::Error::Io)?;
 
     // A `read_dir` entry can fail independently (for example on a removed or
     // unreadable entry). Propagate that instead of silently skipping the file.
     let mut sql_files = Vec::new();
-    for entry in entries {
-        let entry = entry.map_err(sqlx::Error::Io)?;
+    while let Some(entry) = entries.next_entry().await.map_err(sqlx::Error::Io)? {
         let path = entry.path();
         if path
             .extension()
@@ -103,7 +102,9 @@ pub async fn run_sql_dir_with_options(
     }
 
     for path in sql_files {
-        let sql = std::fs::read_to_string(&path).map_err(sqlx::Error::Io)?;
+        let sql = tokio::fs::read_to_string(&path)
+            .await
+            .map_err(sqlx::Error::Io)?;
 
         if options.split_on_semicolon() {
             for stmt in sql.split(';') {

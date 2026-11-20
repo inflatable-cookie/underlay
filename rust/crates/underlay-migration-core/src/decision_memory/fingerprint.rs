@@ -10,16 +10,21 @@ use super::SHA256_PREFIX;
 pub fn decision_fingerprint(input: &DecisionFingerprintInput) -> MigrationResult<String> {
     let canonical_input = canonical_json_string(&input.canonical_decision_input)?;
     let mut hasher = Sha256::new();
-    hasher.update(b"canonical_decision_input=");
-    hasher.update(canonical_input.as_bytes());
-    hasher.update(b"\ndecision_type=");
-    hasher.update(input.decision_type.as_bytes());
-    hasher.update(b"\nresolver_version=");
-    hasher.update(input.resolver_version.as_bytes());
-    hasher.update(b"\nprompt_version=");
-    hasher.update(input.prompt_version.as_bytes());
-    hasher.update(b"\ntarget_schema_version=");
-    hasher.update(input.target_schema_version.as_bytes());
+    update_len_prefixed(
+        &mut hasher,
+        b"canonical_decision_input",
+        canonical_input.as_bytes(),
+    );
+    update_len_prefixed(
+        &mut hasher,
+        b"decision_type",
+        input.decision_type.as_bytes(),
+    );
+    update_len_prefixed(
+        &mut hasher,
+        b"target_schema_version",
+        input.target_schema_version.as_bytes(),
+    );
     Ok(format!("{SHA256_PREFIX}{}", hex::encode(hasher.finalize())))
 }
 
@@ -31,13 +36,29 @@ pub fn record_fingerprint(input: &RecordFingerprintInput) -> MigrationResult<Str
     )?;
 
     let mut hasher = Sha256::new();
-    hasher.update(b"canonical_transform_input=");
-    hasher.update(canonical_transform.as_bytes());
-    hasher.update(b"\nsource_identity=");
-    hasher.update(input.source_identity.as_bytes());
-    hasher.update(b"\nsemantic_dependencies=");
-    hasher.update(semantic_dependencies.as_bytes());
+    update_len_prefixed(
+        &mut hasher,
+        b"canonical_transform_input",
+        canonical_transform.as_bytes(),
+    );
+    update_len_prefixed(
+        &mut hasher,
+        b"source_identity",
+        input.source_identity.as_bytes(),
+    );
+    update_len_prefixed(
+        &mut hasher,
+        b"semantic_dependencies",
+        semantic_dependencies.as_bytes(),
+    );
     Ok(format!("{SHA256_PREFIX}{}", hex::encode(hasher.finalize())))
+}
+
+fn update_len_prefixed(hasher: &mut Sha256, label: &[u8], value: &[u8]) {
+    hasher.update(label);
+    hasher.update(b":");
+    hasher.update((value.len() as u64).to_be_bytes());
+    hasher.update(value);
 }
 
 fn canonical_json_string(value: &Value) -> MigrationResult<String> {

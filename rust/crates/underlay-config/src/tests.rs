@@ -389,3 +389,56 @@ fn ancestor_discovery_stops_at_the_checkout_root() {
 
     assert_eq!(crate::discovery::ancestor_config_dir(&app), None);
 }
+
+#[test]
+fn decode_error_exposes_toml_source() {
+    let dir = temp_config_dir("decode-source");
+    fs::create_dir_all(&dir).expect("create config dir");
+    fs::write(
+        dir.join("default.toml"),
+        r#"
+[server]
+host = "127.0.0.1"
+port = "not-a-number"
+
+[auth]
+issuer = "default"
+"#,
+    )
+    .expect("write default");
+
+    let err = ConfigStack::new(&dir)
+        .with_environment("")
+        .load::<AppConfig>()
+        .expect_err("type mismatch must fail decode");
+
+    assert!(matches!(err, ConfigError::Decode(_)));
+    assert!(std::error::Error::source(&err).is_some());
+}
+
+#[test]
+fn unreadable_optional_overlay_propagates_non_not_found_error() {
+    let dir = temp_config_dir("unreadable-overlay");
+    fs::create_dir_all(&dir).expect("create config dir");
+    fs::write(
+        dir.join("default.toml"),
+        r#"
+[server]
+host = "127.0.0.1"
+port = 3000
+
+[auth]
+issuer = "default"
+"#,
+    )
+    .expect("write default");
+    // A directory named `prod.toml` exists, so reading it fails with an I/O
+    // error other than `NotFound` and must be surfaced rather than skipped.
+    fs::create_dir_all(dir.join("prod.toml")).expect("create dir overlay");
+
+    let err = ConfigStack::new(&dir)
+        .with_environment("prod")
+        .load::<AppConfig>()
+        .expect_err("directory overlay must fail");
+    assert!(matches!(err, ConfigError::Read { .. }));
+}

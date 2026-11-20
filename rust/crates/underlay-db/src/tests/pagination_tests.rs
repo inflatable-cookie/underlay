@@ -118,12 +118,13 @@ fn test_keyset_condition() {
 }
 
 #[test]
-fn test_keyset_condition_quotes_and_trims_identifier() {
+fn test_keyset_condition_quotes_identifier_and_rejects_whitespace() {
     let builder = PaginationBuilder::new(CursorPaginationParams::new());
     assert_eq!(
-        builder.keyset_condition(" _rank ", 2, true).unwrap(),
+        builder.keyset_condition("_rank", 2, true).unwrap(),
         "(\"_rank\", id) < ($2, $3)"
     );
+    assert!(builder.keyset_condition(" _rank ", 2, true).is_err());
 }
 
 #[test]

@@ -11,6 +11,8 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
 sqlx = { workspace = true }
+tokio = { workspace = true, features = ["fs"] }
+tracing = { workspace = true }
 underlay-core = { path = "../underlay-core" }
 url = { workspace = true }
 uuid = { workspace = true }

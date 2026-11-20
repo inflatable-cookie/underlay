@@ -124,11 +124,15 @@ impl ConfigStack {
     fn merge_optional_file(&self, merged: &mut Value, name: &str) -> Result<(), ConfigError> {
         validate_overlay_name(name)?;
         let path = self.config_dir.join(format!("{name}.toml"));
-        if !path.exists() {
-            return Ok(());
-        }
-
-        let next = read_toml_file(&path)?;
+        let next = match read_toml_file(&path) {
+            Ok(value) => value,
+            Err(ConfigError::Read { source, .. })
+                if source.kind() == std::io::ErrorKind::NotFound =>
+            {
+                return Ok(());
+            }
+            Err(err) => return Err(err),
+        };
         merge_values(merged, next);
         Ok(())
     }

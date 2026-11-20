@@ -77,17 +77,18 @@ fn schema_validation_rejects_whitespace() {
 }
 
 #[test]
-fn schema_validation_trims_leading_trailing() {
-    assert!(validate_schema_name("  learning"));
-    assert!(validate_schema_name("learning  "));
-    assert!(validate_schema_name("  learning  "));
+fn schema_validation_rejects_leading_and_trailing_whitespace() {
+    assert!(!validate_schema_name("  learning"));
+    assert!(!validate_schema_name("learning  "));
+    assert!(!validate_schema_name("  learning  "));
 }
 
 #[test]
 fn schema_parse_returns_typed_identifier() {
-    let schema = parse_schema_name(" content ").unwrap();
+    let schema = parse_schema_name("content").unwrap();
     assert_eq!(schema.as_str(), "content");
     assert_eq!(schema.quoted(), "\"content\"");
+    assert!(parse_schema_name(" content ").is_err());
 }
 
 #[test]

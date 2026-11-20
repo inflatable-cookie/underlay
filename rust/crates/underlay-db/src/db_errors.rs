@@ -1,20 +1,13 @@
-//! SQLx error mapping helpers for API-facing diagnostics.
+//! SQLx error mapping helpers for safe API-facing responses.
 //!
-//! These helpers convert low-level `sqlx::Error` values into structured
-//! `underlay_core::AppError` messages that preserve useful operational details:
-//!
-//! - SQLSTATE code (when available)
-//! - table/column/constraint location details
-//! - PostgreSQL `DETAIL` and `HINT` fields
-//! - actionable suggested fixes for common SQLSTATE classes
+//! These helpers log detailed PostgreSQL/SQLx diagnostics internally via
+//! `tracing` while returning sanitized, generic client-safe `AppError`
+//! messages that omit raw table/column/constraint names, `DETAIL`, `HINT`,
+//! and raw driver error strings.
 //!
 //! The resulting `AppError` uses the stable code `infra.db_error`.
 
 use underlay_core::AppError;
-
-fn normalize_space(input: &str) -> String {
-    input.split_whitespace().collect::<Vec<_>>().join(" ")
-}
 
 fn normalize_operation(operation: &str) -> String {
     let trimmed = operation.trim().trim_end_matches('.');
@@ -32,7 +25,9 @@ fn normalize_operation(operation: &str) -> String {
 
 fn sqlstate_hint(code: Option<&str>) -> Option<&'static str> {
     match code {
-        Some("23503") => Some("Suggested fix: verify all referenced IDs exist and are not soft-deleted."),
+        Some("23503") => {
+            Some("Suggested fix: verify all referenced IDs exist and are not soft-deleted.")
+        }
         Some("23505") => Some(
             "Suggested fix: check uniqueness constraints and update the conflicting field value.",
         ),
@@ -52,7 +47,8 @@ fn sqlstate_hint(code: Option<&str>) -> Option<&'static str> {
     }
 }
 
-/// Build a detailed, operator-friendly message for a database failure.
+/// Log full SQLx diagnostics internally and build a client-safe message for a
+/// database failure.
 pub fn describe_db_error(operation: &str, err: &sqlx::Error) -> String {
     let operation = normalize_operation(operation);
 
@@ -61,71 +57,64 @@ pub fn describe_db_error(operation: &str, err: &sqlx::Error) -> String {
             let sqlstate = db_err.code().map(|value| value.into_owned());
             let pg_err = db_err.try_downcast_ref::<sqlx::postgres::PgDatabaseError>();
 
+            tracing::warn!(
+                operation = %operation,
+                sqlstate = ?sqlstate,
+                table = ?db_err.table(),
+                column = ?pg_err.and_then(|value| value.column()),
+                constraint = ?db_err.constraint(),
+                db_message = %db_err.message(),
+                detail = ?pg_err.and_then(|value| value.detail()),
+                hint = ?pg_err.and_then(|value| value.hint()),
+                "database error"
+            );
+
             let mut parts = vec![format!("Database error while {}.", operation)];
-
-            if let Some(code) = &sqlstate {
-                parts.push(format!("SQLSTATE {}.", code));
-            }
-
-            let mut location = Vec::new();
-            if let Some(table) = db_err.table() {
-                location.push(format!("table={}", table));
-            }
-            if let Some(column) = pg_err.and_then(|value| value.column()) {
-                location.push(format!("column={}", column));
-            }
-            if let Some(constraint) = db_err.constraint() {
-                location.push(format!("constraint={}", constraint));
-            }
-
-            if !location.is_empty() {
-                parts.push(format!("Location: {}.", location.join(", ")));
-            }
-
-            parts.push(format!("Database message: {}.", normalize_space(db_err.message())));
-
-            if let Some(detail) = pg_err.and_then(|value| value.detail()) {
-                let detail = normalize_space(detail);
-                if !detail.is_empty() {
-                    parts.push(format!("Details: {}.", detail));
-                }
-            }
-
-            if let Some(hint) = pg_err.and_then(|value| value.hint()) {
-                let hint = normalize_space(hint);
-                if !hint.is_empty() {
-                    parts.push(format!("Database hint: {}.", hint));
-                }
-            }
-
             if let Some(advice) = sqlstate_hint(sqlstate.as_deref()) {
                 parts.push(advice.to_string());
+            } else {
+                parts.push(
+                    "Suggested fix: verify the input data and retry the operation.".to_string(),
+                );
             }
 
             parts.join(" ")
         }
-        sqlx::Error::RowNotFound => format!(
-            "Database error while {}. No row matched the query. Suggested fix: verify the target ID exists and is visible in the current scope.",
-            operation
-        ),
-        sqlx::Error::PoolTimedOut => format!(
-            "Database error while {}. Database connection pool timed out. Suggested fix: check pool sizing and long-running queries.",
-            operation
-        ),
-        sqlx::Error::PoolClosed => format!(
-            "Database error while {}. Database connection pool is closed. Suggested fix: verify service startup and pool lifecycle.",
-            operation
-        ),
-        sqlx::Error::Io(io_err) => format!(
-            "Database error while {}. Database I/O error: {}. Suggested fix: check database network connectivity and host availability.",
-            operation,
-            normalize_space(&io_err.to_string())
-        ),
-        _ => format!(
-            "Database error while {}. Database driver error: {}. Suggested fix: inspect the query and SQL arguments, then retry.",
-            operation,
-            normalize_space(&err.to_string())
-        ),
+        sqlx::Error::RowNotFound => {
+            tracing::warn!(operation = %operation, "database query returned no rows");
+            format!(
+                "Database error while {}. No row matched the query. Suggested fix: verify the target ID exists and is visible in the current scope.",
+                operation
+            )
+        }
+        sqlx::Error::PoolTimedOut => {
+            tracing::error!(operation = %operation, "database connection pool timed out");
+            format!(
+                "Database error while {}. Database connection pool timed out. Suggested fix: check pool sizing and long-running queries.",
+                operation
+            )
+        }
+        sqlx::Error::PoolClosed => {
+            tracing::error!(operation = %operation, "database connection pool is closed");
+            format!(
+                "Database error while {}. Database connection pool is closed. Suggested fix: verify service startup and pool lifecycle.",
+                operation
+            )
+        }
+        sqlx::Error::Io(io_err) => {
+            tracing::error!(operation = %operation, error = %io_err, "database I/O error");
+            format!(
+                "Database error while {}. Database I/O error. Suggested fix: check database network connectivity and host availability.",
+                operation
+            )
+        }
+        _ => {
+            tracing::error!(operation = %operation, error = %err, "database driver error");
+            format!(
+                "Database error while {}. An unexpected database error occurred. Suggested fix: retry the operation or contact support if the problem persists.",
+                operation
+            )
+        }
     }
 }
 

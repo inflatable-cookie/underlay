@@ -6,9 +6,21 @@ pub(crate) fn parse_validate_attr(
     attr: &Attribute,
     field_name: &Ident,
     field_name_str: &str,
+    is_option: bool,
 ) -> SynResult<(Vec<TokenStream>, bool)> {
     let mut validations = Vec::new();
     let mut skip = false;
+
+    let ref_expr = if is_option {
+        quote! { __underlay_val }
+    } else {
+        quote! { &self.#field_name }
+    };
+    let val_expr = if is_option {
+        quote! { *__underlay_val }
+    } else {
+        quote! { self.#field_name }
+    };
 
     attr.parse_nested_meta(|meta| {
         let path = &meta.path;
@@ -21,7 +33,7 @@ pub(crate) fn parse_validate_attr(
 
         if path.is_ident("email") {
             validations.push(quote! {
-                if let Err(e) = ::underlay_validation::validators::email(&self.#field_name) {
+                if let Err(e) = ::underlay_validation::validators::email(#ref_expr) {
                     errors.add_field(#field_name_str, e);
                 }
             });
@@ -30,7 +42,7 @@ pub(crate) fn parse_validate_attr(
 
         if path.is_ident("url") {
             validations.push(quote! {
-                if let Err(e) = ::underlay_validation::validators::url(&self.#field_name) {
+                if let Err(e) = ::underlay_validation::validators::url(#ref_expr) {
                     errors.add_field(#field_name_str, e);
                 }
             });
@@ -39,7 +51,7 @@ pub(crate) fn parse_validate_attr(
 
         if path.is_ident("uuid") {
             validations.push(quote! {
-                if let Err(e) = ::underlay_validation::validators::uuid(&self.#field_name) {
+                if let Err(e) = ::underlay_validation::validators::uuid(#ref_expr) {
                     errors.add_field(#field_name_str, e);
                 }
             });
@@ -48,7 +60,7 @@ pub(crate) fn parse_validate_attr(
 
         if path.is_ident("required") {
             validations.push(quote! {
-                if let Err(e) = ::underlay_validation::validators::required(&self.#field_name) {
+                if let Err(e) = ::underlay_validation::validators::required(#ref_expr) {
                     errors.add_field(#field_name_str, e);
                 }
             });
@@ -57,7 +69,7 @@ pub(crate) fn parse_validate_attr(
 
         if path.is_ident("alphanumeric") {
             validations.push(quote! {
-                if let Err(e) = ::underlay_validation::validators::alphanumeric(&self.#field_name) {
+                if let Err(e) = ::underlay_validation::validators::alphanumeric(#ref_expr) {
                     errors.add_field(#field_name_str, e);
                 }
             });
@@ -66,7 +78,7 @@ pub(crate) fn parse_validate_attr(
 
         if path.is_ident("username") {
             validations.push(quote! {
-                if let Err(e) = ::underlay_validation::validators::username(&self.#field_name) {
+                if let Err(e) = ::underlay_validation::validators::username(#ref_expr) {
                     errors.add_field(#field_name_str, e);
                 }
             });
@@ -75,7 +87,7 @@ pub(crate) fn parse_validate_attr(
 
         if path.is_ident("slug") {
             validations.push(quote! {
-                if let Err(e) = ::underlay_validation::validators::slug(&self.#field_name) {
+                if let Err(e) = ::underlay_validation::validators::slug(#ref_expr) {
                     errors.add_field(#field_name_str, e);
                 }
             });
@@ -84,7 +96,7 @@ pub(crate) fn parse_validate_attr(
 
         if path.is_ident("positive") {
             validations.push(quote! {
-                if let Err(e) = ::underlay_validation::validators::positive(self.#field_name) {
+                if let Err(e) = ::underlay_validation::validators::positive(#val_expr) {
                     errors.add_field(#field_name_str, e);
                 }
             });
@@ -93,7 +105,7 @@ pub(crate) fn parse_validate_attr(
 
         if path.is_ident("non_negative") {
             validations.push(quote! {
-                if let Err(e) = ::underlay_validation::validators::non_negative(self.#field_name) {
+                if let Err(e) = ::underlay_validation::validators::non_negative(#val_expr) {
                     errors.add_field(#field_name_str, e);
                 }
             });
@@ -102,7 +114,7 @@ pub(crate) fn parse_validate_attr(
 
         if path.is_ident("not_empty") {
             validations.push(quote! {
-                if let Err(e) = ::underlay_validation::validators::not_empty(&self.#field_name) {
+                if let Err(e) = ::underlay_validation::validators::not_empty(#ref_expr) {
                     errors.add_field(#field_name_str, e);
                 }
             });
@@ -111,7 +123,7 @@ pub(crate) fn parse_validate_attr(
 
         if path.is_ident("nested") {
             validations.push(quote! {
-                if let Err(nested_errors) = ::underlay_validation::Validate::validate(&self.#field_name) {
+                if let Err(nested_errors) = ::underlay_validation::Validate::validate(#ref_expr) {
                     errors.merge_nested(#field_name_str, nested_errors);
                 }
             });
@@ -140,7 +152,7 @@ pub(crate) fn parse_validate_attr(
             let max_expr = max_val.unwrap_or_else(|| quote! { None });
 
             validations.push(quote! {
-                if let Err(e) = ::underlay_validation::validators::length(&self.#field_name, #min_expr, #max_expr) {
+                if let Err(e) = ::underlay_validation::validators::length(#ref_expr, #min_expr, #max_expr) {
                     errors.add_field(#field_name_str, e);
                 }
             });
@@ -168,7 +180,7 @@ pub(crate) fn parse_validate_attr(
             let max_expr = max_val.unwrap_or_else(|| quote! { None });
 
             validations.push(quote! {
-                if let Err(e) = ::underlay_validation::validators::range(self.#field_name, #min_expr, #max_expr) {
+                if let Err(e) = ::underlay_validation::validators::range(#val_expr, #min_expr, #max_expr) {
                     errors.add_field(#field_name_str, e);
                 }
             });
@@ -196,7 +208,7 @@ pub(crate) fn parse_validate_attr(
             let max_expr = max_val.unwrap_or_else(|| quote! { None });
 
             validations.push(quote! {
-                if let Err(e) = ::underlay_validation::validators::collection_length(&self.#field_name, #min_expr, #max_expr) {
+                if let Err(e) = ::underlay_validation::validators::collection_length(#ref_expr, #min_expr, #max_expr) {
                     errors.add_field(#field_name_str, e);
                 }
             });
@@ -210,7 +222,7 @@ pub(crate) fn parse_validate_attr(
             let message = format!("Invalid format for {}", field_name_str);
 
             validations.push(quote! {
-                if let Err(e) = ::underlay_validation::validators::pattern(&self.#field_name, #pattern_str, #message) {
+                if let Err(e) = ::underlay_validation::validators::pattern(#ref_expr, #pattern_str, #message) {
                     errors.add_field(#field_name_str, e);
                 }
             });
@@ -223,7 +235,7 @@ pub(crate) fn parse_validate_attr(
             let func_path: syn::Path = syn::parse_str(&func_name)?;
 
             validations.push(quote! {
-                if let Err(e) = #func_path(&self.#field_name) {
+                if let Err(e) = #func_path(#ref_expr) {
                     errors.add_field(#field_name_str, e);
                 }
             });

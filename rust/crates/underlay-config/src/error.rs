@@ -13,7 +13,7 @@ pub enum ConfigError {
         source: toml::de::Error,
     },
     #[error("failed to decode typed config: {0}")]
-    Decode(toml::de::Error),
+    Decode(#[source] toml::de::Error),
     #[error("config overlay name `{name}` is invalid: {reason}")]
     InvalidOverlayName { name: String, reason: &'static str },
     #[error("config override key `{0}` is empty")]

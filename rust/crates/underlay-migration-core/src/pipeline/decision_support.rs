@@ -59,7 +59,8 @@ pub(super) fn build_unresolved(
     let seed = hasher.finalize();
     let mut bytes = [0u8; 16];
     bytes.copy_from_slice(&seed[..16]);
-    bytes[6] = (bytes[6] & 0x0f) | 0x70;
+    // Stamp RFC 9562 UUIDv8 version and variant bits onto the SHA-256 digest.
+    bytes[6] = (bytes[6] & 0x0f) | 0x80;
     bytes[8] = (bytes[8] & 0x3f) | 0x80;
 
     UnresolvedDecisionItem {

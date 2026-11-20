@@ -55,8 +55,29 @@ impl fmt::Display for FilterOperator {
     }
 }
 
+/// Error returned when parsing a [`FilterOperator`] from a string fails.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ParseFilterOperatorError {
+    input: String,
+}
+
+impl ParseFilterOperatorError {
+    /// Return the unrecognized operator string.
+    pub fn input(&self) -> &str {
+        &self.input
+    }
+}
+
+impl fmt::Display for ParseFilterOperatorError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "unknown filter operator: {:?}", self.input)
+    }
+}
+
+impl std::error::Error for ParseFilterOperatorError {}
+
 impl FromStr for FilterOperator {
-    type Err = ();
+    type Err = ParseFilterOperatorError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_lowercase().as_str() {
@@ -67,7 +88,9 @@ impl FromStr for FilterOperator {
             "lt" | "<" => Ok(FilterOperator::Lt),
             "lte" | "<=" => Ok(FilterOperator::Lte),
             "like" => Ok(FilterOperator::Like),
-            _ => Err(()),
+            _ => Err(ParseFilterOperatorError {
+                input: s.to_string(),
+            }),
         }
     }
 }
@@ -100,5 +123,18 @@ impl FilterField {
     /// Create an equality filter
     pub fn eq(field: impl Into<String>, value: impl Into<String>) -> Self {
         Self::new(field, FilterOperator::Eq, value)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn from_str_returns_typed_error_with_input() {
+        let err = "regex".parse::<FilterOperator>().unwrap_err();
+        assert_eq!(err.input(), "regex");
+        assert!(err.to_string().contains("regex"));
+        let _: &dyn std::error::Error = &err;
     }
 }

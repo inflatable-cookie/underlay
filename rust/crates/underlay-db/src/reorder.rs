@@ -108,16 +108,7 @@ pub async fn reorder_scoped(
     let id_q = id_column.quoted();
     let weight_q = weight_column.quoted();
 
-    let mut scope_sql = String::new();
-    if let Some((col, _)) = scope.parent_column {
-        scope_sql.push_str(&format!("{} = $1", col.quoted()));
-    }
-    if let Some(col) = scope.not_deleted_column {
-        if !scope_sql.is_empty() {
-            scope_sql.push_str(" AND ");
-        }
-        scope_sql.push_str(&format!("{} IS NULL", col.quoted()));
-    }
+    let scope_sql = build_scope_sql(&table_q, scope);
     let where_sql = if scope_sql.is_empty() {
         String::new()
     } else {
@@ -150,8 +141,10 @@ pub async fn reorder_scoped(
     let persisted: std::collections::HashSet<Uuid> = current.iter().copied().collect();
 
     if submitted != persisted {
-        let added_ids: Vec<Uuid> = submitted.difference(&persisted).copied().collect();
-        let removed_ids: Vec<Uuid> = persisted.difference(&submitted).copied().collect();
+        let mut added_ids: Vec<Uuid> = submitted.difference(&persisted).copied().collect();
+        let mut removed_ids: Vec<Uuid> = persisted.difference(&submitted).copied().collect();
+        added_ids.sort();
+        removed_ids.sort();
         return Err(ReorderError::Conflict(ReorderConflict {
             added_ids,
             removed_ids,
@@ -188,6 +181,17 @@ pub async fn reorder_scoped(
 
     tx.commit().await?;
     Ok(rows)
+}
+
+fn build_scope_sql(table_q: &str, scope: ReorderScope<'_>) -> String {
+    let mut clauses = Vec::new();
+    if let Some((col, _)) = scope.parent_column {
+        clauses.push(format!("{table_q}.{} = $1", col.quoted()));
+    }
+    if let Some(col) = scope.not_deleted_column {
+        clauses.push(format!("{table_q}.{} IS NULL", col.quoted()));
+    }
+    clauses.join(" AND ")
 }
 
 #[cfg(test)]

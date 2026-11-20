@@ -159,12 +159,14 @@ impl fmt::Display for ValidationError {
 
         if !self.field_errors.is_empty() {
             write!(f, ": ")?;
-            let errors: Vec<_> = self
-                .field_errors
-                .iter()
-                .map(|(k, v)| format!("{}: {}", k, v.message))
-                .collect();
-            write!(f, "{}", errors.join(", "))?;
+            let mut entries: Vec<_> = self.field_errors.iter().collect();
+            entries.sort_by_key(|(lhs, _)| *lhs);
+            for (idx, (field, err)) in entries.into_iter().enumerate() {
+                if idx > 0 {
+                    write!(f, ", ")?;
+                }
+                write!(f, "{}: {}", field, err.message)?;
+            }
         }
 
         Ok(())
