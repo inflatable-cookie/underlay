@@ -2,24 +2,33 @@ import { describe, expect, it } from "vitest";
 import { get } from "svelte/store";
 import { UnderlayHttpError } from "../../../src/client/errors";
 import { createAuthStore } from "../../../src/client/useAuth";
-import { makeDeps, makeSession } from "./fixtures";
+import { makeDeps, makeSession, makeSessionInfo } from "./fixtures";
 
 describe("client/useAuth actions", () => {
-	it("register/login flows set authenticated state and preserve non-http errors", async () => {
+	it("register/login flows set authenticated state without leaking tokens into state.session", async () => {
 		const { commands, tokenStore } = makeDeps();
 		const auth = createAuthStore({ commands: commands as any, tokenStore: tokenStore as any });
 
 		const registered = makeSession("register");
 		commands.register.mockResolvedValue(registered);
 		await expect(
-			auth.register({ email: "u@example.com", password: "pw", displayName: "User" })
+			auth.register({ email: "u@example.com", password: "pw", displayName: "User" }),
 		).resolves.toEqual(registered);
 		expect(get(auth.state).status).toBe("authenticated");
+		expect(get(auth.state).session).toEqual(makeSessionInfo("register"));
+		expect("accessToken" in (get(auth.state).session as Record<string, unknown>)).toBe(false);
+		expect("refreshToken" in (get(auth.state).session as Record<string, unknown>)).toBe(false);
 
 		const login = makeSession("login");
 		commands.loginWithPassword.mockResolvedValue(login);
 		await auth.loginWithPassword({ email: "u@example.com", password: "pw" });
-		expect(commands.loginWithPassword).toHaveBeenLastCalledWith({ email: "u@example.com", password: "pw" });
+		expect(commands.loginWithPassword).toHaveBeenLastCalledWith({
+			email: "u@example.com",
+			password: "pw",
+		});
+		expect(get(auth.state).session).toEqual(makeSessionInfo("login"));
+		expect("accessToken" in (get(auth.state).session as Record<string, unknown>)).toBe(false);
+		expect("refreshToken" in (get(auth.state).session as Record<string, unknown>)).toBe(false);
 
 		commands.loginWithPassword.mockResolvedValue(makeSession("login-code"));
 		await auth.loginWithPassword({ email: "u@example.com", password: "pw", code: "123456" });
@@ -33,11 +42,14 @@ describe("client/useAuth actions", () => {
 		commands.loginWithPasskey.mockResolvedValue(passkey);
 		await auth.loginWithPasskey({ credential: { id: "cred-1" } });
 		expect(get(auth.state).status).toBe("authenticated");
+		expect(get(auth.state).session).toEqual(makeSessionInfo("passkey"));
+		expect("accessToken" in (get(auth.state).session as Record<string, unknown>)).toBe(false);
+		expect("refreshToken" in (get(auth.state).session as Record<string, unknown>)).toBe(false);
 
 		const plainErr = new Error("boom");
 		commands.register.mockRejectedValue(plainErr);
 		await expect(
-			auth.register({ email: "u@example.com", password: "pw", displayName: "User" })
+			auth.register({ email: "u@example.com", password: "pw", displayName: "User" }),
 		).rejects.toThrow("boom");
 		expect(get(auth.state).error).toBeNull();
 	});
@@ -48,6 +60,9 @@ describe("client/useAuth actions", () => {
 
 		commands.refresh.mockResolvedValueOnce(makeSession("ok"));
 		await expect(auth.refresh()).resolves.toEqual(makeSession("ok"));
+		expect(get(auth.state).session).toEqual(makeSessionInfo("ok"));
+		expect("accessToken" in (get(auth.state).session as Record<string, unknown>)).toBe(false);
+		expect("refreshToken" in (get(auth.state).session as Record<string, unknown>)).toBe(false);
 
 		const unauthorized = new UnderlayHttpError(401, "Unauthorized");
 		commands.refresh.mockRejectedValueOnce(unauthorized);
@@ -64,22 +79,20 @@ describe("client/useAuth actions", () => {
 		const registerErr = new UnderlayHttpError(409, "Conflict");
 		commands.register.mockRejectedValueOnce(registerErr);
 		await expect(
-			auth.register({ email: "u@example.com", password: "pw", displayName: "User" })
+			auth.register({ email: "u@example.com", password: "pw", displayName: "User" }),
 		).rejects.toBe(registerErr);
 		expect(get(auth.state).error).toBe(registerErr);
 
 		const passwordErr = new UnderlayHttpError(422, "Validation");
 		commands.loginWithPassword.mockRejectedValueOnce(passwordErr);
-		await expect(
-			auth.loginWithPassword({ email: "u@example.com", password: "pw" })
-		).rejects.toBe(passwordErr);
+		await expect(auth.loginWithPassword({ email: "u@example.com", password: "pw" })).rejects.toBe(
+			passwordErr,
+		);
 		expect(get(auth.state).error).toBe(passwordErr);
 
 		const passkeyErr = new UnderlayHttpError(401, "Passkey rejected");
 		commands.loginWithPasskey.mockRejectedValueOnce(passkeyErr);
-		await expect(
-			auth.loginWithPasskey({ credential: { id: "cred-1" } })
-		).rejects.toBe(passkeyErr);
+		await expect(auth.loginWithPasskey({ credential: { id: "cred-1" } })).rejects.toBe(passkeyErr);
 		expect(get(auth.state).error).toBe(passkeyErr);
 
 		const refreshErr = new UnderlayHttpError(500, "Server exploded");
@@ -90,7 +103,7 @@ describe("client/useAuth actions", () => {
 			expect.objectContaining({
 				loading: false,
 				error: refreshErr,
-			})
+			}),
 		);
 	});
 
@@ -100,23 +113,23 @@ describe("client/useAuth actions", () => {
 
 		const httpErr = new UnderlayHttpError(401, "bad credentials");
 		commands.loginWithPassword.mockRejectedValueOnce(httpErr);
-		await expect(
-			auth.loginWithPassword({ email: "u@example.com", password: "pw" })
-		).rejects.toBe(httpErr);
+		await expect(auth.loginWithPassword({ email: "u@example.com", password: "pw" })).rejects.toBe(
+			httpErr,
+		);
 		expect(get(auth.state).error).toBe(httpErr);
 
 		const nonHttpPasswordErr = new Error("offline");
 		commands.loginWithPassword.mockRejectedValueOnce(nonHttpPasswordErr);
-		await expect(
-			auth.loginWithPassword({ email: "u@example.com", password: "pw" })
-		).rejects.toBe(nonHttpPasswordErr);
+		await expect(auth.loginWithPassword({ email: "u@example.com", password: "pw" })).rejects.toBe(
+			nonHttpPasswordErr,
+		);
 		expect(get(auth.state).error).toBeNull();
 
 		const nonHttpPasskeyErr = new Error("aborted");
 		commands.loginWithPasskey.mockRejectedValueOnce(nonHttpPasskeyErr);
-		await expect(
-			auth.loginWithPasskey({ credential: { id: "cred-1" } })
-		).rejects.toBe(nonHttpPasskeyErr);
+		await expect(auth.loginWithPasskey({ credential: { id: "cred-1" } })).rejects.toBe(
+			nonHttpPasskeyErr,
+		);
 		expect(get(auth.state).error).toBeNull();
 
 		const nonHttpRefreshErr = new Error("offline");

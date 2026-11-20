@@ -1,358 +1,352 @@
 import { UnderlayHttpError, isErrorEnvelope } from "./errors";
-import {
-  headersToRecord,
-  hasHeader,
-  setHeaderIfMissing,
-} from "./http-headers.js";
+import { headersToRecord, hasHeader, setHeaderIfMissing } from "./http-headers.js";
 import type {
-  HttpClient,
-  HttpClientOptions,
-  HttpRequest,
-  HttpRequestOptions,
-  HttpResponse,
-  RefreshResult,
+	HttpClient,
+	HttpClientOptions,
+	HttpRequest,
+	HttpRequestOptions,
+	HttpResponse,
+	RefreshResult,
 } from "./http-types.js";
 
 export type {
-  HttpAuthOptions,
-  HttpClient,
-  HttpClientOptions,
-  HttpMethod,
-  HttpRequest,
-  HttpRequestOptions,
-  HttpResponse,
-  RefreshContext,
-  RefreshResult,
-  TokenStore,
+	HttpAuthOptions,
+	HttpClient,
+	HttpClientOptions,
+	HttpMethod,
+	HttpRequest,
+	HttpRequestOptions,
+	HttpResponse,
+	RefreshContext,
+	RefreshResult,
+	TokenStore,
 } from "./http-types.js";
 export { MemoryTokenStore } from "./http-token-store.js";
 
 export function createHttpClient(options: HttpClientOptions): HttpClient {
-  const fetchImpl = options.fetch ?? globalThis.fetch;
-  const timeoutMs = options.timeoutMs ?? 8000;
-  const maxRetries = options.maxRetries ?? 3;
-  const retryStatuses = new Set([
-    502,
-    503,
-    504,
-    ...(options.retryStatuses ?? []),
-  ]);
-  const debug = options.debug ?? false;
-  const credentials = options.credentials ?? "omit";
+	const fetchImpl = options.fetch ?? globalThis.fetch;
+	const timeoutMs = options.timeoutMs ?? 8000;
+	const maxRetries = options.maxRetries ?? 3;
+	const retryStatuses = new Set([502, 503, 504, ...(options.retryStatuses ?? [])]);
+	const debug = options.debug ?? false;
+	const credentials = options.credentials ?? "omit";
 
-  function log(...args: unknown[]): void {
-    if (debug) {
-      console.log("[HTTP]", ...args);
-    }
-  }
+	function log(...args: unknown[]): void {
+		if (debug) {
+			console.log("[HTTP]", ...args);
+		}
+	}
 
-  const tokenStore = options.auth?.tokenStore;
+	const tokenStore = options.auth?.tokenStore;
 
-  const getAccessToken =
-    options.auth?.getAccessToken ??
-    (tokenStore ? () => tokenStore.getAccessToken() : undefined);
-  const setAccessToken =
-    options.auth?.setAccessToken ??
-    (tokenStore
-      ? (t: string | null) => tokenStore.setAccessToken(t)
-      : undefined);
+	const getAccessToken =
+		options.auth?.getAccessToken ?? (tokenStore ? () => tokenStore.getAccessToken() : undefined);
+	const setAccessToken =
+		options.auth?.setAccessToken ??
+		(tokenStore ? (t: string | null) => tokenStore.setAccessToken(t) : undefined);
 
-  const getRefreshToken =
-    options.auth?.getRefreshToken ??
-    (tokenStore ? () => tokenStore.getRefreshToken() : async () => null);
-  const setRefreshToken =
-    options.auth?.setRefreshToken ??
-    (tokenStore
-      ? (t: string | null) => tokenStore.setRefreshToken(t)
-      : undefined);
+	const getRefreshToken =
+		options.auth?.getRefreshToken ??
+		(tokenStore ? () => tokenStore.getRefreshToken() : async () => null);
+	const setRefreshToken =
+		options.auth?.setRefreshToken ??
+		(tokenStore ? (t: string | null) => tokenStore.setRefreshToken(t) : undefined);
 
-  let refreshInFlight: Promise<RefreshResult> | null = null;
+	let refreshInFlight: Promise<RefreshResult> | null = null;
 
-  // Tokens must only be attached to requests that resolve to the configured
-  // base origin; an absolute req.path can otherwise leak them cross-origin.
-  let baseOrigin: string | null = null;
-  try {
-    baseOrigin = new URL(options.baseUrl).origin;
-  } catch {
-    baseOrigin = null;
-  }
+	// Tokens must only be attached to requests that resolve to the configured
+	// base origin; an absolute req.path can otherwise leak them cross-origin.
+	let baseOrigin: string | null = null;
+	try {
+		baseOrigin = new URL(options.baseUrl).origin;
+	} catch {
+		baseOrigin = null;
+	}
 
-  function isBaseOrigin(path: string): boolean {
-    if (baseOrigin === null) {
-      return false;
-    }
-    try {
-      return new URL(path, options.baseUrl).origin === baseOrigin;
-    } catch {
-      return false;
-    }
-  }
+	function isBaseOrigin(path: string): boolean {
+		if (baseOrigin === null) {
+			return false;
+		}
+		try {
+			return new URL(path, options.baseUrl).origin === baseOrigin;
+		} catch {
+			return false;
+		}
+	}
 
-  async function rawRequest<T>(
-    req: HttpRequest,
-    opts?: { skipRetry?: boolean; acceptedStatuses?: number[] },
-  ): Promise<HttpResponse<T>> {
-    const url = new URL(req.path, options.baseUrl).toString();
-    const headers: Record<string, string> = {
-      ...options.defaultHeaders,
-      ...req.headers,
-    };
+	async function rawRequest<T>(
+		req: HttpRequest,
+		opts?: { skipRetry?: boolean; acceptedStatuses?: number[] },
+	): Promise<HttpResponse<T>> {
+		const url = new URL(req.path, options.baseUrl).toString();
+		const headers: Record<string, string> = {
+			...options.defaultHeaders,
+			...req.headers,
+		};
 
-    setHeaderIfMissing(headers, "Accept", "application/json");
+		setHeaderIfMissing(headers, "Accept", "application/json");
 
-    let body: BodyInit | undefined;
-    if (req.body !== undefined) {
-      setHeaderIfMissing(headers, "Content-Type", "application/json");
-      body = JSON.stringify(req.body);
-    }
+		let body: BodyInit | undefined;
+		if (req.body !== undefined) {
+			setHeaderIfMissing(headers, "Content-Type", "application/json");
+			body = JSON.stringify(req.body);
+		}
 
-    // Determine if this request is idempotent (can be retried)
-    const isIdempotent = req.method === "GET" || req.method === "DELETE";
-    const shouldRetry = isIdempotent && !opts?.skipRetry;
+		// Determine if this request is idempotent (can be retried)
+		const isIdempotent = req.method === "GET" || req.method === "DELETE";
+		const shouldRetry = isIdempotent && !opts?.skipRetry;
 
-    let retries = 0;
+		let retries = 0;
 
-    while (true) {
-      const controller =
-        typeof AbortController !== "undefined" ? new AbortController() : undefined;
+		while (true) {
+			const controller = typeof AbortController !== "undefined" ? new AbortController() : undefined;
 
-      const timeout =
-        controller != null
-          ? setTimeout(() => controller.abort(), timeoutMs)
-          : undefined;
+			const timeout =
+				controller != null ? setTimeout(() => controller.abort(), timeoutMs) : undefined;
 
-      try {
-        log(req.method, req.path);
+			let retryStatus: number | undefined;
 
-        const res = await fetchImpl(url, {
-          method: req.method,
-          headers,
-          body,
-          signal: controller?.signal,
-          credentials,
-        });
+			try {
+				log(req.method, req.path);
 
-        if (timeout != null) {
-          clearTimeout(timeout);
-        }
+				const res = await fetchImpl(url, {
+					method: req.method,
+					headers,
+					body,
+					signal: controller?.signal,
+					credentials,
+				});
 
-        const contentType =
-          res.headers?.get?.("content-type") ?? "application/json";
-        const hasJson = contentType.includes("application/json");
+				const contentType = res.headers?.get?.("content-type") ?? "application/json";
+				const hasJson = contentType.includes("application/json");
 
-        const acceptedStatuses = new Set(opts?.acceptedStatuses ?? []);
-        const isAccepted = res.ok || acceptedStatuses.has(res.status);
+				const acceptedStatuses = new Set(opts?.acceptedStatuses ?? []);
+				const isAccepted = res.ok || acceptedStatuses.has(res.status);
 
-        if (!isAccepted) {
-          const parsed = hasJson
-            ? await res.json().catch(() => undefined)
-            : undefined;
-          const envelope = isErrorEnvelope(parsed) ? parsed : undefined;
-          const message = envelope?.error.message ?? `HTTP ${res.status}`;
+				if (!isAccepted) {
+					let parsed: unknown;
+					if (hasJson) {
+						try {
+							parsed = await res.json();
+						} catch (parseErr) {
+							if (
+								parseErr instanceof Error &&
+								(parseErr.name === "AbortError" || controller?.signal.aborted === true)
+							) {
+								throw parseErr;
+							}
+							parsed = undefined;
+						}
+					}
+					const envelope = isErrorEnvelope(parsed) ? parsed : undefined;
+					const message = envelope?.error.message ?? `HTTP ${res.status}`;
 
-          log(`Error response (${res.status}):`, envelope);
+					log(`Error response (${res.status}):`, envelope);
 
-          // Check if we should retry this error
-          const canRetry =
-            shouldRetry &&
-            retryStatuses.has(res.status) &&
-            retries < maxRetries;
+					// Check if we should retry this error
+					const canRetry = shouldRetry && retryStatuses.has(res.status) && retries < maxRetries;
 
-          if (canRetry) {
-            retries += 1;
-            log("Retrying due to status", res.status);
-            // Exponential backoff: 100ms, 200ms, 400ms, etc.
-            const backoffMs = Math.min(100 * Math.pow(2, retries - 1), 3000);
-            await new Promise((resolve) => setTimeout(resolve, backoffMs));
-            continue;
-          }
+					if (canRetry) {
+						retryStatus = res.status;
+					} else {
+						throw new UnderlayHttpError(res.status, message, envelope);
+					}
+				} else {
+					const responseHeaders = headersToRecord(res.headers);
 
-          throw new UnderlayHttpError(res.status, message, envelope);
-        }
+					if (res.status === 204) {
+						return { status: res.status, headers: responseHeaders, body: null };
+					}
 
-        const responseHeaders = headersToRecord(res.headers);
+					if (res.status === 304) {
+						return { status: res.status, headers: responseHeaders, body: null };
+					}
 
-        if (res.status === 204) {
-          return { status: res.status, headers: responseHeaders, body: null };
-        }
+					if (!hasJson) {
+						return {
+							status: res.status,
+							headers: responseHeaders,
+							body: (await res.text()) as unknown as T,
+						};
+					}
 
-        if (res.status === 304) {
-          return { status: res.status, headers: responseHeaders, body: null };
-        }
+					try {
+						return {
+							status: res.status,
+							headers: responseHeaders,
+							body: (await res.json()) as T,
+						};
+					} catch (parseErr) {
+						if (
+							parseErr instanceof Error &&
+							(parseErr.name === "AbortError" || controller?.signal.aborted === true)
+						) {
+							throw parseErr;
+						}
+						const message =
+							parseErr instanceof Error
+								? `Invalid JSON response: ${parseErr.message}`
+								: "Invalid JSON response";
+						throw new UnderlayHttpError(res.status, message, {
+							error: {
+								code: "invalid_json",
+								message,
+							},
+						});
+					}
+				}
+			} catch (err) {
+				// If it's an HTTP error (not network/timeout), don't retry - we already handled that above
+				if (err instanceof UnderlayHttpError) {
+					throw err;
+				}
 
-        if (!hasJson) {
-          return {
-            status: res.status,
-            headers: responseHeaders,
-            body: (await res.text()) as unknown as T,
-          };
-        }
+				const isTimeout =
+					err instanceof Error &&
+					(err.name === "AbortError" || controller?.signal.aborted === true);
+				if (isTimeout) {
+					throw new UnderlayHttpError(0, "Request timed out", {
+						error: {
+							code: "timeout",
+							message: "Request timed out",
+						},
+					});
+				}
 
-        try {
-          return {
-            status: res.status,
-            headers: responseHeaders,
-            body: (await res.json()) as T,
-          };
-        } catch (parseErr) {
-          if (
-            parseErr instanceof Error &&
-            (parseErr.name === "AbortError" || controller?.signal.aborted === true)
-          ) {
-            throw parseErr;
-          }
-          const message =
-            parseErr instanceof Error
-              ? `Invalid JSON response: ${parseErr.message}`
-              : "Invalid JSON response";
-          throw new UnderlayHttpError(res.status, message, {
-            error: {
-              code: "invalid_json",
-              message,
-            },
-          });
-        }
-      } catch (err) {
-        if (timeout != null) {
-          clearTimeout(timeout);
-        }
+				const message = err instanceof Error ? err.message : "Network error";
+				throw new UnderlayHttpError(0, message);
+			} finally {
+				if (timeout != null) {
+					clearTimeout(timeout);
+				}
+			}
 
-        // If it's an HTTP error (not network/timeout), don't retry - we already handled that above
-        if (err instanceof UnderlayHttpError) {
-          throw err;
-        }
+			if (retryStatus !== undefined) {
+				retries += 1;
+				log("Retrying due to status", retryStatus);
+				// Exponential backoff: 100ms, 200ms, 400ms, etc.
+				const backoffMs = Math.min(100 * Math.pow(2, retries - 1), 3000);
+				await new Promise((resolve) => setTimeout(resolve, backoffMs));
+			}
+		}
+	}
 
-        const isTimeout =
-          err instanceof Error &&
-          (err.name === "AbortError" || controller?.signal.aborted === true);
-        if (isTimeout) {
-          throw new UnderlayHttpError(0, "Request timed out", {
-            error: {
-              code: "timeout",
-              message: "Request timed out",
-            },
-          });
-        }
+	async function rawRequestBody<T>(req: HttpRequest): Promise<T> {
+		const response = await rawRequest<T>(req);
+		return response.body as T;
+	}
 
-        const message = err instanceof Error ? err.message : "Network error";
-        throw new UnderlayHttpError(0, message);
-      }
-    }
-  }
+	async function rawRequestWithMeta<T>(
+		req: HttpRequest,
+		requestOptions?: HttpRequestOptions,
+	): Promise<HttpResponse<T>> {
+		return rawRequest<T>(req, requestOptions);
+	}
 
-  async function rawRequestBody<T>(req: HttpRequest): Promise<T> {
-    const response = await rawRequest<T>(req);
-    return response.body as T;
-  }
+	async function clearStoredTokens(): Promise<void> {
+		if (tokenStore) {
+			await tokenStore.clear();
+		}
+		if (options.auth?.setAccessToken) {
+			await options.auth.setAccessToken(null);
+		}
+		if (options.auth?.setRefreshToken) {
+			await options.auth.setRefreshToken(null);
+		}
+	}
 
-  async function rawRequestWithMeta<T>(
-    req: HttpRequest,
-    requestOptions?: HttpRequestOptions,
-  ): Promise<HttpResponse<T>> {
-    return rawRequest<T>(req, requestOptions);
-  }
+	async function requestWithMeta<T>(
+		req: HttpRequest,
+		requestOptions?: HttpRequestOptions,
+	): Promise<HttpResponse<T>> {
+		const hasExplicitAuth =
+			hasHeader(req.headers ?? {}, "Authorization") ||
+			hasHeader(options.defaultHeaders ?? {}, "Authorization");
+		const token = hasExplicitAuth ? null : ((await getAccessToken?.()) ?? null);
 
-  async function clearStoredTokens(): Promise<void> {
-    await tokenStore?.clear();
-    await setAccessToken?.(null);
-    await setRefreshToken?.(null);
-  }
+		const headers: Record<string, string> = { ...(req.headers ?? {}) };
+		if (token && isBaseOrigin(req.path)) {
+			setHeaderIfMissing(headers, "Authorization", `Bearer ${token}`);
+		}
 
-  async function requestWithMeta<T>(
-    req: HttpRequest,
-    requestOptions?: HttpRequestOptions,
-  ): Promise<HttpResponse<T>> {
-    const token = hasHeader(req.headers ?? {}, "Authorization")
-      ? null
-      : ((await getAccessToken?.()) ?? null);
+		try {
+			return await rawRequest<T>({ ...req, headers }, requestOptions);
+		} catch (err) {
+			if (!(err instanceof UnderlayHttpError)) throw err;
 
-    const headers: Record<string, string> = { ...(req.headers ?? {}) };
-    if (token && isBaseOrigin(req.path)) {
-      setHeaderIfMissing(headers, "Authorization", `Bearer ${token}`);
-    }
+			if (err.status !== 401 || hasExplicitAuth || !options.auth?.refresh) {
+				throw err;
+			}
 
-    try {
-      return await rawRequest<T>({ ...req, headers }, requestOptions);
-    } catch (err) {
-      if (!(err instanceof UnderlayHttpError)) throw err;
+			if (!refreshInFlight) {
+				const refreshFn = options.auth.refresh;
+				refreshInFlight = (async () =>
+					refreshFn({
+						rawRequest: rawRequestBody,
+						rawRequestWithMeta,
+						tokenStore,
+						getRefreshToken: async () => (await getRefreshToken?.()) ?? null,
+						setAccessToken: async (t) => {
+							await setAccessToken?.(t);
+						},
+						setRefreshToken: async (t) => {
+							await setRefreshToken?.(t);
+						},
+					}))().finally(() => {
+					refreshInFlight = null;
+				});
+			}
 
-      if (err.status !== 401 || !options.auth?.refresh) {
-        throw err;
-      }
+			let refreshed: RefreshResult;
+			try {
+				refreshed = await refreshInFlight;
+			} catch (refreshErr) {
+				const isTransient =
+					refreshErr instanceof TypeError ||
+					(refreshErr instanceof UnderlayHttpError &&
+						(refreshErr.status === 0 || refreshErr.status >= 500));
+				if (!isTransient) {
+					await clearStoredTokens();
+				}
+				throw refreshErr;
+			}
 
-      if (!refreshInFlight) {
-        const refreshFn = options.auth.refresh;
-        refreshInFlight = (async () =>
-          refreshFn({
-            rawRequest: rawRequestBody,
-            rawRequestWithMeta,
-            tokenStore,
-            getRefreshToken: async () => (await getRefreshToken?.()) ?? null,
-            setAccessToken: async (t) => {
-              await setAccessToken?.(t);
-            },
-            setRefreshToken: async (t) => {
-              await setRefreshToken?.(t);
-            },
-          }))().finally(() => {
-          refreshInFlight = null;
-        });
-      }
+			if (!refreshed.success) {
+				await clearStoredTokens();
+				throw err;
+			}
 
-      let refreshed: RefreshResult;
-      try {
-        refreshed = await refreshInFlight;
-      } catch (refreshErr) {
-        await clearStoredTokens();
-        throw refreshErr;
-      }
+			if (refreshed.accessToken !== undefined) {
+				await setAccessToken?.(refreshed.accessToken);
+			}
+			if (refreshed.refreshToken !== undefined) {
+				await setRefreshToken?.(refreshed.refreshToken);
+			}
 
-      if (!refreshed.success) {
-        await clearStoredTokens();
-        throw err;
-      }
+			const retryToken = (await getAccessToken?.()) ?? null;
+			const retryHeaders: Record<string, string> = { ...(req.headers ?? {}) };
+			if (retryToken && isBaseOrigin(req.path)) {
+				setHeaderIfMissing(retryHeaders, "Authorization", `Bearer ${retryToken}`);
+			}
 
-      if (refreshed.accessToken !== undefined) {
-        await setAccessToken?.(refreshed.accessToken);
-      }
-      if (refreshed.refreshToken !== undefined) {
-        await setRefreshToken?.(refreshed.refreshToken);
-      }
+			return await rawRequest<T>({ ...req, headers: retryHeaders }, requestOptions);
+		}
+	}
 
-      const retryToken = (await getAccessToken?.()) ?? null;
-      const retryHeaders: Record<string, string> = { ...(req.headers ?? {}) };
-      if (retryToken && isBaseOrigin(req.path)) {
-        setHeaderIfMissing(
-          retryHeaders,
-          "Authorization",
-          `Bearer ${retryToken}`,
-        );
-      }
+	async function request<T>(req: HttpRequest): Promise<T> {
+		const response = await requestWithMeta<T>(req);
+		return response.body as T;
+	}
 
-      return await rawRequest<T>(
-        { ...req, headers: retryHeaders },
-        requestOptions,
-      );
-    }
-  }
-
-  async function request<T>(req: HttpRequest): Promise<T> {
-    const response = await requestWithMeta<T>(req);
-    return response.body as T;
-  }
-
-  return {
-    request,
-    requestWithMeta,
-    get: (path, headers) => request({ method: "GET", path, headers }),
-    getWithMeta: (path, headers, options) =>
-      requestWithMeta({ method: "GET", path, headers }, options),
-    post: (path, body, headers) =>
-      request({ method: "POST", path, body, headers }),
-    put: (path, body, headers) =>
-      request({ method: "PUT", path, body, headers }),
-    patch: (path, body, headers) =>
-      request({ method: "PATCH", path, body, headers }),
-    delete: (path, headers) => request({ method: "DELETE", path, headers }),
-  };
+	return {
+		request,
+		requestWithMeta,
+		get: (path, headers) => request({ method: "GET", path, headers }),
+		getWithMeta: (path, headers, options) =>
+			requestWithMeta({ method: "GET", path, headers }, options),
+		post: (path, body, headers) => request({ method: "POST", path, body, headers }),
+		put: (path, body, headers) => request({ method: "PUT", path, body, headers }),
+		patch: (path, body, headers) => request({ method: "PATCH", path, body, headers }),
+		delete: (path, headers) => request({ method: "DELETE", path, headers }),
+	};
 }

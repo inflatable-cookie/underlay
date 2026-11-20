@@ -24,12 +24,13 @@
  * ```
  */
 
-import { readdir, readFile } from 'node:fs/promises';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { getLineNumberFromIndex, getLineStarts } from './guardrails/line-utils.js';
-import { scanModuleScopeBrowserApis } from './guardrails/scanner.js';
-import { isSuppressed } from './guardrails/suppressions.js';
+import { readdir, readFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { isCliEntrypoint } from "./cli-entrypoint.js";
+import { getLineNumberFromIndex, getLineStarts } from "./guardrails/line-utils.js";
+import { scanModuleScopeBrowserApis } from "./guardrails/scanner.js";
+import { isSuppressed } from "./guardrails/suppressions.js";
 
 // =============================================================================
 // Types
@@ -43,7 +44,7 @@ export interface BannedPattern {
 
 export interface ModuleScopeCheck {
 	name: string;
-	kind: 'prefix' | 'identifier' | 'call';
+	kind: "prefix" | "identifier" | "call";
 	value: string;
 	message: string;
 }
@@ -71,9 +72,10 @@ async function* walk(dirUrl: URL, extensions: string[]): AsyncGenerator<URL> {
 	const entries = await readdir(dirPath, { withFileTypes: true });
 
 	for (const entry of entries) {
-		if (entry.name.startsWith('.')) continue;
+		if (entry.name.startsWith(".")) continue;
 
-		const entryUrl = new URL(entry.name + (entry.isDirectory() ? '/' : ''), dirUrl);
+		const entryPath = path.join(dirPath, entry.name) + (entry.isDirectory() ? path.sep : "");
+		const entryUrl = pathToFileURL(entryPath);
 
 		if (entry.isDirectory()) {
 			yield* walk(entryUrl, extensions);
@@ -102,8 +104,8 @@ function getSvelteScriptBlocks(text: string): SvelteScriptBlock[] {
 	const scriptTag = /<script\b([^>]*)>([\s\S]*?)<\/script>/gi;
 	let match: RegExpExecArray | null;
 	while ((match = scriptTag.exec(text))) {
-		const attrs = match[1] ?? '';
-		const content = match[2] ?? '';
+		const attrs = match[1] ?? "";
+		const content = match[2] ?? "";
 		const contentStart = match.index + match[0].indexOf(content);
 		blocks.push({ attrs, content, contentStart });
 	}
@@ -116,12 +118,15 @@ function getSvelteScriptBlocks(text: string): SvelteScriptBlock[] {
 // =============================================================================
 
 export async function scanFiles(config: GuardrailsConfig): Promise<number> {
-	const rootUrl = new URL(config.srcDir + '/', 'file://' + process.cwd() + '/');
+	const resolvedSrcDir = path.resolve(config.srcDir);
+	const rootUrl = pathToFileURL(
+		resolvedSrcDir.endsWith(path.sep) ? resolvedSrcDir : `${resolvedSrcDir}${path.sep}`,
+	);
 	let failures = 0;
 
 	for await (const fileUrl of walk(rootUrl, config.extensions)) {
 		const filePath = fileURLToPath(fileUrl);
-		const text = await readFile(filePath, 'utf8');
+		const text = await readFile(filePath, "utf8");
 		const lineStarts = getLineStarts(text);
 
 		// Scan for banned patterns
@@ -135,8 +140,8 @@ export async function scanFiles(config: GuardrailsConfig): Promise<number> {
 						text,
 						lineStarts,
 						match.index,
-						['banned', pattern.name],
-						config.suppressionPrefix
+						["banned", pattern.name],
+						config.suppressionPrefix,
 					)
 				) {
 					continue;
@@ -144,22 +149,24 @@ export async function scanFiles(config: GuardrailsConfig): Promise<number> {
 
 				failures++;
 				const line = getLineNumberFromIndex(lineStarts, match.index);
-				console.error(`${toRelative(fileUrl, rootUrl)}:${line}: banned ${pattern.name}. ${pattern.message}`);
+				console.error(
+					`${toRelative(fileUrl, rootUrl)}:${line}: banned ${pattern.name}. ${pattern.message}`,
+				);
 			}
 		}
 
 		const ext = path.extname(filePath);
 
 		// Scan TypeScript files for module-scope browser APIs
-		if (ext === '.ts') {
+		if (ext === ".ts") {
 			for (const issue of scanModuleScopeBrowserApis(text, 0, config.moduleScopeChecks)) {
 				if (
 					isSuppressed(
 						text,
 						lineStarts,
 						issue.index,
-						['module-scope', 'module-scope-browser-api', issue.name],
-						config.suppressionPrefix
+						["module-scope", "module-scope-browser-api", issue.name],
+						config.suppressionPrefix,
 					)
 				) {
 					continue;
@@ -167,23 +174,29 @@ export async function scanFiles(config: GuardrailsConfig): Promise<number> {
 
 				failures++;
 				const line = getLineNumberFromIndex(lineStarts, issue.index);
-				console.error(`${toRelative(fileUrl, rootUrl)}:${line}: module-scope ${issue.name}. ${issue.message}`);
+				console.error(
+					`${toRelative(fileUrl, rootUrl)}:${line}: module-scope ${issue.name}. ${issue.message}`,
+				);
 			}
 		}
 
 		// Scan Svelte script blocks for module-scope browser APIs
-		if (ext === '.svelte') {
+		if (ext === ".svelte") {
 			const blocks = getSvelteScriptBlocks(text);
 
 			for (const block of blocks) {
-				for (const issue of scanModuleScopeBrowserApis(block.content, block.contentStart, config.moduleScopeChecks)) {
+				for (const issue of scanModuleScopeBrowserApis(
+					block.content,
+					block.contentStart,
+					config.moduleScopeChecks,
+				)) {
 					if (
 						isSuppressed(
 							text,
 							lineStarts,
 							issue.index,
-							['module-scope', 'module-scope-browser-api', issue.name],
-							config.suppressionPrefix
+							["module-scope", "module-scope-browser-api", issue.name],
+							config.suppressionPrefix,
 						)
 					) {
 						continue;
@@ -191,7 +204,9 @@ export async function scanFiles(config: GuardrailsConfig): Promise<number> {
 
 					failures++;
 					const line = getLineNumberFromIndex(lineStarts, issue.index);
-					console.error(`${toRelative(fileUrl, rootUrl)}:${line}: module-scope ${issue.name}. ${issue.message}`);
+					console.error(
+						`${toRelative(fileUrl, rootUrl)}:${line}: module-scope ${issue.name}. ${issue.message}`,
+					);
 				}
 			}
 		}
@@ -204,7 +219,7 @@ export async function scanFiles(config: GuardrailsConfig): Promise<number> {
 // CLI Entry Point
 // =============================================================================
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isCliEntrypoint(import.meta.url)) {
 	(async () => {
 		// Parse CLI args
 		const args = process.argv.slice(2);
@@ -212,19 +227,19 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 		let configPath: string | undefined;
 
 		for (let i = 0; i < args.length; i++) {
-			if (args[i] === '--src') {
+			if (args[i] === "--src") {
 				if (!args[i + 1]) {
-					throw new Error('Missing directory argument for --src');
+					throw new Error("Missing directory argument for --src");
 				}
 				srcDir = args[i + 1];
 				i++;
-			} else if (args[i] === '--config') {
+			} else if (args[i] === "--config") {
 				if (!args[i + 1]) {
-					throw new Error('Missing path argument for --config');
+					throw new Error("Missing path argument for --config");
 				}
 				configPath = args[i + 1];
 				i++;
-			} else if (args[i] === '--help' || args[i] === '-h') {
+			} else if (args[i] === "--help" || args[i] === "-h") {
 				console.log(`
 Guardrails - Architectural rule enforcement for TypeScript and Svelte
 
@@ -265,7 +280,7 @@ Suppression:
 		}
 
 		// Load config (with CLI overrides)
-		const { loadConfig } = await import('./guardrails-config.js');
+		const { loadConfig } = await import("./guardrails-config.js");
 		const config = await loadConfig(configPath, srcDir);
 
 		console.log(`Scanning ${config.srcDir} for guardrails violations...`);
@@ -277,7 +292,7 @@ Suppression:
 			process.exit(1);
 		}
 
-		console.log('✓ Guardrails passed: no issues found.');
+		console.log("✓ Guardrails passed: no issues found.");
 	})().catch((error) => {
 		console.error(error instanceof Error ? error.message : String(error));
 		process.exit(1);

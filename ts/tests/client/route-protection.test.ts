@@ -9,14 +9,20 @@ import {
 } from "../../src/client/route-protection";
 
 describe("client/route-protection", () => {
-	it("matches exact and wildcard public paths without widening plain paths", () => {
-		const publicPaths = ["/login", "/auth/*", "/health"];
+	it("matches exact and wildcard public paths with trailing-slash normalization without widening plain paths", () => {
+		const publicPaths = ["/login", "/auth/*", "/health", "/public"];
 
 		expect(isPublicPath("/login", publicPaths)).toBe(true);
+		expect(isPublicPath("/login/", publicPaths)).toBe(true);
 		expect(isPublicPath("/login-help", publicPaths)).toBe(false);
+		expect(isPublicPath("/auth", publicPaths)).toBe(true);
+		expect(isPublicPath("/auth/", publicPaths)).toBe(true);
 		expect(isPublicPath("/auth/callback", publicPaths)).toBe(true);
+		expect(isPublicPath("/auth-helper", publicPaths)).toBe(false);
 		expect(isPublicPath("/health", publicPaths)).toBe(true);
 		expect(isPublicPath("/health/check", publicPaths)).toBe(false);
+		expect(isPublicPath("/public/", publicPaths)).toBe(true);
+		expect(isPublicPath("/public", ["/public/"])).toBe(true);
 		expect(isPublicPath("/private", publicPaths)).toBe(false);
 	});
 
@@ -33,12 +39,12 @@ describe("client/route-protection", () => {
 		const withDefault = createLoginRedirect(source);
 		expect(withDefault.status).toBe(302);
 		expect(withDefault.headers.get("location")).toBe(
-			"https://example.com/login?redirectTo=%2Fadmin%2Fusers"
+			"https://example.com/login?redirectTo=%2Fadmin%2Fusers",
 		);
 
 		const withStringConfig = createLoginRedirect(source, "/sign-in");
 		expect(withStringConfig.headers.get("location")).toBe(
-			"https://example.com/sign-in?redirectTo=%2Fadmin%2Fusers"
+			"https://example.com/sign-in?redirectTo=%2Fadmin%2Fusers",
 		);
 
 		const withCustomQuery = createLoginRedirect(source, {
@@ -47,7 +53,7 @@ describe("client/route-protection", () => {
 			redirectToParam: "next",
 		});
 		expect(withCustomQuery.headers.get("location")).toBe(
-			"https://example.com/sign-in?next=%2Fadmin%2Fusers"
+			"https://example.com/sign-in?next=%2Fadmin%2Fusers",
 		);
 
 		const noRedirectTo = createLoginRedirect(source, { useRedirectTo: false });
@@ -57,11 +63,14 @@ describe("client/route-protection", () => {
 		expect(alreadyOnLogin.headers.get("location")).toBe("https://example.com/login");
 	});
 
-	it("resolveRedirectTo accepts legitimate same-origin paths", () => {
+	it("resolveRedirectTo accepts legitimate same-origin paths and returns decoded/normalized path", () => {
 		expect(resolveRedirectTo("/admin/users")).toBe("/admin/users");
 		expect(resolveRedirectTo("/admin/users?tab=2")).toBe("/admin/users?tab=2");
 		expect(resolveRedirectTo("/")).toBe("/");
 		expect(resolveRedirectTo("/a/b/c#frag")).toBe("/a/b/c#frag");
+		expect(resolveRedirectTo("%2Fdashboard")).toBe("/dashboard");
+		expect(resolveRedirectTo("%2Fadmin%2Fusers%3Ftab%3D2")).toBe("/admin/users?tab=2");
+		expect(resolveRedirectTo("/./dashboard/")).toBe("/dashboard/");
 	});
 
 	it("resolveRedirectTo rejects off-origin and malformed targets", () => {

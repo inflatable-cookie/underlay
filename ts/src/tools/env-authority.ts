@@ -14,18 +14,20 @@
  * ```
  */
 
-import { readdir, readFile, stat } from 'node:fs/promises';
-import path from 'node:path';
+import { readdir, readFile, stat } from "node:fs/promises";
+import path from "node:path";
+import { isCliEntrypoint } from "./cli-entrypoint.js";
 
 export const ENV_AUTHORITY_RULE_IDS = {
-	ENV_MANIFEST_MISSING: 'env-manifest-missing',
-	REQUIRED_SECRETS_MISSING: 'required-secrets-missing',
-	ENV_MANIFEST_INVALID: 'env-manifest-invalid',
-	REQUIRED_SECRETS_INVALID: 'required-secrets-invalid',
-	REQUIRED_SECRET_UNDECLARED: 'required-secret-undeclared',
+	ENV_MANIFEST_MISSING: "env-manifest-missing",
+	REQUIRED_SECRETS_MISSING: "required-secrets-missing",
+	ENV_MANIFEST_INVALID: "env-manifest-invalid",
+	REQUIRED_SECRETS_INVALID: "required-secrets-invalid",
+	REQUIRED_SECRET_UNDECLARED: "required-secret-undeclared",
 } as const;
 
-export type EnvAuthorityRuleId = (typeof ENV_AUTHORITY_RULE_IDS)[keyof typeof ENV_AUTHORITY_RULE_IDS];
+export type EnvAuthorityRuleId =
+	(typeof ENV_AUTHORITY_RULE_IDS)[keyof typeof ENV_AUTHORITY_RULE_IDS];
 
 export interface EnvAuthorityViolation {
 	ruleId: EnvAuthorityRuleId;
@@ -33,25 +35,25 @@ export interface EnvAuthorityViolation {
 	detail: string;
 }
 
-const ENV_MANIFEST_RELATIVE = 'config/env-manifest.txt';
-const REQUIRED_SECRETS_RELATIVE = 'config/required-secrets.txt';
+const ENV_MANIFEST_RELATIVE = "config/env-manifest.txt";
+const REQUIRED_SECRETS_RELATIVE = "config/required-secrets.txt";
 const KEY_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/;
-const SOURCE_EXTENSIONS = new Set(['.rs', '.ts', '.js', '.mjs', '.cjs', '.jsx', '.tsx', '.svelte']);
+const SOURCE_EXTENSIONS = new Set([".rs", ".ts", ".js", ".mjs", ".cjs", ".jsx", ".tsx", ".svelte"]);
 
 const SKIP_DIR_NAMES = new Set([
-	'node_modules',
-	'target',
-	'dist',
-	'build',
-	'.turbo',
-	'coverage',
-	'.svelte-kit',
-	'.effigy',
-	'.cache',
-	'tests',
-	'test',
-	'__tests__',
-	'fixtures',
+	"node_modules",
+	"target",
+	"dist",
+	"build",
+	".turbo",
+	"coverage",
+	".svelte-kit",
+	".effigy",
+	".cache",
+	"tests",
+	"test",
+	"__tests__",
+	"fixtures",
 ]);
 
 const ENV_READER_PATTERNS = [
@@ -89,18 +91,18 @@ async function pathExists(target: string): Promise<boolean> {
 
 async function readTextFile(target: string): Promise<string | undefined> {
 	try {
-		return await readFile(target, 'utf8');
+		return await readFile(target, "utf8");
 	} catch {
 		return undefined;
 	}
 }
 
 function isSkippedDir(name: string): boolean {
-	return name === '.git' || SKIP_DIR_NAMES.has(name);
+	return name === ".git" || SKIP_DIR_NAMES.has(name);
 }
 
 function isSourceFile(fileName: string): boolean {
-	if (fileName.endsWith('.d.ts')) return false;
+	if (fileName.endsWith(".d.ts")) return false;
 	return SOURCE_EXTENSIONS.has(path.extname(fileName));
 }
 
@@ -114,9 +116,9 @@ function isTestOrFixtureFile(fileName: string): boolean {
 
 function codeWithoutComments(content: string): string {
 	return content
-		.replace(/\/\*[\s\S]*?\*\//g, ' ')
-		.replace(/<!--[\s\S]*?-->/g, ' ')
-		.replace(/(^|[^:])\/\/.*$/gm, '$1');
+		.replace(/\/\*[\s\S]*?\*\//g, " ")
+		.replace(/<!--[\s\S]*?-->/g, " ")
+		.replace(/(^|[^:])\/\/.*$/gm, "$1");
 }
 
 function looksLikeEnvReader(content: string): boolean {
@@ -151,18 +153,18 @@ async function findEnvReaderPaths(root: string): Promise<string[]> {
 
 			const content = await readTextFile(path.join(root, entryRelative));
 			if (content && looksLikeEnvReader(content)) {
-				found.push(entryRelative.replace(/\\/g, '/'));
+				found.push(entryRelative.replace(/\\/g, "/"));
 			}
 		}
 	}
 
-	await walk('');
+	await walk("");
 	return found.sort((a, b) => a.localeCompare(b));
 }
 
 interface InvalidAuthorityLine {
 	lineNumber: number;
-	kind: 'assignment' | 'token';
+	kind: "assignment" | "token";
 	key?: string;
 }
 
@@ -173,7 +175,7 @@ interface ParsedKeyFile {
 }
 
 function describeInvalidAuthorityLine(entry: InvalidAuthorityLine): string {
-	if (entry.kind === 'assignment') {
+	if (entry.kind === "assignment") {
 		return entry.key
 			? `line ${entry.lineNumber}: ${entry.key} has a value; authority files are key lists`
 			: `line ${entry.lineNumber} has a value; authority files are key lists`;
@@ -193,22 +195,22 @@ function parseKeyFile(content: string): ParsedKeyFile {
 		const rawLine = rawLines[index];
 		if (rawLine === undefined) continue;
 		const lineNumber = index + 1;
-		const withoutComment = rawLine.replace(/#.*$/, '');
+		const withoutComment = rawLine.replace(/#.*$/, "");
 		const line = withoutComment.trim();
 		if (line.length === 0) continue;
 
-		if (line.includes('=')) {
-			const key = line.slice(0, line.indexOf('=')).trim();
+		if (line.includes("=")) {
+			const key = line.slice(0, line.indexOf("=")).trim();
 			invalidLines.push({
 				lineNumber,
-				kind: 'assignment',
+				kind: "assignment",
 				key: KEY_PATTERN.test(key) ? key : undefined,
 			});
 			continue;
 		}
 
 		if (!KEY_PATTERN.test(line)) {
-			invalidLines.push({ lineNumber, kind: 'token' });
+			invalidLines.push({ lineNumber, kind: "token" });
 			continue;
 		}
 
@@ -284,7 +286,7 @@ export async function checkEnvAuthority(rootPath: string): Promise<EnvAuthorityV
 				violations,
 				ENV_AUTHORITY_RULE_IDS.ENV_MANIFEST_INVALID,
 				ENV_MANIFEST_RELATIVE,
-				'env manifest is unreadable',
+				"env manifest is unreadable",
 			);
 		} else {
 			const parsed = parseKeyFile(content);
@@ -305,7 +307,7 @@ export async function checkEnvAuthority(rootPath: string): Promise<EnvAuthorityV
 				violations,
 				ENV_AUTHORITY_RULE_IDS.REQUIRED_SECRETS_INVALID,
 				REQUIRED_SECRETS_RELATIVE,
-				'required-secrets file is unreadable',
+				"required-secrets file is unreadable",
 			);
 		} else {
 			const parsed = parseKeyFile(content);
@@ -339,19 +341,19 @@ export function formatEnvAuthorityReport(
 	rootPath: string,
 	violations: EnvAuthorityViolation[],
 ): string {
-	const lines: string[] = [`Env authority report for: ${rootPath}`, ''];
+	const lines: string[] = [`Env authority report for: ${rootPath}`, ""];
 
 	if (violations.length === 0) {
-		lines.push('All env authority checks passed.');
-		return lines.join('\n');
+		lines.push("All env authority checks passed.");
+		return lines.join("\n");
 	}
 
 	for (const violation of violations) {
 		lines.push(`  FAIL  ${violation.ruleId}: ${violation.path} — ${violation.detail}`);
 	}
 
-	lines.push('', `${violations.length} env authority violation(s) found.`);
-	return lines.join('\n');
+	lines.push("", `${violations.length} env authority violation(s) found.`);
+	return lines.join("\n");
 }
 
 export function runEnvAuthorityCli(argv: string[] = process.argv): void {
@@ -360,7 +362,7 @@ export function runEnvAuthorityCli(argv: string[] = process.argv): void {
 		let rootArg: string | undefined;
 
 		for (let i = 0; i < args.length; i++) {
-			if (args[i] === '--help' || args[i] === '-h') {
+			if (args[i] === "--help" || args[i] === "-h") {
 				console.log(`
 Env authority - Consumer env/secret inventory conformance
 
@@ -379,7 +381,7 @@ Live value presence remains scripts/check-env-manifest.sh.
 				process.exit(0);
 			}
 
-			if (!args[i].startsWith('-')) {
+			if (!args[i].startsWith("-")) {
 				rootArg = args[i];
 			}
 		}
@@ -394,6 +396,6 @@ Live value presence remains scripts/check-env-manifest.sh.
 	})();
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (isCliEntrypoint(import.meta.url)) {
 	runEnvAuthorityCli();
 }

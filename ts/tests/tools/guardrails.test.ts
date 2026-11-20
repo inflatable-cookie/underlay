@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -28,7 +28,7 @@ describe("tools/guardrails", () => {
 			path.join(dir, "sample.ts"),
 			[
 				"const width = window.innerWidth;",
-				"const safe = typeof window !== \"undefined\" ? window.innerWidth : 0;",
+				'const safe = typeof window !== "undefined" ? window.innerWidth : 0;',
 				"function handler() { return window.innerWidth; }",
 			].join("\n"),
 		);
@@ -53,7 +53,7 @@ describe("tools/guardrails", () => {
 				// declaration: must NOT be flagged
 				"export function configureAuth(cfg: unknown) { return cfg; }",
 				// guarded call: must NOT be flagged
-				"if (typeof window !== \"undefined\") { configureAuth({}); }",
+				'if (typeof window !== "undefined") { configureAuth({}); }',
 				// function-local call: must NOT be flagged",
 				"function setup() { configureNightfireStrategies({}); }",
 				// unguarded module-scope calls: 2 flagged
@@ -116,18 +116,13 @@ describe("tools/guardrails", () => {
 		const config = await loadConfig(configPath);
 
 		expect(config.srcDir).toBe(dir);
-		expect(config.bannedPatterns.map((rule) => rule.name)).toContain(
-			["window", "alert"].join("."),
-		);
+		expect(config.bannedPatterns.map((rule) => rule.name)).toContain(["window", "alert"].join("."));
 		expect(config.moduleScopeChecks.map((rule) => rule.name)).toContain("window.*");
 	});
 
 	it("applies banned API template rules", async () => {
 		const dir = await makeTempDir();
-		await writeFile(
-			path.join(dir, "sample.ts"),
-			`${["window", "alert"].join(".")}('stop');`,
-		);
+		await writeFile(path.join(dir, "sample.ts"), `${["window", "alert"].join(".")}('stop');`);
 		vi.spyOn(console, "error").mockImplementation(() => undefined);
 
 		const failures = await scanFiles({
@@ -214,5 +209,44 @@ describe("tools/guardrails", () => {
 			{ encoding: "utf8" },
 		);
 		expect(cliBadTemplate.status).not.toBe(0);
+	});
+
+	it("scans directories with spaces/special chars and runs CLI via symlink, relative path, and spaces", async () => {
+		const dir = await makeTempDir();
+		const srcWithSpaces = path.join(dir, "src with spaces", "sub#dir");
+		await mkdir(srcWithSpaces, { recursive: true });
+		await writeFile(path.join(srcWithSpaces, "clean#file.ts"), "export const ok = 1;\n");
+		await writeFile(path.join(srcWithSpaces, "bad file.ts"), "const w = window.innerWidth;\n");
+		vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+		const failures = await scanFiles({
+			srcDir: path.join(dir, "src with spaces"),
+			extensions: [".ts"],
+			bannedPatterns: [],
+			moduleScopeChecks,
+			suppressionPrefix: "guardrails-disable",
+		});
+		expect(failures).toBe(1);
+
+		const cleanDir = path.join(dir, "clean src");
+		await mkdir(cleanDir, { recursive: true });
+		await writeFile(path.join(cleanDir, "ok.ts"), "export const ok = 1;\n");
+
+		const linkDir = path.join(dir, "bin dir");
+		await mkdir(linkDir, { recursive: true });
+		const linkPath = path.join(linkDir, "guardrails-link.ts");
+		await symlink(path.resolve("ts/src/tools/guardrails.ts"), linkPath);
+
+		const viaRelative = spawnSync("bun", ["ts/src/tools/guardrails.ts", "--src", cleanDir], {
+			encoding: "utf8",
+		});
+		expect(viaRelative.status).toBe(0);
+		expect(viaRelative.stdout).toContain("Guardrails passed");
+
+		const viaSymlinkWithSpaces = spawnSync("bun", [linkPath, "--src", cleanDir], {
+			encoding: "utf8",
+		});
+		expect(viaSymlinkWithSpaces.status).toBe(0);
+		expect(viaSymlinkWithSpaces.stdout).toContain("Guardrails passed");
 	});
 });
