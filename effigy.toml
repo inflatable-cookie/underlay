@@ -14,7 +14,7 @@ changelog = "CHANGELOG.md"
 tag-format = "v{version}"
 # 0.x: breaking changes take the minor, not the major.
 pre-1-0 = true
-sync-files = ["Cargo.lock", "package.json", "contracts/openapi/underlay.openapi.yaml"]
+sync-files = ["Cargo.lock", "package.json"]
 
 [release.gates]
 version-sync = "effigy check:release-version-sync"
