@@ -79,7 +79,7 @@ In scope:
 - compatibility windows
 - released Git-tag consumer pins, hold-back, upgrade, and rollback
 - release and upgrade-note expectations
-- rollout order across Underlay and the five consumer repos
+- rollout order across Underlay and the four consumer repos
 - retirement proof for deprecated shared surfaces
 
 Out of scope:
@@ -336,11 +336,8 @@ Rules:
 - the historical `@inflatable-cookie/underlay/nightfire/*` exports are a
   deprecation facade during `g12`; they resolve to the same released
   Nightfire implementation and cannot become a fork
-- the historical Rust `underlay-nightfire` crate becomes a deprecation facade
-  during `g12`; it re-exports the same released `nightfire` implementation and
-  cannot remain a fork
-- retirement of that facade requires a caller inventory and consumer proof;
-  no removal date is guessed before the inventory exists
+- the historical Rust `underlay-nightfire` facade is retired; consumers import
+  `nightfire` directly
 
 Contract `024` owns the workspace and bootstrap rule that this pin posture
 implements. Do not treat a local sibling checkout as a supported application

@@ -78,6 +78,12 @@
           "contract": "024",
           "tool": "@inflatable-cookie/underlay/tools/env-authority",
           "bin": "underlay-env-authority"
+        },
+        {
+          "id": "consumer-security",
+          "contract": "120",
+          "tool": "@inflatable-cookie/underlay",
+          "bin": "underlay-consumer-security"
         }
       ]
     },
@@ -104,6 +110,7 @@
       "label": "Retained shared shell adoption",
       "required": false,
       "contracts": [
+        "100",
         "110",
         "111"
       ]

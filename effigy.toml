@@ -21,6 +21,8 @@ version-sync = "effigy check:release-version-sync"
 validate = "effigy validate"
 clippy = "effigy rust:clippy"
 rust = "effigy rust:check"
+rust-test = "effigy rust:test"
+docs = "effigy qa:docs"
 
 [task_defaults]
 run_in = "host"

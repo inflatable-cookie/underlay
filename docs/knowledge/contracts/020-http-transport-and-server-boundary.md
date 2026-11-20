@@ -217,7 +217,7 @@ Rules:
   refresh storms
 - retries are only for idempotent methods (`GET`, `DELETE`) and only on the
   configured retryable statuses
-- timeout protection only applies to idempotent methods
+- timeout protection applies to all methods when `AbortController` is available
 - `requestWithMeta()` preserves status and headers; `request()` returns the
   parsed body only
 - `204` and `304` may return `null` bodies
@@ -330,8 +330,7 @@ export; page-shaped admin/resource browse surfaces should prefer
 `g07.023` re-audited TS HTTP retry and timeout behavior. The implementation is
 intentional: retry applies only to idempotent methods and configured retryable
 HTTP statuses; network failures and timeout aborts are normalized to
-`UnderlayHttpError(0)` without retry. Timeout protection is also limited to
-idempotent methods.
+`UnderlayHttpError(0)` without retry. Timeout protection applies to all methods when `AbortController` is available.
 
 `g09.031` confirmed the declared query vocabulary for valid inputs, pagination
 defaults, UUID path parsing, trusted-proxy resolution, cookies, browser HTTP
