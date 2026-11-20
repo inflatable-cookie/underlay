@@ -21,6 +21,10 @@
   returns the real `sqlx::Error` instead of wrapping SQL failures in
   `sqlx::Error::Io`, and propagates `read_dir` entry errors instead of
   silently skipping the file.
+- `underlay-db`: the `#[ignore]`d Postgres integration suite starts
+  containers through `testcontainers`' async runner instead of the blocking
+  runner, which panicked inside the tokio test runtime; the suite runs again,
+  including an unsplit multi-statement SQL-dir script.
 - `underlay-db`: `PaginationBuilder::keyset_condition` and
   `keyset_order_by` now return `Result<String, IdentifierError>` and quote the
   sort column through `SqlIdentifier::quoted()`; an invalid column is a typed
