@@ -2,7 +2,6 @@
 
 Status: active
 Owner: repo maintainers
-Roadmap: `g06.001`
 Depends on: `001`, `020`, `021`, `023`, `025`, `030`, `040`, `060`, `070`, `120`
 
 ## Purpose
@@ -156,7 +155,7 @@ Impact: additive/deprecation.
 
 ### Gate 6: Consumer Compatibility Closeout
 
-Record current six-consumer proof for the `g06` public Rust surface changes.
+Record current four-consumer proof for the `g06` public Rust surface changes.
 
 Acceptance:
 
@@ -206,7 +205,7 @@ Current consumer crates depend heavily on:
 Observed proof points:
 
 - no named consumer directly references `SessionStore` today
-- `contact-patch` and `underlay-reference` now use Underlay CSRF helpers
+- two named consumers, including `underlay-reference`, now use Underlay CSRF helpers
 - `AuthCookieConfig` is present across the current API family
 - `acowtancy/apps/farmyard` owns additional migration-bundle reference parsing that
   should be considered during `MigrationBundleRef` work
@@ -220,8 +219,3 @@ Stop and re-enter planning if:
 - a typed safety wrapper would force broad churn without an additive bridge
 - a module split exposes new public APIs just to satisfy internal organization
 - devtools behavior starts leaking into runtime app contracts
-
-## Next Task
-
-No active Rust public API retirement task remains. Re-enter planning before
-opening another compatibility-retirement lane.

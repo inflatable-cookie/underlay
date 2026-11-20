@@ -23,33 +23,33 @@ or audited.
 
 Primary Rust support:
 
-- [`../../rust/crates/underlay-testing/src/lib.rs`](../../../rust/crates/underlay-testing/src/lib.rs)
-- [`../../rust/crates/underlay-testing/src/fixtures.rs`](../../../rust/crates/underlay-testing/src/fixtures.rs)
-- [`../../rust/crates/underlay-testing/src/test_db.rs`](../../../rust/crates/underlay-testing/src/test_db.rs)
-- [`../../rust/crates/underlay-testing/src/test_server.rs`](../../../rust/crates/underlay-testing/src/test_server.rs)
-- [`../../rust/crates/underlay-devtools/src/lib.rs`](../../../rust/crates/underlay-devtools/src/lib.rs)
-- [`../../rust/crates/underlay-devtools/src/sync_migrations.rs`](../../../rust/crates/underlay-devtools/src/sync_migrations.rs)
-- [`../../rust/crates/underlay-devtools/src/migration_bundle.rs`](../../../rust/crates/underlay-devtools/src/migration_bundle.rs)
-- [`rust/crates/underlay-devtools/src/seed_bundle/`](../../../rust/crates/underlay-devtools/src/seed_bundle/)
-- [`../../rust/crates/underlay-devtools/src/migration_report.rs`](../../../rust/crates/underlay-devtools/src/migration_report.rs)
+- [`../../../rust/crates/underlay-testing/src/lib.rs`](../../../rust/crates/underlay-testing/src/lib.rs)
+- [`../../../rust/crates/underlay-testing/src/fixtures.rs`](../../../rust/crates/underlay-testing/src/fixtures.rs)
+- [`../../../rust/crates/underlay-testing/src/test_db.rs`](../../../rust/crates/underlay-testing/src/test_db.rs)
+- [`../../../rust/crates/underlay-testing/src/test_server.rs`](../../../rust/crates/underlay-testing/src/test_server.rs)
+- [`../../../rust/crates/underlay-devtools/src/lib.rs`](../../../rust/crates/underlay-devtools/src/lib.rs)
+- [`../../../rust/crates/underlay-devtools/src/sync_migrations.rs`](../../../rust/crates/underlay-devtools/src/sync_migrations.rs)
+- [`../../../rust/crates/underlay-devtools/src/migration_bundle.rs`](../../../rust/crates/underlay-devtools/src/migration_bundle.rs)
+- [`../../../rust/crates/underlay-devtools/src/seed_bundle/`](../../../rust/crates/underlay-devtools/src/seed_bundle/)
+- [`../../../rust/crates/underlay-devtools/src/migration_report.rs`](../../../rust/crates/underlay-devtools/src/migration_report.rs)
 
 Primary TS support:
 
-- [`../../ts/src/tools/guardrails.ts`](../../../ts/src/tools/guardrails.ts)
-- [`../../ts/src/tools/guardrails-config.ts`](../../../ts/src/tools/guardrails-config.ts)
-- [`../../ts/src/tools/guardrails/scanner.ts`](../../../ts/src/tools/guardrails/scanner.ts)
-- [`../../ts/src/tools/guardrails/line-utils.ts`](../../../ts/src/tools/guardrails/line-utils.ts)
-- [`../../ts/src/tools/guardrails/suppressions.ts`](../../../ts/src/tools/guardrails/suppressions.ts)
-- [`../../ts/src/tools/templates/sveltekit-ssr.ts`](../../../ts/src/tools/templates/sveltekit-ssr.ts)
-- [`../../ts/src/tools/templates/banned-apis.ts`](../../../ts/src/tools/templates/banned-apis.ts)
-- [`../../ts/src/tools/workspace-shape.ts`](../../../ts/src/tools/workspace-shape.ts)
-- [`../../ts/src/tools/env-authority.ts`](../../../ts/src/tools/env-authority.ts)
-- [`../../ts/src/testing/index.ts`](../../../ts/src/testing/index.ts)
-- [`../../ts/src/testing/http-client-mock.ts`](../../../ts/src/testing/http-client-mock.ts)
+- [`../../../ts/src/tools/guardrails.ts`](../../../ts/src/tools/guardrails.ts)
+- [`../../../ts/src/tools/guardrails-config.ts`](../../../ts/src/tools/guardrails-config.ts)
+- [`../../../ts/src/tools/guardrails/scanner.ts`](../../../ts/src/tools/guardrails/scanner.ts)
+- [`../../../ts/src/tools/guardrails/line-utils.ts`](../../../ts/src/tools/guardrails/line-utils.ts)
+- [`../../../ts/src/tools/guardrails/suppressions.ts`](../../../ts/src/tools/guardrails/suppressions.ts)
+- [`../../../ts/src/tools/templates/sveltekit-ssr.ts`](../../../ts/src/tools/templates/sveltekit-ssr.ts)
+- [`../../../ts/src/tools/templates/banned-apis.ts`](../../../ts/src/tools/templates/banned-apis.ts)
+- [`../../../ts/src/tools/workspace-shape.ts`](../../../ts/src/tools/workspace-shape.ts)
+- [`../../../ts/src/tools/env-authority.ts`](../../../ts/src/tools/env-authority.ts)
+- [`../../../ts/src/testing/index.ts`](../../../ts/src/testing/index.ts)
+- [`../../../ts/src/testing/http-client-mock.ts`](../../../ts/src/testing/http-client-mock.ts)
 
 Primary machine-readable artifacts:
 
-- [`../../contracts/openapi/underlay.openapi.yaml`](../../../contracts/openapi/underlay.openapi.yaml)
+- [`../../../contracts/openapi/underlay.openapi.yaml`](../../../contracts/openapi/underlay.openapi.yaml)
   — the shared response-envelope schema reference. Kept in sync with
   `ts/src/client/envelopes.ts` by the `envelope-contract-drift` test (fails when
   the two surfaces declare different envelopes or required fields).
@@ -366,9 +366,3 @@ Other system families own:
 - are the UI coexistence and prop-normalization manifests still accurate enough
   to remain preserved compatibility evidence, or should they be archived or
   replaced
-
-## Next Task
-
-Keep the completed workspace-shape modularization stable. A later change must
-preserve the checker facade, diagnostics, and separation from env-authority and
-security conformance through a new numbered roadmap.

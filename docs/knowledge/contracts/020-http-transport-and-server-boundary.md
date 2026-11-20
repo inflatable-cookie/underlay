@@ -353,8 +353,3 @@ Use this contract to judge later implementation work:
 - do retry, timeout, and refresh behaviors remain explicit and bounded
 - are CSP/security-header helpers still generic server glue rather than app
   runtime ownership
-
-## Next Task
-
-Transport assessment and bounded repairs are complete. Keep this contract
-stable until a later numbered roadmap names new evidence; `g09` is closed.

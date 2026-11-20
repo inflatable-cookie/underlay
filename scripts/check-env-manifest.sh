@@ -68,7 +68,7 @@ fi
 
 if [[ -f "$REQUIRED_FILE" ]]; then
   missing=()
-  while IFS= read -r key; do
+  while IFS= read -r key || [[ -n "$key" ]]; do
     key="${key%%#*}"
     key="$(echo "$key" | sed 's/^[[:space:]]*//; s/[[:space:]]*$//')"
     [[ -z "$key" ]] && continue

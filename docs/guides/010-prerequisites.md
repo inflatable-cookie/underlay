@@ -6,7 +6,8 @@ Before starting a new project with Underlay, ensure your development environment
 
 ### 1. Rust Toolchain
 
-**Version:** 1.75 or later
+**Version:** 1.100.0 (pinned in the root `rust-toolchain.toml`; rustup selects it
+automatically). The minimum supported Rust version is 1.95 (`rust-version` in `Cargo.toml`).
 
 ```bash
 # Verify installation

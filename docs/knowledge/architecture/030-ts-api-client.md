@@ -49,30 +49,30 @@ export async function login(
 
 The recommended pattern for frontend integration:
 
-1. **API client library** exports `configureStem()` and command namespaces.
-2. **Each frontend** calls `configureStem()` once in `hooks.server.ts`.
+1. **API client library** exports `configureClient()` and command namespaces.
+2. **Each frontend** calls `configureClient()` once in `hooks.server.ts`.
 3. **Routes** import commands directly from the shared library.
 
 This avoids duplicate `$lib/api/client.ts` files in each frontend.
 
 ```ts
-// In API client library (stem/src/index.ts)
-export { configureStem } from "./utils/client-factory.js";
+// In API client library (api-client/src/index.ts)
+export { configureClient } from "./utils/client-factory.js";
 export * as authCommands from "./commands/auth-commands.js";
 export * as coreCommands from "./commands/core-commands.js";
 
 // In frontend hooks.server.ts
-import { configureStem, authCommands } from "@stem";
-configureStem({ baseUrl: env.PUBLIC_API_URL, apiVersion: env.PUBLIC_API_VERSION });
+import { configureClient, authCommands } from "@example/api-client";
+configureClient({ baseUrl: env.PUBLIC_API_URL, apiVersion: env.PUBLIC_API_VERSION });
 
 // In routes
-import { coreCommands } from "@stem";
-const artist = await coreCommands.getArtist(artistId, fetch, accessToken);
+import { coreCommands } from "@example/api-client";
+const item = await coreCommands.getItem(itemId, fetch, accessToken);
 ```
 
 ## Integration (in an app)
 
-- Import `configureStem` and call it once in `hooks.server.ts`.
+- Import `configureClient` and call it once in `hooks.server.ts`.
 - Import command namespaces (`authCommands`, `coreCommands`, etc.) in routes and form actions.
 - Keep Svelte components declarative: call commands in `load` functions and form actions, not inline in components.
 - **Do not** create local `$lib/api/client.ts` wrappers that duplicate the shared library.
@@ -80,12 +80,12 @@ const artist = await coreCommands.getArtist(artistId, fetch, accessToken);
 ## File Structure
 
 ```
-stem/
+api-client/
 ├── src/
 │   ├── index.ts              # Exports commands, types, utilities
 │   ├── utils/
 │   │   ├── http-client.ts    # HttpClient wrapper around Underlay
-│   │   └── client-factory.ts # configureStem + getHttpClient
+│   │   └── client-factory.ts # configureClient + getHttpClient
 │   ├── types/
 │   │   ├── common-types.ts   # Domain DTOs
 │   │   └── auth-types.ts     # Auth DTOs
