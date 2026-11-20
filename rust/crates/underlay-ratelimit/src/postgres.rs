@@ -9,6 +9,7 @@
 
 use async_trait::async_trait;
 use sqlx::{PgPool, Row};
+use underlay_db::QualifiedTableName;
 
 use crate::backend::RateLimitBackend;
 use crate::config::{RateLimitConfig, RateLimitResult};
@@ -16,20 +17,9 @@ use crate::error::{RateLimitError, Result};
 
 const DEFAULT_TABLE: &str = "auth.rate_limit_counters";
 
-/// Validate a schema-qualified table name before it is interpolated into SQL.
-/// Allows only `[A-Za-z0-9_.]+`.
-fn validate_table_name(table: &str) -> Result<()> {
-    let valid = !table.is_empty()
-        && table
-            .chars()
-            .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '.');
-    if valid {
-        Ok(())
-    } else {
-        Err(RateLimitError::Config(format!(
-            "invalid rate limit table name: {table}"
-        )))
-    }
+fn validate_table_name(table: &str) -> Result<QualifiedTableName> {
+    QualifiedTableName::parse(table)
+        .map_err(|err| RateLimitError::Config(format!("invalid rate limit table name `{table}`: {err}")))
 }
 
 /// Postgres-backed fixed-window rate limiter.
@@ -39,7 +29,7 @@ fn validate_table_name(table: &str) -> Result<()> {
 #[derive(Debug, Clone)]
 pub struct PostgresBackend {
     pool: PgPool,
-    table: String,
+    table: QualifiedTableName,
 }
 
 impl PostgresBackend {
@@ -47,17 +37,16 @@ impl PostgresBackend {
     pub fn new(pool: PgPool) -> Self {
         Self {
             pool,
-            table: DEFAULT_TABLE.to_string(),
+            table: QualifiedTableName::parse(DEFAULT_TABLE)
+                .expect("default rate limit table name is a valid SQL identifier"),
         }
     }
 
     /// Create a backend with a custom (schema-qualified) table name.
     ///
-    /// The name is validated to `[A-Za-z0-9_.]+` because it is interpolated
-    /// into SQL.
+    /// The name is validated and quoted via [`QualifiedTableName`].
     pub fn with_table(pool: PgPool, table: impl Into<String>) -> Result<Self> {
-        let table = table.into();
-        validate_table_name(&table)?;
+        let table = validate_table_name(&table.into())?;
         Ok(Self { pool, table })
     }
 
@@ -85,7 +74,7 @@ impl RateLimitBackend for PostgresBackend {
             FROM {}
             WHERE key = $1 AND window_started_at > NOW() - make_interval(secs => $2)
             "#,
-            self.table
+            self.table.quoted()
         );
 
         let row = sqlx::query(sqlx::AssertSqlSafe(query))
@@ -98,7 +87,10 @@ impl RateLimitBackend for PostgresBackend {
         match row {
             None => Ok(RateLimitResult::allowed(config.max_requests(), 0)),
             Some(row) => {
-                let count = row.get::<i64, _>("count") as u64;
+                let count = row
+                    .try_get::<i64, _>("count")
+                    .map_err(Self::map_err)?
+                    .max(0) as u64;
                 let elapsed: f64 = row.try_get::<f64, _>("elapsed").unwrap_or(0.0);
                 // check() is non-incrementing: a count already at the limit
                 // means the next request would exceed it.
@@ -108,13 +100,19 @@ impl RateLimitBackend for PostgresBackend {
                         count,
                     ))
                 } else {
-                    Ok(Self::to_result(config, count + 1, elapsed))
+                    let window_secs = config.window().as_secs_f64();
+                    let remaining = (window_secs - elapsed).max(0.0).ceil() as u64;
+                    Ok(RateLimitResult::denied(
+                        count,
+                        std::time::Duration::from_secs(remaining.max(1)),
+                    ))
                 }
             }
         }
     }
 
     async fn increment(&self, key: &str, config: &RateLimitConfig) -> Result<u64> {
+        let table = self.table.quoted();
         let query = format!(
             r#"
             INSERT INTO {table} (key, window_started_at, count)
@@ -131,8 +129,7 @@ impl RateLimitBackend for PostgresBackend {
                     ELSE {table}.window_started_at
                 END
             RETURNING count
-            "#,
-            table = self.table
+            "#
         );
 
         let row = sqlx::query(sqlx::AssertSqlSafe(query))
@@ -142,11 +139,14 @@ impl RateLimitBackend for PostgresBackend {
             .await
             .map_err(Self::map_err)?;
 
-        Ok(row.get::<i64, _>("count") as u64)
+        Ok(row
+            .try_get::<i64, _>("count")
+            .map_err(Self::map_err)?
+            .max(0) as u64)
     }
 
     async fn reset(&self, key: &str) -> Result<()> {
-        let query = format!("DELETE FROM {} WHERE key = $1", self.table);
+        let query = format!("DELETE FROM {} WHERE key = $1", self.table.quoted());
         sqlx::query(sqlx::AssertSqlSafe(query))
             .bind(key)
             .execute(&self.pool)
@@ -160,6 +160,7 @@ impl RateLimitBackend for PostgresBackend {
         key: &str,
         config: &RateLimitConfig,
     ) -> Result<RateLimitResult> {
+        let table = self.table.quoted();
         // Single atomic upsert: no check-then-set race across replicas.
         let query = format!(
             r#"
@@ -178,8 +179,7 @@ impl RateLimitBackend for PostgresBackend {
                 END
             RETURNING count,
                 EXTRACT(EPOCH FROM (NOW() - window_started_at))::float8 AS elapsed
-            "#,
-            table = self.table
+            "#
         );
 
         let row = sqlx::query(sqlx::AssertSqlSafe(query))
@@ -189,7 +189,10 @@ impl RateLimitBackend for PostgresBackend {
             .await
             .map_err(Self::map_err)?;
 
-        let count = row.get::<i64, _>("count") as u64;
+        let count = row
+            .try_get::<i64, _>("count")
+            .map_err(Self::map_err)?
+            .max(0) as u64;
         let elapsed: f64 = row.try_get::<f64, _>("elapsed").unwrap_or(0.0);
 
         Ok(Self::to_result(config, count, elapsed))

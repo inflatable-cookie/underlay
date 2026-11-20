@@ -5,7 +5,6 @@ use std::time::{Duration, Instant};
 
 use async_trait::async_trait;
 use dashmap::DashMap;
-use tokio::sync::RwLock;
 
 use crate::backend::RateLimitBackend;
 use crate::config::{RateLimitConfig, RateLimitResult};
@@ -83,10 +82,21 @@ impl RateLimitEntry {
 ///     println!("Allowed: {}, Remaining: {}", result.is_allowed(), result.remaining);
 /// }
 /// ```
+#[derive(Debug)]
+struct CleanupGuard(Option<tokio::task::JoinHandle<()>>);
+
+impl Drop for CleanupGuard {
+    fn drop(&mut self) {
+        if let Some(handle) = self.0.take() {
+            handle.abort();
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct InMemoryBackend {
     entries: Arc<DashMap<String, RateLimitEntry>>,
-    cleanup_handle: Arc<RwLock<Option<tokio::task::JoinHandle<()>>>>,
+    _cleanup_guard: Arc<CleanupGuard>,
 }
 
 impl Default for InMemoryBackend {
@@ -100,7 +110,7 @@ impl InMemoryBackend {
     pub fn new() -> Self {
         Self {
             entries: Arc::new(DashMap::new()),
-            cleanup_handle: Arc::new(RwLock::new(None)),
+            _cleanup_guard: Arc::new(CleanupGuard(None)),
         }
     }
 
@@ -118,30 +128,29 @@ impl InMemoryBackend {
     /// Create a new in-memory backend with periodic cleanup.
     ///
     /// Expired entries are cleaned up at the specified interval to prevent
-    /// unbounded memory growth.
+    /// unbounded memory growth. The background task is aborted automatically
+    /// when the last clone of this backend is dropped.
     pub fn with_cleanup(cleanup_interval: Duration) -> Self {
-        let backend = Self::new();
-        let entries = Arc::clone(&backend.entries);
+        let entries: Arc<DashMap<String, RateLimitEntry>> = Arc::new(DashMap::new());
+        let cleanup_entries = Arc::clone(&entries);
 
         let handle = tokio::spawn(async move {
             loop {
                 tokio::time::sleep(cleanup_interval).await;
                 // Remove entries where the window has expired
-                entries.retain(|_, entry| entry.window_start.elapsed() < entry.window_duration);
+                cleanup_entries
+                    .retain(|_, entry| entry.window_start.elapsed() < entry.window_duration);
                 tracing::trace!(
                     "Rate limit cleanup complete, {} entries remaining",
-                    entries.len()
+                    cleanup_entries.len()
                 );
             }
         });
 
-        // Store handle but don't await it
-        let cleanup_handle = Arc::clone(&backend.cleanup_handle);
-        tokio::spawn(async move {
-            *cleanup_handle.write().await = Some(handle);
-        });
-
-        backend
+        Self {
+            entries,
+            _cleanup_guard: Arc::new(CleanupGuard(Some(handle))),
+        }
     }
 
     /// Get the current number of tracked keys.
@@ -163,12 +172,13 @@ impl InMemoryBackend {
 #[async_trait]
 impl RateLimitBackend for InMemoryBackend {
     async fn check(&self, key: &str, config: &RateLimitConfig) -> Result<RateLimitResult> {
-        let mut entry = self
-            .entries
-            .entry(key.to_string())
-            .or_insert_with(|| RateLimitEntry::new(config.window()));
+        let Some(entry) = self.entries.get(key) else {
+            return Ok(RateLimitResult::allowed(config.max_requests(), 0));
+        };
 
-        entry.maybe_reset();
+        if entry.window_start.elapsed() >= entry.window_duration {
+            return Ok(RateLimitResult::allowed(config.max_requests(), 0));
+        }
 
         if entry.count >= config.max_requests() {
             Ok(RateLimitResult::denied(entry.count, entry.time_remaining()))

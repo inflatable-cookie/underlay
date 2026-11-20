@@ -102,13 +102,13 @@ impl TestDb {
             }
         };
 
-        let config = DbConfig::new(database_url)
+        let config = DbConfig::new(database_url.clone())
             .with_max_connections(5)
             .with_min_connections(1)
             .with_acquire_timeout_secs(30)
             .with_idle_timeout_secs(600);
 
-        let pool = create_pool(&config)
+        let setup_pool = create_pool(&config)
             .await
             .expect("Failed to create test database pool");
 
@@ -119,18 +119,30 @@ impl TestDb {
             "CREATE SCHEMA {}",
             schema.quoted()
         )))
-        .execute(&pool)
+        .execute(&setup_pool)
         .await
         .expect("Failed to create test schema");
 
-        // Set search path to the test schema
-        sqlx::query(sqlx::AssertSqlSafe(format!(
-            "SET search_path TO {}, public",
-            schema.quoted()
-        )))
-        .execute(&pool)
-        .await
-        .expect("Failed to set search path");
+        setup_pool.close().await;
+
+        // Bind search_path on every pool connection via after_connect so no
+        // connection in the pool can silently fall back to `public`.
+        let set_search_path = format!("SET search_path TO {}, public", schema.quoted());
+        let pool = sqlx::postgres::PgPoolOptions::new()
+            .max_connections(5)
+            .min_connections(1)
+            .acquire_timeout(std::time::Duration::from_secs(30))
+            .idle_timeout(std::time::Duration::from_secs(600))
+            .after_connect(move |conn, _meta| {
+                let sql = set_search_path.clone();
+                Box::pin(async move {
+                    sqlx::Executor::execute(conn, sqlx::AssertSqlSafe(sql)).await?;
+                    Ok(())
+                })
+            })
+            .connect(&database_url)
+            .await
+            .expect("Failed to create schema-isolated test database pool");
 
         Self {
             pool,

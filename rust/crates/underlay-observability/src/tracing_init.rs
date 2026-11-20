@@ -62,17 +62,24 @@ impl Environment {
     /// printed to stderr once per process (resolve can run before tracing
     /// is initialised).
     pub fn resolve(primary_var: &str, legacy_var: Option<&str>) -> Self {
-        match std::env::var(primary_var) {
-            Ok(value) => Self::parse(&value),
-            Err(_) => match legacy_var.and_then(|var| std::env::var(var).ok()) {
-                Some(value) => {
-                    if let Some(legacy) = legacy_var {
-                        warn_legacy_env_var_once(primary_var, legacy);
+        let primary = std::env::var(primary_var)
+            .ok()
+            .filter(|v| !v.trim().is_empty());
+        match primary {
+            Some(value) => Self::parse(&value),
+            None => {
+                let legacy = legacy_var
+                    .and_then(|var| std::env::var(var).ok().filter(|v| !v.trim().is_empty()));
+                match legacy {
+                    Some(value) => {
+                        if let Some(legacy_name) = legacy_var {
+                            warn_legacy_env_var_once(primary_var, legacy_name);
+                        }
+                        Self::parse(&value)
                     }
-                    Self::parse(&value)
+                    None => Environment::Prod,
                 }
-                None => Environment::Prod,
-            },
+            }
         }
     }
 
@@ -89,9 +96,14 @@ impl Environment {
     pub fn resolve_name(primary_var: &str, legacy_var: Option<&str>) -> Option<String> {
         std::env::var(primary_var)
             .ok()
-            .or_else(|| legacy_var.and_then(|var| std::env::var(var).ok()))
             .map(|value| value.trim().to_owned())
             .filter(|value| !value.is_empty())
+            .or_else(|| {
+                legacy_var
+                    .and_then(|var| std::env::var(var).ok())
+                    .map(|value| value.trim().to_owned())
+                    .filter(|value| !value.is_empty())
+            })
     }
 
     /// Returns true if this is a local or dev environment.

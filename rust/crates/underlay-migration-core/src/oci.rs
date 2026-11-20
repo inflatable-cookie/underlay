@@ -127,24 +127,31 @@ pub fn validate_oci_bundle_layout(layout: &OciBundleLayout) -> MigrationResult<(
     }
 
     for layer in &layout.layers {
-        if !layer.digest.starts_with(DIGEST_PREFIX) {
+        if !is_valid_sha256_digest(&layer.digest) {
             return Err(MigrationError::DeterminismViolation(format!(
-                "oci layer digest must start with {DIGEST_PREFIX}: {}",
+                "oci layer digest must be {DIGEST_PREFIX}<64 lowercase hex chars>: {}",
                 layer.digest
             )));
         }
     }
 
     for sidecar in &layout.sidecars {
-        if !sidecar.digest.starts_with(DIGEST_PREFIX) {
+        if !is_valid_sha256_digest(&sidecar.digest) {
             return Err(MigrationError::DeterminismViolation(format!(
-                "oci sidecar digest must start with {DIGEST_PREFIX}: {}",
+                "oci sidecar digest must be {DIGEST_PREFIX}<64 lowercase hex chars>: {}",
                 sidecar.digest
             )));
         }
     }
 
     Ok(())
+}
+
+fn is_valid_sha256_digest(digest: &str) -> bool {
+    let Some(hex) = digest.strip_prefix(DIGEST_PREFIX) else {
+        return false;
+    };
+    hex.len() == 64 && hex.bytes().all(|b| matches!(b, b'0'..=b'9' | b'a'..=b'f'))
 }
 
 #[cfg(test)]

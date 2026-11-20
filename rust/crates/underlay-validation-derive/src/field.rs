@@ -19,7 +19,10 @@ pub(crate) fn generate_field_validation(field: &Field) -> SynResult<Option<Token
             continue;
         }
 
-        let parsed = parse_validate_attr(attr, field_name, &field_name_str)?;
+        let (parsed, skip) = parse_validate_attr(attr, field_name, &field_name_str)?;
+        if skip {
+            return Ok(None);
+        }
         validations.extend(parsed);
     }
 

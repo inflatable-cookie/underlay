@@ -151,16 +151,16 @@ impl HttpServerConfig {
         Self::try_new(bind_addr, port, public_host)
     }
 
-    /// Get the socket address string for binding (e.g., "127.0.0.1:3000").
+    /// Get the socket address string for binding (e.g., "127.0.0.1:3000" or "[::1]:3000").
     pub fn socket_addr(&self) -> String {
-        format!("{}:{}", self.bind_addr, self.port)
+        format_host_port(&self.bind_addr, self.port)
     }
 
     /// Get the base URL using the public host (e.g., "http://localhost:3000").
     ///
     /// Note: Does not include a trailing slash.
     pub fn base_url(&self, scheme: &str) -> String {
-        format!("{}://{}:{}", scheme, self.public_host, self.port)
+        format!("{}://{}", scheme, format_host_port(&self.public_host, self.port))
     }
 
     /// Get the HTTP base URL (http://...).
@@ -231,6 +231,14 @@ fn validate_public_host(value: &str) -> Result<(), HttpServerConfigError> {
     }
 
     Ok(())
+}
+
+fn format_host_port(host: &str, port: u16) -> String {
+    if host.contains(':') && !host.starts_with('[') {
+        format!("[{host}]:{port}")
+    } else {
+        format!("{host}:{port}")
+    }
 }
 
 #[cfg(test)]

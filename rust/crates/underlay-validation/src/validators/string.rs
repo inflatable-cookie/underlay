@@ -43,12 +43,23 @@ pub fn email(value: &str) -> Result<(), FieldError> {
 /// assert!(validators::url("not-a-url").is_err());
 /// ```
 pub fn url(value: &str) -> Result<(), FieldError> {
-    static URL_REGEX: LazyLock<Regex> = LazyLock::new(|| {
-        Regex::new(r"^https?://[a-zA-Z0-9][-a-zA-Z0-9]*(\.[a-zA-Z0-9][-a-zA-Z0-9]*)+(/.*)?$")
-            .expect("url regex should compile")
-    });
+    let Ok(parsed) = url::Url::parse(value) else {
+        return Err(FieldError::with_code("Invalid URL", "url.invalid"));
+    };
 
-    if URL_REGEX.is_match(value) {
+    if !matches!(parsed.scheme(), "http" | "https") {
+        return Err(FieldError::with_code("Invalid URL", "url.invalid"));
+    }
+
+    let valid_host = match parsed.host() {
+        Some(url::Host::Domain(domain)) => {
+            !domain.is_empty() && (domain.eq_ignore_ascii_case("localhost") || domain.contains('.'))
+        }
+        Some(url::Host::Ipv4(_) | url::Host::Ipv6(_)) => true,
+        None => false,
+    };
+
+    if valid_host {
         Ok(())
     } else {
         Err(FieldError::with_code("Invalid URL", "url.invalid"))
@@ -70,7 +81,7 @@ pub fn url(value: &str) -> Result<(), FieldError> {
 pub fn uuid(value: &str) -> Result<(), FieldError> {
     static UUID_REGEX: LazyLock<Regex> = LazyLock::new(|| {
         Regex::new(
-            r"^[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{12}$",
+            r"^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}|[0-9a-fA-F]{32})$",
         )
         .expect("uuid regex should compile")
     });

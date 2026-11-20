@@ -12,6 +12,7 @@ serde_json = { workspace = true }
 thiserror = { workspace = true }
 sqlx = { workspace = true }
 underlay-core = { path = "../underlay-core" }
+url = { workspace = true }
 uuid = { workspace = true }
 
 [dev-dependencies]

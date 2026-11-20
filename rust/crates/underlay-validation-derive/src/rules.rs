@@ -6,14 +6,16 @@ pub(crate) fn parse_validate_attr(
     attr: &Attribute,
     field_name: &Ident,
     field_name_str: &str,
-) -> SynResult<Vec<TokenStream>> {
+) -> SynResult<(Vec<TokenStream>, bool)> {
     let mut validations = Vec::new();
+    let mut skip = false;
 
     attr.parse_nested_meta(|meta| {
         let path = &meta.path;
 
         // Simple validators (no arguments)
         if path.is_ident("skip") {
+            skip = true;
             return Ok(());
         }
 
@@ -218,10 +220,10 @@ pub(crate) fn parse_validate_attr(
         if path.is_ident("custom") {
             let value: syn::LitStr = meta.value()?.parse()?;
             let func_name = value.value();
-            let func_ident: Ident = syn::parse_str(&func_name)?;
+            let func_path: syn::Path = syn::parse_str(&func_name)?;
 
             validations.push(quote! {
-                if let Err(e) = #func_ident(&self.#field_name) {
+                if let Err(e) = #func_path(&self.#field_name) {
                     errors.add_field(#field_name_str, e);
                 }
             });
@@ -231,5 +233,5 @@ pub(crate) fn parse_validate_attr(
         Err(meta.error(format!("unknown validator: {}", quote!(#path))))
     })?;
 
-    Ok(validations)
+    Ok((validations, skip))
 }

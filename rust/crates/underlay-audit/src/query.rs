@@ -9,7 +9,7 @@ use tracing::instrument;
 use uuid::Uuid;
 
 /// Filters for listing audit log entries.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct AuditLogFilters {
     /// Filter by user ID.
     pub user_id: Option<Uuid>,
@@ -29,13 +29,24 @@ pub struct AuditLogFilters {
     pub offset: i64,
 }
 
+impl Default for AuditLogFilters {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AuditLogFilters {
     /// Create filters with default pagination (50 entries).
     pub fn new() -> Self {
         Self {
+            user_id: None,
+            action: None,
+            resource_type: None,
+            resource_id: None,
+            since: None,
+            until: None,
             limit: 50,
             offset: 0,
-            ..Default::default()
         }
     }
 

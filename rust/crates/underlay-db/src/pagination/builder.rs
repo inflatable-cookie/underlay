@@ -178,17 +178,37 @@ impl PaginationBuilder {
             items.truncate(page_size);
         }
 
-        // Build cursors
-        let next_cursor = if has_more {
-            items.last().map(|item| cursor_fn(item).encode())
-        } else {
-            None
-        };
+        // Backward queries flip ORDER BY in SQL, so restore forward display order.
+        let is_backward = self.params.direction == PaginationDirection::Backward;
+        if is_backward {
+            items.reverse();
+        }
 
-        let prev_cursor = if self.params.cursor.is_some() {
-            items.first().map(|item| cursor_fn(item).encode())
+        // Build cursors
+        let (next_cursor, prev_cursor) = if is_backward {
+            let next = if self.params.cursor.is_some() {
+                items.last().map(|item| cursor_fn(item).encode())
+            } else {
+                None
+            };
+            let prev = if has_more {
+                items.first().map(|item| cursor_fn(item).encode())
+            } else {
+                None
+            };
+            (next, prev)
         } else {
-            None
+            let next = if has_more {
+                items.last().map(|item| cursor_fn(item).encode())
+            } else {
+                None
+            };
+            let prev = if self.params.cursor.is_some() {
+                items.first().map(|item| cursor_fn(item).encode())
+            } else {
+                None
+            };
+            (next, prev)
         };
 
         PaginatedResponse {

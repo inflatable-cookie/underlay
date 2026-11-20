@@ -7,7 +7,7 @@ use std::{
 
 use axum::http::{HeaderMap, HeaderValue};
 use sha2::{Digest, Sha256};
-use tokio::sync::{oneshot, Mutex as AsyncMutex};
+use tokio::sync::oneshot;
 
 pub const CACHE_CONTROL_ADMIN_REVALIDATE: &str = "private, no-cache, must-revalidate";
 pub const CACHE_CONTROL_NO_STORE: &str = "no-store";
@@ -112,7 +112,28 @@ impl<V: Clone> MicroCache<V> {
 /// For a given key, only one caller executes the loader; concurrent callers
 /// await the same result from the leader.
 pub struct SingleFlight<V> {
-    inflight: AsyncMutex<HashMap<String, Vec<oneshot::Sender<V>>>>,
+    inflight: Mutex<HashMap<String, Vec<oneshot::Sender<V>>>>,
+}
+
+struct InflightGuard<'a, V> {
+    inflight: &'a Mutex<HashMap<String, Vec<oneshot::Sender<V>>>>,
+    key: String,
+    active: bool,
+}
+
+impl<V> Drop for InflightGuard<'_, V> {
+    fn drop(&mut self) {
+        if !self.active {
+            return;
+        }
+        let mut guard = self
+            .inflight
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        // Dropping the removed Vec<oneshot::Sender<V>> wakes any waiters with
+        // RecvError so they can recompute instead of hanging indefinitely.
+        guard.remove(&self.key);
+    }
 }
 
 impl<V: Clone> Default for SingleFlight<V> {
@@ -124,8 +145,14 @@ impl<V: Clone> Default for SingleFlight<V> {
 impl<V: Clone> SingleFlight<V> {
     pub fn new() -> Self {
         Self {
-            inflight: AsyncMutex::new(HashMap::new()),
+            inflight: Mutex::new(HashMap::new()),
         }
+    }
+
+    fn lock_inflight(&self) -> MutexGuard<'_, HashMap<String, Vec<oneshot::Sender<V>>>> {
+        self.inflight
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
     }
 
     pub async fn run<F, Fut>(&self, key: impl Into<String>, loader: F) -> V
@@ -137,7 +164,7 @@ impl<V: Clone> SingleFlight<V> {
         let mut loader = Some(loader);
 
         let waiter = {
-            let mut guard = self.inflight.lock().await;
+            let mut guard = self.lock_inflight();
             if let Some(waiters) = guard.get_mut(&key) {
                 let (tx, rx) = oneshot::channel();
                 waiters.push(tx);
@@ -152,15 +179,21 @@ impl<V: Clone> SingleFlight<V> {
             if let Ok(value) = rx.await {
                 return value;
             }
-            // If the leader task exited after waiter registration but before
-            // sending, recompute instead of panicking.
+            // If the leader task exited or was cancelled before sending,
+            // recompute instead of panicking or deadlocking.
+            let mut cleanup = InflightGuard {
+                inflight: &self.inflight,
+                key: key.clone(),
+                active: true,
+            };
             let value = loader
                 .take()
                 .expect("singleflight loader should only be consumed once")(
             )
             .await;
+            cleanup.active = false;
             let waiters = {
-                let mut guard = self.inflight.lock().await;
+                let mut guard = self.lock_inflight();
                 guard.remove(&key).unwrap_or_default()
             };
             for tx in waiters {
@@ -169,12 +202,18 @@ impl<V: Clone> SingleFlight<V> {
             return value;
         }
 
+        let mut cleanup = InflightGuard {
+            inflight: &self.inflight,
+            key: key.clone(),
+            active: true,
+        };
         let value = loader
             .take()
             .expect("singleflight loader should only be consumed once")()
         .await;
+        cleanup.active = false;
         let waiters = {
-            let mut guard = self.inflight.lock().await;
+            let mut guard = self.lock_inflight();
             guard.remove(&key).unwrap_or_default()
         };
         for tx in waiters {
@@ -185,15 +224,23 @@ impl<V: Clone> SingleFlight<V> {
 
     #[cfg(test)]
     pub(crate) async fn test_insert_inflight_key(&self, key: &str) {
-        let mut guard = self.inflight.lock().await;
+        let mut guard = self.lock_inflight();
         guard.insert(key.to_string(), Vec::new());
     }
 
     #[cfg(test)]
     pub(crate) async fn test_remove_inflight_key(&self, key: &str) {
-        let mut guard = self.inflight.lock().await;
+        let mut guard = self.lock_inflight();
         guard.remove(key);
     }
+}
+
+fn strip_weak_prefix(etag: &str) -> &str {
+    etag.strip_prefix("W/").unwrap_or(etag)
+}
+
+fn is_weak_etag(etag: &str) -> bool {
+    etag.starts_with("W/")
 }
 
 /// Builds a weak ETag from raw payload bytes.
@@ -204,7 +251,8 @@ pub fn weak_etag_for_bytes(payload: &[u8]) -> String {
     format!("W/\"{}\"", hex::encode(short))
 }
 
-/// Matches `If-None-Match` header values against a current ETag.
+/// Matches `If-None-Match` header values against a current ETag using RFC 9110
+/// weak comparison.
 pub fn if_none_match_matches(headers: &HeaderMap, current_etag: &str) -> bool {
     let Some(raw) = headers.get(axum::http::header::IF_NONE_MATCH) else {
         return false;
@@ -214,13 +262,16 @@ pub fn if_none_match_matches(headers: &HeaderMap, current_etag: &str) -> bool {
         return false;
     };
 
+    let current_opaque = strip_weak_prefix(current_etag.trim());
+
     raw_str
         .split(',')
         .map(|part| part.trim())
-        .any(|candidate| candidate == "*" || candidate == current_etag)
+        .any(|candidate| candidate == "*" || strip_weak_prefix(candidate) == current_opaque)
 }
 
-/// Matches `If-Match` header values against a current ETag.
+/// Matches `If-Match` header values against a current ETag using RFC 9110
+/// strong comparison (weak ETags never match).
 pub fn if_match_matches(headers: &HeaderMap, current_etag: &str) -> bool {
     let Some(raw) = headers.get(axum::http::header::IF_MATCH) else {
         return false;
@@ -230,10 +281,14 @@ pub fn if_match_matches(headers: &HeaderMap, current_etag: &str) -> bool {
         return false;
     };
 
-    raw_str
-        .split(',')
-        .map(|part| part.trim())
-        .any(|candidate| candidate == "*" || candidate == current_etag)
+    let current = current_etag.trim();
+
+    raw_str.split(',').map(|part| part.trim()).any(|candidate| {
+        if candidate == "*" {
+            return true;
+        }
+        !is_weak_etag(candidate) && !is_weak_etag(current) && candidate == current
+    })
 }
 
 pub fn etag_header_value(etag: &str) -> Option<HeaderValue> {

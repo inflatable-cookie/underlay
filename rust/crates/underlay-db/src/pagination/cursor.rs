@@ -98,7 +98,9 @@ impl Cursor {
 
     /// Get weight value (convenience for common pattern).
     pub fn get_weight(&self) -> Result<i32, CursorError> {
-        self.get_int("w").map(|v| v as i32)
+        let value = self.get_int("w")?;
+        i32::try_from(value)
+            .map_err(|_| CursorError::InvalidType(format!("w out of i32 range: {value}")))
     }
 
     /// Get a timestamp value from the cursor.

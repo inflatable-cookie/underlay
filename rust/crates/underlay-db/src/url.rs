@@ -7,16 +7,22 @@
 /// Intended as a gate for destructive or seed operations so they can never
 /// land on a remote database, regardless of how the environment resolved.
 pub fn is_local_database_url(url: &str) -> bool {
-    let after_at = url.rsplit('@').next().unwrap_or(url);
-    // Bracketed IPv6 literals contain colons; extract them before splitting.
-    let host = if let Some(bracketed) = after_at.strip_prefix('[') {
-        bracketed.split(']').next().unwrap_or("")
-    } else {
-        after_at.split(['/', ':', '?']).next().unwrap_or("")
+    let Ok(parsed) = url::Url::parse(url) else {
+        return false;
     };
-    let host = host.trim().to_ascii_lowercase();
 
-    host == "localhost" || host == "127.0.0.1" || host == "::1" || host.ends_with(".test")
+    match parsed.host() {
+        Some(url::Host::Ipv4(ip)) => ip.is_loopback(),
+        Some(url::Host::Ipv6(ip)) => ip.is_loopback(),
+        Some(url::Host::Domain(domain)) => {
+            let domain = domain.to_ascii_lowercase();
+            if let Ok(ip) = domain.parse::<std::net::IpAddr>() {
+                return ip.is_loopback();
+            }
+            domain == "localhost" || domain.ends_with(".test")
+        }
+        None => false,
+    }
 }
 
 #[cfg(test)]
@@ -35,12 +41,16 @@ mod tests {
             "postgres://postgres:secret@postgres.acme.test:5432/app"
         ));
         assert!(is_local_database_url("mysql://root:secret@[::1]:3306/app"));
+        assert!(is_local_database_url("postgres://localhost:5432/app"));
     }
 
     #[test]
     fn remote_database_urls_do_not_match() {
         assert!(!is_local_database_url(
             "postgres://user:pass@db.example.com:5432/app"
+        ));
+        assert!(!is_local_database_url(
+            "postgres://user:pass@prod.example.com:5432/app?application_name=x@localhost"
         ));
         assert!(!is_local_database_url(
             "postgres://user:pass@10.0.0.5:5432/app"

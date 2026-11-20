@@ -57,11 +57,16 @@ fn if_match_matches_exact_or_wildcard() {
 
     let mut headers = HeaderMap::new();
     headers.insert(IF_MATCH, HeaderValue::from_static("W/\"abc\""));
-    assert!(if_match_matches(&headers, current));
+    let strong = "\"abc\"";
+    let mut headers = HeaderMap::new();
+    headers.insert(IF_MATCH, HeaderValue::from_static("\"abc\""));
+    assert!(if_match_matches(&headers, strong));
 
+    // RFC 9110 strong comparison: weak ETags never match If-Match.
     let mut headers = HeaderMap::new();
     headers.insert(IF_MATCH, HeaderValue::from_static("W/\"zzz\", W/\"abc\""));
-    assert!(if_match_matches(&headers, current));
+    assert!(!if_match_matches(&headers, current));
+    assert!(!if_match_matches(&headers, strong));
 
     let mut headers = HeaderMap::new();
     headers.insert(IF_MATCH, HeaderValue::from_static("*"));
@@ -70,6 +75,33 @@ fn if_match_matches_exact_or_wildcard() {
     let mut headers = HeaderMap::new();
     headers.insert(IF_MATCH, HeaderValue::from_static("W/\"nope\""));
     assert!(!if_match_matches(&headers, current));
+}
+
+#[tokio::test]
+async fn singleflight_leader_cancellation_does_not_deadlock_waiters() {
+    let sf = Arc::new(SingleFlight::<usize>::new());
+    let sf_leader = Arc::clone(&sf);
+    let leader = tokio::spawn(async move {
+        sf_leader
+            .run("cancel-key", || async {
+                tokio::time::sleep(Duration::from_secs(60)).await;
+                1
+            })
+            .await
+    });
+
+    tokio::time::sleep(Duration::from_millis(10)).await;
+    let sf_waiter = Arc::clone(&sf);
+    let waiter = tokio::spawn(async move { sf_waiter.run("cancel-key", || async { 42 }).await });
+
+    tokio::time::sleep(Duration::from_millis(10)).await;
+    leader.abort();
+
+    let result = tokio::time::timeout(Duration::from_secs(2), waiter)
+        .await
+        .expect("waiter should not deadlock after leader cancellation")
+        .expect("waiter task should join");
+    assert_eq!(result, 42);
 }
 
 #[test]

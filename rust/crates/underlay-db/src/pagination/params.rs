@@ -115,7 +115,7 @@ impl CursorPaginationParams {
 
     /// Get the SQL OFFSET for page-based consumers.
     pub fn offset(&self) -> i64 {
-        (self.effective_page() - 1) * self.effective_limit()
+        (self.effective_page() - 1).saturating_mul(self.effective_limit())
     }
 
     /// Decode the cursor if present.

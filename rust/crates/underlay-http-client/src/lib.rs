@@ -170,36 +170,37 @@ fn external_redirect_policy() -> reqwest::redirect::Policy {
 /// Returns true if a URL's host resolves to (or is) a non-public address.
 fn host_is_blocked(url: &reqwest::Url) -> Result<bool, HttpClientError> {
     let host = url
-        .host_str()
+        .host()
         .ok_or_else(|| HttpClientError::InvalidUrl(url.to_string()))?;
 
-    // IP literal: classify directly.
-    if let Ok(ip) = host.parse::<IpAddr>() {
-        return Ok(!is_public_ip(ip));
-    }
+    match host {
+        url::Host::Ipv4(v4) => Ok(!is_public_ip(IpAddr::V4(v4))),
+        url::Host::Ipv6(v6) => Ok(!is_public_ip(IpAddr::V6(v6))),
+        url::Host::Domain(domain) => {
+            // Hostname: resolve every A/AAAA record and block if ANY is non-public
+            // (defends against split-horizon / partial-rebind tricks).
+            let port = url.port_or_known_default().unwrap_or(80);
+            let addrs = (domain, port)
+                .to_socket_addrs()
+                .map_err(|e| HttpClientError::InvalidUrl(format!("{domain}: {e}")))?;
 
-    // Hostname: resolve every A/AAAA record and block if ANY is non-public
-    // (defends against split-horizon / partial-rebind tricks).
-    let port = url.port_or_known_default().unwrap_or(80);
-    let addrs = (host, port)
-        .to_socket_addrs()
-        .map_err(|e| HttpClientError::InvalidUrl(format!("{host}: {e}")))?;
+            let mut saw_any = false;
+            for addr in addrs {
+                saw_any = true;
+                if !is_public_ip(addr.ip()) {
+                    return Ok(true);
+                }
+            }
 
-    let mut saw_any = false;
-    for addr in addrs {
-        saw_any = true;
-        if !is_public_ip(addr.ip()) {
-            return Ok(true);
+            if !saw_any {
+                return Err(HttpClientError::InvalidUrl(format!(
+                    "{domain}: no addresses resolved"
+                )));
+            }
+
+            Ok(false)
         }
     }
-
-    if !saw_any {
-        return Err(HttpClientError::InvalidUrl(format!(
-            "{host}: no addresses resolved"
-        )));
-    }
-
-    Ok(false)
 }
 
 /// Validate a URL for the external profile before sending.
@@ -235,23 +236,30 @@ pub fn validate_external_url(url: &str) -> Result<reqwest::Url, HttpClientError>
 fn is_public_ip(ip: IpAddr) -> bool {
     match ip {
         IpAddr::V4(v4) => {
+            let octets = v4.octets();
             !(v4.is_private()
                 || v4.is_loopback()
                 || v4.is_link_local()
                 || v4.is_broadcast()
                 || v4.is_documentation()
                 || v4.is_unspecified()
+                || v4.is_multicast()
+                // "This network" 0.0.0.0/8
+                || octets[0] == 0
+                // Reserved 240.0.0.0/4
+                || octets[0] >= 240
                 // Carrier-grade NAT 100.64.0.0/10
-                || (v4.octets()[0] == 100 && (v4.octets()[1] & 0xC0) == 64)
+                || (octets[0] == 100 && (octets[1] & 0xC0) == 64)
                 // Benchmarking 198.18.0.0/15
-                || (v4.octets()[0] == 198 && (v4.octets()[1] & 0xFE) == 18))
+                || (octets[0] == 198 && (octets[1] & 0xFE) == 18))
         }
         IpAddr::V6(v6) => {
-            if v6.is_loopback() || v6.is_unspecified() {
+            if v6.is_loopback() || v6.is_unspecified() || v6.is_multicast() {
                 return false;
             }
+            let segments = v6.segments();
+            let seg0 = segments[0];
             // Unique local fc00::/7
-            let seg0 = v6.segments()[0];
             if (seg0 & 0xFE00) == 0xFC00 {
                 return false;
             }
@@ -259,9 +267,23 @@ fn is_public_ip(ip: IpAddr) -> bool {
             if (seg0 & 0xFFC0) == 0xFE80 {
                 return false;
             }
-            // IPv4-mapped: classify the embedded v4 address.
+            // NAT64 well-known prefix 64:ff9b::/96
+            if segments[0] == 0x0064
+                && segments[1] == 0xFF9B
+                && segments[2] == 0
+                && segments[3] == 0
+                && segments[4] == 0
+                && segments[5] == 0
+            {
+                return false;
+            }
+            // IPv4-mapped ::ffff:0:0/96
             if let Some(v4) = v6.to_ipv4_mapped() {
                 return is_public_ip(IpAddr::V4(v4));
+            }
+            // Deprecated IPv4-compatible ::/96
+            if segments[0..6] == [0, 0, 0, 0, 0, 0] {
+                return false;
             }
             true
         }

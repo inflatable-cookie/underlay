@@ -197,11 +197,7 @@ impl RequestBuilder {
             .expect("Failed to send request");
 
         let status = response.status();
-        let headers: HashMap<String, String> = response
-            .headers()
-            .iter()
-            .map(|(k, v)| (k.to_string(), v.to_str().unwrap_or("").to_string()))
-            .collect();
+        let headers = response.headers().clone();
 
         let body_bytes = axum::body::to_bytes(response.into_body(), usize::MAX)
             .await
@@ -218,7 +214,7 @@ impl RequestBuilder {
 /// A test response with helper methods for assertions
 pub struct TestResponse {
     status: StatusCode,
-    headers: HashMap<String, String>,
+    headers: axum::http::HeaderMap,
     body: Vec<u8>,
 }
 
@@ -253,12 +249,21 @@ impl TestResponse {
         serde_json::from_slice(&self.body)
     }
 
-    /// Get a header value
+    /// Get a header value (case-insensitive)
     pub fn header(&self, name: &str) -> Option<&str> {
-        self.headers.get(name).map(|s| s.as_str())
+        self.headers.get(name).and_then(|v| v.to_str().ok())
     }
 
-    /// Check if a header exists
+    /// Get all values for a multi-value header (e.g., `Set-Cookie`)
+    pub fn header_values(&self, name: &str) -> Vec<&str> {
+        self.headers
+            .get_all(name)
+            .iter()
+            .filter_map(|v| v.to_str().ok())
+            .collect()
+    }
+
+    /// Check if a header exists (case-insensitive)
     pub fn has_header(&self, name: &str) -> bool {
         self.headers.contains_key(name)
     }

@@ -7,7 +7,7 @@ description = "Rate limiting with pluggable backends for Underlay"
 
 [features]
 default = []
-postgres = ["dep:sqlx"]
+postgres = ["dep:sqlx", "dep:underlay-db"]
 
 [dependencies]
 async-trait = { workspace = true }
@@ -20,6 +20,7 @@ dashmap = "6"
 
 # For the distributed Postgres backend (feature = "postgres")
 sqlx = { workspace = true, optional = true }
+underlay-db = { path = "../underlay-db", optional = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["rt-multi-thread", "macros", "time"] }

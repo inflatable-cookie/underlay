@@ -132,12 +132,19 @@ pub async fn reorder_scoped(
     let mut tx = pool.begin().await?;
 
     // Lock the current set so concurrent writers serialize on the diff.
-    let current: Vec<Uuid> = sqlx::query_scalar(sqlx::AssertSqlSafe(format!(
+    let select_sql = format!(
         "SELECT {id_q} FROM {table_q} {where_sql} ORDER BY {weight_q} ASC, {id_q} ASC FOR UPDATE"
-    )))
-    .bind(scope.parent_column.map(|(_, v)| v))
-    .fetch_all(&mut *tx)
-    .await?;
+    );
+    let current: Vec<Uuid> = if let Some((_, parent_value)) = scope.parent_column {
+        sqlx::query_scalar(sqlx::AssertSqlSafe(select_sql))
+            .bind(parent_value)
+            .fetch_all(&mut *tx)
+            .await?
+    } else {
+        sqlx::query_scalar(sqlx::AssertSqlSafe(select_sql))
+            .fetch_all(&mut *tx)
+            .await?
+    };
 
     let submitted: std::collections::HashSet<Uuid> = ordered_ids.iter().copied().collect();
     let persisted: std::collections::HashSet<Uuid> = current.iter().copied().collect();
