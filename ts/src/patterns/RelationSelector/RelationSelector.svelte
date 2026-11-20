@@ -198,7 +198,6 @@
     }
 
     const query = ctx.state.searchQuery;
-    JSON.stringify(ctx.state.activeFilters);
 
     if (searchTimer) {
       clearTimeout(searchTimer);
@@ -524,7 +523,7 @@
   </Dialog>
 
   {#if error}
-    <div class="underlay-relation-selector__error">{error}</div>
+    <div class="underlay-relation-selector__error" role="alert">{error}</div>
   {/if}
 </div>
 

@@ -23,6 +23,7 @@
   --underlay-color-text-subtle: #526071;
 
   /* Borders */
+  --underlay-color-border: rgba(15, 23, 42, 0.18);
   --underlay-color-border-subtle: rgba(15, 23, 42, 0.15);
   --underlay-color-border-strong: rgba(15, 23, 42, 0.25);
 
@@ -30,15 +31,20 @@
   --underlay-color-primary: #2563eb;
   --underlay-color-primary-strong: #1d4ed8;
   --underlay-color-on-primary: #ffffff;
+  --underlay-color-accent: var(--underlay-color-primary);
 
   /* Status (WCAG AA >= 4.5:1 on light surface) */
   --underlay-color-success: #15803d;
+  --underlay-color-success-bg: rgba(21, 128, 61, 0.12);
   --underlay-color-warning: #b45309;
   --underlay-color-error: #dc2626;
   --underlay-color-danger: var(--underlay-color-error);
+  --underlay-color-danger-bg: rgba(220, 38, 38, 0.1);
+  --underlay-color-danger-border: rgba(220, 38, 38, 0.35);
 
   /* Muted / secondary surfaces */
   --underlay-color-surface-muted: #e5e7eb;
+  --underlay-color-surface-secondary: #f3f4f6;
   --underlay-color-on-surface: #111827;
 
   /* Form fields */
@@ -78,6 +84,7 @@
   --underlay-space-6: 2rem;
 
   /* Typography */
+  --underlay-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --underlay-font-size-xs: 0.75rem;
   --underlay-font-size-sm: 0.8rem;
   --underlay-font-size-md: 0.9rem;

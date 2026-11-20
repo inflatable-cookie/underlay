@@ -82,23 +82,36 @@
   });
   const resolvedSubmitLabel = $derived(action?.submitLabel ?? submitLabel);
 
+  let validationError = $state<string | null>(null);
+
   function setOpen(nextOpen: boolean): void {
+    if (!nextOpen) {
+      validationError = null;
+    }
     open = nextOpen;
     onOpenChange?.(nextOpen);
   }
 
   function setValue(fieldId: string, value: unknown): void {
+    validationError = null;
     values = { ...values, [fieldId]: value };
     onValueChange?.(fieldId, value);
   }
 
-  function selectedModelValue(): string {
+  function resolvedModel(): { providerKey?: string; modelId?: string } {
     if (selectedProviderKey && selectedModelId) {
-      return `${selectedProviderKey}:${selectedModelId}`;
+      return { providerKey: selectedProviderKey, modelId: selectedModelId };
     }
-
     const fallback = action?.modelOptions?.find((option) => !option.disabled);
-    return fallback ? `${fallback.providerKey}:${fallback.modelId}` : "";
+    if (fallback) {
+      return { providerKey: fallback.providerKey, modelId: fallback.modelId };
+    }
+    return {};
+  }
+
+  function selectedModelValue(): string {
+    const model = resolvedModel();
+    return model.providerKey && model.modelId ? `${model.providerKey}:${model.modelId}` : "";
   }
 
   function setSelectedModel(value: string): void {
@@ -111,17 +124,39 @@
 
   function cancel(): void {
     if (busy) return;
+    validationError = null;
     onCancel?.();
     setOpen(false);
   }
 
   function submit(): void {
     if (!action || busy) return;
+    if (!activeForm && action.fields) {
+      for (const field of action.fields) {
+        if (!field.required) continue;
+        if (field.type === "checkbox") {
+          if (!fieldBoolValue(field)) {
+            validationError = `${field.label} is required.`;
+            return;
+          }
+        } else if (field.type === "number") {
+          if (fieldNumberValue(field) === null) {
+            validationError = `${field.label} is required.`;
+            return;
+          }
+        } else if (fieldStringValue(field).trim() === "") {
+          validationError = `${field.label} is required.`;
+          return;
+        }
+      }
+    }
+    validationError = null;
+    const model = resolvedModel();
     onSubmit?.({
       action,
       values,
-      selectedProviderKey: selectedProviderKey || undefined,
-      selectedModelId: selectedModelId || undefined
+      selectedProviderKey: model.providerKey,
+      selectedModelId: model.modelId
     });
   }
 
@@ -186,69 +221,77 @@
       {:else if action.fields && action.fields.length > 0}
         <div class="underlay-context-action-dialog__fields">
           {#each action.fields as field (field.id)}
-            <label class="underlay-context-action-dialog__field">
-              <span>{field.label}</span>
-              {#if field.description}
-                <small>{field.description}</small>
-              {/if}
-
-              {#if field.type === "textarea"}
-                <TextInput
-                  type="multiline"
-                  rows={field.rows ?? 6}
-                  value={fieldStringValue(field)}
-                  placeholder={field.placeholder ?? null}
-                  required={field.required}
-                  disabled={busy}
-                  onValueChange={(value) => setValue(field.id, value)}
-                />
-              {:else if field.type === "select"}
-                <Select
-                  value={fieldStringValue(field)}
-                  placeholder={field.placeholder ?? null}
-                  options={(field.options ?? []).map((option) => ({
-                    value: option.value,
-                    label: option.label,
-                    disabled: option.disabled
-                  }))}
-                  required={field.required}
-                  disabled={busy}
-                  onValueChange={(value) => setValue(field.id, value)}
-                />
-              {:else if field.type === "number"}
-                <NumberInput
-                  value={fieldNumberValue(field)}
-                  placeholder={field.placeholder ?? null}
-                  required={field.required}
-                  min={field.min ?? null}
-                  max={field.max ?? null}
-                  step={field.step ?? null}
-                  disabled={busy}
-                  onValueChange={(value) => setValue(field.id, value)}
-                />
-              {:else if field.type === "checkbox"}
+            {#if field.type === "checkbox"}
+              <div class="underlay-context-action-dialog__field">
+                <span>{field.label}</span>
+                {#if field.description}
+                  <small>{field.description}</small>
+                {/if}
                 <Checkbox
                   checked={fieldBoolValue(field)}
                   label={field.placeholder ?? field.label}
                   disabled={busy}
                   onCheckedChange={(checked) => setValue(field.id, checked)}
                 />
-              {:else}
-                <TextInput
-                  value={fieldStringValue(field)}
-                  placeholder={field.placeholder ?? null}
-                  required={field.required}
-                  disabled={busy}
-                  onValueChange={(value) => setValue(field.id, value)}
-                />
-              {/if}
-            </label>
+              </div>
+            {:else}
+              <label class="underlay-context-action-dialog__field">
+                <span>{field.label}</span>
+                {#if field.description}
+                  <small>{field.description}</small>
+                {/if}
+
+                {#if field.type === "textarea"}
+                  <TextInput
+                    type="multiline"
+                    rows={field.rows ?? 6}
+                    value={fieldStringValue(field)}
+                    placeholder={field.placeholder ?? null}
+                    required={field.required}
+                    disabled={busy}
+                    onValueChange={(value) => setValue(field.id, value)}
+                  />
+                {:else if field.type === "select"}
+                  <Select
+                    value={fieldStringValue(field)}
+                    placeholder={field.placeholder ?? null}
+                    options={(field.options ?? []).map((option) => ({
+                      value: option.value,
+                      label: option.label,
+                      disabled: option.disabled
+                    }))}
+                    required={field.required}
+                    disabled={busy}
+                    onValueChange={(value) => setValue(field.id, value)}
+                  />
+                {:else if field.type === "number"}
+                  <NumberInput
+                    value={fieldNumberValue(field)}
+                    placeholder={field.placeholder ?? null}
+                    required={field.required}
+                    min={field.min ?? null}
+                    max={field.max ?? null}
+                    step={field.step ?? null}
+                    disabled={busy}
+                    onValueChange={(value) => setValue(field.id, value)}
+                  />
+                {:else}
+                  <TextInput
+                    value={fieldStringValue(field)}
+                    placeholder={field.placeholder ?? null}
+                    required={field.required}
+                    disabled={busy}
+                    onValueChange={(value) => setValue(field.id, value)}
+                  />
+                {/if}
+              </label>
+            {/if}
           {/each}
         </div>
       {/if}
 
-      {#if errorMessage}
-        <p class="underlay-context-action-dialog__error" role="alert">{errorMessage}</p>
+      {#if validationError || errorMessage}
+        <p class="underlay-context-action-dialog__error" role="alert">{validationError ?? errorMessage}</p>
       {/if}
     </div>
   {/if}

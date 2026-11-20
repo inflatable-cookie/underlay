@@ -146,6 +146,7 @@ export function createMediaUploadFlow(
 
   // State
   let abortController: AbortController | null = null;
+  let runGeneration = 0;
   let step = $state<MediaUploadStep>("select");
   let file = $state<File | null>(null);
   let fileError = $state<string | null>(null);
@@ -176,6 +177,7 @@ export function createMediaUploadFlow(
   }
 
   function clearFile() {
+    runGeneration += 1;
     abortController?.abort();
     abortController = null;
     file = null;
@@ -193,14 +195,18 @@ export function createMediaUploadFlow(
   }
 
   async function startUpload(metadata?: Partial<CreateMediaRequest>) {
-    if (!file) return;
+    if (!file || isUploading) return;
 
+    const generation = ++runGeneration;
+    const targetFile = file;
     step = "checking";
     error = null;
 
     try {
       // Step 1: Compute file hash
-      fileHash = await computeFileHash(file);
+      const computedHash = await computeFileHash(targetFile);
+      if (generation !== runGeneration) return;
+      fileHash = computedHash;
 
       // Step 2: Check for duplicates
       // For replace flow, first check against existing versions
@@ -213,6 +219,7 @@ export function createMediaUploadFlow(
       // Check global duplicates (for new upload flow)
       if (!existingMediaId) {
         const duplicateCheck = await checkDuplicate(fileHash);
+        if (generation !== runGeneration) return;
 
         if (duplicateCheck.exists && duplicateCheck.media) {
           duplicateMedia = duplicateCheck.media;
@@ -222,8 +229,9 @@ export function createMediaUploadFlow(
       }
 
       // No duplicate - proceed with upload
-      await proceedWithUpload(metadata);
+      await proceedWithUploadInternal(metadata, generation);
     } catch (e) {
+      if (generation !== runGeneration) return;
       console.error("Upload failed", e);
       error = e instanceof Error ? e.message : "Upload failed";
       step = "error";
@@ -232,7 +240,18 @@ export function createMediaUploadFlow(
   }
 
   async function proceedWithUpload(metadata?: Partial<CreateMediaRequest>) {
+    if (!file || !fileHash || isUploading) return;
+    const generation = ++runGeneration;
+    await proceedWithUploadInternal(metadata, generation);
+  }
+
+  async function proceedWithUploadInternal(
+    metadata: Partial<CreateMediaRequest> | undefined,
+    generation: number
+  ) {
     if (!file || !fileHash) return;
+    const targetFile = file;
+    const targetHash = fileHash;
 
     try {
       step = "uploading";
@@ -246,21 +265,23 @@ export function createMediaUploadFlow(
       } else {
         // New upload flow - create media item first
         const media = await createMedia({
-          kind: detectMediaKindFromMimeType(file.type),
+          kind: detectMediaKindFromMimeType(targetFile.type),
           visibility: defaultVisibility,
-          title: metadata?.title ?? file.name.replace(/\.[^/.]+$/, ""),
-          originalFilename: metadata?.originalFilename ?? file.name,
+          title: metadata?.title ?? targetFile.name.replace(/\.[^/.]+$/, ""),
+          originalFilename: metadata?.originalFilename ?? targetFile.name,
           ...metadata,
         });
+        if (generation !== runGeneration) return;
         mediaId = media.id;
       }
 
       // Initiate upload
       const uploadResponse = await initiateUpload(mediaId, {
-        contentType: file.type,
-        contentLength: file.size,
-        sha256: fileHash,
+        contentType: targetFile.type,
+        contentLength: targetFile.size,
+        sha256: targetHash,
       });
+      if (generation !== runGeneration) return;
 
       // Upload file to blob storage
       const plan: UploadPlan = {
@@ -275,22 +296,26 @@ export function createMediaUploadFlow(
 
       abortController = new AbortController();
       try {
-        await uploadToBlob(plan, file, {
+        await uploadToBlob(plan, targetFile, {
           onProgress: (p) => {
-            progress = p.percent;
+            if (generation === runGeneration) {
+              progress = p.percent;
+            }
           },
           signal: abortController.signal,
         });
       } finally {
         abortController = null;
       }
+      if (generation !== runGeneration) return;
 
       // Finalise upload
       step = "finalising";
       const finaliseResponse = await finaliseUpload(mediaId, uploadResponse.versionId, {
-        sha256: fileHash,
-        contentType: file.type,
+        sha256: targetHash,
+        contentType: targetFile.type,
       });
+      if (generation !== runGeneration) return;
 
       // Done!
       createdMedia = finaliseResponse.media;
@@ -299,10 +324,13 @@ export function createMediaUploadFlow(
     } catch (e) {
       if ((e as { code?: string } | null)?.code === "UPLOAD_ABORTED") {
         // User-initiated cancel: back to selection, keep the chosen file.
-        step = "select";
-        progress = 0;
+        if (file !== null) {
+          step = "select";
+          progress = 0;
+        }
         return;
       }
+      if (generation !== runGeneration) return;
 
       console.error("Upload failed", e);
       error = e instanceof Error ? e.message : "Upload failed";
@@ -312,7 +340,13 @@ export function createMediaUploadFlow(
   }
 
   function cancelUpload() {
+    runGeneration += 1;
     abortController?.abort();
+    abortController = null;
+    if (isUploading) {
+      step = "select";
+      progress = 0;
+    }
   }
 
   function useDuplicate() {

@@ -140,12 +140,11 @@
   }
 
   const spaEnhance = (node: HTMLFormElement) => {
-    if (!onSubmit) {
-      return;
-    }
-    const submit = onSubmit;
-
     async function handleSubmit(event: SubmitEvent) {
+      const submit = onSubmit;
+      if (!submit) {
+        return;
+      }
       event.preventDefault();
 
       if (submitting) {

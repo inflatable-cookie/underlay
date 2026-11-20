@@ -12,14 +12,20 @@
   let { item, loader, render, loadingMessage = "Loading…", errorMessage = "Failed to load" }: Props = $props();
 
   let data = $state<TData | null>(null);
+  let loaded = $state(false);
   let failed = $state(false);
 
   $effect(() => {
     let cancelled = false;
+    data = null;
+    loaded = false;
     failed = false;
     loader(item)
       .then((result) => {
-        if (!cancelled) data = result;
+        if (!cancelled) {
+          data = result;
+          loaded = true;
+        }
       })
       .catch(() => {
         if (!cancelled) failed = true;
@@ -32,7 +38,7 @@
 
 {#if failed}
   <p>{errorMessage}</p>
-{:else if data === null}
+{:else if !loaded}
   <p>{loadingMessage}</p>
 {:else}
   {@render render(data, item)}

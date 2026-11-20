@@ -4,12 +4,6 @@
   import { type MediaKind } from "../../patterns/media-types/enums";
   import { useNightfireMedia, type NightfireMediaPickResult } from "./context";
 
-  interface MarkdownEditorContext {
-    value: string;
-    selectionStart: number;
-    selectionEnd: number;
-  }
-
   type MediaBlock = {
     type: string;
     version?: string;
@@ -210,6 +204,13 @@
 
   .underlay-media-editor__selector {
     display: grid;
+    gap: var(--underlay-space-2, 0.5rem);
+  }
+
+  .underlay-media-editor__error {
+    margin: 0;
+    font-size: var(--underlay-font-size-sm, 0.8rem);
+    color: var(--underlay-color-error, #dc2626);
   }
 
   .underlay-media-editor__preview {

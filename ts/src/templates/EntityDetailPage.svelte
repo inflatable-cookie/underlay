@@ -264,7 +264,8 @@
   );
   const shouldShowSubtitleWithBreadcrumbs = $derived(showSubtitleWithBreadcrumbs || detailBreadcrumbs.length === 0);
   let resolvedBackInfo = $state<{ href: string; label: string; contextual: boolean } | null>(null);
-  let previousReloadKey = $state<string | number | null>(null);
+  const UNSET_RELOAD_KEY = Symbol("unset-reload-key");
+  let previousReloadKey = $state<string | number | null | typeof UNSET_RELOAD_KEY>(UNSET_RELOAD_KEY);
 
   $effect(() => {
     if (!backHref) {
@@ -299,7 +300,7 @@
   });
 
   $effect(() => {
-    if (previousReloadKey === null) {
+    if (previousReloadKey === UNSET_RELOAD_KEY) {
       previousReloadKey = reloadKey;
       return;
     }

@@ -582,10 +582,16 @@
   // --- Helpers ---
 
   async function executeBatchAction(action: BatchActionConfig, ids: string[]) {
-    await action.handler(ids);
-    onDataChange?.();
-    await pageData.refetch();
-    return { success: true, affected: ids.length };
+    try {
+      await action.handler(ids);
+      onDataChange?.();
+      await pageData.refetch();
+      return { success: true, affected: ids.length };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      toastStore.push({ message, variant: "error" });
+      throw error;
+    }
   }
 
   async function submitReorder(orderedIds: string[]) {
@@ -641,7 +647,7 @@
   function setQuery(nextQuery: QueryParams) {
     const normalizedQuery = normalizeQuery(nextQuery);
     pendingFetchQuery = normalizedQuery;
-    handledListQueryKey = buildListQueryKey(normalizedQuery);
+    handledListQueryKey = buildListQueryKey(resolveEffectiveQuery(normalizedQuery));
     if (onQueryChange) {
       onQueryChange(normalizedQuery);
     } else {
@@ -1064,6 +1070,9 @@
 
   function handleKeydown(event: KeyboardEvent) {
     if (event.key === "Escape") {
+      if (pendingDialogAction || batch.confirmingAction) {
+        return;
+      }
       if (selectionMode) {
         setSelectionMode(false);
         batch.clear();

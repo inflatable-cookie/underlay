@@ -221,6 +221,8 @@ export function useAuthenticatedData<T>(
   let _fetched = false;
   let _inFlight: Promise<void> | null = null;
   let _queuedRefetch = false;
+  let _queuedRefetchPromise: Promise<void> | null = null;
+  let _resolveQueuedRefetch: (() => void) | null = null;
 
   // Query key tracking: intercept onSuccess to capture the key after each fetch.
   // This must be set up before doFetch is defined since doFetch calls the hook.
@@ -232,10 +234,16 @@ export function useAuthenticatedData<T>(
       }
     : options.onSuccess;
 
-  const doFetch = async (isRefetch = false) => {
+  const doFetch = async (isRefetch = false): Promise<void> => {
     if (_inFlight) {
       if (isRefetch) {
         _queuedRefetch = true;
+        if (!_queuedRefetchPromise) {
+          _queuedRefetchPromise = new Promise<void>((resolve) => {
+            _resolveQueuedRefetch = resolve;
+          });
+        }
+        return _queuedRefetchPromise;
       }
       return _inFlight;
     }
@@ -296,7 +304,14 @@ export function useAuthenticatedData<T>(
       _inFlight = null;
       if (_queuedRefetch) {
         _queuedRefetch = false;
-        await doFetch(true);
+        const resolveQueued = _resolveQueuedRefetch;
+        _queuedRefetchPromise = null;
+        _resolveQueuedRefetch = null;
+        try {
+          await doFetch(true);
+        } finally {
+          resolveQueued?.();
+        }
       }
     }
   };

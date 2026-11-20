@@ -51,7 +51,7 @@
   });
 
   async function handleRequestEmailCode() {
-    onRequestEmailCode?.();
+    await onRequestEmailCode?.();
     emailCodeRequested = true;
   }
 

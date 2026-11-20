@@ -60,6 +60,8 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
   });
 
   let lastSearchQuery = $state<string>("");
+  let searchSeq = 0;
+  let suggestionsSeq = 0;
 
   const isMultiSelect = $derived(props.mode === "multi");
 
@@ -169,12 +171,15 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
 
   async function performSearch(query: string): Promise<void> {
     if (!query.trim()) {
+      searchSeq += 1;
       state.searchResults = [];
       state.searchTotal = 0;
       state.searchError = null;
+      state.isSearching = false;
       return;
     }
 
+    const seq = ++searchSeq;
     lastSearchQuery = query;
     state.isSearching = true;
     state.searchError = null;
@@ -189,6 +194,8 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
         filters: mergedFilters,
       });
 
+      if (seq !== searchSeq) return;
+
       state.searchResults = result.items;
       state.searchTotal = result.total;
 
@@ -198,12 +205,15 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
       }
       resolvedItems = newResolved;
     } catch (error) {
+      if (seq !== searchSeq) return;
       state.searchError =
         error instanceof Error ? error.message : "Search failed";
       state.searchResults = [];
       state.searchTotal = 0;
     } finally {
-      state.isSearching = false;
+      if (seq === searchSeq) {
+        state.isSearching = false;
+      }
     }
   }
 
@@ -216,6 +226,7 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
   async function loadSuggestions(): Promise<void> {
     if (!props.suggestions) return;
 
+    const seq = ++suggestionsSeq;
     state.isSuggestionsLoading = true;
 
     try {
@@ -227,6 +238,9 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
         recentHints,
         filters: mergedFilters,
       });
+
+      if (seq !== suggestionsSeq) return;
+
       state.suggestionItems = items;
 
       const newResolved = new Map(resolvedItems);
@@ -235,10 +249,13 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
       }
       resolvedItems = newResolved;
     } catch (error) {
+      if (seq !== suggestionsSeq) return;
       console.error("Failed to load suggestions:", error);
       state.suggestionItems = [];
     } finally {
-      state.isSuggestionsLoading = false;
+      if (seq === suggestionsSeq) {
+        state.isSuggestionsLoading = false;
+      }
     }
   }
 
