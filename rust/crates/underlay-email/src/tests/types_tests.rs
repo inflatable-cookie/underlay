@@ -25,6 +25,51 @@ fn test_email_address_invalid() {
 }
 
 #[test]
+fn email_address_deserialization_uses_constructor_validation() {
+    let valid = serde_json::json!({"email": "user@example.com", "name": "Example User"});
+    assert_eq!(
+        serde_json::from_value::<EmailAddress>(valid).unwrap(),
+        EmailAddress::with_name("user@example.com", "Example User").unwrap()
+    );
+
+    for fields in [
+        serde_json::json!({"email": "user@example.com\r\n"}),
+        serde_json::json!({"email": "user@example.com", "name": "Example\u{7f} User"}),
+        serde_json::json!({"email": "missing-domain"}),
+    ] {
+        assert!(serde_json::from_value::<EmailAddress>(fields).is_err());
+    }
+}
+
+#[test]
+fn email_builder_rejects_controls_in_subject_and_headers() {
+    let builder = || {
+        Email::builder()
+            .from(EmailAddress::new("sender@example.com").unwrap())
+            .to(EmailAddress::new("recipient@example.com").unwrap())
+            .subject("Subject")
+            .text_body("Body")
+    };
+
+    assert!(matches!(
+        builder().subject("Subject\r\n").build(),
+        Err(EmailError::ConfigError(_))
+    ));
+    assert!(matches!(
+        builder().header("X-Test\n", "value").build(),
+        Err(EmailError::ConfigError(_))
+    ));
+    assert!(matches!(
+        builder().header("X-Test", "value\u{7f}").build(),
+        Err(EmailError::ConfigError(_))
+    ));
+    assert!(matches!(
+        builder().header("sUbJeCt", "value").build(),
+        Err(EmailError::ConfigError(_))
+    ));
+}
+
+#[test]
 fn test_email_builder() {
     let email = Email::builder()
         .from(EmailAddress::new("sender@example.com").unwrap())

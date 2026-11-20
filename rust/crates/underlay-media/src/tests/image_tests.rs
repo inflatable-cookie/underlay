@@ -142,6 +142,19 @@ fn square_thumbnail_preserves_png_alpha() {
 }
 
 #[test]
+fn alpha_preserving_square_thumbnail_rejects_zero_size() {
+    let mut input = std::io::Cursor::new(Vec::new());
+    image::DynamicImage::new_rgba8(2, 2)
+        .write_to(&mut input, ImageFormat::Png)
+        .unwrap();
+
+    assert!(matches!(
+        generate_square_thumbnail_preserving_alpha(input.get_ref(), 0, 80),
+        Err(ImageError::EncodeError(message)) if message == "thumbnail size must be greater than 0"
+    ));
+}
+
+#[test]
 fn square_thumbnail_without_alpha_still_uses_jpeg() {
     let source = image::RgbImage::from_pixel(32, 32, image::Rgb([0, 255, 0]));
     let mut input = std::io::Cursor::new(Vec::new());

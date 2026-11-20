@@ -324,6 +324,12 @@ pub fn generate_square_thumbnail_preserving_alpha(
     size: u32,
     quality: u8,
 ) -> Result<ThumbnailResult, ImageError> {
+    if size == 0 {
+        return Err(ImageError::EncodeError(
+            "thumbnail size must be greater than 0".to_string(),
+        ));
+    }
+
     let img = ImageReader::new(Cursor::new(data))
         .with_guessed_format()
         .map_err(|e| ImageError::DecodeError(e.to_string()))?

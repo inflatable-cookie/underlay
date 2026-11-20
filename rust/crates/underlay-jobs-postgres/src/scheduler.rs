@@ -7,7 +7,7 @@ use tracing::{debug, error, info, instrument, warn};
 
 use crate::postgres::{JobRepository, Result};
 use crate::postgres_scheduled::ScheduledTaskRepository;
-use underlay_jobs::{JobConfig, ScheduledTask, ScheduledTaskDefinition};
+use underlay_jobs::{JobConfig, ScheduledTaskDefinition};
 
 /// Scheduler for recurring tasks.
 ///
@@ -18,7 +18,7 @@ pub struct Scheduler {
 }
 
 impl Scheduler {
-    /// Create a new scheduler.
+    /// Create a new scheduler. Both repositories must use the same database.
     pub fn new(job_repo: JobRepository, task_repo: ScheduledTaskRepository) -> Self {
         Self {
             job_repo,
@@ -60,13 +60,13 @@ impl Scheduler {
     /// Run one scheduling tick.
     #[instrument(skip(self))]
     pub async fn tick(&self) -> Result<()> {
-        let tasks = self.task_repo.get_enabled().await?;
+        let tasks = self.task_repo.enabled_task_keys().await?;
         let now = Utc::now();
 
-        for task in tasks {
-            if let Err(error) = self.check_task(&task, now).await {
+        for (task_id, name) in tasks {
+            if let Err(error) = self.check_task(task_id, now).await {
                 error!(
-                    task_name = %task.name,
+                    task_name = %name,
                     error = %error,
                     "Failed to check scheduled task"
                 );
@@ -76,7 +76,12 @@ impl Scheduler {
         Ok(())
     }
 
-    async fn check_task(&self, task: &ScheduledTask, now: DateTime<Utc>) -> Result<()> {
+    async fn check_task(&self, task_id: uuid::Uuid, now: DateTime<Utc>) -> Result<()> {
+        let mut tx = self.task_repo.begin().await?;
+        let Some(task) = ScheduledTaskRepository::lock_enabled_task(&mut tx, task_id).await? else {
+            return Ok(());
+        };
+
         let schedule = match Schedule::from_str(&task.schedule) {
             Ok(schedule) => schedule,
             Err(error) => {
@@ -103,7 +108,18 @@ impl Scheduler {
             return Ok(());
         }
 
-        if !task.allow_overlap && self.task_repo.is_running(&task.job_type).await? {
+        // Distinct scheduled tasks can share a job type. Serialize their
+        // overlap check and insert across replicas as well.
+        sqlx::query(
+            "SELECT pg_advisory_xact_lock(hashtextextended('underlay:scheduler:' || $1, 0))",
+        )
+        .bind(&task.job_type)
+        .execute(&mut *tx)
+        .await?;
+
+        if !task.allow_overlap
+            && ScheduledTaskRepository::is_running_on(&mut *tx, &task.job_type).await?
+        {
             debug!(
                 task_name = %task.name,
                 "Skipping schedule - previous job still running"
@@ -117,12 +133,13 @@ impl Scheduler {
             .with_allow_overlap(task.allow_overlap)
             .with_priority(task.priority);
 
-        let job_id = self
-            .job_repo
-            .create(&task.job_type, task.payload.clone(), &config)
-            .await?;
+        let job_id =
+            JobRepository::insert_job(&mut *tx, &task.job_type, &task.payload, &config, None)
+                .await?;
 
-        self.task_repo.mark_scheduled(task.id).await?;
+        ScheduledTaskRepository::mark_scheduled_on(&mut *tx, task.id).await?;
+        tx.commit().await?;
+        self.job_repo.emit_enqueued(job_id, &task.job_type, None);
 
         info!(
             task_name = %task.name,

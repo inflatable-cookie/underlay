@@ -1,7 +1,7 @@
 //! Scheduled task repository and job notification listener.
 
 use sqlx::postgres::PgListener;
-use sqlx::PgPool;
+use sqlx::{PgExecutor, PgPool, Postgres, Transaction};
 use std::time::Duration;
 use tracing::debug;
 
@@ -80,18 +80,56 @@ impl ScheduledTaskRepository {
         Ok(rows.into_iter().map(ScheduledTask::from).collect())
     }
 
+    pub(crate) async fn enabled_task_keys(&self) -> Result<Vec<(uuid::Uuid, String)>> {
+        let keys = sqlx::query_as(
+            "SELECT id, name FROM platform.scheduled_task WHERE enabled = TRUE ORDER BY name",
+        )
+        .fetch_all(&self.pool)
+        .await?;
+        Ok(keys)
+    }
+
+    pub(crate) async fn begin(&self) -> Result<Transaction<'static, Postgres>> {
+        Ok(self.pool.begin().await?)
+    }
+
+    pub(crate) async fn lock_enabled_task(
+        tx: &mut Transaction<'_, Postgres>,
+        task_id: uuid::Uuid,
+    ) -> Result<Option<ScheduledTask>> {
+        let row = sqlx::query_as::<_, ScheduledTaskRow>(
+            r#"
+            SELECT *
+            FROM platform.scheduled_task
+            WHERE id = $1 AND enabled = TRUE
+            FOR UPDATE SKIP LOCKED
+            "#,
+        )
+        .bind(task_id)
+        .fetch_optional(&mut **tx)
+        .await?;
+        Ok(row.map(ScheduledTask::from))
+    }
+
     /// Mark a task as scheduled (update last_scheduled_at).
     #[tracing::instrument(skip(self))]
     pub async fn mark_scheduled(&self, task_id: Uuid) -> Result<()> {
+        Self::mark_scheduled_on(&self.pool, task_id).await
+    }
+
+    pub(crate) async fn mark_scheduled_on(
+        executor: impl PgExecutor<'_>,
+        task_id: Uuid,
+    ) -> Result<()> {
         sqlx::query(
             r#"
             UPDATE platform.scheduled_task
-            SET last_scheduled_at = NOW()
+            SET last_scheduled_at = clock_timestamp()
             WHERE id = $1
             "#,
         )
         .bind(to_raw(task_id))
-        .execute(&self.pool)
+        .execute(executor)
         .await?;
 
         Ok(())
@@ -117,18 +155,26 @@ impl ScheduledTaskRepository {
     /// Check if a task is currently running (for overlap prevention).
     #[tracing::instrument(skip(self))]
     pub async fn is_running(&self, job_type: &str) -> Result<bool> {
-        let count: i64 = sqlx::query_scalar(
+        Self::is_running_on(&self.pool, job_type).await
+    }
+
+    pub(crate) async fn is_running_on(
+        executor: impl PgExecutor<'_>,
+        job_type: &str,
+    ) -> Result<bool> {
+        let running = sqlx::query_scalar(
             r#"
-            SELECT COUNT(*)
-            FROM platform.job
-            WHERE job_type = $1 AND status IN ('pending', 'claimed', 'running')
+            SELECT EXISTS (
+                SELECT 1 FROM platform.job
+                WHERE job_type = $1 AND status IN ('pending', 'claimed', 'running')
+            )
             "#,
         )
         .bind(job_type)
-        .fetch_one(&self.pool)
+        .fetch_one(executor)
         .await?;
 
-        Ok(count > 0)
+        Ok(running)
     }
 
     /// Disable all tasks not in the provided list (cleanup stale tasks).

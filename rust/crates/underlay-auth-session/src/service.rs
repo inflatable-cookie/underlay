@@ -287,7 +287,36 @@ where
             .jwt
             .verify_refresh_token(refresh_token)
             .map_err(AuthError::from)?;
-        self.repo.revoke_session(claims.session_id, "logout").await
+        let session = self
+            .repo
+            .get_session(claims.session_id)
+            .await?
+            .ok_or(AuthError::SessionRevoked)?;
+
+        if !session.is_active || session.user_id != claims.common.subject {
+            return Err(AuthError::SessionRevoked);
+        }
+
+        if session.refresh_token_fingerprint != token_fingerprint(refresh_token) {
+            return Err(AuthError::TokenFingerprintMismatch);
+        }
+
+        let version = i32::try_from(claims.version).map_err(|_| AuthError::TokenInvalid)?;
+        if session.refresh_token_id != claims.common.token_id
+            || session.refresh_token_version != version
+        {
+            return Err(AuthError::TokenInvalid);
+        }
+
+        if !self
+            .repo
+            .revoke_session_if_current(&session, "logout")
+            .await?
+        {
+            return Err(AuthError::TokenInvalid);
+        }
+
+        Ok(())
     }
 
     pub async fn list_sessions_for_user(&self, user_id: Uuid) -> AuthResult<Vec<SessionRecord>> {

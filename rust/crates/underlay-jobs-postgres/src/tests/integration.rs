@@ -19,12 +19,15 @@
 //! about.
 
 use serde_json::json;
-use sqlx::Executor;
+use sqlx::{Executor, PgPool};
 
-use underlay_jobs::{JobConfig, JobFilters, JobHandlerError, JobStatus, JobStore};
+use underlay_jobs::{
+    DeadLetterFilters, JobConfig, JobFilters, JobHandlerError, JobStatus, JobStore,
+    ScheduledTaskDefinition,
+};
 use underlay_testing::TestDb;
 
-use crate::JobRepository;
+use crate::{JobRepository, PgDeadLetterRepository, ScheduledTaskRepository, Scheduler};
 
 // 0003 (domain-event notify) is intentionally omitted: it targets an app-owned
 // `platform.domain_events` table that this crate does not create and that the
@@ -35,7 +38,7 @@ const MIGRATIONS: &[&str] = &[
     include_str!("../../migrations/0004_add_job_dead_letters.sql"),
 ];
 
-async fn setup() -> JobRepository {
+async fn setup() -> PgPool {
     let db = TestDb::new().await;
     let pool = db.pool().clone();
 
@@ -52,14 +55,15 @@ async fn setup() -> JobRepository {
     }
 
     // TestDb is dropped here, but the pool is cloned and kept alive by the
-    // returned repository; the container (if any) lives as long as the pool.
-    JobRepository::new(pool)
+    // returned repositories; the container (if any) lives as long as the pool.
+    pool
 }
 
 #[tokio::test]
 #[ignore = "requires a Postgres test database (UNDERLAY_TEST_DATABASE_URL or Docker)"]
 async fn job_lifecycle_create_claim_succeed_fail_cancel() {
-    let repo = setup().await;
+    let pool = setup().await;
+    let repo = JobRepository::new(pool.clone());
     let config = JobConfig::new();
 
     // --- create + get ---
@@ -151,4 +155,117 @@ async fn job_lifecycle_create_claim_succeed_fail_cancel() {
         .expect("list");
     assert_eq!(cancelled.len(), 1);
     assert_eq!(cancelled[0].id, cancel_id);
+
+    stalled_job_dead_lettering(&pool, &repo).await;
+    scheduler_transactions(&pool, &repo).await;
+}
+
+async fn stalled_job_dead_lettering(pool: &PgPool, repo: &JobRepository) {
+    let job_type = "stalled.test";
+    let id = repo
+        .create(job_type, json!({}), &JobConfig::new())
+        .await
+        .unwrap();
+    let claimed = repo
+        .fetch_next(&[job_type.to_string()])
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(claimed.id, id);
+
+    // Competing maintenance workers both saw the same stalled job.
+    let (first, second) = tokio::join!(repo.reset_stalled(id), repo.reset_stalled(id));
+    first.unwrap();
+    second.unwrap();
+
+    let failed = repo.get(id).await.unwrap().unwrap();
+    assert_eq!(failed.status, JobStatus::Failed);
+    let dead_letters = PgDeadLetterRepository::new(pool.clone())
+        .list(DeadLetterFilters {
+            job_type: Some(job_type.to_string()),
+            limit: 10,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+    assert_eq!(dead_letters.len(), 1);
+    assert_eq!(dead_letters[0].original_job_id, id);
+    assert_eq!(
+        Some(dead_letters[0].last_error.as_str()),
+        failed.last_error.as_deref()
+    );
+}
+
+async fn scheduler_transactions(pool: &PgPool, repo: &JobRepository) {
+    let tasks = ScheduledTaskRepository::new(pool.clone());
+    let first = Scheduler::new(
+        JobRepository::new(pool.clone()),
+        ScheduledTaskRepository::new(pool.clone()),
+    );
+    let second = Scheduler::new(
+        JobRepository::new(pool.clone()),
+        ScheduledTaskRepository::new(pool.clone()),
+    );
+    let config = JobConfig::new().with_allow_overlap(false);
+    first
+        .register_tasks(&[
+            ScheduledTaskDefinition {
+                name: "scheduler-a",
+                job_type: "scheduled.test",
+                schedule: "0 0 0 * * *",
+                payload: json!({}),
+                config: config.clone(),
+            },
+            ScheduledTaskDefinition {
+                name: "scheduler-b",
+                job_type: "scheduled.test",
+                schedule: "0 0 0 * * *",
+                payload: json!({}),
+                config,
+            },
+        ])
+        .await
+        .unwrap();
+
+    pool.execute(
+        "ALTER TABLE platform.scheduled_task ADD CONSTRAINT test_no_schedule_stamp CHECK (last_scheduled_at IS NULL)",
+    )
+    .await
+    .unwrap();
+    first.tick().await.unwrap();
+    assert!(
+        repo.list(JobFilters {
+            job_type: Some("scheduled.test".to_string()),
+            limit: 10,
+            ..Default::default()
+        })
+        .await
+        .unwrap()
+        .is_empty(),
+        "job insert must roll back if the schedule stamp fails"
+    );
+    pool.execute("ALTER TABLE platform.scheduled_task DROP CONSTRAINT test_no_schedule_stamp")
+        .await
+        .unwrap();
+
+    let (first_tick, second_tick) = tokio::join!(first.tick(), second.tick());
+    first_tick.unwrap();
+    second_tick.unwrap();
+    let jobs = repo
+        .list(JobFilters {
+            job_type: Some("scheduled.test".to_string()),
+            limit: 10,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+    let scheduled = tasks.get_enabled().await.unwrap();
+    assert_eq!(jobs.len(), 1);
+    assert_eq!(
+        scheduled
+            .iter()
+            .filter(|task| task.last_scheduled_at.is_some())
+            .count(),
+        1
+    );
 }

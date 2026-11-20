@@ -9,6 +9,7 @@ use crate::error::{EmailError, EmailResult};
 
 /// An email address with optional display name.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(try_from = "EmailAddressFields")]
 pub struct EmailAddress {
     /// The email address (e.g., "user@example.com").
     pub email: String,
@@ -16,34 +17,56 @@ pub struct EmailAddress {
     pub name: Option<String>,
 }
 
+#[derive(Deserialize)]
+struct EmailAddressFields {
+    email: String,
+    name: Option<String>,
+}
+
+impl TryFrom<EmailAddressFields> for EmailAddress {
+    type Error = EmailError;
+
+    fn try_from(fields: EmailAddressFields) -> EmailResult<Self> {
+        match fields.name {
+            Some(name) => Self::with_name(fields.email, name),
+            None => Self::new(fields.email),
+        }
+    }
+}
+
 impl EmailAddress {
     /// Create a new email address without a display name.
     pub fn new(email: impl Into<String>) -> EmailResult<Self> {
         let email = email.into();
-        Self::validate(&email)?;
+        Self::validate_email(&email)?;
         Ok(Self { email, name: None })
     }
 
     /// Create a new email address with a display name.
     pub fn with_name(email: impl Into<String>, name: impl Into<String>) -> EmailResult<Self> {
         let email = email.into();
-        Self::validate(&email)?;
-        let name = name.into();
-        if name.chars().any(|c| c.is_control()) {
+        let address = Self {
+            email,
+            name: Some(name.into()),
+        };
+        address.validate()?;
+        Ok(address)
+    }
+
+    fn validate(&self) -> EmailResult<()> {
+        Self::validate_email(&self.email)?;
+        if self.name.as_deref().is_some_and(contains_control) {
             return Err(EmailError::InvalidAddress(
                 "display name cannot contain control characters".into(),
             ));
         }
-        Ok(Self {
-            email,
-            name: Some(name),
-        })
+        Ok(())
     }
 
     /// Basic email validation - checks for @ symbol, non-empty parts, and no
     /// header-injection / control characters.
-    fn validate(email: &str) -> EmailResult<()> {
-        if email.chars().any(|c| c.is_control()) {
+    fn validate_email(email: &str) -> EmailResult<()> {
+        if contains_control(email) {
             return Err(EmailError::InvalidAddress(
                 "email cannot contain control characters".into(),
             ));
@@ -127,6 +150,66 @@ impl Email {
     pub fn builder() -> EmailBuilder {
         EmailBuilder::new()
     }
+
+    pub(crate) fn validate_headers(&self) -> EmailResult<()> {
+        if contains_control(&self.subject) {
+            return Err(EmailError::ConfigError(
+                "email subject cannot contain control characters".into(),
+            ));
+        }
+        let mut names = std::collections::HashSet::with_capacity(self.headers.len());
+        for (name, value) in &self.headers {
+            if name.is_empty()
+                || !name
+                    .bytes()
+                    .all(|byte| byte.is_ascii_graphic() && byte != b':')
+            {
+                return Err(EmailError::ConfigError("invalid email header name".into()));
+            }
+            if contains_control(value) {
+                return Err(EmailError::ConfigError(
+                    "email header value cannot contain control characters".into(),
+                ));
+            }
+            let name = name.to_ascii_lowercase();
+            if matches!(
+                name.as_str(),
+                "from"
+                    | "sender"
+                    | "to"
+                    | "cc"
+                    | "bcc"
+                    | "reply-to"
+                    | "subject"
+                    | "message-id"
+                    | "mime-version"
+                    | "content-type"
+                    | "content-transfer-encoding"
+            ) {
+                return Err(EmailError::ConfigError(format!(
+                    "custom email header conflicts with a generated header: {name}"
+                )));
+            }
+            if !names.insert(name) {
+                return Err(EmailError::ConfigError(
+                    "duplicate email header name".into(),
+                ));
+            }
+        }
+        for address in std::iter::once(&self.from)
+            .chain(&self.to)
+            .chain(&self.reply_to)
+            .chain(&self.cc)
+            .chain(&self.bcc)
+        {
+            address.validate()?;
+        }
+        Ok(())
+    }
+}
+
+fn contains_control(value: &str) -> bool {
+    value.chars().any(char::is_control)
 }
 
 /// Builder for constructing Email instances.
@@ -223,7 +306,7 @@ impl EmailBuilder {
             return Err(EmailError::MissingField("text_body or html_body"));
         }
 
-        Ok(Email {
+        let email = Email {
             id: Uuid::now_v7(),
             to: self.to,
             from,
@@ -235,7 +318,9 @@ impl EmailBuilder {
             html_body: self.html_body,
             headers: self.headers,
             created_at: Utc::now(),
-        })
+        };
+        email.validate_headers()?;
+        Ok(email)
     }
 }
 

@@ -1,4 +1,6 @@
-use underlay_auth::{AuthResult, SecretCipher};
+use underlay_auth::{AuthError, AuthResult, SecretCipher};
+
+use crate::NO_GOOGLE_REFRESH_TOKEN;
 
 pub const AUTH_OAUTH_SECRET_KEY_ENV: &str = "AUTH_OAUTH_SECRET_KEY";
 
@@ -45,6 +47,9 @@ impl OAuthTokenCipher {
     }
 
     pub fn decrypt_refresh_token(&self, secret_encrypted: &str) -> AuthResult<String> {
+        if secret_encrypted == NO_GOOGLE_REFRESH_TOKEN {
+            return Err(AuthError::OAuthTokenRefreshFailed);
+        }
         self.inner.decrypt(secret_encrypted)
     }
 }

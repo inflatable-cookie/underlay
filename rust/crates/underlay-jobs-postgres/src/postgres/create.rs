@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde_json::Value;
+use sqlx::PgExecutor;
 use tracing::{debug, instrument};
 
 use crate::postgres_rows::JobRow;
@@ -24,6 +25,18 @@ impl JobRepository {
         config: &JobConfig,
         scheduled_for: Option<DateTime<Utc>>,
     ) -> Result<Uuid> {
+        let id = Self::insert_job(&self.pool, job_type, &payload, config, scheduled_for).await?;
+        self.emit_enqueued(id, job_type, scheduled_for);
+        Ok(id)
+    }
+
+    pub(crate) async fn insert_job(
+        executor: impl PgExecutor<'_>,
+        job_type: &str,
+        payload: &Value,
+        config: &JobConfig,
+        scheduled_for: Option<DateTime<Utc>>,
+    ) -> Result<Uuid> {
         let id = Uuid::new_v7();
 
         sqlx::query(
@@ -34,20 +47,28 @@ impl JobRepository {
         )
         .bind(to_raw(id))
         .bind(job_type)
-        .bind(&payload)
+        .bind(payload)
         .bind(config.max_attempts() as i32)
         .bind(scheduled_for)
         .bind(config.priority())
-        .execute(&self.pool)
+        .execute(executor)
         .await?;
 
+        Ok(id)
+    }
+
+    pub(crate) fn emit_enqueued(
+        &self,
+        id: Uuid,
+        job_type: &str,
+        scheduled_for: Option<DateTime<Utc>>,
+    ) {
         self.events.emit(JobEvent::Enqueued {
             job_id: id,
             job_type: job_type.to_string(),
             scheduled_for,
         });
         debug!(job_id = %id, "Created job");
-        Ok(id)
     }
 
     /// Claim a batch of pending jobs for processing.

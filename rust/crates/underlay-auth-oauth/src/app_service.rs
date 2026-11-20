@@ -1,10 +1,30 @@
 use underlay_core::Uuid;
 
 use crate::{
-    AuthError, AuthResult, CredentialMetadata, CredentialRepository, CredentialType,
+    AuthError, AuthResult, Credential, CredentialMetadata, CredentialRepository, CredentialType,
     GoogleOAuthService, GoogleUserInfo, OAuthCallbackRequest, OAuthLoginResult, OAuthLoginState,
     OAuthProvider, OAuthStart, TokenSet, UserRepository,
 };
+
+/// Stored in the credential secret field for Google sign-ins without offline access.
+pub const NO_GOOGLE_REFRESH_TOKEN: &str = "oauth:no-refresh-token";
+
+/// Persistence for refreshing an existing Google credential.
+///
+/// The underlying credential store must enforce at most one Google credential
+/// per user and reject conflicting creates.
+#[async_trait::async_trait]
+pub trait GoogleOAuthCredentialRepository: CredentialRepository {
+    /// Atomically replace the encrypted secret and return the updated row.
+    /// Match the credential ID, Google type, and stored Google subject.
+    /// Return `None` if the matching link no longer exists.
+    async fn replace_google_refresh_token(
+        &self,
+        credential_id: Uuid,
+        google_user_id: &str,
+        secret_encrypted: &str,
+    ) -> AuthResult<Option<Credential>>;
+}
 
 #[derive(Debug, Clone)]
 pub struct GoogleOAuthAppService<P = GoogleOAuthService> {
@@ -72,7 +92,7 @@ where
         encrypt_secret: E,
     ) -> AuthResult<OAuthLoginResult>
     where
-        R: UserRepository + CredentialRepository,
+        R: UserRepository + GoogleOAuthCredentialRepository,
         E: FnOnce(&str) -> AuthResult<String>,
     {
         if !constant_time_eq(&request.state, &stored_state.csrf_state) {
@@ -124,7 +144,36 @@ where
         let existing_oauth = repo
             .find_oauth_by_user_and_provider(user.id, CredentialType::OAuthGoogle)
             .await?;
+        let refresh_token = token_set
+            .refresh_token
+            .as_deref()
+            .filter(|token| !token.is_empty());
+
         if let Some(credential) = existing_oauth {
+            if !matches!(
+                &credential.metadata,
+                CredentialMetadata::OAuthGoogle { google_user_id, .. }
+                    if *google_user_id == userinfo.sub
+            ) {
+                return Err(AuthError::OAuthError(
+                    "google account does not match the linked account".into(),
+                ));
+            }
+
+            let credential = match refresh_token {
+                Some(token) => {
+                    let secret_encrypted = encrypt_secret(token)?;
+                    repo.replace_google_refresh_token(
+                        credential.id,
+                        &userinfo.sub,
+                        &secret_encrypted,
+                    )
+                    .await?
+                    .ok_or(AuthError::OAuthNotConnected)?
+                }
+                None => credential,
+            };
+
             return Ok(OAuthLoginResult {
                 user,
                 is_new_user,
@@ -134,8 +183,7 @@ where
             });
         }
 
-        let refresh_token = token_set.refresh_token.clone().unwrap_or_default();
-        let secret_encrypted = encrypt_secret(&refresh_token)?;
+        let secret_encrypted = refresh_token.map(encrypt_secret).transpose()?;
 
         let scopes = token_set
             .scope
@@ -155,7 +203,9 @@ where
             repo,
             user.id,
             CredentialType::OAuthGoogle,
-            &secret_encrypted,
+            secret_encrypted
+                .as_deref()
+                .unwrap_or(NO_GOOGLE_REFRESH_TOKEN),
             &metadata,
         )
         .await?;

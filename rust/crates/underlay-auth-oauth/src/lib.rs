@@ -19,7 +19,9 @@ mod model;
 mod provider;
 mod token_cipher;
 
-pub use app_service::GoogleOAuthAppService;
+pub use app_service::{
+    GoogleOAuthAppService, GoogleOAuthCredentialRepository, NO_GOOGLE_REFRESH_TOKEN,
+};
 pub use config::GoogleOAuthConfig;
 pub use error::OAuthServiceError;
 pub use google::GoogleOAuthService;

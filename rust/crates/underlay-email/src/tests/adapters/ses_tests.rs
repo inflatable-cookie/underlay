@@ -7,12 +7,16 @@ fn test_build_content_text_only() {
         .from(EmailAddress::new("sender@example.com").unwrap())
         .to(EmailAddress::new("recipient@example.com").unwrap())
         .subject("Test Subject")
+        .header("X-Trace", "ses-test")
         .text_body("Hello, World!")
         .build()
         .unwrap();
 
     let content = SesAdapter::build_content(&email).unwrap();
-    assert!(content.simple().is_some());
+    let headers = content.simple().unwrap().headers();
+    assert_eq!(headers.len(), 1);
+    assert_eq!(headers[0].name(), "X-Trace");
+    assert_eq!(headers[0].value(), "ses-test");
 }
 
 #[test]

@@ -125,25 +125,21 @@ impl RoleHierarchy {
             return Err(RoleHierarchyError::CannotManageSelf);
         }
 
-        let caller_level = self.max_level(caller_roles);
-        let target_level = self.level(target_role);
+        if self.is_super_role(target_role) {
+            return Err(RoleHierarchyError::CannotManageSuperRole);
+        }
 
         if self.has_super_role(caller_roles) {
-            if self.is_super_role(target_role) {
-                return Err(RoleHierarchyError::CannotManageSuperRole);
-            }
             return Ok(());
         }
 
+        let caller_level = self.max_level(caller_roles);
+        let target_level = self.level(target_role);
         if caller_level <= target_level {
             return Err(RoleHierarchyError::InsufficientPrivileges {
                 caller_level,
                 target_level,
             });
-        }
-
-        if self.is_super_role(target_role) {
-            return Err(RoleHierarchyError::CannotPromoteToSuperRole);
         }
 
         Ok(())
