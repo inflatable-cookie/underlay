@@ -248,6 +248,7 @@ pub trait BlobAdapterUploadExt: BlobAdapter {
     /// Finalise an upload with verification: the stored object must be within
     /// the size cap, carry an allowed declared content type, and its leading
     /// bytes must be consistent with that type (magic-byte sniff).
+    /// Adapters must implement bounded reads to verify uploads.
     async fn finalise_upload_verified(
         &self,
         key: &str,
@@ -269,7 +270,9 @@ pub trait BlobAdapterUploadExt: BlobAdapter {
             ));
         }
 
-        let bytes = self.get_bytes(key).await?;
+        let bytes = self
+            .get_bytes_bounded(key, config.max_file_size_bytes_limit())
+            .await?;
         if !crate::sniff::content_matches_declared(&bytes, declared_content_type) {
             return Err(crate::error::BlobError::InvalidContentType(format!(
                 "stored bytes do not match declared content type {}",

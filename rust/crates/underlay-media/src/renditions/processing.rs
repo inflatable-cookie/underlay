@@ -20,7 +20,7 @@ pub(crate) async fn read_generate_and_store<B: BlobAdapter>(
 
     generate_and_store(
         blob_adapter,
-        &source_bytes,
+        source_bytes,
         target_key,
         max_dimension,
         jpeg_quality,
@@ -31,7 +31,7 @@ pub(crate) async fn read_generate_and_store<B: BlobAdapter>(
 
 pub(crate) async fn generate_and_store<B: BlobAdapter>(
     blob_adapter: &B,
-    source_bytes: &[u8],
+    source_bytes: Vec<u8>,
     target_key: &BlobObjectKey,
     max_dimension: u32,
     jpeg_quality: u8,
@@ -39,7 +39,9 @@ pub(crate) async fn generate_and_store<B: BlobAdapter>(
 ) -> MediaResult<RenditionResult> {
     let config = ThumbnailConfig::new(max_dimension, max_dimension).with_quality(jpeg_quality);
 
-    let generated = generate_thumbnail(source_bytes, &config)
+    let generated = tokio::task::spawn_blocking(move || generate_thumbnail(&source_bytes, &config))
+        .await
+        .map_err(|e| MediaError::image_processing(format!("Thumbnail task failed: {e}")))?
         .map_err(|e| MediaError::image_processing(e.to_string()))?;
 
     let stored = blob_adapter

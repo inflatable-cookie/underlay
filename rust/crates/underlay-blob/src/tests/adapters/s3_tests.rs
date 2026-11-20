@@ -1,5 +1,6 @@
 use super::*;
-use crate::adapter::BlobAdapter;
+use crate::adapter::{BlobAdapter, BlobAdapterUploadExt};
+use crate::config::BlobUploadConfig;
 use crate::error::BlobError;
 use crate::types::DownloadRequest;
 
@@ -34,6 +35,81 @@ fn json_response(status: u16) -> http::Response<SdkBody> {
         .status(status)
         .body(SdkBody::empty())
         .unwrap()
+}
+
+#[tokio::test]
+async fn concurrent_uploads_share_successful_bucket_setup() {
+    let uri = "https://fixture-bucket.s3.us-east-1.amazonaws.com";
+    let event = |method, uri: String| {
+        ReplayEvent::new(
+            http::Request::builder()
+                .method(method)
+                .uri(uri)
+                .body(SdkBody::empty())
+                .unwrap(),
+            json_response(200),
+        )
+    };
+    let (mut adapter, replay) = s3_adapter_with_replay(vec![
+        event("HEAD", format!("{uri}/")),
+        event("PUT", format!("{uri}/?policy")),
+        event("PUT", format!("{uri}/a.bin")),
+        event("PUT", format!("{uri}/b.bin")),
+    ]);
+    adapter.config = adapter.config.public_read(true);
+
+    let (first, second) = tokio::join!(
+        adapter.put_bytes("a.bin", b"a", "application/octet-stream"),
+        adapter.put_bytes("b.bin", b"b", "application/octet-stream"),
+    );
+    assert!(first.is_ok(), "{first:?}");
+    assert!(second.is_ok(), "{second:?}");
+    let requests: Vec<_> = replay.actual_requests().collect();
+    assert_eq!(requests.len(), 4);
+    assert_eq!(
+        requests.iter().filter(|req| req.method() == "HEAD").count(),
+        1
+    );
+    assert_eq!(
+        requests
+            .iter()
+            .filter(|req| req.uri().ends_with("?policy"))
+            .count(),
+        1
+    );
+}
+
+#[tokio::test]
+async fn finalise_verified_bounds_the_body_even_if_head_reports_a_smaller_size() {
+    let uri = "https://fixture-bucket.s3.us-east-1.amazonaws.com/a.png";
+    let request = |method| {
+        http::Request::builder()
+            .method(method)
+            .uri(uri)
+            .body(SdkBody::empty())
+            .unwrap()
+    };
+    let oversized_image = [b"\x89PNG\r\n\x1a\n".as_slice(), &[0; 24]].concat();
+    let (adapter, _) = s3_adapter_with_replay(vec![
+        ReplayEvent::new(
+            request("HEAD"),
+            http::Response::builder()
+                .header("Content-Length", "8")
+                .body(SdkBody::empty())
+                .unwrap(),
+        ),
+        ReplayEvent::new(
+            request("GET"),
+            http::Response::new(SdkBody::from(oversized_image)),
+        ),
+    ]);
+
+    let config = BlobUploadConfig::default().max_file_size_bytes(16);
+    let error = adapter
+        .finalise_upload_verified("a.png", "image/png", &config)
+        .await
+        .expect_err("the actual body exceeds the verification cap");
+    assert!(matches!(error, BlobError::TooLarge(17, 16)), "{error:?}");
 }
 
 #[tokio::test]

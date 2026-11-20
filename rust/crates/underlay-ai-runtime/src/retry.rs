@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::hash::{BuildHasher, RandomState};
 use std::time::Duration;
 
 use async_trait::async_trait;
@@ -54,6 +55,7 @@ impl RetryConfig {
         attempt < self.max_attempts() && self.retriable_kinds().contains(&error.kind)
     }
 
+    /// Sample between 75% and 100% of the capped exponential delay.
     pub fn delay_for_attempt(&self, attempt: u32) -> Duration {
         if attempt == 0 {
             return Duration::ZERO;
@@ -61,8 +63,17 @@ impl RetryConfig {
 
         let exponent = attempt.saturating_sub(1).min(31);
         let multiplier = 1_u32 << exponent;
-        let delay = self.base_delay().saturating_mul(multiplier);
-        delay.min(self.max_delay())
+        let delay = self
+            .base_delay()
+            .saturating_mul(multiplier)
+            .min(self.max_delay());
+        let jitter_window = delay / 4;
+        if jitter_window.is_zero() {
+            return delay;
+        }
+        let sample = RandomState::new().hash_one(attempt) as u32;
+        let fraction = f64::from(sample) / f64::from(u32::MAX);
+        delay - jitter_window.mul_f64(fraction).min(jitter_window)
     }
 }
 

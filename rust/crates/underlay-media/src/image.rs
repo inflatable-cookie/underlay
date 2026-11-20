@@ -252,49 +252,11 @@ pub fn generate_square_thumbnail(
     size: u32,
     quality: u8,
 ) -> Result<ThumbnailResult, ImageError> {
-    if size == 0 {
-        return Err(ImageError::EncodeError(
-            "thumbnail size must be greater than 0".to_string(),
-        ));
-    }
-    // Decode the source image
-    let img = ImageReader::new(Cursor::new(data))
-        .with_guessed_format()
-        .map_err(|e| ImageError::DecodeError(e.to_string()))?
-        .decode()
-        .map_err(|e| ImageError::DecodeError(e.to_string()))?;
+    let img = decode_square_thumbnail_source(data, size)?;
+    encode_square_jpeg(&square_crop_image(img, size), quality)
+}
 
-    let (orig_width, orig_height) = img.dimensions();
-
-    // Calculate scale to make smaller dimension = size
-    let scale = if orig_width < orig_height {
-        size as f32 / orig_width as f32
-    } else {
-        size as f32 / orig_height as f32
-    };
-
-    let scaled_width = (orig_width as f32 * scale).ceil() as u32;
-    let scaled_height = (orig_height as f32 * scale).ceil() as u32;
-
-    // Resize first (if needed)
-    let resized = if scaled_width <= orig_width && scaled_height <= orig_height {
-        // Image is larger than target, resize down
-        img.resize_exact(scaled_width, scaled_height, FilterType::Lanczos3)
-    } else if orig_width >= size && orig_height >= size {
-        // Image is at least as large as target in both dimensions, no resize needed
-        img
-    } else {
-        // Image is smaller than target, scale up
-        img.resize_exact(scaled_width, scaled_height, FilterType::Lanczos3)
-    };
-
-    // Center crop to square
-    let x = (resized.width().saturating_sub(size)) / 2;
-    let y = (resized.height().saturating_sub(size)) / 2;
-    let crop_size = size.min(resized.width()).min(resized.height());
-    let thumb = resized.crop_imm(x, y, crop_size, crop_size);
-
-    // Encode as JPEG
+fn encode_square_jpeg(thumb: &DynamicImage, quality: u8) -> Result<ThumbnailResult, ImageError> {
     let mut output = Vec::new();
     let quality = quality.clamp(1, 100);
     let mut encoder = image::codecs::jpeg::JpegEncoder::new_with_quality(&mut output, quality);
@@ -324,23 +286,14 @@ pub fn generate_square_thumbnail_preserving_alpha(
     size: u32,
     quality: u8,
 ) -> Result<ThumbnailResult, ImageError> {
-    if size == 0 {
-        return Err(ImageError::EncodeError(
-            "thumbnail size must be greater than 0".to_string(),
-        ));
-    }
-
-    let img = ImageReader::new(Cursor::new(data))
-        .with_guessed_format()
-        .map_err(|e| ImageError::DecodeError(e.to_string()))?
-        .decode()
-        .map_err(|e| ImageError::DecodeError(e.to_string()))?;
-
-    if !image_has_alpha(&img) {
-        return generate_square_thumbnail(data, size, quality);
-    }
-
+    let img = decode_square_thumbnail_source(data, size)?;
+    let has_alpha = image_has_alpha(&img);
     let thumb = square_crop_image(img, size);
+
+    if !has_alpha {
+        return encode_square_jpeg(&thumb, quality);
+    }
+
     let mut cursor = Cursor::new(Vec::new());
     thumb
         .write_to(&mut cursor, ImageFormat::Png)
@@ -353,6 +306,20 @@ pub fn generate_square_thumbnail_preserving_alpha(
         height: thumb.height(),
         mime_type: "image/png",
     })
+}
+
+fn decode_square_thumbnail_source(data: &[u8], size: u32) -> Result<DynamicImage, ImageError> {
+    if size == 0 {
+        return Err(ImageError::EncodeError(
+            "thumbnail size must be greater than 0".to_string(),
+        ));
+    }
+
+    ImageReader::new(Cursor::new(data))
+        .with_guessed_format()
+        .map_err(|e| ImageError::DecodeError(e.to_string()))?
+        .decode()
+        .map_err(|e| ImageError::DecodeError(e.to_string()))
 }
 
 fn square_crop_image(img: DynamicImage, size: u32) -> DynamicImage {

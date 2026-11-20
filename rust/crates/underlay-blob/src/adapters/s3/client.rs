@@ -1,6 +1,7 @@
 use aws_sdk_s3::error::ProvideErrorMetadata;
 use aws_sdk_s3::types::{BucketLocationConstraint, CreateBucketConfiguration};
 use aws_sdk_s3::Client;
+use aws_smithy_runtime_api::client::{orchestrator::HttpResponse, result::SdkError};
 use tracing::warn;
 
 use crate::error::{BlobError, BlobResult};
@@ -9,6 +10,7 @@ use super::{S3Adapter, S3Config};
 
 impl S3Adapter {
     /// Ensure the configured bucket exists and has any adapter-managed policy.
+    /// Successful setup is cached for this adapter's lifetime.
     pub async fn ensure_bucket_ready(&self) -> BlobResult<()> {
         self.ensure_bucket_exists().await
     }
@@ -44,19 +46,31 @@ impl S3Adapter {
     /// `NoSuchKey`/`NotFound` still map to the typed `BlobError::NotFound`;
     /// that is a stable classification, not raw provider text.
     pub(super) fn redacted_transport_error<E>(
-        err: &aws_smithy_runtime_api::client::result::SdkError<
-            E,
-            aws_smithy_runtime_api::client::orchestrator::HttpResponse,
-        >,
+        err: &SdkError<E, HttpResponse>,
         key: &str,
         operation: &'static str,
     ) -> BlobError
     where
         E: ProvideErrorMetadata + std::fmt::Debug + std::fmt::Display,
     {
+        let code = err.as_service_error().and_then(ProvideErrorMetadata::code);
+        let message = Self::redacted_error_message(err, operation);
+        if matches!(code, Some("NoSuchKey" | "NotFound")) {
+            BlobError::NotFound(key.to_string())
+        } else {
+            BlobError::TransportError(message)
+        }
+    }
+
+    pub(super) fn redacted_error_message<E>(
+        err: &SdkError<E, HttpResponse>,
+        operation: &'static str,
+    ) -> String
+    where
+        E: ProvideErrorMetadata + std::fmt::Debug + std::fmt::Display,
+    {
         let status = err.raw_response().map(|r| r.status().as_u16());
         let code = err.as_service_error().and_then(ProvideErrorMetadata::code);
-
         warn!(
             operation,
             status = ?status,
@@ -65,15 +79,9 @@ impl S3Adapter {
             "S3 request failed"
         );
 
-        if matches!(code, Some("NoSuchKey") | Some("NotFound")) {
-            return BlobError::NotFound(key.to_string());
-        }
-
         match status {
-            Some(status) => {
-                BlobError::TransportError(format!("s3 {operation} failed (status {status})"))
-            }
-            None => BlobError::TransportError(format!("s3 {operation} failed (no response)")),
+            Some(status) => format!("s3 {operation} failed (status {status})"),
+            None => format!("s3 {operation} failed (no response)"),
         }
     }
 
@@ -119,6 +127,7 @@ impl S3Adapter {
             client,
             presign_client,
             config,
+            bucket_ready: Default::default(),
         })
     }
 
@@ -135,6 +144,7 @@ impl S3Adapter {
             client,
             presign_client,
             config,
+            bucket_ready: Default::default(),
         }
     }
 
@@ -164,25 +174,42 @@ impl S3Adapter {
         crate::adapter::join_public_url(&base, key)
     }
 
-    /// Convert S3 SDK errors to BlobError.
-    pub(super) fn map_s3_error(err: aws_sdk_s3::Error, key: &str) -> BlobError {
-        let err_str = format!("{err}");
-        let detailed = format!("{err:?}");
+    /// Classify ordinary S3 requests using structured provider errors.
+    pub(super) fn map_s3_error<E>(
+        err: &SdkError<E, HttpResponse>,
+        key: &str,
+        operation: &'static str,
+    ) -> BlobError
+    where
+        E: ProvideErrorMetadata + std::fmt::Debug + std::fmt::Display,
+    {
+        let code = err.as_service_error().and_then(ProvideErrorMetadata::code);
+        let status = err
+            .raw_response()
+            .map(|response| response.status().as_u16());
+        let message = Self::redacted_error_message(err, operation);
 
-        if err_str.contains("NoSuchKey") || err_str.contains("NotFound") {
-            BlobError::NotFound(key.to_string())
-        } else if err_str.contains("NoSuchBucket") {
-            BlobError::BucketNotFound(detailed)
-        } else if err_str.contains("AccessDenied") || err_str.contains("Forbidden") {
-            BlobError::AccessDenied(detailed)
-        } else if err_str.contains("credentials") || err_str.contains("InvalidAccessKeyId") {
-            BlobError::AuthError(detailed)
-        } else {
-            BlobError::TransportError(detailed)
+        match (code, status) {
+            (Some("NoSuchKey" | "NotFound"), _) => BlobError::NotFound(key.to_string()),
+            (Some("NoSuchBucket"), _) => BlobError::BucketNotFound(message),
+            (Some("InvalidAccessKeyId" | "SignatureDoesNotMatch" | "ExpiredToken"), _)
+            | (_, Some(401)) => BlobError::AuthError(message),
+            (Some("AccessDenied" | "Forbidden"), _) | (_, Some(403)) => {
+                BlobError::AccessDenied(message)
+            }
+            (_, Some(404)) if !key.is_empty() => BlobError::NotFound(key.to_string()),
+            _ => BlobError::TransportError(message),
         }
     }
 
     pub(super) async fn ensure_bucket_exists(&self) -> BlobResult<()> {
+        self.bucket_ready
+            .get_or_try_init(|| self.initialise_bucket())
+            .await?;
+        Ok(())
+    }
+
+    async fn initialise_bucket(&self) -> BlobResult<()> {
         match self
             .client
             .head_bucket()
@@ -192,22 +219,15 @@ impl S3Adapter {
         {
             Ok(_) => return self.ensure_bucket_policy().await,
             Err(err) => {
-                let err_str = Self::sdk_error_details(&err);
-                let missing_bucket = err_str.contains("NoSuchBucket")
-                    || err_str.contains("NotFound")
-                    || err_str.contains("404");
-                warn!(
-                    bucket = %self.config.bucket(),
-                    endpoint_url = self.config.endpoint_url_ref().unwrap_or("<none>"),
-                    missing_bucket,
-                    error = %err_str,
-                    "S3 head_bucket failed during ensure_bucket_exists"
-                );
+                let code = err.as_service_error().and_then(ProvideErrorMetadata::code);
+                let missing_bucket = matches!(code, Some("NoSuchBucket" | "NotFound"))
+                    || err
+                        .raw_response()
+                        .is_some_and(|response| response.status().as_u16() == 404);
                 if !missing_bucket {
-                    return Err(BlobError::BucketNotFound(format!(
-                        "head_bucket failed for '{}': {}",
-                        self.config.bucket(),
-                        err_str
+                    return Err(BlobError::BucketNotFound(Self::redacted_error_message(
+                        &err,
+                        "head_bucket",
                     )));
                 }
             }
@@ -225,22 +245,16 @@ impl S3Adapter {
         match request.send().await {
             Ok(_) => self.ensure_bucket_policy().await,
             Err(err) => {
-                let err_str = Self::sdk_error_details(&err);
-                warn!(
-                    bucket = %self.config.bucket(),
-                    endpoint_url = self.config.endpoint_url_ref().unwrap_or("<none>"),
-                    error = %err_str,
-                    "S3 create_bucket failed during ensure_bucket_exists"
-                );
-                if err_str.contains("BucketAlreadyOwnedByYou")
-                    || err_str.contains("BucketAlreadyExists")
-                {
+                let code = err.as_service_error().and_then(ProvideErrorMetadata::code);
+                if matches!(
+                    code,
+                    Some("BucketAlreadyOwnedByYou" | "BucketAlreadyExists")
+                ) {
                     self.ensure_bucket_policy().await
                 } else {
-                    Err(BlobError::BucketNotFound(format!(
-                        "create_bucket failed for '{}': {}",
-                        self.config.bucket(),
-                        err_str
+                    Err(BlobError::BucketNotFound(Self::redacted_error_message(
+                        &err,
+                        "create_bucket",
                     )))
                 }
             }
@@ -263,12 +277,8 @@ impl S3Adapter {
             .policy(policy)
             .send()
             .await
-            .map_err(|err| {
-                BlobError::TransportError(format!(
-                    "put_bucket_policy failed for '{}': {}",
-                    self.config.bucket(),
-                    Self::sdk_error_details(&err)
-                ))
+            .map_err(|e| {
+                BlobError::TransportError(Self::redacted_error_message(&e, "put_bucket_policy"))
             })?;
 
         Ok(())

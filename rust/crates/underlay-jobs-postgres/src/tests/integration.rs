@@ -18,6 +18,8 @@
 //! scratch container) — never at a database whose `platform` schema you care
 //! about.
 
+use std::{future, time::Duration};
+
 use serde_json::json;
 use sqlx::{Executor, PgPool};
 
@@ -27,7 +29,8 @@ use underlay_jobs::{
 };
 use underlay_testing::TestDb;
 
-use crate::{JobRepository, PgDeadLetterRepository, ScheduledTaskRepository, Scheduler};
+use crate::outbox::{OutboxConfig, OutboxProcessor};
+use crate::{JobRepository, PgDeadLetterRepository, RepoError, ScheduledTaskRepository, Scheduler};
 
 // 0003 (domain-event notify) is intentionally omitted: it targets an app-owned
 // `platform.domain_events` table that this crate does not create and that the
@@ -157,7 +160,72 @@ async fn job_lifecycle_create_claim_succeed_fail_cancel() {
     assert_eq!(cancelled[0].id, cancel_id);
 
     stalled_job_dead_lettering(&pool, &repo).await;
+    stale_failure_cannot_change_reclaimed_job(&repo).await;
     scheduler_transactions(&pool, &repo).await;
+    outbox_timeout_leaves_event_available(&pool).await;
+}
+
+async fn outbox_timeout_leaves_event_available(pool: &PgPool) {
+    pool.execute(sqlx::raw_sql(
+        r#"
+        CREATE TABLE platform.domain_events (
+            id uuid PRIMARY KEY,
+            event_type text NOT NULL,
+            payload jsonb NOT NULL,
+            occurred_at timestamptz NOT NULL,
+            processed_at timestamptz
+        );
+        INSERT INTO platform.domain_events (id, event_type, payload, occurred_at)
+        VALUES (gen_random_uuid(), 'test.event', '{}', now());
+        "#,
+    ))
+    .await
+    .unwrap();
+
+    let processor = OutboxProcessor::new(
+        OutboxConfig::default().with_handler_timeout(Duration::from_millis(25)),
+    );
+    let timed_out = tokio::time::timeout(
+        Duration::from_secs(2),
+        processor.process_batch(pool, &|_| future::pending()),
+    )
+    .await
+    .expect("outbox processing should stop after the handler times out")
+    .unwrap();
+    assert_eq!(timed_out, 0);
+
+    let processed = processor
+        .process_batch(pool, &|event| async move {
+            assert_eq!(event.event_type, "test.event");
+            Ok(())
+        })
+        .await
+        .unwrap();
+    assert_eq!(processed, 1);
+}
+
+async fn stale_failure_cannot_change_reclaimed_job(repo: &JobRepository) {
+    let config = JobConfig::new().with_max_attempts(3);
+    let types = ["stale.test".to_string()];
+    let id = repo.create(&types[0], json!({}), &config).await.unwrap();
+    let first = repo.fetch_next(&types).await.unwrap().unwrap();
+    repo.reset_stalled(id).await.unwrap();
+
+    let pending = repo.mark_failed(&first, "old result", &config, true).await;
+    assert!(matches!(pending, Err(RepoError::Conflict(_))));
+    let second = repo.fetch_next(&types).await.unwrap().unwrap();
+    assert_eq!(second.attempts, first.attempts + 1);
+
+    let reclaimed = repo.mark_failed(&first, "old result", &config, true).await;
+    assert!(matches!(reclaimed, Err(RepoError::Conflict(_))));
+    let outcome = repo
+        .mark_failed(&second, "current result", &config, false)
+        .await
+        .unwrap();
+    assert!(outcome.will_retry);
+    let job = repo.get(id).await.unwrap().unwrap();
+    assert_eq!(job.status, JobStatus::Pending);
+    assert_eq!(job.last_error.as_deref(), Some("current result"));
 }
 
 async fn stalled_job_dead_lettering(pool: &PgPool, repo: &JobRepository) {

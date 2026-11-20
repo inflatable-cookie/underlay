@@ -218,6 +218,13 @@ where
         };
 
         let result = self.inner.generate_structured(route, request).await;
+        if result
+            .as_ref()
+            .is_err_and(|error| error.kind == AiErrorKind::Validation)
+        {
+            // Release a half-open probe without treating client input as a provider failure.
+            return result;
+        }
         guard.armed = false;
 
         match result {

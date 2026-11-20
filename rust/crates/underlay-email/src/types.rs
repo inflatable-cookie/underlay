@@ -103,13 +103,32 @@ impl EmailAddress {
     }
 
     /// Returns the email address as a formatted string.
-    /// If a name is present, returns "Name <email>", otherwise just the email.
+    /// Display names that need quoting use RFC 5322 quoted-string escaping.
     pub fn formatted(&self) -> String {
         match &self.name {
-            Some(name) => format!("{} <{}>", name, self.email),
+            Some(name) if name.split(' ').all(is_display_name_atom) => {
+                format!("{name} <{}>", self.email)
+            }
+            Some(name) => {
+                let mut escaped = String::with_capacity(name.len());
+                for character in name.chars() {
+                    if matches!(character, '\\' | '"') {
+                        escaped.push('\\');
+                    }
+                    escaped.push(character);
+                }
+                format!("\"{escaped}\" <{}>", self.email)
+            }
             None => self.email.clone(),
         }
     }
+}
+
+fn is_display_name_atom(word: &str) -> bool {
+    !word.is_empty()
+        && word
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || b"!#$%&'*+-/=?^`{|}~_".contains(&byte))
 }
 
 impl fmt::Display for EmailAddress {

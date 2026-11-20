@@ -16,6 +16,8 @@
 //! runner.run_forever().await?;
 //! ```
 
+use std::future::{self, Future};
+use std::pin::pin;
 use std::time::Duration;
 
 use tracing::{debug, error, info, warn};
@@ -23,6 +25,7 @@ use tracing::{debug, error, info, warn};
 use crate::events::{JobEvent, JobEventHub, JobEventSink};
 use crate::registry::JobRegistry;
 use crate::store::JobStore;
+use crate::types::{Job, JobConfig, JobHandlerError};
 
 /// Configuration for the job runner.
 #[derive(Debug, Clone)]
@@ -125,13 +128,11 @@ where
                 job_id = %job.id,
                 "No handler registered for job type; failing claimed job"
             );
-            let err = crate::JobHandlerError::permanent(format!(
+            let err = JobHandlerError::permanent(format!(
                 "no handler registered for job type `{}`",
                 job.job_type
             ));
-            let _ = self
-                .store
-                .mark_failure(&job, err, &crate::types::JobConfig::default())
+            self.record_failure(&job, err, &JobConfig::default())
                 .await?;
             return Ok(true);
         };
@@ -161,7 +162,7 @@ where
             let timeout = std::time::Duration::from_secs(u64::from(timeout_secs.max(1)));
             match tokio::time::timeout(timeout, handler.handle(job.clone())).await {
                 Ok(res) => res,
-                Err(_) => Err(crate::JobHandlerError::new(format!(
+                Err(_) => Err(JobHandlerError::new(format!(
                     "job timed out after {}s",
                     timeout.as_secs()
                 ))),
@@ -192,24 +193,7 @@ where
             }
             Err(err) => {
                 let is_permanent = err.is_permanent;
-                let error_message = err.message.clone();
-                let outcome = self.store.mark_failure(&job, err, &handler_config).await?;
-                self.events.emit(JobEvent::Failed {
-                    job_id: job.id,
-                    job_type: job.job_type.clone(),
-                    error: error_message,
-                    attempt: job.attempts,
-                    will_retry: outcome.will_retry,
-                    next_retry_delay: outcome.retry_delay,
-                });
-                if let Some(dead_letter_id) = outcome.dead_letter_id {
-                    self.events.emit(JobEvent::DeadLettered {
-                        job_id: job.id,
-                        job_type: job.job_type.clone(),
-                        dead_letter_id,
-                    });
-                }
-
+                self.record_failure(&job, err, &handler_config).await?;
                 if is_permanent {
                     error!(
                         job_type = %job.job_type,
@@ -228,6 +212,32 @@ where
         }
     }
 
+    async fn record_failure(
+        &self,
+        job: &Job,
+        error: JobHandlerError,
+        config: &JobConfig,
+    ) -> Result<(), S::Error> {
+        let message = error.message.clone();
+        let outcome = self.store.mark_failure(job, error, config).await?;
+        self.events.emit(JobEvent::Failed {
+            job_id: job.id,
+            job_type: job.job_type.clone(),
+            error: message,
+            attempt: job.attempts,
+            will_retry: outcome.will_retry,
+            next_retry_delay: outcome.retry_delay,
+        });
+        if let Some(dead_letter_id) = outcome.dead_letter_id {
+            self.events.emit(JobEvent::DeadLettered {
+                job_id: job.id,
+                job_type: job.job_type.clone(),
+                dead_letter_id,
+            });
+        }
+        Ok(())
+    }
+
     /// Run the job processing loop forever using polling.
     ///
     /// This will continuously poll for and process jobs, sleeping for
@@ -236,25 +246,49 @@ where
     /// Adapter crates may expose notification-based loops for storage backends
     /// that support wake-up events.
     pub async fn run_forever(&self) -> Result<(), S::Error> {
+        self.run_until_shutdown(future::pending()).await
+    }
+
+    /// Poll for jobs until the supplied shutdown future resolves.
+    ///
+    /// A shutdown wakes an idle runner immediately. If a fetch or handler is
+    /// already in progress, the runner settles that job before shutting down.
+    ///
+    /// # Errors
+    ///
+    /// Returns the store error if fetching a job or recording its outcome fails.
+    pub async fn run_until_shutdown(
+        &self,
+        shutdown: impl Future<Output = ()>,
+    ) -> Result<(), S::Error> {
         info!(
             poll_interval_ms = self.config.poll_interval().as_millis(),
             "Starting job runner in polling mode"
         );
 
         let batch_size = self.config.batch_size();
+        let mut shutdown = pin!(shutdown);
+        let mut should_sleep = false;
         let mut processed_in_batch = 0usize;
 
         loop {
+            tokio::select! {
+                biased;
+                () = &mut shutdown => return Ok(()),
+                () = async {
+                    if should_sleep {
+                        tokio::time::sleep(self.config.poll_interval()).await;
+                    }
+                } => {}
+            }
+
             let did_work = self.run_once().await?;
-            if did_work {
+            if did_work && batch_size > 0 {
                 processed_in_batch += 1;
-                if batch_size > 0 && processed_in_batch >= batch_size {
-                    processed_in_batch = 0;
-                    tokio::time::sleep(self.config.poll_interval()).await;
-                }
-            } else {
+            }
+            should_sleep = !did_work || (batch_size > 0 && processed_in_batch >= batch_size);
+            if should_sleep {
                 processed_in_batch = 0;
-                tokio::time::sleep(self.config.poll_interval()).await;
             }
         }
     }

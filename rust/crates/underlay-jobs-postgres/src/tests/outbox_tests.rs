@@ -5,16 +5,19 @@ fn outbox_config_defaults() {
     let config = OutboxConfig::default();
     assert_eq!(config.batch_size(), 100);
     assert_eq!(config.fallback_interval(), Duration::from_secs(30));
+    assert_eq!(config.handler_timeout(), Duration::from_secs(30));
 }
 
 #[test]
 fn outbox_config_builder() {
     let config = OutboxConfig::default()
         .with_batch_size(50)
-        .with_fallback_interval(Duration::from_secs(60));
+        .with_fallback_interval(Duration::from_secs(60))
+        .with_handler_timeout(Duration::from_secs(5));
 
     assert_eq!(config.batch_size(), 50);
     assert_eq!(config.fallback_interval(), Duration::from_secs(60));
+    assert_eq!(config.handler_timeout(), Duration::from_secs(5));
 }
 
 #[test]
