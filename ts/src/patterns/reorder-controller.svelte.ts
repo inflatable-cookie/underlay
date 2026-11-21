@@ -26,33 +26,33 @@
 
 /** Item constraint - must have an id property */
 export interface ReorderableItem {
-  id: string;
+	id: string;
 }
 
 /** Controller interface for reorder state management */
 export interface ReorderController<T extends ReorderableItem> {
-  /** Current pending order (mutable, used by drag-drop library) */
-  pending: T[];
-  /** Original order for comparison */
-  readonly original: readonly T[];
-  /** Whether order has changed from original */
-  readonly isDirty: boolean;
-  /** Whether submit is in progress */
-  readonly isPending: boolean;
-  /** Error from last submit attempt */
-  readonly error: Error | null;
-  /** Move item from one index to another */
-  move(fromIndex: number, toIndex: number): void;
-  /** Reset to original order */
-  reset(): void;
-  /** Submit the new order */
-  submit(): Promise<void>;
-  /** Update pending items (used by dnd library handlers) */
-  updatePending(items: T[]): void;
-  /** Merge new items (for conflict resolution) */
-  mergeNewItems(newItems: T[]): void;
-  /** Remove items by ID (for conflict resolution) */
-  removeItems(idsToRemove: string[]): void;
+	/** Current pending order (mutable, used by drag-drop library) */
+	pending: T[];
+	/** Original order for comparison */
+	readonly original: readonly T[];
+	/** Whether order has changed from original */
+	readonly isDirty: boolean;
+	/** Whether submit is in progress */
+	readonly isPending: boolean;
+	/** Error from last submit attempt */
+	readonly error: Error | null;
+	/** Move item from one index to another */
+	move(fromIndex: number, toIndex: number): void;
+	/** Reset to original order */
+	reset(): void;
+	/** Submit the new order */
+	submit(): Promise<void>;
+	/** Update pending items (used by dnd library handlers) */
+	updatePending(items: T[]): void;
+	/** Merge new items (for conflict resolution) */
+	mergeNewItems(newItems: T[]): void;
+	/** Remove items by ID (for conflict resolution) */
+	removeItems(idsToRemove: string[]): void;
 }
 
 /**
@@ -63,110 +63,110 @@ export interface ReorderController<T extends ReorderableItem> {
  * @returns A reactive controller with state and methods
  */
 export function createReorderController<T extends ReorderableItem>(
-  initialItems: T[],
-  submitFn: (orderedIds: string[]) => Promise<void>
+	initialItems: T[],
+	submitFn: (orderedIds: string[]) => Promise<void>,
 ): ReorderController<T> {
-  // Store original for comparison
-  let original = $state<readonly T[]>([...initialItems]);
+	// Store original for comparison
+	let original = $state<readonly T[]>([...initialItems]);
 
-  // Mutable pending state
-  let pending = $state<T[]>([...initialItems]);
-  let isPending = $state(false);
-  let error = $state<Error | null>(null);
+	// Mutable pending state
+	let pending = $state<T[]>([...initialItems]);
+	let isPending = $state(false);
+	let error = $state<Error | null>(null);
 
-  function computeIsDirty(): boolean {
-    if (pending.length !== original.length) return true;
-    return pending.some((item, i) => item.id !== original[i].id);
-  }
+	const isDirty = $derived(
+		pending.length !== original.length || pending.some((item, i) => item.id !== original[i].id),
+	);
 
-  return {
-    get pending() {
-      return pending;
-    },
-    set pending(value: T[]) {
-      pending = value;
-    },
-    get original() {
-      return original;
-    },
-    get isDirty() {
-      return computeIsDirty();
-    },
-    get isPending() {
-      return isPending;
-    },
-    get error() {
-      return error;
-    },
+	return {
+		get pending() {
+			return pending;
+		},
+		set pending(value: T[]) {
+			pending = value;
+		},
+		get original() {
+			return original;
+		},
+		get isDirty() {
+			return isDirty;
+		},
+		get isPending() {
+			return isPending;
+		},
+		get error() {
+			return error;
+		},
 
-    /**
-     * Move an item from one index to another
-     */
-    move(fromIndex: number, toIndex: number) {
-      if (fromIndex === toIndex) return;
-      if (fromIndex < 0 || fromIndex >= pending.length) return;
-      if (toIndex < 0 || toIndex >= pending.length) return;
+		/**
+		 * Move an item from one index to another
+		 */
+		move(fromIndex: number, toIndex: number) {
+			if (fromIndex === toIndex) return;
+			if (fromIndex < 0 || fromIndex >= pending.length) return;
+			if (toIndex < 0 || toIndex >= pending.length) return;
 
-      const item = pending[fromIndex];
-      const newPending = [...pending];
-      newPending.splice(fromIndex, 1);
-      newPending.splice(toIndex, 0, item);
-      pending = newPending;
-    },
+			const item = pending[fromIndex];
+			const newPending = [...pending];
+			newPending.splice(fromIndex, 1);
+			newPending.splice(toIndex, 0, item);
+			pending = newPending;
+		},
 
-    /**
-     * Reset to original order, clearing any pending changes
-     */
-    reset() {
-      pending = [...original];
-      error = null;
-    },
+		/**
+		 * Reset to original order, clearing any pending changes
+		 */
+		reset() {
+			pending = [...original];
+			error = null;
+		},
 
-    /**
-     * Submit the new order via the provided submit function
-     */
-    async submit() {
-      if (!computeIsDirty()) return;
+		/**
+		 * Submit the new order via the provided submit function
+		 */
+		async submit() {
+			if (isPending || !isDirty) return;
 
-      isPending = true;
-      error = null;
+			isPending = true;
+			error = null;
+			const submitted = [...pending];
 
-      try {
-        await submitFn(pending.map((item) => item.id));
-        original = [...pending];
-      } catch (e) {
-        error = e instanceof Error ? e : new Error(String(e));
-        throw e;
-      } finally {
-        isPending = false;
-      }
-    },
+			try {
+				await submitFn(submitted.map((item) => item.id));
+				original = submitted;
+			} catch (e) {
+				error = e instanceof Error ? e : new Error(String(e));
+				throw e;
+			} finally {
+				isPending = false;
+			}
+		},
 
-    /**
-     * Update pending items (called by drag-drop library event handlers)
-     */
-    updatePending(items: T[]) {
-      pending = items;
-    },
+		/**
+		 * Update pending items (called by drag-drop library event handlers)
+		 */
+		updatePending(items: T[]) {
+			pending = items;
+		},
 
-    /**
-     * Merge new items into pending list (for conflict resolution)
-     * New items are appended at the end
-     */
-    mergeNewItems(newItems: T[]) {
-      const existingIds = new Set(pending.map((item) => item.id));
-      const toAdd = newItems.filter((item) => !existingIds.has(item.id));
-      if (toAdd.length > 0) {
-        pending = [...pending, ...toAdd];
-      }
-    },
+		/**
+		 * Merge new items into pending list (for conflict resolution)
+		 * New items are appended at the end
+		 */
+		mergeNewItems(newItems: T[]) {
+			const existingIds = new Set(pending.map((item) => item.id));
+			const toAdd = newItems.filter((item) => !existingIds.has(item.id));
+			if (toAdd.length > 0) {
+				pending = [...pending, ...toAdd];
+			}
+		},
 
-    /**
-     * Remove items by ID from pending list (for conflict resolution)
-     */
-    removeItems(idsToRemove: string[]) {
-      const removeSet = new Set(idsToRemove);
-      pending = pending.filter((item) => !removeSet.has(item.id));
-    }
-  };
+		/**
+		 * Remove items by ID from pending list (for conflict resolution)
+		 */
+		removeItems(idsToRemove: string[]) {
+			const removeSet = new Set(idsToRemove);
+			pending = pending.filter((item) => !removeSet.has(item.id));
+		},
+	};
 }

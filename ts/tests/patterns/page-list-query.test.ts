@@ -21,9 +21,7 @@ vi.mock("$app/state", () => ({
 (globalThis as any).$derived.by = (fn: () => unknown) =>
 	new Proxy({}, { get: (_, prop) => (fn() as Record<PropertyKey, unknown>)[prop] });
 
-const { createPageListQueryState } = await import(
-	"../../src/patterns/page-list-query.svelte"
-);
+const { createPageListQueryState } = await import("../../src/patterns/page-list-query.svelte");
 
 describe("createPageListQueryState", () => {
 	beforeEach(() => {
@@ -71,6 +69,32 @@ describe("createPageListQueryState", () => {
 		});
 
 		expect(state.query.limit).toBe(10);
+	});
+
+	it("url mode preserves unrelated query params and replaces list query params", () => {
+		mocks.page.url = new URL(
+			"http://localhost/modules?tab=active&redirectTo=%2Fhome&page=2&filter[status]=draft&sort=title:asc",
+		);
+		const state = createPageListQueryState({ mode: "url", pageSize: 30 });
+		state.setQuery({ page: 1, limit: 30 });
+
+		expect(mocks.goto).toHaveBeenCalledTimes(1);
+		const [urlString] = mocks.goto.mock.calls[0];
+		const nextUrl = new URL(urlString);
+		expect(nextUrl.searchParams.get("tab")).toBe("active");
+		expect(nextUrl.searchParams.get("redirectTo")).toBe("/home");
+		expect(nextUrl.searchParams.get("page")).toBe("1");
+		expect(nextUrl.searchParams.get("limit")).toBe("30");
+		expect(nextUrl.searchParams.get("filter[status]")).toBeNull();
+		expect(nextUrl.searchParams.get("sort")).toBeNull();
+	});
+
+	it("url mode handles goto rejections without unhandled rejection", async () => {
+		mocks.goto.mockRejectedValueOnce(new Error("navigation aborted"));
+		const state = createPageListQueryState({ mode: "url", pageSize: 30 });
+
+		expect(() => state.setQuery({ page: 2, limit: 30 })).not.toThrow();
+		await new Promise((resolve) => setTimeout(resolve, 0));
 	});
 
 	it("refresh increments the refresh version", () => {
