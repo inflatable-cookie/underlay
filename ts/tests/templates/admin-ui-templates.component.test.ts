@@ -23,13 +23,14 @@ describe("templates/AdminNavList", () => {
 		expect(screen.queryByRole("link", { name: "Pages" })).toBeNull();
 		const toggle = screen.getByRole("button", { name: "Content" });
 		expect(toggle.getAttribute("aria-expanded")).toBe("false");
-		const controlsId = toggle.getAttribute("aria-controls");
-		expect(controlsId).toBeTruthy();
+		expect(toggle.getAttribute("aria-controls")).toBeNull();
 
 		await fireEvent.click(toggle);
 		const pagesLink = await screen.findByRole("link", { name: "Pages" });
 		expect(pagesLink).toBeTruthy();
 		expect(toggle.getAttribute("aria-expanded")).toBe("true");
+		const controlsId = toggle.getAttribute("aria-controls");
+		expect(controlsId).toBeTruthy();
 		const childList = document.getElementById(controlsId!);
 		expect(childList?.tagName).toBe("UL");
 		expect(childList?.contains(pagesLink)).toBe(true);
@@ -37,6 +38,7 @@ describe("templates/AdminNavList", () => {
 		await fireEvent.click(toggle);
 		expect(screen.queryByRole("link", { name: "Pages" })).toBeNull();
 		expect(toggle.getAttribute("aria-expanded")).toBe("false");
+		expect(toggle.getAttribute("aria-controls")).toBeNull();
 	});
 
 	it("auto-expands the current section and marks active links with aria-current='page'", async () => {

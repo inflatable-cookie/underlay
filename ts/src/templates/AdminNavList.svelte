@@ -80,11 +80,12 @@
         </a>
       {:else}
         {@const controlsId = sectionListId(item.id)}
+        {@const isExpanded = expandedSection === item.id}
         <button
           type="button"
           class="{linkClass} {sectionClass} admin-nav__section-toggle"
-          aria-expanded={expandedSection === item.id}
-          aria-controls={controlsId}
+          aria-expanded={isExpanded}
+          aria-controls={isExpanded ? controlsId : undefined}
           onclick={() => toggleSection(item.id)}
         >
           <span
@@ -227,14 +228,14 @@
   }
 
   :global(.admin-nav__children a.admin-nav__child-link--danger) {
-    color: var(--underlay-color-danger);
+    color: var(--underlay-color-danger-strong);
     opacity: 1;
   }
 
   :global(.admin-nav__children a.admin-nav__child-link--danger:hover),
   :global(.admin-nav__children a.admin-nav__child-link--danger:focus-visible),
   :global(.admin-nav__children a.admin-nav__child-link--danger.admin-nav__link--active) {
-    color: var(--underlay-color-danger);
+    color: var(--underlay-color-danger-strong);
     opacity: 1;
     background-color: var(--underlay-color-danger-bg);
   }
@@ -346,14 +347,14 @@
   }
 
   :global(.admin-mobile-overlay__children a.admin-nav__child-link--danger) {
-    color: var(--underlay-color-danger);
+    color: var(--underlay-color-danger-strong);
     opacity: 1;
   }
 
   :global(.admin-mobile-overlay__children a.admin-nav__child-link--danger:hover),
   :global(.admin-mobile-overlay__children a.admin-nav__child-link--danger:focus-visible),
   :global(.admin-mobile-overlay__children a.admin-nav__child-link--danger.admin-nav__link--active) {
-    color: var(--underlay-color-danger);
+    color: var(--underlay-color-danger-strong);
     opacity: 1;
     background: var(--underlay-color-danger-bg);
   }

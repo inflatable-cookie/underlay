@@ -308,6 +308,53 @@ describe("createOptimisticList", () => {
 			expect(get(list)[0].name).toBe("Edit 2");
 			expect(get(list.isPending)("1")).toBe(false);
 		});
+
+		it("preserves newer confirmed value when an older same-field update confirms afterwards", () => {
+			const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
+
+			const first = list.update("1", { name: "Edit 1" });
+			const second = list.update("1", { name: "Edit 2" });
+
+			second.confirm();
+			expect(get(list)[0].name).toBe("Edit 2");
+			expect(get(list.isPending)("1")).toBe(true);
+
+			first.confirm();
+			expect(get(list)[0].name).toBe("Edit 2");
+			expect(get(list.isPending)("1")).toBe(false);
+		});
+
+		it("does not let a stale rollback after set() clear a newer update's pending flag", () => {
+			const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
+
+			const stale = list.update("1", { name: "Stale" });
+			list.set([{ id: "1", name: "Reset" }]);
+
+			const fresh = list.update("1", { name: "Fresh" });
+			expect(get(list.isPending)("1")).toBe(true);
+
+			stale.rollback();
+			expect(get(list)[0].name).toBe("Fresh");
+			expect(get(list.isPending)("1")).toBe(true);
+
+			fresh.confirm();
+			expect(get(list)[0].name).toBe("Fresh");
+			expect(get(list.isPending)("1")).toBe(false);
+		});
+
+		it("restores settled state when update rolls back before remove rolls back", () => {
+			const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
+
+			const upd = list.update("1", { name: "Rejected Edit" });
+			const rem = list.remove("1");
+			expect(get(list)).toEqual([]);
+
+			upd.rollback();
+			rem.rollback();
+
+			expect(get(list)).toEqual([{ id: "1", name: "Original" }]);
+			expect(get(list.isPending)("1")).toBe(false);
+		});
 	});
 
 	describe("custom key option", () => {
@@ -317,7 +364,7 @@ describe("createOptimisticList", () => {
 				title: string;
 			}
 
-			const list = createOptimisticList<SlugItem, "slug">([{ slug: "alpha", title: "Alpha" }], {
+			const list = createOptimisticList<SlugItem>([{ slug: "alpha", title: "Alpha" }], {
 				key: "slug",
 				tempId: () => "temp-slug",
 			});
@@ -338,6 +385,23 @@ describe("createOptimisticList", () => {
 			expect(get(list)).toHaveLength(1);
 			removed.rollback();
 			expect(get(list)).toHaveLength(2);
+		});
+
+		it("supports one-type-argument call when item has both id and custom key", () => {
+			interface ItemWithSlug {
+				id: string;
+				slug: string;
+				name: string;
+			}
+
+			const list = createOptimisticList<ItemWithSlug>([{ id: "1", slug: "alpha", name: "Alpha" }], {
+				key: "slug",
+			});
+
+			const upd = list.update("alpha", { name: "Alpha 2" });
+			expect(get(list)[0].name).toBe("Alpha 2");
+			upd.rollback();
+			expect(get(list)[0].name).toBe("Alpha");
 		});
 	});
 

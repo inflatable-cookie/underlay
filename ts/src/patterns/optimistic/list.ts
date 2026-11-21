@@ -16,16 +16,13 @@ export interface OptimisticUpdateOperation<T> {
 	rollback: () => void;
 }
 
-export interface OptimisticListOptions<T, K extends keyof T = keyof T> {
+export interface OptimisticListOptions<T> {
 	tempId?: () => string;
-	key?: K;
+	key?: keyof T;
 }
 
-export interface OptimisticList<
-	T extends object,
-	K extends keyof T = "id" extends keyof T ? "id" : keyof T,
-> extends Readable<T[]> {
-	add: (item: Omit<T, K>) => OptimisticAddOperation<T>;
+export interface OptimisticList<T extends object> extends Readable<T[]> {
+	add: (item: Partial<T>) => OptimisticAddOperation<T>;
 	remove: (id: string) => OptimisticOperation;
 	update: (id: string, changes: Partial<T>) => OptimisticUpdateOperation<T>;
 	set: (items: T[]) => void;
@@ -42,12 +39,17 @@ interface ActiveUpdateEntry<T> {
 	changes: Partial<T>;
 }
 
-export function createOptimisticList<
-	T extends object,
-	K extends keyof T = "id" extends keyof T ? "id" : keyof T,
->(initial: T[] = [], options: OptimisticListOptions<T, K> = {}): OptimisticList<T, K> {
+interface RemovedEntry<T> {
+	item: T;
+	index: number;
+}
+
+export function createOptimisticList<T extends object>(
+	initial: T[] = [],
+	options: OptimisticListOptions<T> = {},
+): OptimisticList<T> {
 	const { tempId = generateTempId } = options;
-	const keyField = (options.key ?? ("id" as K)) as keyof T;
+	const keyField = (options.key ?? ("id" as keyof T)) as keyof T;
 	const getKey = (item: T): string => String(item[keyField]);
 
 	const store: Writable<T[]> = writable([...initial]);
@@ -55,7 +57,9 @@ export function createOptimisticList<
 	const pendingCounts = new Map<string, number>();
 	const baseItems = new Map<string, T>();
 	const activeUpdates = new Map<string, ActiveUpdateEntry<T>[]>();
+	const removedEntries = new Map<string, RemovedEntry<T>>();
 	let nextOpId = 0;
+	let listGeneration = 0;
 
 	function markPending(id: string): void {
 		const count = (pendingCounts.get(id) ?? 0) + 1;
@@ -86,9 +90,18 @@ export function createOptimisticList<
 		return result;
 	}
 
-	function add(item: Omit<T, K>): OptimisticAddOperation<T> {
+	function syncItemState(id: string, nextItem: T): void {
+		const removed = removedEntries.get(id);
+		if (removed) {
+			removed.item = nextItem;
+		}
+		store.update((items) => items.map((i) => (getKey(i) === id ? nextItem : i)));
+	}
+
+	function add(item: Partial<T>): OptimisticAddOperation<T> {
 		const id = tempId();
 		const optimisticItem = { ...item, [keyField]: id } as T;
+		const generation = listGeneration;
 		let settled = false;
 
 		store.update((items) => [...items, optimisticItem]);
@@ -96,13 +109,13 @@ export function createOptimisticList<
 
 		return {
 			confirm: (realItem: T) => {
-				if (settled) return;
+				if (settled || generation !== listGeneration) return;
 				settled = true;
 				store.update((items) => items.map((i) => (getKey(i) === id ? realItem : i)));
 				unmarkPending(id);
 			},
 			rollback: () => {
-				if (settled) return;
+				if (settled || generation !== listGeneration) return;
 				settled = true;
 				store.update((items) => items.filter((i) => getKey(i) !== id));
 				unmarkPending(id);
@@ -111,14 +124,15 @@ export function createOptimisticList<
 	}
 
 	function remove(id: string): OptimisticOperation {
-		let removedItem: T | undefined;
-		let removedIndex = -1;
+		const generation = listGeneration;
+		let removedEntry: RemovedEntry<T> | undefined;
 		let settled = false;
 
 		store.update((items) => {
-			removedIndex = items.findIndex((i) => getKey(i) === id);
+			const removedIndex = items.findIndex((i) => getKey(i) === id);
 			if (removedIndex !== -1) {
-				removedItem = items[removedIndex];
+				removedEntry = { item: items[removedIndex], index: removedIndex };
+				removedEntries.set(id, removedEntry);
 				return items.filter((i) => getKey(i) !== id);
 			}
 			return items;
@@ -128,8 +142,11 @@ export function createOptimisticList<
 
 		return {
 			confirm: () => {
-				if (settled) return;
+				if (settled || generation !== listGeneration) return;
 				settled = true;
+				if (removedEntries.get(id) === removedEntry) {
+					removedEntries.delete(id);
+				}
 				baseItems.delete(id);
 				activeUpdates.delete(id);
 				unmarkPending(id);
@@ -137,23 +154,34 @@ export function createOptimisticList<
 			rollback: () => {
 				if (settled) return;
 				settled = true;
-				if (removedItem) {
+				if (removedEntry) {
+					const itemToRestore =
+						generation === listGeneration
+							? (recomputeItem(id) ?? removedEntry.item)
+							: removedEntry.item;
+					const restoreIndex = removedEntry.index;
+					if (removedEntries.get(id) === removedEntry) {
+						removedEntries.delete(id);
+					}
 					store.update((items) => {
-						if (removedIndex >= 0 && removedIndex <= items.length) {
+						if (restoreIndex >= 0 && restoreIndex <= items.length) {
 							const result = [...items];
-							result.splice(removedIndex, 0, removedItem!);
+							result.splice(restoreIndex, 0, itemToRestore);
 							return result;
 						}
-						return [...items, removedItem!];
+						return [...items, itemToRestore];
 					});
 				}
-				unmarkPending(id);
+				if (generation === listGeneration) {
+					unmarkPending(id);
+				}
 			},
 		};
 	}
 
 	function update(id: string, changes: Partial<T>): OptimisticUpdateOperation<T> {
 		const opId = ++nextOpId;
+		const generation = listGeneration;
 		let found = false;
 		let settled = false;
 
@@ -177,13 +205,14 @@ export function createOptimisticList<
 
 		return {
 			confirm: (realItem?: T) => {
-				if (settled) return;
+				if (settled || generation !== listGeneration) return;
 				settled = true;
 
 				if (found) {
 					const ops = activeUpdates.get(id);
 					const base = baseItems.get(id);
-					if (ops && base) {
+					const currentOp = ops?.find((op) => op.opId === opId);
+					if (ops && base && currentOp) {
 						const remaining = ops.filter((op) => op.opId !== opId);
 						if (realItem) {
 							baseItems.set(id, realItem);
@@ -199,13 +228,13 @@ export function createOptimisticList<
 								newerOnly.length > 0
 									? newerOnly.reduce((acc, op) => ({ ...acc, ...op.changes }), { ...realItem })
 									: realItem;
-							store.update((items) => items.map((i) => (getKey(i) === id ? nextItem : i)));
+							syncItemState(id, nextItem);
 						} else {
-							const nextBase = { ...base, ...changes };
+							// Apply only the non-superseded fields from currentOp.changes so
+							// confirming an older op never overwrites a newer confirmed op.
+							const nextBase = { ...base, ...currentOp.changes };
 							baseItems.set(id, nextBase);
-							// Strip fields confirmed by this op from older still-pending ops
-							// so their later rollback/replay cannot overwrite newer confirmed values.
-							const confirmedKeys = Object.keys(changes) as Array<keyof T>;
+							const confirmedKeys = Object.keys(currentOp.changes) as Array<keyof T>;
 							for (const op of remaining) {
 								if (op.opId < opId) {
 									for (const k of confirmedKeys) {
@@ -217,40 +246,40 @@ export function createOptimisticList<
 								activeUpdates.set(id, remaining);
 								const nextItem = recomputeItem(id);
 								if (nextItem) {
-									store.update((items) => items.map((i) => (getKey(i) === id ? nextItem : i)));
+									syncItemState(id, nextItem);
 								}
 							} else {
 								activeUpdates.delete(id);
 								baseItems.delete(id);
-								store.update((items) => items.map((i) => (getKey(i) === id ? nextBase : i)));
+								syncItemState(id, nextBase);
 							}
 						}
-					} else if (realItem) {
-						store.update((items) => items.map((i) => (getKey(i) === id ? realItem : i)));
+					} else if (realItem && !ops) {
+						syncItemState(id, realItem);
 					}
 				}
 				unmarkPending(id);
 			},
 			rollback: () => {
-				if (settled) return;
+				if (settled || generation !== listGeneration) return;
 				settled = true;
 
 				if (found) {
 					const ops = activeUpdates.get(id);
-					if (ops) {
+					if (ops && ops.some((op) => op.opId === opId)) {
 						const remaining = ops.filter((op) => op.opId !== opId);
 						if (remaining.length > 0) {
 							activeUpdates.set(id, remaining);
 							const nextItem = recomputeItem(id);
 							if (nextItem) {
-								store.update((items) => items.map((i) => (getKey(i) === id ? nextItem : i)));
+								syncItemState(id, nextItem);
 							}
 						} else {
 							const base = baseItems.get(id);
 							activeUpdates.delete(id);
 							baseItems.delete(id);
 							if (base) {
-								store.update((items) => items.map((i) => (getKey(i) === id ? base : i)));
+								syncItemState(id, base);
 							}
 						}
 					}
@@ -261,9 +290,11 @@ export function createOptimisticList<
 	}
 
 	function set(items: T[]): void {
+		listGeneration += 1;
 		pendingCounts.clear();
 		baseItems.clear();
 		activeUpdates.clear();
+		removedEntries.clear();
 		store.set([...items]);
 		pending.set(new Set());
 	}

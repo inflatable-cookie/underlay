@@ -2,7 +2,7 @@
 import { render, screen, waitFor } from "@testing-library/svelte";
 import { describe, expect, it, vi } from "vitest";
 import { configureAuth } from "../../src/patterns/auth";
-import AuthenticatedDataReactiveHarness from "../fixtures/AuthenticatedDataReactiveHarness.svelte";
+import AuthenticatedDataReactiveHarness from "./AuthenticatedDataReactiveHarness.svelte";
 
 describe("patterns/authenticated-data reactive configureAuth", () => {
 	it("triggers auto-fetch when configureAuth() is called after child component mount", async () => {

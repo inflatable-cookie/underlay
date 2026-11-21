@@ -3,7 +3,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/svelte";
 import { describe, expect, it, vi } from "vitest";
 import MediaPickerWorkflow from "../../src/templates/MediaPickerWorkflow.svelte";
 import MediaEditor from "../../src/nightfire/media/MediaEditor.svelte";
-import MediaEditorFallbackHarness from "../fixtures/MediaEditorFallbackHarness.svelte";
+import MediaEditorFallbackHarness from "./MediaEditorFallbackHarness.svelte";
 
 describe("templates/MediaPickerWorkflow", () => {
 	const baseProps = () => ({

@@ -39,6 +39,7 @@
   --underlay-color-warning: #b45309;
   --underlay-color-error: #dc2626;
   --underlay-color-danger: var(--underlay-color-error);
+  --underlay-color-danger-strong: #b91c1c;
   --underlay-color-danger-bg: rgba(220, 38, 38, 0.1);
   --underlay-color-danger-border: rgba(220, 38, 38, 0.35);
   --underlay-color-on-danger: #ffffff;
@@ -174,6 +175,7 @@
   --underlay-color-warning: #fcd34d;
   --underlay-color-error: #fca5a5;
   --underlay-color-danger: var(--underlay-color-error);
+  --underlay-color-danger-strong: #fecaca;
   --underlay-color-danger-bg: rgba(252, 165, 165, 0.14);
   --underlay-color-danger-border: rgba(252, 165, 165, 0.38);
   --underlay-color-on-danger: #1f1114;
