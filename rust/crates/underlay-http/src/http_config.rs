@@ -18,7 +18,7 @@
 //! ```
 
 use std::env;
-use std::net::IpAddr;
+use std::net::{IpAddr, Ipv6Addr};
 
 use thiserror::Error;
 
@@ -91,9 +91,13 @@ impl HttpServerConfig {
     ///
     /// # Environment Variables
     ///
-    /// - `HOST` - Bind address (default: "127.0.0.1" for local, "0.0.0.0" otherwise)
-    /// - `PORT` - Port number (default: 3000)
-    /// - `PUBLIC_HOST` - Public hostname for URLs (default: "localhost" for local/dev/test)
+    /// - `HOST` - Bind address (default: `"127.0.0.1"` in local/dev/test when
+    ///   `PORT` is unset; `"0.0.0.0"` outside local/dev/test or whenever `PORT`
+    ///   is explicitly set for container/proxy compatibility)
+    /// - `PORT` - Port number (default: `3000`; when set with `HOST` unset, also
+    ///   defaults the bind address to `"0.0.0.0"`)
+    /// - `PUBLIC_HOST` - Public hostname for URLs (default: `"localhost"` in
+    ///   local/dev/test when `HOST` is unset, otherwise the resolved bind address)
     ///
     /// # Arguments
     ///
@@ -133,6 +137,10 @@ impl HttpServerConfig {
     }
 
     /// Load and validate configuration from environment variables.
+    ///
+    /// Uses the same `HOST`, `PORT`, and `PUBLIC_HOST` defaults as
+    /// [`HttpServerConfig::from_env`] (including binding `"0.0.0.0"` when `PORT`
+    /// is set and `HOST` is unset), but returns an error on invalid values.
     pub fn try_from_env(env: Environment) -> Result<Self, HttpServerConfigError> {
         let port = match env::var("PORT") {
             Ok(raw) => raw
@@ -244,6 +252,19 @@ fn validate_public_host(value: &str) -> Result<(), HttpServerConfigError> {
             value: value.to_string(),
             reason: "host must not include path, query, fragment, userinfo, or whitespace",
         });
+    }
+
+    if value.contains(':') || value.contains('[') || value.contains(']') {
+        let candidate = value
+            .strip_prefix('[')
+            .and_then(|s| s.strip_suffix(']'))
+            .unwrap_or(value);
+        if candidate.parse::<Ipv6Addr>().is_err() {
+            return Err(HttpServerConfigError::InvalidPublicHost {
+                value: value.to_string(),
+                reason: "host must not include a port; only valid IPv6 literals may contain ':' or brackets",
+            });
+        }
     }
 
     Ok(())

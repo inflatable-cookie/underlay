@@ -153,6 +153,55 @@ fn is_public_ip_classifies_correctly() {
     assert!(!is_public_ip("fe80::1".parse::<IpAddr>().unwrap()));
     // IPv4-mapped loopback must also be blocked.
     assert!(!is_public_ip("::ffff:127.0.0.1".parse::<IpAddr>().unwrap()));
+    // 6to4 (2002::/16), Teredo (2001::/32), Documentation (2001:db8::/32),
+    // and local-use NAT64 (64:ff9b:1::/48) must all be blocked.
+    assert!(!is_public_ip(
+        "2002:7f00:0001::1".parse::<IpAddr>().unwrap()
+    ));
+    assert!(!is_public_ip(
+        "2001:0:4136:e378:8000:63bf:3fff:fdd2"
+            .parse::<IpAddr>()
+            .unwrap()
+    ));
+    assert!(!is_public_ip("2001:db8::1".parse::<IpAddr>().unwrap()));
+    assert!(!is_public_ip(
+        "64:ff9b:1::127.0.0.1".parse::<IpAddr>().unwrap()
+    ));
+}
+
+#[tokio::test]
+async fn validate_external_url_async_rejects_private_and_non_http_targets() {
+    use super::{validate_external_url_async, HttpClientError};
+
+    for blocked in [
+        "http://127.0.0.1/",
+        "http://localhost/",
+        "http://169.254.169.254/latest/meta-data/",
+        "http://[2002:7f00:1::1]/",
+        "http://[2001:db8::1]/",
+        "http://[64:ff9b:1::1]/",
+    ] {
+        let err = validate_external_url_async(blocked)
+            .await
+            .expect_err(blocked);
+        assert!(
+            matches!(
+                err,
+                HttpClientError::BlockedTarget(_) | HttpClientError::InvalidUrl(_)
+            ),
+            "{blocked} -> {err:?}"
+        );
+    }
+
+    let err = validate_external_url_async("file:///etc/passwd")
+        .await
+        .expect_err("file scheme");
+    assert!(matches!(err, HttpClientError::InvalidUrl(_)));
+
+    let ok = validate_external_url_async("https://1.1.1.1/")
+        .await
+        .expect("public IP literal should pass");
+    assert_eq!(ok.host_str(), Some("1.1.1.1"));
 }
 
 #[test]

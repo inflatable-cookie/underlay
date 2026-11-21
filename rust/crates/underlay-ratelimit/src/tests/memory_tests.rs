@@ -130,3 +130,21 @@ async fn test_max_keys_caps_tracked_entries_under_churn() {
 
     assert_eq!(backend.len(), 10);
 }
+
+#[tokio::test]
+async fn test_zero_max_requests_denies_without_inserting_entry() {
+    let backend = InMemoryBackend::new();
+    let config = RateLimitConfig::new(0, Duration::from_millis(500));
+
+    let result = backend
+        .check_and_increment("blocked:key", &config)
+        .await
+        .expect("check_and_increment should succeed");
+    assert!(result.is_denied());
+    assert_eq!(result.count, 0);
+    assert_eq!(result.retry_after_secs(), 1);
+    assert!(
+        backend.is_empty(),
+        "max_requests == 0 must not insert a map entry"
+    );
+}

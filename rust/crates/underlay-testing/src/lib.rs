@@ -48,4 +48,4 @@ pub use fixtures::{AuthFixtures, Fixtures, TimestampFixtures};
 pub use test_db::TestDb;
 
 #[cfg(feature = "server")]
-pub use test_server::{TestResponse, TestServer};
+pub use test_server::{RequestBuilder, TestResponse, TestServer};

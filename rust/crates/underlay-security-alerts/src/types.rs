@@ -1,6 +1,8 @@
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
 
+use crate::error::{SecurityAlertError, SecurityAlertResult};
+
 #[derive(Debug, Clone)]
 pub struct SecurityAlertConfig {
     window: Duration,
@@ -100,9 +102,51 @@ impl SecurityAlertConfig {
         self.global_failed_attempts_threshold = threshold;
         self
     }
+
+    /// Validate that all configured durations and thresholds are strictly positive.
+    pub fn validate(&self) -> SecurityAlertResult<()> {
+        if self.window <= Duration::zero() {
+            return Err(SecurityAlertError::InvalidConfig {
+                field: "window",
+                reason: "must be positive",
+            });
+        }
+        if self.cooldown <= Duration::zero() {
+            return Err(SecurityAlertError::InvalidConfig {
+                field: "cooldown",
+                reason: "must be positive",
+            });
+        }
+        for (field, value) in [
+            ("failed_attempts_threshold", self.failed_attempts_threshold),
+            ("distinct_users_threshold", self.distinct_users_threshold),
+            ("lockouts_threshold", self.lockouts_threshold),
+            (
+                "account_failed_attempts_threshold",
+                self.account_failed_attempts_threshold,
+            ),
+            (
+                "account_distinct_ips_threshold",
+                self.account_distinct_ips_threshold,
+            ),
+            (
+                "global_failed_attempts_threshold",
+                self.global_failed_attempts_threshold,
+            ),
+        ] {
+            if value <= 0 {
+                return Err(SecurityAlertError::InvalidConfig {
+                    field,
+                    reason: "must be positive",
+                });
+            }
+        }
+        Ok(())
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum SecurityAlertType {
     LoginFailuresFromIp,
     MultiAccountFailuresFromIp,

@@ -96,7 +96,48 @@ impl RateLimitResult {
     }
 
     /// Get seconds until retry is allowed (0 if allowed).
+    ///
+    /// Rounds non-zero sub-second durations up to whole seconds (matching
+    /// HTTP `Retry-After` integer-second semantics and `PostgresBackend`).
     pub fn retry_after_secs(&self) -> u64 {
-        self.reset_after.map(|d| d.as_secs()).unwrap_or(0)
+        self.reset_after
+            .map(|d| {
+                if d.subsec_nanos() > 0 {
+                    d.as_secs().saturating_add(1)
+                } else {
+                    d.as_secs()
+                }
+            })
+            .unwrap_or(0)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn retry_after_secs_rounds_subsecond_durations_up() {
+        assert_eq!(RateLimitResult::allowed(5, 1).retry_after_secs(), 0);
+        assert_eq!(
+            RateLimitResult::denied(1, Duration::ZERO).retry_after_secs(),
+            0
+        );
+        assert_eq!(
+            RateLimitResult::denied(1, Duration::from_nanos(1)).retry_after_secs(),
+            1
+        );
+        assert_eq!(
+            RateLimitResult::denied(1, Duration::from_millis(250)).retry_after_secs(),
+            1
+        );
+        assert_eq!(
+            RateLimitResult::denied(1, Duration::from_secs(1)).retry_after_secs(),
+            1
+        );
+        assert_eq!(
+            RateLimitResult::denied(1, Duration::from_millis(1_001)).retry_after_secs(),
+            2
+        );
     }
 }

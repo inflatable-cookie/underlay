@@ -97,7 +97,8 @@ impl AuditLogFilters {
 
 /// List audit log entries from a typed table location.
 ///
-/// Results are ordered by `occurred_at` descending, newest first.
+/// Results are ordered by `occurred_at` descending (with `id` descending as
+/// tiebreaker), newest first.
 #[instrument(skip(pool, filters))]
 pub async fn list_audit_logs_from_table(
     pool: &DbPool,
@@ -128,7 +129,7 @@ pub async fn list_audit_logs_from_table(
             AND ($4::uuid IS NULL OR resource_id = $4)
             AND ($5::timestamptz IS NULL OR occurred_at >= $5)
             AND ($6::timestamptz IS NULL OR occurred_at <= $6)
-        ORDER BY occurred_at DESC
+        ORDER BY occurred_at DESC, id DESC
         LIMIT $7 OFFSET $8
         "#,
         table

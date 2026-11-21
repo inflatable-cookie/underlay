@@ -1,4 +1,10 @@
+use std::sync::Arc;
+
+use tokio::sync::Semaphore;
 use underlay_db::DbPool;
+
+/// Default maximum number of concurrent background error-log DB writes.
+pub const DEFAULT_MAX_CONCURRENT_WRITES: usize = 64;
 
 /// Configuration for the error logging middleware.
 #[derive(Clone)]
@@ -10,6 +16,9 @@ pub struct ErrorLoggingConfig {
     log_client_errors: bool,
     /// Whether to log 5xx server errors (default: true).
     log_server_errors: bool,
+    /// Concurrency bound for background error-log writes.
+    max_concurrent_writes: usize,
+    pub(crate) write_semaphore: Arc<Semaphore>,
 }
 
 impl ErrorLoggingConfig {
@@ -20,6 +29,8 @@ impl ErrorLoggingConfig {
             source: None,
             log_client_errors: true,
             log_server_errors: true,
+            max_concurrent_writes: DEFAULT_MAX_CONCURRENT_WRITES,
+            write_semaphore: Arc::new(Semaphore::new(DEFAULT_MAX_CONCURRENT_WRITES)),
         }
     }
 
@@ -41,6 +52,17 @@ impl ErrorLoggingConfig {
         self
     }
 
+    /// Bound the number of concurrent background error-log writes.
+    ///
+    /// Clamped to at least 1; excess writes are dropped with a warning when
+    /// saturated.
+    pub fn with_max_concurrent_writes(mut self, max: usize) -> Self {
+        let bounded = max.max(1);
+        self.max_concurrent_writes = bounded;
+        self.write_semaphore = Arc::new(Semaphore::new(bounded));
+        self
+    }
+
     /// Return the configured source identifier.
     pub fn source(&self) -> Option<&str> {
         self.source.as_deref()
@@ -54,6 +76,11 @@ impl ErrorLoggingConfig {
     /// Return whether 5xx server errors should be logged.
     pub fn log_server_errors(&self) -> bool {
         self.log_server_errors
+    }
+
+    /// Return the configured concurrent write limit.
+    pub fn max_concurrent_writes(&self) -> usize {
+        self.max_concurrent_writes
     }
 }
 
