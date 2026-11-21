@@ -190,6 +190,24 @@ impl AuthStateStore {
         Ok(())
     }
 
+    /// Delete expired rows from this store's table and return the number removed.
+    ///
+    /// # Errors
+    ///
+    /// Returns a database error if the deletion fails.
+    pub async fn purge_expired(&self) -> Result<u64, AuthStateError> {
+        let result = sqlx::query(sqlx::AssertSqlSafe(format!(
+            "DELETE FROM {} WHERE expires_at <= $1",
+            self.table.quoted()
+        )))
+        .bind(Utc::now())
+        .execute(&self.pool)
+        .await
+        .map_err(AuthStateError::Db)?;
+
+        Ok(result.rows_affected())
+    }
+
     pub async fn consume(
         &self,
         state_id: Uuid,

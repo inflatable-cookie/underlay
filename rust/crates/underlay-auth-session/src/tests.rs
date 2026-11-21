@@ -176,7 +176,7 @@ async fn refresh_rotates_and_applies_fresh_roles() {
 }
 
 #[tokio::test]
-async fn refresh_rejects_suspended_account() {
+async fn refresh_revokes_suspended_accounts_session() {
     let (service, _jwt) = service_with(AccountStatus::Suspended, &["user"]);
     let user_id = Uuid::new_v7();
     let (tokens, _) = service
@@ -184,15 +184,23 @@ async fn refresh_rejects_suspended_account() {
         .await
         .unwrap();
 
+    assert!(service
+        .verify_access_principal(&tokens.access_token)
+        .await
+        .is_ok());
     let err = service
         .refresh(&tokens.refresh_token, None)
         .await
         .unwrap_err();
     assert!(matches!(err, AuthError::AccountSuspended));
+    assert!(matches!(
+        service.verify_access_principal(&tokens.access_token).await,
+        Err(AuthError::SessionRevoked)
+    ));
 }
 
 #[tokio::test]
-async fn refresh_rejects_deleted_account() {
+async fn refresh_revokes_deleted_accounts_session() {
     let (service, _jwt) = service_with(AccountStatus::Deleted, &["user"]);
     let user_id = Uuid::new_v7();
     let (tokens, _) = service
@@ -200,11 +208,19 @@ async fn refresh_rejects_deleted_account() {
         .await
         .unwrap();
 
+    assert!(service
+        .verify_access_principal(&tokens.access_token)
+        .await
+        .is_ok());
     let err = service
         .refresh(&tokens.refresh_token, None)
         .await
         .unwrap_err();
     assert!(matches!(err, AuthError::AccountDeleted));
+    assert!(matches!(
+        service.verify_access_principal(&tokens.access_token).await,
+        Err(AuthError::SessionRevoked)
+    ));
 }
 
 #[tokio::test]

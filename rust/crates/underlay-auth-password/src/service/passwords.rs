@@ -25,7 +25,7 @@ where
         let existing_id =
             if let Some(existing) = self.repository.find_password_credential(user_id).await? {
                 if self
-                    .verify_password(password, existing.secret_encrypted)
+                    .verify_password(password, &existing.secret_encrypted)
                     .await?
                 {
                     return Err(PasswordAuthError::PasswordSameAsCurrent);
@@ -57,14 +57,18 @@ where
         }
     }
 
-    /// Change a user's password.
+    /// Change a user's password after checking the per-user attempt limit and current password.
     pub async fn change_password(
         &self,
         user_id: Uuid,
         current_password: &str,
         new_password: &str,
     ) -> PasswordAuthResult<()> {
-        self.validate_new_password(new_password).await?;
+        self.check_rate_limit(
+            &format!("change-password:{user_id}"),
+            self.config.rate_limit_max_attempts(),
+        )
+        .await?;
 
         let credential = match self.repository.find_password_credential(user_id).await? {
             Some(c) => c,
@@ -73,14 +77,16 @@ where
 
         let current_hash = credential.secret_encrypted;
         let is_valid = self
-            .verify_password(current_password, current_hash.clone())
+            .verify_password(current_password, &current_hash)
             .await?;
 
         if !is_valid {
             return Err(PasswordAuthError::WrongPassword);
         }
 
-        if self.verify_password(new_password, current_hash).await? {
+        self.validate_new_password(new_password).await?;
+
+        if self.verify_password(new_password, &current_hash).await? {
             return Err(PasswordAuthError::PasswordSameAsCurrent);
         }
 

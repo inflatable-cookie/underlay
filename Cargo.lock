@@ -5321,7 +5321,6 @@ dependencies = [
 name = "underlay-auth-oauth"
 version = "0.10.5"
 dependencies = [
- "aes-gcm",
  "async-trait",
  "base64 0.22.1",
  "chrono",

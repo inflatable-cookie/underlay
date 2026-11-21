@@ -36,6 +36,7 @@ pub trait GoogleOAuthCredentialRepository: CredentialRepository {
 pub struct GoogleOAuthAppService<P = GoogleOAuthService> {
     provider: P,
     require_verified_email: bool,
+    auto_link_by_verified_email: bool,
 }
 
 impl<P> GoogleOAuthAppService<P>
@@ -46,6 +47,7 @@ where
         Self {
             provider,
             require_verified_email: true,
+            auto_link_by_verified_email: false,
         }
     }
 
@@ -55,6 +57,17 @@ where
 
     pub fn with_require_verified_email(mut self, require: bool) -> Self {
         self.require_verified_email = require;
+        self
+    }
+
+    /// Allow linking existing accounts by a Google-verified email address.
+    ///
+    /// Use this only when the application trusts Google to prove ownership of
+    /// the local account's email address. The provider email must be verified
+    /// even when `with_require_verified_email(false)` is configured.
+    #[must_use]
+    pub fn with_verified_email_auto_linking(mut self) -> Self {
+        self.auto_link_by_verified_email = true;
         self
     }
 
@@ -137,7 +150,17 @@ where
                 .filter(|email| !email.is_empty())
                 .ok_or_else(|| AuthError::OAuthError("google userinfo missing email".into()))?;
             match repo.find_by_email(&email).await? {
-                Some(existing) => (existing, false),
+                Some(existing)
+                    if self.auto_link_by_verified_email
+                        && userinfo.email_verified == Some(true) =>
+                {
+                    (existing, false)
+                }
+                Some(_) => {
+                    return Err(AuthError::OAuthError(
+                        "sign in to the existing account before linking Google".into(),
+                    ));
+                }
                 None => {
                     let display_name = derive_display_name(&userinfo, &email);
                     (

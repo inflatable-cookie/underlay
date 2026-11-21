@@ -119,6 +119,27 @@ impl PasswordAuthRepository for MemoryRepo {
         Ok(())
     }
 
+    fn supports_password_rehash(&self) -> bool {
+        true
+    }
+
+    async fn update_password_credential_if_current(
+        &self,
+        credential_id: Uuid,
+        expected_hash: &str,
+        password_hash: &str,
+    ) -> PasswordAuthResult<bool> {
+        let mut credentials = self.credentials_by_user.lock().await;
+        let Some(credential) = credentials.values_mut().find(|credential| {
+            credential.id == credential_id && credential.secret_encrypted == expected_hash
+        }) else {
+            return Ok(false);
+        };
+        credential.secret_encrypted = password_hash.to_string();
+        credential.updated_at = chrono::Utc::now();
+        Ok(true)
+    }
+
     async fn delete_password_credential(&self, credential_id: Uuid) -> PasswordAuthResult<()> {
         self.credential_ids.lock().await.remove(&credential_id);
         let mut creds = self.credentials_by_user.lock().await;

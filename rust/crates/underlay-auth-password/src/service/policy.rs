@@ -4,7 +4,7 @@ use underlay_ratelimit::RateLimitBackend;
 use crate::errors::{PasswordAuthError, PasswordAuthResult};
 use crate::strength::MIN_PASSWORD_STRENGTH;
 
-use super::{CompromisedPasswordStrategy, PasswordAuthRepository, PasswordAuthService};
+use super::{PasswordAuthRepository, PasswordAuthService};
 
 impl<R, H, V, L> PasswordAuthService<R, H, V, L>
 where
@@ -18,16 +18,13 @@ where
             return Ok(false);
         }
 
-        match self.config.compromised_password_strategy() {
-            CompromisedPasswordStrategy::LocalBlocklist => {
-                Ok(self.analyzer.is_common_password(password))
-            }
-            #[cfg(feature = "hibp")]
-            CompromisedPasswordStrategy::HibpKAnonymity {
-                api_base_url,
-                user_agent,
-            } => crate::hibp::hibp_k_anonymity_check(password, api_base_url, user_agent).await,
+        #[cfg(feature = "hibp")]
+        if let Some(client) = &self.hibp_client {
+            let client = client.as_ref().map_err(Clone::clone)?;
+            return crate::hibp::hibp_k_anonymity_check_with_client(password, client).await;
         }
+
+        Ok(self.analyzer.is_common_password(password))
     }
 
     pub(super) async fn validate_new_password(&self, password: &str) -> PasswordAuthResult<()> {

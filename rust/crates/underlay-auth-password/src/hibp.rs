@@ -3,37 +3,14 @@
 use crate::errors::{PasswordAuthError, PasswordAuthResult};
 use async_trait::async_trait;
 use sha1::{Digest, Sha1};
+use underlay_http_client::{reqwest::Url, HttpClient};
 
-/// Check a password against the HIBP Pwned Passwords k-anonymity range API.
-///
-/// Only the first 5 hex characters of the SHA-1 hash are sent over the network.
-pub async fn hibp_k_anonymity_check(
-    password: &str,
-    api_base_url: &str,
-    user_agent: &str,
-) -> PasswordAuthResult<bool> {
-    let base_url = api_base_url.trim().trim_end_matches('/');
-    if !base_url.starts_with("https://") && !http_host_is_local(base_url) {
-        return Err(PasswordAuthError::Internal(
-            "HIBP api_base_url must use https (http is only allowed for localhost)".to_string(),
-        ));
-    }
-    let client = HttpHibpRangeClient::new(base_url, user_agent);
-    hibp_k_anonymity_check_with_client(password, &client).await
-}
-
-fn http_host_is_local(base_url: &str) -> bool {
-    let Some(rest) = base_url.strip_prefix("http://") else {
-        return false;
-    };
-    let authority = rest.split(['/', '?', '#']).next().unwrap_or("");
-    let authority = authority.rsplit('@').next().unwrap_or("");
-    let host = if let Some(bracketed) = authority.strip_prefix('[') {
-        bracketed.split(']').next().unwrap_or("")
-    } else {
-        authority.split(':').next().unwrap_or("")
-    };
-    matches!(host, "localhost" | "127.0.0.1" | "0.0.0.0" | "::1") || host.ends_with(".localhost")
+fn http_host_is_local(url: &Url) -> bool {
+    url.scheme() == "http"
+        && url.host_str().is_some_and(|host| {
+            matches!(host, "localhost" | "127.0.0.1" | "0.0.0.0" | "[::1]")
+                || host.ends_with(".localhost")
+        })
 }
 
 /// Minimal interface for HIBP range retrieval.
@@ -45,17 +22,35 @@ pub trait HibpRangeClient: Send + Sync {
 }
 
 #[derive(Debug, Clone)]
-struct HttpHibpRangeClient {
-    api_base_url: String,
-    user_agent: String,
+pub(crate) struct HttpHibpRangeClient {
+    api_base_url: Url,
+    client: HttpClient,
 }
 
 impl HttpHibpRangeClient {
-    fn new(api_base_url: &str, user_agent: &str) -> Self {
-        Self {
-            api_base_url: api_base_url.trim_end_matches('/').to_string(),
-            user_agent: user_agent.to_string(),
+    pub(crate) fn new(api_base_url: &str, user_agent: &str) -> PasswordAuthResult<Self> {
+        let api_base_url = Url::parse(api_base_url.trim())
+            .map_err(|_| PasswordAuthError::Internal("Invalid HIBP api_base_url".into()))?;
+        if api_base_url.scheme() != "https" && !http_host_is_local(&api_base_url) {
+            return Err(PasswordAuthError::Internal(
+                "HIBP api_base_url must use https (http is only allowed for localhost)".into(),
+            ));
         }
+        if api_base_url.query().is_some()
+            || api_base_url.fragment().is_some()
+            || !api_base_url.username().is_empty()
+            || api_base_url.password().is_some()
+        {
+            return Err(PasswordAuthError::Internal(
+                "Invalid HIBP api_base_url".into(),
+            ));
+        }
+        let client = HttpClient::try_with_user_agent(user_agent)
+            .map_err(|e| PasswordAuthError::Internal(format!("HIBP client setup failed: {e}")))?;
+        Ok(Self {
+            api_base_url,
+            client,
+        })
     }
 }
 
@@ -64,10 +59,14 @@ impl HibpRangeClient for HttpHibpRangeClient {
     async fn fetch_range(&self, prefix: &str) -> PasswordAuthResult<String> {
         use underlay_http_client::reqwest::header::HeaderValue;
 
-        let url = format!("{}/range/{}", self.api_base_url, prefix);
-        let client = underlay_http_client::HttpClient::with_user_agent(&self.user_agent);
+        let mut url = self.api_base_url.clone();
+        url.path_segments_mut()
+            .map_err(|()| PasswordAuthError::Internal("Invalid HIBP api_base_url".into()))?
+            .pop_if_empty()
+            .extend(["range", prefix]);
 
-        let resp = client
+        let resp = self
+            .client
             .get(url)
             // Request padding to reduce information disclosure.
             .header("Add-Padding", HeaderValue::from_static("true"))
@@ -90,7 +89,7 @@ impl HibpRangeClient for HttpHibpRangeClient {
 
 /// Check a password against HIBP using an injected client implementation.
 ///
-/// Useful for end-to-end checks without relying on external network.
+/// Only the first 5 hex characters of the SHA-1 hash are sent to the client.
 pub async fn hibp_k_anonymity_check_with_client<C>(
     password: &str,
     client: &C,

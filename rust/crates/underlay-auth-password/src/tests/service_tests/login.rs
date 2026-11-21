@@ -1,7 +1,54 @@
 use std::sync::Arc;
 
+use underlay_auth::hashing::{Argon2Hasher, PasswordHasherExt};
+
 use super::super::{PasswordAuthError, PasswordAuthRepository, PasswordConfig};
 use super::support::{make_user, service, MemoryRepo};
+
+#[tokio::test]
+async fn successful_login_upgrades_an_outdated_password_hash_once() {
+    let user = make_user("rehash@example.com");
+    let repo = Arc::new(MemoryRepo::new(10));
+    repo.insert_user(user.clone()).await;
+    let password = "CorrectHorse1!";
+    let old_hash = Argon2Hasher::with_params(32, 1, 1)
+        .hash_password(password.as_bytes())
+        .unwrap();
+    let credential = repo
+        .create_password_credential(user.id, &old_hash)
+        .await
+        .unwrap();
+    let service = service(Arc::clone(&repo), None);
+
+    assert!(matches!(
+        service.verify_login(&user.email, "wrong").await,
+        Err(PasswordAuthError::WrongPassword)
+    ));
+    assert_eq!(
+        repo.find_password_credential(user.id)
+            .await
+            .unwrap()
+            .unwrap()
+            .secret_encrypted,
+        old_hash
+    );
+
+    service.verify_login(&user.email, password).await.unwrap();
+    let updated = repo
+        .find_password_credential(user.id)
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(updated.id, credential.id);
+    assert_ne!(updated.secret_encrypted, old_hash);
+    assert!(!Argon2Hasher::new().needs_rehash(&updated.secret_encrypted));
+
+    service.verify_login(&user.email, password).await.unwrap();
+    assert_eq!(
+        repo.find_password_credential(user.id).await.unwrap(),
+        Some(updated)
+    );
+}
 
 #[tokio::test]
 async fn login_success_resets_failures() {

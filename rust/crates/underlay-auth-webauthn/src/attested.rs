@@ -33,7 +33,13 @@ pub struct FinishAttestedPasskeyRegistrationResponse {
     pub stored_attested_passkey: StoredAttestedPasskey,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+/// Server-side input containing attested credentials from trusted storage.
+///
+/// ```compile_fail
+/// use underlay_auth_webauthn::StartAttestedPasskeyAuthenticationRequest;
+/// let _: StartAttestedPasskeyAuthenticationRequest = serde_json::from_str("{}").unwrap();
+/// ```
+#[derive(Debug, Clone, Serialize)]
 pub struct StartAttestedPasskeyAuthenticationRequest {
     /// JSON-encoded `AttestedPasskey` values that are allowed for this authentication.
     pub allowed_credentials: Vec<String>,

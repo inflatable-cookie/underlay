@@ -1,6 +1,6 @@
 use super::{
-    hibp_k_anonymity_check, hibp_k_anonymity_check_with_client, hibp_range_body_contains_suffix,
-    password_sha1_hex, HibpRangeClient,
+    hibp_k_anonymity_check_with_client, hibp_range_body_contains_suffix, password_sha1_hex,
+    HibpRangeClient, HttpHibpRangeClient,
 };
 use crate::errors::{PasswordAuthError, PasswordAuthResult};
 use async_trait::async_trait;
@@ -73,10 +73,9 @@ async fn hibp_k_anonymity_check_with_client_propagates_client_error() {
     assert!(format!("{err}").contains("mock failure"));
 }
 
-#[tokio::test]
-async fn hibp_k_anonymity_check_rejects_non_local_http() {
-    let err = hibp_k_anonymity_check("password123", "http://api.example.com", "underlay-test")
-        .await
+#[test]
+fn hibp_client_rejects_non_local_http() {
+    let err = HttpHibpRangeClient::new("http://api.example.com", "underlay-test")
         .expect_err("non-local http base url should fail");
     assert!(format!("{err}").contains("https"));
 }
@@ -118,7 +117,8 @@ async fn hibp_k_anonymity_check_can_run_against_local_server() {
         socket.write_all(resp.as_bytes()).await.unwrap();
     });
 
-    let ok = hibp_k_anonymity_check(password, &base, "underlay-test")
+    let client = HttpHibpRangeClient::new(&base, "underlay-test").unwrap();
+    let ok = hibp_k_anonymity_check_with_client(password, &client)
         .await
         .unwrap();
 

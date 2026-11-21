@@ -21,6 +21,8 @@ pub enum RoleHierarchyError {
     },
     /// Only super-role callers may promote/assign the super role.
     CannotPromoteToSuperRole,
+    /// The role is outside the configured hierarchy.
+    UnknownRole,
 }
 
 impl RoleHierarchyError {
@@ -31,6 +33,7 @@ impl RoleHierarchyError {
             Self::CannotManageSuperRole => "role_hierarchy.cannot_manage_super_role",
             Self::InsufficientPrivileges { .. } => "role_hierarchy.insufficient_privileges",
             Self::CannotPromoteToSuperRole => "role_hierarchy.cannot_promote_to_super_role",
+            Self::UnknownRole => "role_hierarchy.unknown_role",
         }
     }
 }
@@ -54,6 +57,7 @@ impl fmt::Display for RoleHierarchyError {
             Self::CannotPromoteToSuperRole => {
                 write!(f, "only super-role accounts can assign the super role")
             }
+            Self::UnknownRole => write!(f, "role is not in the configured hierarchy"),
         }
     }
 }
@@ -93,7 +97,7 @@ impl RoleHierarchy {
 
     /// Build a custom hierarchy. `levels` maps role name to rank (higher is
     /// more privileged); `super_role` names the top role with manage-anyone
-    /// semantics. Unknown roles resolve to level 0.
+    /// semantics. Unknown roles resolve to level 0 for rank lookups.
     pub fn new(levels: &[(&str, i32)], super_role: &str) -> Self {
         Self {
             levels: levels
@@ -146,9 +150,14 @@ impl RoleHierarchy {
     }
 
     /// Can a caller with `caller_roles` assign `role` (user creation or role
-    /// assignment)? Super-role callers may assign anything; others only roles
-    /// strictly below their own level.
+    /// assignment)? Super-role callers may assign any configured role. Other
+    /// callers may only assign roles strictly below their own level.
     pub fn can_assign(&self, caller_roles: &[&str], role: &str) -> Result<(), RoleHierarchyError> {
+        let is_known = |role: &str| self.is_super_role(role) || self.levels.contains_key(role);
+        if !is_known(role) || caller_roles.iter().any(|role| !is_known(role)) {
+            return Err(RoleHierarchyError::UnknownRole);
+        }
+
         if self.has_super_role(caller_roles) {
             return Ok(());
         }
@@ -160,7 +169,7 @@ impl RoleHierarchy {
         let caller_level = self.max_level(caller_roles);
         let target_level = self.level(role);
 
-        if caller_level <= target_level {
+        if caller_roles.is_empty() || caller_level <= target_level {
             return Err(RoleHierarchyError::InsufficientPrivileges {
                 caller_level,
                 target_level,

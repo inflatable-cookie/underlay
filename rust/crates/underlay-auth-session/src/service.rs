@@ -191,8 +191,18 @@ where
             .ok_or(AuthError::UserNotFound)?;
         match account.status {
             AccountStatus::Active => {}
-            AccountStatus::Suspended => return Err(AuthError::AccountSuspended),
-            AccountStatus::Deleted => return Err(AuthError::AccountDeleted),
+            AccountStatus::Suspended => {
+                self.repo
+                    .revoke_session(session.id, "account_suspended")
+                    .await?;
+                return Err(AuthError::AccountSuspended);
+            }
+            AccountStatus::Deleted => {
+                self.repo
+                    .revoke_session(session.id, "account_deleted")
+                    .await?;
+                return Err(AuthError::AccountDeleted);
+            }
         }
         session.roles = account.roles.clone();
 

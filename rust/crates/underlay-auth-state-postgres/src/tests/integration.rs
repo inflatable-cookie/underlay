@@ -49,6 +49,34 @@ fn store(db: &TestDb, table: &str) -> AuthStateStore {
 
 #[tokio::test]
 #[ignore = "requires a Postgres test database (UNDERLAY_TEST_DATABASE_URL or Docker)"]
+async fn purge_expired_removes_only_expired_rows_from_the_configured_table() {
+    let db = TestDb::new().await;
+    let table = setup_table(&db).await;
+    let store = store(&db, &table);
+
+    store
+        .create_public("login", json!({}), Duration::seconds(-1))
+        .await
+        .unwrap();
+    store
+        .create_user(Uuid::new_v7(), "reset", json!({}), Duration::seconds(-1))
+        .await
+        .unwrap();
+    let active = store
+        .create_public("login", json!({"active": true}), Duration::minutes(5))
+        .await
+        .unwrap();
+
+    assert_eq!(store.purge_expired().await.unwrap(), 2);
+    assert_eq!(store.purge_expired().await.unwrap(), 0);
+    assert_eq!(
+        store.load_public(active, "login").await.unwrap(),
+        Some(json!({"active": true}))
+    );
+}
+
+#[tokio::test]
+#[ignore = "requires a Postgres test database (UNDERLAY_TEST_DATABASE_URL or Docker)"]
 async fn user_state_create_load_consume_round_trip() {
     let db = TestDb::new().await;
     let table = setup_table(&db).await;

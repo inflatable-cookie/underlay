@@ -1,8 +1,6 @@
-use std::time::Duration;
-
 use underlay_auth::hashing::{PasswordHasherExt, PasswordVerifierExt};
 use underlay_auth::{AuthError, CredentialMetadata, User, UserStatus};
-use underlay_ratelimit::{RateLimitBackend, RateLimitConfig};
+use underlay_ratelimit::RateLimitBackend;
 
 use crate::errors::{PasswordAuthError, PasswordAuthResult};
 
@@ -28,41 +26,21 @@ where
         ip: Option<&str>,
     ) -> PasswordAuthResult<User> {
         let normalized_email = email.trim().to_lowercase();
-        let window = Duration::from_secs(self.config.rate_limit_window_seconds());
-
         // Email-only limit first: an attacker rotating (spoofed or real) IPs
         // gets a fresh `email:ip` counter per request, so a per-email backstop
         // is what actually bounds per-account brute force.
-        let email_limit_config =
-            RateLimitConfig::new(self.config.rate_limit_email_max_attempts() as u64, window);
-        let email_key = format!("login:{}", normalized_email);
-        let email_result = self
-            .rate_limiter
-            .check_and_increment(&email_key, &email_limit_config)
-            .await
-            .map_err(|e| PasswordAuthError::Internal(format!("Rate limit error: {}", e)))?;
-
-        if email_result.is_denied() {
-            return Err(PasswordAuthError::RateLimited {
-                retry_after_seconds: email_result.retry_after_secs(),
-            });
-        }
+        self.check_rate_limit(
+            &format!("login:{normalized_email}"),
+            self.config.rate_limit_email_max_attempts(),
+        )
+        .await?;
 
         if let Some(ip) = ip {
-            let rate_limit_config =
-                RateLimitConfig::new(self.config.rate_limit_max_attempts() as u64, window);
-            let rate_limit_key = format!("login:{}:{}", normalized_email, ip);
-            let rate_result = self
-                .rate_limiter
-                .check_and_increment(&rate_limit_key, &rate_limit_config)
-                .await
-                .map_err(|e| PasswordAuthError::Internal(format!("Rate limit error: {}", e)))?;
-
-            if rate_result.is_denied() {
-                return Err(PasswordAuthError::RateLimited {
-                    retry_after_seconds: rate_result.retry_after_secs(),
-                });
-            }
+            self.check_rate_limit(
+                &format!("login:{normalized_email}:{ip}"),
+                self.config.rate_limit_max_attempts(),
+            )
+            .await?;
         }
 
         let user = match self
@@ -107,7 +85,7 @@ where
             }
         };
 
-        let is_valid = self.verify_password(password, password_hash).await?;
+        let is_valid = self.verify_password(password, &password_hash).await?;
 
         if is_valid {
             // Check account status only AFTER verifying credentials so
@@ -118,6 +96,14 @@ where
             }
             if user.status == UserStatus::Deleted {
                 return Err(AuthError::AccountDeleted.into());
+            }
+            if self.repository.supports_password_rehash()
+                && self.hasher.needs_rehash(&password_hash)
+            {
+                let new_hash = self.hash_password(password).await?;
+                self.repository
+                    .update_password_credential_if_current(credential.id, &password_hash, &new_hash)
+                    .await?;
             }
             self.repository.reset_failed_logins(user.id).await?;
             Ok(user)

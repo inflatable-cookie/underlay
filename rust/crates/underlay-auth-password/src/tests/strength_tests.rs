@@ -1,6 +1,22 @@
 use super::*;
 
 #[test]
+fn advertised_requirements_accept_a_strong_lowercase_passphrase() {
+    let analyzer = PasswordStrengthAnalyzer::new().with_min_length(12);
+    let requirements = analyzer.requirements();
+    let analysis = analyzer.validate("loftily spacecraft huckleberry").unwrap();
+
+    assert_eq!(requirements.min_length, analysis.min_length);
+    assert_eq!(
+        requirements.min_strength_score,
+        PasswordStrength::Good as u8
+    );
+    assert_eq!(requirements.require_mixed_case, analysis.has_uppercase);
+    assert_eq!(requirements.require_digit, analysis.has_digits);
+    assert_eq!(requirements.require_special, analysis.has_special);
+}
+
+#[test]
 fn very_short_password_rejected() {
     let analyzer = PasswordStrengthAnalyzer::new();
     let result = analyzer.analyze("abc");

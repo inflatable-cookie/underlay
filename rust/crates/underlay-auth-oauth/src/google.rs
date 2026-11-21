@@ -7,7 +7,7 @@ use oauth2::{
 };
 use serde::{Deserialize, Serialize};
 use underlay_auth::AuthResult;
-use url::Url;
+use url::{Host, Url};
 
 use crate::{
     GoogleOAuthConfig, GoogleUserInfo, OAuthProvider, OAuthServiceError, OAuthStart, TokenSet,
@@ -30,7 +30,7 @@ pub struct GoogleOAuthService {
     userinfo_url: Url,
     client_id: String,
     client_secret: String,
-    redirect_uri: String,
+    redirect_uri: RedirectUrl,
     scopes: Vec<Scope>,
 }
 
@@ -38,6 +38,24 @@ impl GoogleOAuthService {
     pub fn new(config: GoogleOAuthConfig) -> AuthResult<Self> {
         let token_url_string = "https://oauth2.googleapis.com/token".to_string();
         let (client_id, client_secret, redirect_uri, scopes) = config.into_parts();
+        let redirect_uri =
+            RedirectUrl::new(redirect_uri).map_err(|_| OAuthServiceError::InvalidConfig)?;
+        let redirect_url = redirect_uri.url();
+        let loopback = match redirect_url.host() {
+            Some(Host::Domain(host)) => host == "localhost",
+            Some(Host::Ipv4(ip)) => ip.is_loopback(),
+            Some(Host::Ipv6(ip)) => ip.is_loopback(),
+            None => false,
+        };
+        let secure_scheme =
+            redirect_url.scheme() == "https" || (redirect_url.scheme() == "http" && loopback);
+        if !secure_scheme
+            || redirect_url.fragment().is_some()
+            || !redirect_url.username().is_empty()
+            || redirect_url.password().is_some()
+        {
+            return Err(OAuthServiceError::InvalidConfig.into());
+        }
 
         let token_url =
             Url::parse(&token_url_string).map_err(|_| OAuthServiceError::InvalidConfig)?;
@@ -113,10 +131,7 @@ impl OAuthProvider for GoogleOAuthService {
                 TokenUrl::new(self.token_url.to_string())
                     .map_err(|_| OAuthServiceError::InvalidConfig)?,
             )
-            .set_redirect_uri(
-                RedirectUrl::new(self.redirect_uri.clone())
-                    .map_err(|_| OAuthServiceError::InvalidConfig)?,
-            );
+            .set_redirect_uri(self.redirect_uri.clone());
 
         let (authorization_url, csrf_state) = client
             .authorize_url(CsrfToken::new_random)
@@ -144,10 +159,7 @@ impl OAuthProvider for GoogleOAuthService {
                 TokenUrl::new(self.token_url.to_string())
                     .map_err(|_| OAuthServiceError::InvalidConfig)?,
             )
-            .set_redirect_uri(
-                RedirectUrl::new(self.redirect_uri.clone())
-                    .map_err(|_| OAuthServiceError::InvalidConfig)?,
-            );
+            .set_redirect_uri(self.redirect_uri.clone());
 
         let (authorization_url, _csrf_state) = client
             .authorize_url(|| CsrfToken::new(csrf_state.to_string()))
