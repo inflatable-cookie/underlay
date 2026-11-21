@@ -100,7 +100,10 @@ async fn job_lifecycle_create_claim_succeed_fail_cancel() {
         .is_none());
 
     // --- mark success ---
-    repo.mark_success(id).await.expect("mark_success");
+    assert_eq!(
+        repo.mark_success(&claimed).await.expect("mark_success"),
+        underlay_jobs::JobCompletionOutcome::Succeeded
+    );
     assert_eq!(
         repo.get(id).await.expect("get").expect("job").status,
         JobStatus::Succeeded
@@ -220,8 +223,12 @@ async fn stale_failure_cannot_change_reclaimed_job(repo: &JobRepository) {
 
     let reclaimed = repo.mark_failed(&first, "old result", &config, true).await;
     assert!(matches!(reclaimed, Err(RepoError::Conflict(_))));
-    let stale_success = repo.mark_succeeded_for_job(&first).await;
+    let stale_success = repo.mark_succeeded(&first).await;
     assert!(matches!(stale_success, Err(RepoError::Conflict(_))));
+    assert_eq!(
+        repo.mark_success(&first).await.unwrap(),
+        underlay_jobs::JobCompletionOutcome::LostOwnership
+    );
     let outcome = repo
         .mark_failed(&second, "current result", &config, false)
         .await

@@ -297,4 +297,25 @@ impl PgJobNotifier {
     pub fn drain(&mut self) {
         while self.listener.next_buffered().is_some() {}
     }
+
+    /// Coalesce up to `max_notifications` notifications already queued on the
+    /// internal buffer or LISTEN socket, waiting at most `per_read_timeout` per
+    /// socket read so an empty socket returns promptly.
+    pub async fn coalesce_pending(
+        &mut self,
+        max_notifications: usize,
+        per_read_timeout: Duration,
+    ) -> usize {
+        let mut drained = 0usize;
+        while drained < max_notifications && self.listener.next_buffered().is_some() {
+            drained += 1;
+        }
+        while drained < max_notifications {
+            match tokio::time::timeout(per_read_timeout, self.listener.try_recv()).await {
+                Ok(Ok(Some(_))) => drained += 1,
+                Ok(Ok(None)) | Ok(Err(_)) | Err(_) => break,
+            }
+        }
+        drained
+    }
 }

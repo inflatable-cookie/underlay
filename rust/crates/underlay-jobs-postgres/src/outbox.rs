@@ -499,6 +499,7 @@ impl OutboxProcessor {
 
         let mut shutdown = pin!(shutdown);
         let mut should_wait = false;
+        let mut drain_skip_ids: Vec<uuid::Uuid> = Vec::new();
 
         loop {
             if should_wait {
@@ -533,10 +534,13 @@ impl OutboxProcessor {
             }
 
             let report = self
-                .process_batch_with(backend, &handler, shutdown.as_mut())
+                .process_batch_with(backend, &handler, shutdown.as_mut(), &mut drain_skip_ids)
                 .await?;
             if report.shutdown_requested {
                 return Ok(());
+            }
+            if report.exhausted {
+                drain_skip_ids.clear();
             }
             should_wait = report.exhausted;
         }
@@ -557,7 +561,10 @@ impl OutboxProcessor {
         Fut: Future<Output = Result<(), Box<dyn std::error::Error + Send + Sync>>> + Send,
     {
         let shutdown = pin!(future::pending::<()>());
-        let report = self.process_batch_with(pool, handler, shutdown).await?;
+        let mut drain_skip_ids = Vec::new();
+        let report = self
+            .process_batch_with(pool, handler, shutdown, &mut drain_skip_ids)
+            .await?;
         Ok(report.processed)
     }
 
@@ -566,6 +573,7 @@ impl OutboxProcessor {
         backend: &B,
         handler: &F,
         mut shutdown: Pin<&mut S>,
+        drain_skip_ids: &mut Vec<uuid::Uuid>,
     ) -> Result<BatchReport, B::Error>
     where
         B: OutboxBackend,
@@ -589,6 +597,11 @@ impl OutboxProcessor {
                 .expect("outbox failure tracker lock poisoned");
             tracker.active_skip_ids(Instant::now())
         };
+        for &id in drain_skip_ids.iter() {
+            if !skip_ids.contains(&id) {
+                skip_ids.push(id);
+            }
+        }
 
         let mut processed = 0usize;
         let mut attempted = 0usize;
@@ -647,7 +660,14 @@ impl OutboxProcessor {
                         error = %error,
                         "Outbox event handler failed, backing off and continuing batch"
                     );
-                    skip_ids.push(event_id);
+                    if !skip_ids.contains(&event_id) {
+                        skip_ids.push(event_id);
+                    }
+                    if drain_skip_ids.len() < MAX_TRACKED_FAILURES
+                        && !drain_skip_ids.contains(&event_id)
+                    {
+                        drain_skip_ids.push(event_id);
+                    }
                     attempted += 1;
                 }
             }
@@ -675,8 +695,8 @@ impl OutboxProcessor {
 
     /// Run the processor in polling mode until the supplied shutdown future resolves.
     ///
-    /// A shutdown wakes an idle processor immediately. If a batch is in
-    /// progress, the processor settles that batch before shutting down.
+    /// A shutdown wakes an idle processor immediately. If an event is in
+    /// progress, the processor settles the current event before shutting down.
     pub async fn run_polling_until_shutdown<F, Fut>(
         &self,
         pool: &PgPool,
@@ -710,6 +730,7 @@ impl OutboxProcessor {
 
         let mut shutdown = pin!(shutdown);
         let mut should_sleep = false;
+        let mut drain_skip_ids: Vec<uuid::Uuid> = Vec::new();
 
         loop {
             tokio::select! {
@@ -723,10 +744,13 @@ impl OutboxProcessor {
             }
 
             let report = self
-                .process_batch_with(backend, &handler, shutdown.as_mut())
+                .process_batch_with(backend, &handler, shutdown.as_mut(), &mut drain_skip_ids)
                 .await?;
             if report.shutdown_requested {
                 return Ok(());
+            }
+            if report.exhausted {
+                drain_skip_ids.clear();
             }
             should_sleep = report.exhausted;
         }

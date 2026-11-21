@@ -194,7 +194,7 @@ where
 
         match handle_result {
             Ok(()) => {
-                match self.store.mark_success_for_job(&job).await? {
+                match self.store.mark_success(&job).await? {
                     JobCompletionOutcome::Succeeded => {
                         let duration = job
                             .started_at

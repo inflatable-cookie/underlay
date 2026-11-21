@@ -177,8 +177,14 @@ async fn poison_pill_event_does_not_starve_newer_events_and_recovers_after_backo
     };
 
     // First batch: poison event fails once, but both newer healthy events still succeed.
+    let mut drain_skip = Vec::new();
     let report = processor
-        .process_batch_with(&outbox, &handler, pin!(future::pending::<()>()))
+        .process_batch_with(
+            &outbox,
+            &handler,
+            pin!(future::pending::<()>()),
+            &mut drain_skip,
+        )
         .await
         .unwrap();
     assert_eq!(report.processed, 2);
@@ -188,8 +194,14 @@ async fn poison_pill_event_does_not_starve_newer_events_and_recovers_after_backo
     // While poison event is still in backoff, a new healthy event is processed
     // without re-running the failing poison event.
     let healthy_c = outbox.push("healthy.c");
+    drain_skip.clear();
     let report = processor
-        .process_batch_with(&outbox, &handler, pin!(future::pending::<()>()))
+        .process_batch_with(
+            &outbox,
+            &handler,
+            pin!(future::pending::<()>()),
+            &mut drain_skip,
+        )
         .await
         .unwrap();
     assert_eq!(report.processed, 1);
@@ -202,8 +214,14 @@ async fn poison_pill_event_does_not_starve_newer_events_and_recovers_after_backo
     // After backoff expires, the poison event is retried and succeeds once fixed.
     tokio::time::advance(Duration::from_secs(10)).await;
     fail_poison.store(false, Ordering::SeqCst);
+    drain_skip.clear();
     let report = processor
-        .process_batch_with(&outbox, &handler, pin!(future::pending::<()>()))
+        .process_batch_with(
+            &outbox,
+            &handler,
+            pin!(future::pending::<()>()),
+            &mut drain_skip,
+        )
         .await
         .unwrap();
     assert_eq!(report.processed, 1);
@@ -216,54 +234,64 @@ async fn poison_pill_event_does_not_starve_newer_events_and_recovers_after_backo
 
 #[tokio::test(start_paused = true)]
 async fn single_event_batch_keeps_draining_healthy_events_past_failed_head() {
-    let outbox = MemOutbox::default();
-    let _poison_id = outbox.push("poison.event");
-    let healthy_id = outbox.push("healthy.event");
+    for failure_backoff in [Duration::from_millis(10), Duration::ZERO] {
+        let outbox = MemOutbox::default();
+        let _poison_id = outbox.push("poison.event");
+        let healthy_id = outbox.push("healthy.event");
 
-    // Mirrors the Postgres reproduction: batch_size = 1, short backoff (10ms)
-    // shorter than fallback_interval (75ms).
-    let processor = OutboxProcessor::new(
-        OutboxConfig::default()
-            .with_batch_size(1)
-            .with_failure_backoff(Duration::from_millis(10))
-            .with_max_failure_backoff(Duration::from_millis(10))
-            .with_fallback_interval(Duration::from_millis(75)),
-    );
+        // Mirrors the Postgres reproductions: batch_size = 1 with both short (10ms)
+        // and zero failure backoff under a longer fallback_interval (75ms).
+        let processor = OutboxProcessor::new(
+            OutboxConfig::default()
+                .with_batch_size(1)
+                .with_failure_backoff(failure_backoff)
+                .with_max_failure_backoff(failure_backoff)
+                .with_fallback_interval(Duration::from_millis(75)),
+        );
 
-    let (shutdown_tx, shutdown_rx) = tokio::sync::oneshot::channel::<()>();
-    let shutdown_tx = Arc::new(Mutex::new(Some(shutdown_tx)));
-    let poison_attempts = Arc::new(AtomicUsize::new(0));
+        let (shutdown_tx, shutdown_rx) = tokio::sync::oneshot::channel::<()>();
+        let shutdown_tx = Arc::new(Mutex::new(Some(shutdown_tx)));
+        let poison_attempts = Arc::new(AtomicUsize::new(0));
 
-    processor
-        .run_polling_backend_until_shutdown(
-            &outbox,
-            {
-                let poison_attempts = Arc::clone(&poison_attempts);
-                let shutdown_tx = Arc::clone(&shutdown_tx);
-                move |event: OutboxEvent| {
+        // Independent deadline so starvation fails promptly instead of hanging.
+        tokio::time::timeout(
+            Duration::from_millis(500),
+            processor.run_polling_backend_until_shutdown(
+                &outbox,
+                {
                     let poison_attempts = Arc::clone(&poison_attempts);
                     let shutdown_tx = Arc::clone(&shutdown_tx);
-                    async move {
-                        if event.event_type == "poison.event" {
-                            poison_attempts.fetch_add(1, Ordering::SeqCst);
-                            return Err("poison failure".into());
+                    move |event: OutboxEvent| {
+                        let poison_attempts = Arc::clone(&poison_attempts);
+                        let shutdown_tx = Arc::clone(&shutdown_tx);
+                        async move {
+                            if event.event_type == "poison.event" {
+                                poison_attempts.fetch_add(1, Ordering::SeqCst);
+                                return Err("poison failure".into());
+                            }
+                            if let Some(tx) = shutdown_tx.lock().unwrap().take() {
+                                let _ = tx.send(());
+                            }
+                            Ok(())
                         }
-                        if let Some(tx) = shutdown_tx.lock().unwrap().take() {
-                            let _ = tx.send(());
-                        }
-                        Ok(())
                     }
-                }
-            },
-            async move {
-                let _ = shutdown_rx.await;
-            },
+                },
+                async move {
+                    let _ = shutdown_rx.await;
+                },
+            ),
         )
         .await
+        .expect("healthy event must be reached before independent deadline")
         .unwrap();
 
-    assert_eq!(poison_attempts.load(Ordering::SeqCst), 1);
-    assert_eq!(outbox.processed_ids(), vec![healthy_id]);
+        assert_eq!(
+            poison_attempts.load(Ordering::SeqCst),
+            1,
+            "poison event should be attempted once before healthy event (backoff={failure_backoff:?})"
+        );
+        assert_eq!(outbox.processed_ids(), vec![healthy_id]);
+    }
 }
 
 #[tokio::test(start_paused = true)]

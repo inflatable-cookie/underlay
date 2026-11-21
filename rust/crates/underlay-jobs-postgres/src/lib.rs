@@ -22,7 +22,7 @@ pub use crate::outbox::DOMAIN_EVENT_NOTIFY_SQL;
 pub use crate::postgres::{JobRepository, RepoError};
 pub use crate::postgres_dead_letters::PgDeadLetterRepository;
 pub use crate::postgres_scheduled::{PgJobNotifier, ScheduledTaskRepository, JOB_NOTIFY_CHANNEL};
-pub use crate::runner_ext::PostgresJobRunnerExt;
+pub use crate::runner_ext::{PostgresJobRunnerExt, PostgresJobRunnerShutdownExt};
 pub use crate::scheduler::Scheduler;
 
 /// SQL schema for job tables.

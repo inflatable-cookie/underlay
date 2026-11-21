@@ -57,16 +57,11 @@ impl JobStore for Arc<MemStore> {
         Ok(idx.map(|i| q.remove(i)))
     }
 
-    async fn mark_success(&self, job_id: JobId) -> Result<(), Self::Error> {
-        self.successes.lock().unwrap().push(job_id);
-        Ok(())
-    }
-
-    async fn mark_success_for_job(&self, job: &Job) -> Result<JobCompletionOutcome, Self::Error> {
+    async fn mark_success(&self, job: &Job) -> Result<JobCompletionOutcome, Self::Error> {
         if self.stale_completion_ids.lock().unwrap().contains(&job.id) {
             return Ok(JobCompletionOutcome::LostOwnership);
         }
-        self.mark_success(job.id).await?;
+        self.successes.lock().unwrap().push(job.id);
         Ok(JobCompletionOutcome::Succeeded)
     }
 
