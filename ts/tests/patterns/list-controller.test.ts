@@ -2,9 +2,22 @@ import { describe, expect, it, vi } from "vitest";
 
 type ListModule = typeof import("../../src/patterns/list-controller.svelte");
 
+// Teardowns from the $effect stub, so tests can simulate component unmount.
+let effectTeardowns: Array<() => void> = [];
+
+function disposeListEffects(): void {
+	for (const teardown of effectTeardowns) teardown();
+	effectTeardowns = [];
+}
+
 async function loadListControllerModule(options?: { mockAuthNull?: boolean }): Promise<ListModule> {
 	vi.resetModules();
+	effectTeardowns = [];
 	(globalThis as any).$state = <T>(initial: T) => initial;
+	(globalThis as any).$effect = (fn: () => void | (() => void)) => {
+		const teardown = fn();
+		if (typeof teardown === "function") effectTeardowns.push(teardown);
+	};
 
 	if (options?.mockAuthNull) {
 		vi.doMock("../../src/patterns/auth", () => ({
@@ -271,5 +284,45 @@ describe("patterns/list-controller.svelte.ts", () => {
 		});
 		await controllerGenericErrorInstance.tryFetch(false, { id: "u1" });
 		expect(controllerGenericErrorInstance.error).toBe("direct boom");
+	});
+
+	it("ignores fetches and results after the owning component unmounts", async () => {
+		const { createListController } = await loadListControllerModule();
+		const fetcher = vi.fn(async () => [{ id: "1" }]);
+		const onSuccess = vi.fn();
+		const controller = createListController(fetcher as any, {
+			getToken: () => "token",
+			onSuccess,
+		});
+
+		disposeListEffects();
+
+		await controller.tryFetch(false, { id: "u1" });
+		await controller.refresh();
+		expect(fetcher).not.toHaveBeenCalled();
+		expect(onSuccess).not.toHaveBeenCalled();
+		expect(controller.items).toEqual([]);
+	});
+
+	it("routes auto-fetch rejections from setFilters into the error state", async () => {
+		const { createListController } = await loadListControllerModule();
+		const onError = vi.fn();
+		const fetcher = vi
+			.fn()
+			.mockResolvedValueOnce([{ id: "1" }])
+			.mockImplementationOnce(async () => {
+				throw new Error("filter boom");
+			});
+		const controller = createListController(fetcher as any, {
+			getToken: () => "token",
+			onError,
+		});
+
+		await controller.tryFetch(false, { id: "u1" });
+		controller.setFilters({ query: "beta" } as any);
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		expect(controller.error).toBe("filter boom");
+		expect(onError).toHaveBeenCalledTimes(1);
 	});
 });

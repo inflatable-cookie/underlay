@@ -261,7 +261,7 @@
   }
 
   .underlay-two-factor-step__hint :global(strong) {
-    color: var(--underlay-color-text, #e5e7eb);
+    color: var(--underlay-color-text, #111827);
     font-weight: 500;
   }
 

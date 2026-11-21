@@ -63,4 +63,54 @@ describe("patterns/useValidatedForm", () => {
       displayName: "Person",
     });
   });
+
+  it("ignores a second submit while one is already in flight", async () => {
+    const mod = await loadValidatedFormModule();
+    let release: () => void = () => {};
+    const onSubmit = vi.fn(
+      () => new Promise<void>((resolve) => {
+        release = resolve;
+      }),
+    );
+    const form = mod.useValidatedForm({
+      schema: registerRequestSchema,
+      initialValues: {
+        email: "person@example.com",
+        password: "password-1234",
+        displayName: "Person",
+      },
+      onSubmit,
+    });
+
+    const first = form.submit();
+    expect(form.isSubmitting).toBe(true);
+    expect(await form.submit()).toBe(false);
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+
+    release();
+    expect(await first).toBe(true);
+    expect(form.isSubmitting).toBe(false);
+  });
+
+  it("clones plain and nested initial values so edits never leak back into the caller", async () => {
+    const mod = await loadValidatedFormModule();
+    const initialValues = {
+      email: "person@example.com",
+      password: "password-1234",
+      displayName: "Person",
+      tags: ["a"],
+    };
+    const schema = registerRequestSchema.extend({ tags: z.array(z.string()) });
+    const form = mod.useValidatedForm({
+      schema,
+      initialValues,
+      onSubmit: async () => undefined,
+    });
+
+    (form.values.tags as string[]).push("b");
+    expect(initialValues.tags).toEqual(["a"]);
+
+    form.reset();
+    expect(form.values.tags).toEqual(["a"]);
+  });
 });

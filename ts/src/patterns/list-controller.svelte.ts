@@ -207,17 +207,27 @@ export function createListController<T, F extends Record<string, unknown> = Reco
   let refetching = $state(false);
   let error = $state<string | null>(null);
   let filters = $state<F>((options.initialFilters ?? {}) as F);
-  let _fetched = $state(false);
+  // Plain (non-reactive) bookkeeping: a $state here would make a caller's
+  // `$effect(() => list.tryFetch(...))` re-run after every successful fetch.
+  let _fetched = false;
   let _inFlight = false;
   let requestSeq = 0;
+  let disposed = false;
+
+  $effect(() => () => {
+    disposed = true;
+  });
+
+  const isCurrent = (seq: number) => !disposed && seq === requestSeq;
 
   const doFetch = async (isRefetch = false) => {
+    if (disposed) return;
     const seq = ++requestSeq;
     // Resolve auth lazily (fetch path only) so setup stays SSR-safe; a
     // misconfiguration surfaces as the controller's error state.
     const resolved = tryResolveAuthFetchHandlers("createListController", options);
     if (!resolved.handlers) {
-      if (seq === requestSeq) {
+      if (isCurrent(seq)) {
         _inFlight = false;
         error = resolved.error;
         loading = false;
@@ -242,24 +252,24 @@ export function createListController<T, F extends Record<string, unknown> = Reco
         onRefresh,
         fetcher: (token) => fetcher(fetch, token, filters),
         onSuccess: (result) => {
-          if (seq !== requestSeq) return;
+          if (!isCurrent(seq)) return;
           items = result;
           _fetched = true;
           options.onSuccess?.(result);
           options.onItemsChange?.(result);
         },
         onError: (fetchError) => {
-          if (seq !== requestSeq) return;
+          if (!isCurrent(seq)) return;
           error = fetchError.message;
           options.onError?.(fetchError);
         },
       });
 
-      if (attempted && seq === requestSeq) {
+      if (attempted && isCurrent(seq)) {
         _fetched = true;
       }
     } finally {
-      if (seq === requestSeq) {
+      if (isCurrent(seq)) {
         _inFlight = false;
         loading = false;
         refetching = false;
@@ -268,7 +278,7 @@ export function createListController<T, F extends Record<string, unknown> = Reco
   };
 
   const tryFetch = async (authLoading: boolean, currentUser: unknown) => {
-    if (_inFlight || shouldSkipAuthReadyFetch(_fetched, authLoading, currentUser)) {
+    if (disposed || _inFlight || shouldSkipAuthReadyFetch(_fetched, authLoading, currentUser)) {
       return;
     }
     await doFetch(false);
@@ -281,7 +291,14 @@ export function createListController<T, F extends Record<string, unknown> = Reco
   const setFilters = (newFilters: Partial<F>) => {
     filters = { ...filters, ...newFilters };
     if (autoFetchOnFilterChange && (_fetched || _inFlight)) {
-      doFetch(true);
+      // Fire-and-forget from a setter: route any rejection into the error state
+      // instead of leaving it unhandled.
+      doFetch(true).catch((cause: unknown) => {
+        if (disposed) return;
+        const fetchError = cause instanceof Error ? cause : new Error(String(cause));
+        error = fetchError.message;
+        options.onError?.(fetchError);
+      });
     }
   };
 

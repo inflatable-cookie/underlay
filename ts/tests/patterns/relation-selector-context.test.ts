@@ -3,6 +3,9 @@ import { createSelectionHistory } from "../../src/patterns/selection-history.js"
 
 type Item = { id: string; label: string };
 
+// Callbacks registered through the mocked onDestroy, so tests can simulate unmount.
+let destroyCallbacks: Array<() => void> = [];
+
 async function loadContextModule() {
 	vi.resetModules();
 	(globalThis as any).$state = <T>(initial: T) => initial;
@@ -11,10 +14,14 @@ async function loadContextModule() {
 		{ by: <T>(fn: () => T) => fn() }
 	);
 	(globalThis as any).$effect = (fn: () => void) => fn();
+	destroyCallbacks = [];
 
 	const contextStore = new Map<symbol, unknown>();
 	vi.doMock("svelte", async (importOriginal) => ({
 		...await importOriginal<typeof import("svelte")>(),
+		onDestroy: (fn: () => void) => {
+			destroyCallbacks.push(fn);
+		},
 		setContext: <T>(key: symbol, value: T) => {
 			contextStore.set(key, value);
 			return value;
@@ -34,6 +41,7 @@ async function loadContextModuleWithDrillDownMock(drillDownActions: Record<strin
 		{ by: <T>(fn: () => T) => fn() }
 	);
 	(globalThis as any).$effect = (fn: () => void) => fn();
+	destroyCallbacks = [];
 
 	vi.doMock("../../src/patterns/RelationSelector/drilldown-context.svelte.js", () => ({
 		createDrillDownContext: () => ({
@@ -44,6 +52,9 @@ async function loadContextModuleWithDrillDownMock(drillDownActions: Record<strin
 	const contextStore = new Map<symbol, unknown>();
 	vi.doMock("svelte", async (importOriginal) => ({
 		...await importOriginal<typeof import("svelte")>(),
+		onDestroy: (fn: () => void) => {
+			destroyCallbacks.push(fn);
+		},
 		setContext: <T>(key: symbol, value: T) => {
 			contextStore.set(key, value);
 			return value;
@@ -273,5 +284,33 @@ describe("patterns/RelationSelector/context.svelte.ts", () => {
 		});
 
 		expect(ctx.drillDown).toBe(drillDownActions);
+	});
+
+	it("drops search results that resolve after the component is destroyed", async () => {
+		const { mod } = await loadContextModule();
+		let resolveSearch: (value: { items: Item[]; total: number }) => void = () => {};
+		const search = vi.fn(
+			() =>
+				new Promise<{ items: Item[]; total: number }>((resolve) => {
+					resolveSearch = resolve;
+				}),
+		);
+		const ctx = mod.createRelationSelectorContext<Item>({
+			mode: "single",
+			label: "Relations",
+			value: null,
+			search: search as any,
+			filters: [],
+		});
+
+		const pending = ctx.performSearch("late");
+		expect(destroyCallbacks.length).toBeGreaterThan(0);
+		for (const teardown of destroyCallbacks) teardown();
+
+		resolveSearch({ items: [{ id: "late-1", label: "Late" }], total: 1 });
+		await pending;
+
+		expect(ctx.state.searchResults).toEqual([]);
+		expect(ctx.state.searchTotal).toBe(0);
 	});
 });

@@ -121,12 +121,12 @@
 <style>
   .underlay-entity-trash-page {
     display: grid;
-    gap: 1.5rem;
+    gap: var(--underlay-space-6, 1.5rem);
   }
 
   .underlay-entity-trash-page__empty {
     display: grid;
-    gap: 1rem;
+    gap: var(--underlay-space-4, 1rem);
     justify-items: center;
   }
 </style>

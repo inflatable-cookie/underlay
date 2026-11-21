@@ -143,4 +143,49 @@ describe("patterns/batch-actions.svelte.ts", () => {
 		expect(await batch.requestAction("run")).toBeNull();
 		expect(action.execute).not.toHaveBeenCalled();
 	});
+
+	it("ignores a second execution while one is in flight", async () => {
+		vi.resetModules();
+		const { useBatchActions } = await import("../../src/patterns/batch-actions.svelte");
+		const batch = useBatchActions<string>();
+
+		let release: () => void = () => {};
+		const slow = {
+			id: "slow",
+			label: "Slow",
+			execute: vi.fn(
+				() =>
+					new Promise<{ success: boolean; affected: number }>((resolve) => {
+						release = () => resolve({ success: true, affected: 1 });
+					}),
+			),
+		};
+		batch.registerAction(slow);
+		batch.selectAll(["a"]);
+
+		const first = batch.requestAction("slow");
+		expect(batch.executing).toBe(true);
+		expect(await batch.requestAction("slow")).toBeNull();
+		expect(slow.execute).toHaveBeenCalledTimes(1);
+
+		release();
+		await expect(first).resolves.toEqual({ success: true, affected: 1 });
+		expect(batch.executing).toBe(false);
+	});
+
+	it("reports a default error message when a failed result has no message", async () => {
+		vi.resetModules();
+		const { useBatchActions } = await import("../../src/patterns/batch-actions.svelte");
+		const batch = useBatchActions<string>();
+
+		batch.registerAction({
+			id: "silent",
+			label: "Archive",
+			execute: async () => ({ success: false, affected: 0 }),
+		});
+		batch.selectAll(["a"]);
+
+		await batch.requestAction("silent");
+		expect(batch.error).toBe("Archive failed");
+	});
 });

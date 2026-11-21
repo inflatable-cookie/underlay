@@ -282,6 +282,7 @@
 
   const toastStore = useToasts();
   const selectionScopeId = createListSelectionScopeId();
+  const uid = $props.id();
 
   const listQuery = createEntityListQuery({
     external: () => externalQuery,
@@ -348,6 +349,10 @@
   let lastNotifiedTotalCount = $state<number | null>(null);
   let lastNotifiedReorderAvailability = $state<boolean | null>(null);
 
+  // Batch actions. Declared before any derived that reads it (selectedIdsKey)
+  // so no reader can observe it before initialisation.
+  const batch = useBatchActions<string>();
+
   // Custom batch action dialog
   let pendingDialogAction = $state<BatchActionConfig | null>(null);
   const selectedIdsKey = $derived.by(() => JSON.stringify(batch.selectedIds));
@@ -364,7 +369,6 @@
   const itemCount = $derived(items.length);
   const totalCount = $derived(resolveTotalCount(pageData.data, items.length));
   const totalPages = $derived(Math.max(1, Math.ceil(totalCount / currentPageSize)));
-  const hasNextPage = $derived(currentPage < totalPages || Boolean(pageData.data?.hasMore));
   const reorderAvailable = $derived(isListReorderAvailable(reorder, {
     items: itemCount,
     total: totalCount,
@@ -378,8 +382,6 @@
   // surface a subtle busy affordance instead of leaving the list looking frozen.
   const isRefetching = $derived(pageData.refetching && items.length > 0);
 
-  // Batch actions
-  const batch = useBatchActions<string>();
   const unregisterSelectionScope = registerListSelectionScope(selectionScopeId, () => {
     batch.clear();
     setSelectionMode(false);
@@ -573,10 +575,6 @@
     });
   }
 
-  function clearSort() {
-    handleSortChange([]);
-  }
-
   function clearEphemeralControls() {
     if (!hasActiveEphemeralControls) {
       return;
@@ -737,11 +735,16 @@
     batch.requestAction(actionId);
   }
 
+  // Plain guard: blocks a second submit while the dialog action is still running.
+  let dialogSubmitInFlight = false;
+
   async function handleDialogSubmit(values: Record<string, unknown>) {
-    if (!pendingDialogAction) return;
+    const action = pendingDialogAction;
+    if (!action || dialogSubmitInFlight) return;
+    dialogSubmitInFlight = true;
     try {
       const ids = batch.selectedIds;
-      await pendingDialogAction.handler(ids, values);
+      await action.handler(ids, values);
       onDataChange?.();
       await pageData.refetch();
       batch.clear();
@@ -749,6 +752,8 @@
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       toastStore.push({ message, variant: "error" });
+    } finally {
+      dialogSubmitInFlight = false;
     }
   }
 
@@ -850,7 +855,7 @@
       >
         {#if filter.type === "search"}
           <TextInput
-            id={`filter-${filter.id}`}
+            id={`${uid}-filter-${filter.id}`}
             type="search"
             size="sm"
             value={search.value(filter, getListFilterValue(currentQuery, filter))}
@@ -861,7 +866,7 @@
           />
         {:else if filter.type === "select"}
           <Select
-            id={`filter-${filter.id}`}
+            id={`${uid}-filter-${filter.id}`}
             size="sm"
             disabled={filter.disabled ?? false}
             value={getListFilterValue(currentQuery, filter)}

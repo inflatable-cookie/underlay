@@ -8,6 +8,7 @@
   */
 
   import { untrack } from "svelte";
+  import { resolveRedirectTo } from "../../client/route-protection";
   import type { LoginMethod, LoginPageProps, LoginStep } from "./login-page.types";
   import {
     getPostTwoFactorOutcome,
@@ -208,8 +209,10 @@
   }
 
   function handleSetupNow() {
-    if (setupHref && setupHref.startsWith("/") && !setupHref.startsWith("//")) {
-      window.location.href = setupHref;
+    // Same-origin paths only; anything unsafe resolves to "" and is ignored.
+    const target = resolveRedirectTo(setupHref, "");
+    if (target) {
+      window.location.href = target;
     }
   }
 

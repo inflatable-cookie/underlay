@@ -1,4 +1,4 @@
-import { setContext, untrack } from "svelte";
+import { onDestroy, setContext, untrack } from "svelte";
 import type {
   SelectableRelation,
   RelationSelectorProps,
@@ -68,6 +68,13 @@ export function createRelationSelectorContext<T extends SelectableRelation>(
   let searchSeq = 0;
   let suggestionsSeq = 0;
   let pickerDrillContext = $state<DrillDownContext>({});
+
+  // Supersede any in-flight search or suggestions request on unmount so a late
+  // response never writes into torn-down state.
+  onDestroy(() => {
+    searchSeq += 1;
+    suggestionsSeq += 1;
+  });
 
   const pickerAtFinalLevel = $derived(
     props.drillDown?.levels.every(({ key }) => Object.hasOwn(pickerDrillContext, key)) ?? true,

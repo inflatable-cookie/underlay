@@ -2,6 +2,9 @@ import { describe, expect, it, vi } from "vitest";
 
 type BlobUploadModule = typeof import("../../src/patterns/blob-upload.js");
 
+// Teardowns captured from the $effect stub, so tests can simulate unmount.
+let effectTeardowns: Array<() => void> = [];
+
 async function loadMediaUploadModule(mocks?: {
 	validateImpl?: (file: File, max: number) => { valid: boolean; error?: string };
 	hashImpl?: (file: File) => Promise<string>;
@@ -10,6 +13,11 @@ async function loadMediaUploadModule(mocks?: {
 	vi.resetModules();
 	(globalThis as any).$state = <T>(initial: T) => initial;
 	(globalThis as any).$derived = <T>(value: T) => value;
+	(globalThis as any).$effect = (fn: () => void | (() => void)) => {
+		const teardown = fn();
+		if (typeof teardown === "function") effectTeardowns.push(teardown);
+	};
+	effectTeardowns = [];
 
 	vi.doMock("../../src/patterns/blob-upload.js", () => ({
 		validateFile: vi.fn(mocks?.validateImpl ?? (() => ({ valid: true }))),
@@ -294,6 +302,50 @@ describe("patterns/media-upload-flow.svelte.ts", () => {
 		expect(flow.step).toBe("select");
 		expect(flow.error).toBeNull();
 		expect(flow.file).not.toBeNull();
+		expect(onError).not.toHaveBeenCalled();
+	});
+
+	it("aborts an in-flight upload when the owning component unmounts", async () => {
+		const { BlobUploadError } = await import("../../src/patterns/blob-types.js");
+		let capturedSignal: AbortSignal | undefined;
+		const { mod } = await loadMediaUploadModule({
+			uploadImpl: async (_plan, _file, options) =>
+				new Promise((_resolve, reject) => {
+					capturedSignal = options?.signal;
+					options?.signal?.addEventListener("abort", () => {
+						reject(new BlobUploadError("Upload was aborted", "UPLOAD_ABORTED"));
+					});
+				}) as any,
+		});
+
+		const onError = vi.fn();
+		const flow = mod.createMediaUploadFlow({
+			checkDuplicate: vi.fn(async () => ({ exists: false })),
+			createMedia: vi.fn(async () => ({ id: "media-1" })) as any,
+			initiateUpload: vi.fn(async () => ({
+				versionId: "v-1",
+				uploadPlan: {
+					uploadUrl: "https://upload",
+					method: "PUT",
+					headers: {},
+					expiresAt: "2099-01-01T00:00:00Z",
+				},
+			})) as any,
+			finaliseUpload: vi.fn() as any,
+			onError,
+		});
+
+		flow.setFile(fakeFile());
+		const uploadPromise = flow.startUpload();
+		await vi.waitFor(() => {
+			expect(capturedSignal).toBeDefined();
+		});
+
+		for (const teardown of effectTeardowns) teardown();
+		await uploadPromise;
+
+		expect(capturedSignal?.aborted).toBe(true);
+		expect(flow.step).toBe("uploading");
 		expect(onError).not.toHaveBeenCalled();
 	});
 });
