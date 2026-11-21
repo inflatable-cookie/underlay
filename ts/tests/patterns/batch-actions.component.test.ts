@@ -154,9 +154,10 @@ describe("patterns/batch-actions.svelte.ts", () => {
 			id: "slow",
 			label: "Slow",
 			execute: vi.fn(
-				() => new Promise<{ success: boolean; affected: number }>((resolve) => {
-					release = () => resolve({ success: true, affected: 1 });
-				}),
+				() =>
+					new Promise<{ success: boolean; affected: number }>((resolve) => {
+						release = () => resolve({ success: true, affected: 1 });
+					}),
 			),
 		};
 		batch.registerAction(slow);
