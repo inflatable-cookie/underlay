@@ -16,9 +16,28 @@ export interface OptimisticUpdateOperation<T> {
 	rollback: () => void;
 }
 
-export interface OptimisticListOptions<T> {
+export type OptimisticStringKey<T extends object> = {
+	[K in keyof T]-?: T[K] extends string ? K : never;
+}[keyof T];
+
+type UnionToIntersection<U> = (U extends unknown ? (arg: U) => void : never) extends (
+	arg: infer I,
+) => void
+	? I
+	: never;
+
+type IsSingleKey<K> = [K] extends [never]
+	? false
+	: [K] extends [UnionToIntersection<K>]
+		? true
+		: false;
+
+export type OptimisticAddItemForKey<T extends object, K extends OptimisticStringKey<T>> =
+	IsSingleKey<K> extends true ? Omit<T, K> : T;
+
+export interface OptimisticListOptions<T extends object> {
 	tempId?: () => string;
-	key?: keyof T;
+	key?: OptimisticStringKey<T>;
 }
 
 export type OptimisticDefaultAddItem<T extends object> = "id" extends keyof T ? Omit<T, "id"> : T;
@@ -52,15 +71,19 @@ interface RemovedEntry<T> {
 export function createOptimisticList<T extends { id: string }>(
 	initial?: T[],
 	options?: { tempId?: () => string; key?: "id" },
-): OptimisticList<T, Omit<T, "id">>;
-export function createOptimisticList<T extends object, K extends keyof T>(
+): OptimisticList<T>;
+export function createOptimisticList<T extends object, K extends OptimisticStringKey<T>>(
 	initial: T[] | undefined,
 	options: { tempId?: () => string; key: K },
-): OptimisticList<T, Omit<T, K>>;
+): OptimisticList<T, OptimisticAddItemForKey<T, K>>;
 export function createOptimisticList<T extends object>(
+	initial: T[] | undefined,
+	options: { tempId?: () => string; key: OptimisticStringKey<T> },
+): OptimisticList<T, T>;
+export function createOptimisticList<T extends { id: string }>(
 	initial?: T[],
 	options?: OptimisticListOptions<T>,
-): OptimisticList<T, T>;
+): OptimisticList<T>;
 export function createOptimisticList<T extends object>(
 	initial: T[] = [],
 	options: OptimisticListOptions<T> = {},

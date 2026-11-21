@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { get } from "svelte/store";
-import { createOptimisticList, type OptimisticListOptions } from "../../../src/patterns/optimistic";
+import {
+	createOptimisticList,
+	type OptimisticList,
+	type OptimisticListOptions,
+} from "../../../src/patterns/optimistic";
 
 interface Item {
 	id: string;
@@ -446,8 +450,14 @@ describe("createOptimisticList", () => {
 			const slugOpts: OptimisticListOptions<ItemWithSlug> = { key: "slug" };
 			const tempOnlyOpts: OptimisticListOptions<ItemWithSlug> = { tempId: () => "temp-1" };
 
-			const listFromOpts = createOptimisticList<ItemWithSlug>([], slugOpts);
-			const listFromTempOpts = createOptimisticList<ItemWithSlug>([], tempOnlyOpts);
+			const listFromOpts: OptimisticList<ItemWithSlug> = createOptimisticList<ItemWithSlug>(
+				[],
+				slugOpts,
+			);
+			const listFromTempOpts: OptimisticList<ItemWithSlug> = createOptimisticList<ItemWithSlug>(
+				[],
+				tempOnlyOpts,
+			);
 			const listFromUndefined = createOptimisticList<ItemWithSlug>(undefined, { key: "slug" });
 			const listDirect = createOptimisticList<ItemWithSlug>(
 				[{ id: "1", slug: "alpha", name: "Alpha" }],
@@ -460,19 +470,35 @@ describe("createOptimisticList", () => {
 			upd.rollback();
 			expect(get(listDirect)[0].name).toBe("Alpha");
 
-			// Valid adds: complete item when key is unknown to TS; Omit<T, "slug"> when key is known.
-			listFromOpts.add({ id: "2", slug: "beta", name: "Beta" });
-			listFromTempOpts.add({ id: "3", slug: "gamma", name: "Gamma" });
+			// Default-ID typed options preserve Omit<T, "id"> add and OptimisticList<T> assignment.
+			listFromTempOpts.add({ slug: "gamma", name: "Gamma" });
+			listFromOpts.add({ slug: "beta", name: "Beta" });
 			listFromUndefined.add({ id: "4", slug: "delta", name: "Delta" });
 			listTypedKey.add({ id: "5", name: "Epsilon" });
 
-			// Invalid incomplete adds must be rejected by TypeScript:
+			// Union key cannot omit multiple fields; must supply full item.
+			const unionKey = "slug" as "slug" | "name";
+			const listUnionKey = createOptimisticList<ItemWithSlug, "slug" | "name">([], {
+				key: unionKey,
+			});
+			listUnionKey.add({ id: "6", slug: "zeta", name: "Zeta" });
+
+			// Invalid calls must be rejected by TypeScript:
 			// @ts-expect-error missing required `name` field when key is unknown to TS
 			const badOneArg = () => listDirect.add({ id: "1", slug: "alpha" });
 			// @ts-expect-error missing required `name` field when key is `"slug"`
 			const badTypedKey = () => listTypedKey.add({ id: "1", slug: "alpha" });
+			// @ts-expect-error union key requires complete item
+			const badUnionKey = () => listUnionKey.add({ id: "1" });
+			// @ts-expect-error numeric key is not a string key
+			const badNumericKey = () => createOptimisticList([{ id: 1, name: "A" }], { key: "id" });
+			// @ts-expect-error rows without string `id` require an explicit key option
+			const badMissingId = () => createOptimisticList([{ slug: "one", name: "One" }]);
 			expect(typeof badOneArg).toBe("function");
 			expect(typeof badTypedKey).toBe("function");
+			expect(typeof badUnionKey).toBe("function");
+			expect(typeof badNumericKey).toBe("function");
+			expect(typeof badMissingId).toBe("function");
 		});
 	});
 
