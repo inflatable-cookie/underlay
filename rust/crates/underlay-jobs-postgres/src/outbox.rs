@@ -268,12 +268,19 @@ struct BatchReport {
     shutdown_requested: bool,
 }
 
+#[derive(Debug, Clone, Copy)]
+struct DrainCursor {
+    occurred_at: chrono::DateTime<Utc>,
+    id: uuid::Uuid,
+}
+
 enum ProcessOneOutcome {
     Empty,
     Succeeded(uuid::Uuid),
     Failed {
         event_id: uuid::Uuid,
         event_type: String,
+        occurred_at: chrono::DateTime<Utc>,
         error: String,
     },
 }
@@ -284,6 +291,7 @@ trait OutboxBackend: Sync {
     fn process_next<'a, F, Fut>(
         &'a self,
         skip_ids: &'a [uuid::Uuid],
+        after: Option<DrainCursor>,
         timeout: Duration,
         handler: &'a F,
     ) -> impl Future<Output = Result<ProcessOneOutcome, Self::Error>> + Send + 'a
@@ -298,6 +306,7 @@ impl OutboxBackend for PgPool {
     async fn process_next<'a, F, Fut>(
         &'a self,
         skip_ids: &'a [uuid::Uuid],
+        after: Option<DrainCursor>,
         timeout: Duration,
         handler: &'a F,
     ) -> Result<ProcessOneOutcome, Self::Error>
@@ -307,19 +316,25 @@ impl OutboxBackend for PgPool {
     {
         let mut tx = self.begin().await?;
 
-        // Claim the next unprocessed event that is not currently skipped/backed off.
+        // Claim the next unprocessed event that is not currently skipped/backed off
+        // and lies strictly after the current drain-pass cursor.
+        let after_occurred_at = after.map(|cursor| cursor.occurred_at);
+        let after_id = after.map(|cursor| cursor.id);
         let row = sqlx::query(
             r#"
             SELECT id, event_type, payload, occurred_at
             FROM platform.domain_events
             WHERE processed_at IS NULL
               AND NOT (id = ANY($1))
-            ORDER BY occurred_at ASC
+              AND ($2::timestamptz IS NULL OR (occurred_at, id) > ($2, $3))
+            ORDER BY occurred_at ASC, id ASC
             LIMIT 1
             FOR UPDATE SKIP LOCKED
             "#,
         )
         .bind(skip_ids)
+        .bind(after_occurred_at)
+        .bind(after_id)
         .fetch_optional(&mut *tx)
         .await?;
 
@@ -342,6 +357,7 @@ impl OutboxBackend for PgPool {
 
         let event_id = event.id;
         let event_type = event.event_type.clone();
+        let occurred_at = event.occurred_at;
         let failure = match tokio::time::timeout(timeout, async { handler(event).await }).await {
             Ok(Ok(())) => {
                 // Mark as processed
@@ -373,6 +389,7 @@ impl OutboxBackend for PgPool {
         Ok(ProcessOneOutcome::Failed {
             event_id,
             event_type,
+            occurred_at,
             error: failure,
         })
     }
@@ -499,7 +516,7 @@ impl OutboxProcessor {
 
         let mut shutdown = pin!(shutdown);
         let mut should_wait = false;
-        let mut drain_skip_ids: Vec<uuid::Uuid> = Vec::new();
+        let mut drain_cursor: Option<DrainCursor> = None;
 
         loop {
             if should_wait {
@@ -534,13 +551,13 @@ impl OutboxProcessor {
             }
 
             let report = self
-                .process_batch_with(backend, &handler, shutdown.as_mut(), &mut drain_skip_ids)
+                .process_batch_with(backend, &handler, shutdown.as_mut(), &mut drain_cursor)
                 .await?;
             if report.shutdown_requested {
                 return Ok(());
             }
             if report.exhausted {
-                drain_skip_ids.clear();
+                drain_cursor = None;
             }
             should_wait = report.exhausted;
         }
@@ -561,9 +578,9 @@ impl OutboxProcessor {
         Fut: Future<Output = Result<(), Box<dyn std::error::Error + Send + Sync>>> + Send,
     {
         let shutdown = pin!(future::pending::<()>());
-        let mut drain_skip_ids = Vec::new();
+        let mut drain_cursor = None;
         let report = self
-            .process_batch_with(pool, handler, shutdown, &mut drain_skip_ids)
+            .process_batch_with(pool, handler, shutdown, &mut drain_cursor)
             .await?;
         Ok(report.processed)
     }
@@ -573,7 +590,7 @@ impl OutboxProcessor {
         backend: &B,
         handler: &F,
         mut shutdown: Pin<&mut S>,
-        drain_skip_ids: &mut Vec<uuid::Uuid>,
+        drain_cursor: &mut Option<DrainCursor>,
     ) -> Result<BatchReport, B::Error>
     where
         B: OutboxBackend,
@@ -590,18 +607,13 @@ impl OutboxProcessor {
             });
         }
 
-        let mut skip_ids = {
+        let skip_ids = {
             let tracker = self
                 .failures
                 .lock()
                 .expect("outbox failure tracker lock poisoned");
             tracker.active_skip_ids(Instant::now())
         };
-        for &id in drain_skip_ids.iter() {
-            if !skip_ids.contains(&id) {
-                skip_ids.push(id);
-            }
-        }
 
         let mut processed = 0usize;
         let mut attempted = 0usize;
@@ -621,7 +633,12 @@ impl OutboxProcessor {
             }
 
             let outcome = backend
-                .process_next(&skip_ids, self.config.handler_timeout(), handler)
+                .process_next(
+                    &skip_ids,
+                    *drain_cursor,
+                    self.config.handler_timeout(),
+                    handler,
+                )
                 .await?;
 
             match outcome {
@@ -640,6 +657,7 @@ impl OutboxProcessor {
                 ProcessOneOutcome::Failed {
                     event_id,
                     event_type,
+                    occurred_at,
                     error,
                 } => {
                     let (attempts, delay) = self
@@ -660,14 +678,10 @@ impl OutboxProcessor {
                         error = %error,
                         "Outbox event handler failed, backing off and continuing batch"
                     );
-                    if !skip_ids.contains(&event_id) {
-                        skip_ids.push(event_id);
-                    }
-                    if drain_skip_ids.len() < MAX_TRACKED_FAILURES
-                        && !drain_skip_ids.contains(&event_id)
-                    {
-                        drain_skip_ids.push(event_id);
-                    }
+                    *drain_cursor = Some(DrainCursor {
+                        occurred_at,
+                        id: event_id,
+                    });
                     attempted += 1;
                 }
             }
@@ -730,7 +744,7 @@ impl OutboxProcessor {
 
         let mut shutdown = pin!(shutdown);
         let mut should_sleep = false;
-        let mut drain_skip_ids: Vec<uuid::Uuid> = Vec::new();
+        let mut drain_cursor: Option<DrainCursor> = None;
 
         loop {
             tokio::select! {
@@ -744,13 +758,13 @@ impl OutboxProcessor {
             }
 
             let report = self
-                .process_batch_with(backend, &handler, shutdown.as_mut(), &mut drain_skip_ids)
+                .process_batch_with(backend, &handler, shutdown.as_mut(), &mut drain_cursor)
                 .await?;
             if report.shutdown_requested {
                 return Ok(());
             }
             if report.exhausted {
-                drain_skip_ids.clear();
+                drain_cursor = None;
             }
             should_sleep = report.exhausted;
         }

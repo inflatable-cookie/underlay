@@ -39,6 +39,7 @@ impl OutboxBackend for MemOutbox {
     async fn process_next<'a, F, Fut>(
         &'a self,
         skip_ids: &'a [uuid::Uuid],
+        after: Option<DrainCursor>,
         timeout: Duration,
         handler: &'a F,
     ) -> Result<ProcessOneOutcome, Self::Error>
@@ -48,10 +49,19 @@ impl OutboxBackend for MemOutbox {
     {
         let next = {
             let guard = self.events.lock().unwrap();
-            guard
+            let mut candidates: Vec<OutboxEvent> = guard
                 .iter()
-                .find(|(event, processed)| !processed && !skip_ids.contains(&event.id))
+                .filter(|(event, processed)| {
+                    !processed
+                        && !skip_ids.contains(&event.id)
+                        && after.is_none_or(|cursor| {
+                            (event.occurred_at, event.id) > (cursor.occurred_at, cursor.id)
+                        })
+                })
                 .map(|(event, _)| event.clone())
+                .collect();
+            candidates.sort_by_key(|event| (event.occurred_at, event.id));
+            candidates.into_iter().next()
         };
 
         let Some(event) = next else {
@@ -60,6 +70,7 @@ impl OutboxBackend for MemOutbox {
 
         let event_id = event.id;
         let event_type = event.event_type.clone();
+        let occurred_at = event.occurred_at;
         match tokio::time::timeout(timeout, async { handler(event).await }).await {
             Ok(Ok(())) => {
                 let mut guard = self.events.lock().unwrap();
@@ -71,11 +82,13 @@ impl OutboxBackend for MemOutbox {
             Ok(Err(error)) => Ok(ProcessOneOutcome::Failed {
                 event_id,
                 event_type,
+                occurred_at,
                 error: error.to_string(),
             }),
             Err(_) => Ok(ProcessOneOutcome::Failed {
                 event_id,
                 event_type,
+                occurred_at,
                 error: format!("handler timed out after {timeout:?}"),
             }),
         }
@@ -177,13 +190,13 @@ async fn poison_pill_event_does_not_starve_newer_events_and_recovers_after_backo
     };
 
     // First batch: poison event fails once, but both newer healthy events still succeed.
-    let mut drain_skip = Vec::new();
+    let mut drain_cursor = None;
     let report = processor
         .process_batch_with(
             &outbox,
             &handler,
             pin!(future::pending::<()>()),
-            &mut drain_skip,
+            &mut drain_cursor,
         )
         .await
         .unwrap();
@@ -194,13 +207,13 @@ async fn poison_pill_event_does_not_starve_newer_events_and_recovers_after_backo
     // While poison event is still in backoff, a new healthy event is processed
     // without re-running the failing poison event.
     let healthy_c = outbox.push("healthy.c");
-    drain_skip.clear();
+    drain_cursor = None;
     let report = processor
         .process_batch_with(
             &outbox,
             &handler,
             pin!(future::pending::<()>()),
-            &mut drain_skip,
+            &mut drain_cursor,
         )
         .await
         .unwrap();
@@ -214,13 +227,13 @@ async fn poison_pill_event_does_not_starve_newer_events_and_recovers_after_backo
     // After backoff expires, the poison event is retried and succeeds once fixed.
     tokio::time::advance(Duration::from_secs(10)).await;
     fail_poison.store(false, Ordering::SeqCst);
-    drain_skip.clear();
+    drain_cursor = None;
     let report = processor
         .process_batch_with(
             &outbox,
             &handler,
             pin!(future::pending::<()>()),
-            &mut drain_skip,
+            &mut drain_cursor,
         )
         .await
         .unwrap();
@@ -230,6 +243,62 @@ async fn poison_pill_event_does_not_starve_newer_events_and_recovers_after_backo
         outbox.processed_ids(),
         vec![poison_id, healthy_a, healthy_b, healthy_c]
     );
+}
+
+#[tokio::test(start_paused = true)]
+async fn drain_cursor_advances_past_more_failures_than_tracker_cap() {
+    let outbox = MemOutbox::default();
+    let failing_count = MAX_TRACKED_FAILURES + 5;
+    for _ in 0..failing_count {
+        outbox.push("poison.event");
+    }
+    let healthy_id = outbox.push("healthy.event");
+
+    let processor = OutboxProcessor::new(
+        OutboxConfig::default()
+            .with_batch_size(1)
+            .with_failure_backoff(Duration::ZERO)
+            .with_max_failure_backoff(Duration::ZERO)
+            .with_fallback_interval(Duration::from_secs(30)),
+    );
+
+    let (shutdown_tx, shutdown_rx) = tokio::sync::oneshot::channel::<()>();
+    let shutdown_tx = Arc::new(Mutex::new(Some(shutdown_tx)));
+    let poison_attempts = Arc::new(AtomicUsize::new(0));
+
+    tokio::time::timeout(
+        Duration::from_secs(5),
+        processor.run_polling_backend_until_shutdown(
+            &outbox,
+            {
+                let poison_attempts = Arc::clone(&poison_attempts);
+                let shutdown_tx = Arc::clone(&shutdown_tx);
+                move |event: OutboxEvent| {
+                    let poison_attempts = Arc::clone(&poison_attempts);
+                    let shutdown_tx = Arc::clone(&shutdown_tx);
+                    async move {
+                        if event.event_type == "poison.event" {
+                            poison_attempts.fetch_add(1, Ordering::SeqCst);
+                            return Err("poison failure".into());
+                        }
+                        if let Some(tx) = shutdown_tx.lock().unwrap().take() {
+                            let _ = tx.send(());
+                        }
+                        Ok(())
+                    }
+                }
+            },
+            async move {
+                let _ = shutdown_rx.await;
+            },
+        ),
+    )
+    .await
+    .expect("healthy event beyond MAX_TRACKED_FAILURES must still be reached")
+    .unwrap();
+
+    assert_eq!(poison_attempts.load(Ordering::SeqCst), failing_count);
+    assert_eq!(outbox.processed_ids(), vec![healthy_id]);
 }
 
 #[tokio::test(start_paused = true)]

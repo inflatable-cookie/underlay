@@ -92,27 +92,20 @@ where
                 }
             }
 
-            // Coalesce already-buffered notifications without blocking on the socket.
-            notifier.drain();
-
             // When a bounded batch filled completely, more jobs may still be pending.
-            // Yield once so shutdown and other tasks get a turn, then continue draining
-            // immediately instead of sleeping for `poll_interval`.
+            // Coalesce any already-buffered notifications, yield once so shutdown and
+            // other tasks get a turn, then continue draining immediately instead of
+            // sleeping for `poll_interval`.
             if hit_batch_limit {
+                notifier.drain();
                 tokio::task::yield_now().await;
                 continue;
             }
 
-            // If we processed jobs during this pass, coalesce burst notifications
-            // that arrived on the LISTEN socket while draining before sleeping.
-            if processed_in_batch > 0 {
-                tokio::select! {
-                    biased;
-                    () = &mut shutdown => return Ok(()),
-                    _ = notifier.coalesce_pending(MAX_COALESCED_NOTIFICATIONS, COALESCE_SOCKET_TIMEOUT) => {}
-                }
-            }
-
+            // Never drain/coalesce after the final empty `run_once()` check: a job
+            // inserted after that query may already have queued its NOTIFY on the
+            // socket, so go straight into the shutdown-aware wait and coalesce only
+            // *after* waking (before the next `run_once()`).
             debug!(
                 timeout_secs = poll_interval.as_secs(),
                 "Waiting for job notification"
@@ -126,7 +119,7 @@ where
                         Ok(Some(job_type)) => {
                             debug!(job_type = %job_type, "Woke up from notification");
                             // Coalesce additional burst notifications already queued on the socket
-                            // while staying responsive to shutdown.
+                            // before rechecking the queue, while staying responsive to shutdown.
                             tokio::select! {
                                 biased;
                                 () = &mut shutdown => return Ok(()),
