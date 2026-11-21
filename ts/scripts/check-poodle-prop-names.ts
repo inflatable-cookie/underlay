@@ -6,10 +6,7 @@ import { fileURLToPath } from "node:url";
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptDir, "..", "..");
 
-const targets = [
-	path.join(repoRoot, "ts", "src"),
-	path.join(repoRoot, "docs", "guides"),
-];
+const targets = [path.join(repoRoot, "ts", "src"), path.join(repoRoot, "docs", "guides")];
 
 const retiredPropNames = [
 	"isDisabled",
@@ -92,7 +89,10 @@ function listFiles(dir: string): string[] {
 			out.push(...listFiles(full));
 			continue;
 		}
-		if (entry.isFile() && (full.endsWith(".ts") || full.endsWith(".svelte") || full.endsWith(".md"))) {
+		if (
+			entry.isFile() &&
+			(full.endsWith(".ts") || full.endsWith(".svelte") || full.endsWith(".md"))
+		) {
 			out.push(full);
 		}
 	}
@@ -187,7 +187,11 @@ function scanLowercaseEventContext(
 	return violations;
 }
 
-function scanOptionModelContext(text: string, importedOptionTypes: string[], file: string): Violation[] {
+function scanOptionModelContext(
+	text: string,
+	importedOptionTypes: string[],
+	file: string,
+): Violation[] {
 	if (importedOptionTypes.length === 0) return [];
 
 	const typeMentionPattern = new RegExp(`\\b(${importedOptionTypes.join("|")})\\b`);
@@ -207,12 +211,22 @@ function scanOptionModelContext(text: string, importedOptionTypes: string[], fil
 	return violations;
 }
 
-function getMarkdownCodeBlocks(text: string): string[] {
-	const blocks: string[] = [];
+type MarkdownCodeBlock = {
+	code: string;
+	startLine: number;
+};
+
+function getMarkdownCodeBlocks(text: string): MarkdownCodeBlock[] {
+	const blocks: MarkdownCodeBlock[] = [];
 	const codeBlockPattern = /```[a-zA-Z0-9_-]*\n([\s\S]*?)```/g;
 	let match: RegExpExecArray | null;
 	while ((match = codeBlockPattern.exec(text))) {
-		blocks.push(match[1]);
+		const newlineIndex = match[0].indexOf("\n");
+		const codeStartOffset = match.index + newlineIndex + 1;
+		blocks.push({
+			code: match[1],
+			startLine: getLineNumber(text, codeStartOffset),
+		});
 	}
 	return blocks;
 }
@@ -223,15 +237,19 @@ function scanFile(file: string): Violation[] {
 
 	if (file.endsWith(".md")) {
 		return getMarkdownCodeBlocks(text).flatMap((block) => {
-			const imports = parsePoodleImports(block);
+			const imports = parsePoodleImports(block.code);
 			if (imports.components.length === 0 && imports.optionTypes.length === 0) {
 				return [];
 			}
-			return [
-				...scanMarkupContext(block, imports.components, rel),
-				...scanLowercaseEventContext(block, imports.components, rel),
-				...scanOptionModelContext(block, imports.optionTypes, rel),
+			const blockViolations = [
+				...scanMarkupContext(block.code, imports.components, rel),
+				...scanLowercaseEventContext(block.code, imports.components, rel),
+				...scanOptionModelContext(block.code, imports.optionTypes, rel),
 			];
+			return blockViolations.map((violation) => ({
+				...violation,
+				line: block.startLine + violation.line - 1,
+			}));
 		});
 	}
 

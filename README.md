@@ -26,14 +26,24 @@ Underlay’s current TypeScript/Svelte package boundary is explicit:
 
 - `@inflatable-cookie/underlay/patterns`
   - retained workflow/page-shell UI
+- `@inflatable-cookie/underlay/templates`
+  - higher-order admin page templates, sections, and cards
+- `@inflatable-cookie/underlay/styles`
+  - shared CSS tokens and stylesheets (`./styles`, `./styles/*.css`)
 - `@inflatable-cookie/underlay/runtime/*`
-  - shared app/runtime helpers and controllers via explicit feature subpaths
+  - shared app/runtime helpers and controllers via explicit feature subpaths (plus `./runtime`)
 - `@inflatable-cookie/underlay/utils/*`
   - small standalone helpers via focused subpaths
 - `@inflatable-cookie/underlay/client/*`
-  - transport and SvelteKit-facing client helpers via explicit feature subpaths
+  - transport and SvelteKit-facing client helpers via explicit feature subpaths (plus `./client`)
 - `@inflatable-cookie/underlay/nightfire/*`
-  - structured content editor/runtime package via explicit subpaths
+  - Underlay-retained Nightfire editor and media subpaths (`./nightfire/editor`, `./nightfire/media`)
+- `@inflatable-cookie/underlay/testing`
+  - TypeScript/Svelte test helpers and mock HTTP client
+- `@inflatable-cookie/underlay/tools/*`
+  - consumer guardrails, workspace-shape, env-authority, and template checks
+- `@inflatable-cookie/underlay/server/*`
+  - server-side CSP, security headers, and layered config helpers (`./server`, `./server/config-stack`)
 
 The flat root import surface `@inflatable-cookie/underlay` is retired. Import from
 the explicit package subpaths above instead.
@@ -66,7 +76,6 @@ Common local commands:
 
 ```bash
 effigy qa:docs
-effigy qa:northstar
 effigy validate
 effigy qa
 effigy rust:build
@@ -85,8 +94,6 @@ For shared UI discovery, use the ACME reference apps in `underlay-reference`
 for retained Underlay workflow shells and helpers. Use Poodle's own
 preview/docs for primitives and generic composites that no longer belong to
 Underlay.
-
-Package scripts remain convenience wrappers, but direct `effigy ...` is canonical when you are already in this repo.
 
 Use `effigy doctor` when you want broader repo scans. Underlay currently carries structural scan findings in that surface, so `health` is the better day-to-day baseline.
 

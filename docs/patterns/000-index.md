@@ -124,10 +124,3 @@ catalogue as a second UI system:
 
 To bring a project up to current patterns, use
 [200-project-sync.md](../guides/200-project-sync.md).
-
-## Next Task
-
-Translate the remaining mixed admin recipes in batches rather than growing this
-catalogue again. The next batch after the current wave should cover
-`reorderable-collections` and `trash-lifecycle`, then the relation-selector and
-ops/media recipes.

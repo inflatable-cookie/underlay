@@ -526,8 +526,7 @@ Use the same pattern for prefixes, scoped uniqueness, or edit-mode exclusion:
 - pass sibling IDs through `validationContext`
 - derive submit gating from real values plus `validationChange`
 
-For the reusable cross-app recipe, see Poodle
-[Slug Field Recipes](../../../poodle/docs/guides/007-slug-field-recipes.md).
+For the reusable cross-app recipe, see `Slug Field Recipes` in the Poodle guide set.
 
 ---
 

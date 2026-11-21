@@ -222,8 +222,3 @@ Use this contract to judge later implementation work:
 - do TS types, OpenAPI, and Rust serialization still agree
 - is a proposed primitive change truly shared, or is it domain-specific and
   misplaced here
-
-## Next Task
-
-Foundation assessment and bounded repair are complete. Keep this contract
-stable until a later numbered roadmap names new evidence; `g09` is closed.

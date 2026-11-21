@@ -25,11 +25,7 @@ export default defineConfig({
 				import.meta.dirname,
 				"./ts/tests/setup/sveltekit-navigation.mock.ts",
 			),
-			"$app/state": resolve(
-				import.meta.dirname,
-				"./ts/tests/setup/sveltekit-state.mock.ts",
-			),
-			"@inflatable-cookie/underlay": resolve(import.meta.dirname, "./ts/src"),
+			"$app/state": resolve(import.meta.dirname, "./ts/tests/setup/sveltekit-state.mock.ts"),
 			"@inflatable-cookie/underlay/client": resolve(import.meta.dirname, "./ts/src/client"),
 			"@inflatable-cookie/underlay/patterns": resolve(import.meta.dirname, "./ts/src/patterns"),
 		},

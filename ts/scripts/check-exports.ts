@@ -10,6 +10,7 @@ const repoRoot = path.resolve(scriptDir, "..", "..");
 const pkgPath = path.join(repoRoot, "package.json");
 const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8")) as {
 	exports?: Record<string, string | Record<string, string>>;
+	bin?: string | Record<string, string>;
 };
 
 const exportsField = pkg.exports;
@@ -37,6 +38,18 @@ function checkTarget(target: unknown, exportKey: string, condition?: string): vo
 	}
 }
 
+function checkBinTarget(target: unknown, binKey: string): void {
+	if (typeof target !== "string" || target.trim().length === 0) {
+		missing.push(`${binKey} -> ${String(target)}`);
+		return;
+	}
+
+	const fullPath = path.resolve(repoRoot, target);
+	if (!fs.existsSync(fullPath) || !fs.statSync(fullPath).isFile()) {
+		missing.push(`${binKey} -> ${target}`);
+	}
+}
+
 for (const [exportKey, exportValue] of Object.entries(exportsField)) {
 	if (typeof exportValue === "string") {
 		checkTarget(exportValue, exportKey);
@@ -52,12 +65,25 @@ for (const [exportKey, exportValue] of Object.entries(exportsField)) {
 	}
 }
 
+if (pkg.bin !== undefined) {
+	if (typeof pkg.bin === "string") {
+		checkBinTarget(pkg.bin, "bin");
+	} else if (pkg.bin && typeof pkg.bin === "object" && !Array.isArray(pkg.bin)) {
+		for (const [binName, target] of Object.entries(pkg.bin)) {
+			checkBinTarget(target, `bin.${binName}`);
+		}
+	} else {
+		console.error("package.json bin is invalid");
+		process.exit(1);
+	}
+}
+
 if (missing.length > 0) {
-	console.error("Invalid package.json exports. Missing targets:");
+	console.error("Invalid package.json exports or bin targets. Missing targets:");
 	for (const item of missing) {
 		console.error(`- ${item}`);
 	}
 	process.exit(1);
 }
 
-console.log("package.json exports look valid.");
+console.log("package.json exports and bin targets look valid.");

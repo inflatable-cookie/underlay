@@ -43,8 +43,3 @@ Over time, Underlay should:
 - provide sharper migration, auth, and operations primitives where those patterns repeat
 - make new project bootstrap materially faster without encouraging low-rigor scaffolding
 - remain small enough that consuming teams can understand and challenge its boundaries
-
-## Next Task
-
-Complete `g10.001`, the bounded Northstar instruction and language-quality
-audit. It does not change Underlay's product or consumer direction.

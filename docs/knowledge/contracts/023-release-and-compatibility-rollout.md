@@ -292,11 +292,16 @@ version:
 "@inflatable-cookie/nightfire": "X.Y.Z"
 ```
 
-The committed standalone Nightfire Cargo form is:
+The committed standalone Nightfire Cargo form for consumers is:
 
 ```toml
 nightfire = { git = "ssh://git@github.com/inflatable-cookie/nightfire.git", tag = "vX.Y.Z" }
 ```
+
+Underlay's own root [`Cargo.toml`](../../../Cargo.toml) intentionally uses the
+public HTTPS URL (`https://github.com/inflatable-cookie/nightfire.git`,
+allow-listed in [`deny.toml`](../../../deny.toml)) so hosted GitHub Actions CI
+can fetch `nightfire` without SSH deploy keys.
 
 Consumers with a local package also named `nightfire` use an explicit key such
 as `nightfire-core` plus `package = "nightfire"`.
