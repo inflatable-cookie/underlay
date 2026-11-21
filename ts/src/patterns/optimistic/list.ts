@@ -21,8 +21,19 @@ export interface OptimisticListOptions<T> {
 	key?: keyof T;
 }
 
-export interface OptimisticList<T extends object> extends Readable<T[]> {
-	add: (item: Partial<T>) => OptimisticAddOperation<T>;
+export type OptimisticAnyKeyOmit<T extends object> = {
+	[K in keyof T]: Omit<T, K>;
+}[keyof T];
+
+export type OptimisticDefaultAddItem<T extends object> = "id" extends keyof T
+	? Omit<T, "id">
+	: OptimisticAnyKeyOmit<T>;
+
+export interface OptimisticList<
+	T extends object,
+	TAdd = OptimisticDefaultAddItem<T>,
+> extends Readable<T[]> {
+	add: (item: TAdd) => OptimisticAddOperation<T>;
 	remove: (id: string) => OptimisticOperation;
 	update: (id: string, changes: Partial<T>) => OptimisticUpdateOperation<T>;
 	set: (items: T[]) => void;
@@ -44,10 +55,18 @@ interface RemovedEntry<T> {
 	index: number;
 }
 
+export function createOptimisticList<T extends { id: string }>(
+	initial?: T[],
+	options?: { tempId?: () => string; key?: "id" },
+): OptimisticList<T, Omit<T, "id">>;
+export function createOptimisticList<T extends object>(
+	initial: T[],
+	options: { tempId?: () => string; key: keyof T },
+): OptimisticList<T, OptimisticAnyKeyOmit<T>>;
 export function createOptimisticList<T extends object>(
 	initial: T[] = [],
 	options: OptimisticListOptions<T> = {},
-): OptimisticList<T> {
+): OptimisticList<T, OptimisticAnyKeyOmit<T>> {
 	const { tempId = generateTempId } = options;
 	const keyField = (options.key ?? ("id" as keyof T)) as keyof T;
 	const getKey = (item: T): string => String(item[keyField]);
@@ -57,6 +76,7 @@ export function createOptimisticList<T extends object>(
 	const pendingCounts = new Map<string, number>();
 	const baseItems = new Map<string, T>();
 	const activeUpdates = new Map<string, ActiveUpdateEntry<T>[]>();
+	const lastConfirmedOpId = new Map<string, number>();
 	const removedEntries = new Map<string, RemovedEntry<T>>();
 	let nextOpId = 0;
 	let listGeneration = 0;
@@ -98,7 +118,7 @@ export function createOptimisticList<T extends object>(
 		store.update((items) => items.map((i) => (getKey(i) === id ? nextItem : i)));
 	}
 
-	function add(item: Partial<T>): OptimisticAddOperation<T> {
+	function add(item: OptimisticAnyKeyOmit<T>): OptimisticAddOperation<T> {
 		const id = tempId();
 		const optimisticItem = { ...item, [keyField]: id } as T;
 		const generation = listGeneration;
@@ -149,6 +169,7 @@ export function createOptimisticList<T extends object>(
 				}
 				baseItems.delete(id);
 				activeUpdates.delete(id);
+				lastConfirmedOpId.delete(id);
 				unmarkPending(id);
 			},
 			rollback: () => {
@@ -164,6 +185,9 @@ export function createOptimisticList<T extends object>(
 						removedEntries.delete(id);
 					}
 					store.update((items) => {
+						if (items.some((i) => getKey(i) === id)) {
+							return items;
+						}
 						if (restoreIndex >= 0 && restoreIndex <= items.length) {
 							const result = [...items];
 							result.splice(restoreIndex, 0, itemToRestore);
@@ -212,9 +236,16 @@ export function createOptimisticList<T extends object>(
 					const ops = activeUpdates.get(id);
 					const base = baseItems.get(id);
 					const currentOp = ops?.find((op) => op.opId === opId);
+					const latestConfirmed = lastConfirmedOpId.get(id) ?? 0;
+					const isOlderThanConfirmed = opId < latestConfirmed;
+
+					if (opId > latestConfirmed) {
+						lastConfirmedOpId.set(id, opId);
+					}
+
 					if (ops && base && currentOp) {
 						const remaining = ops.filter((op) => op.opId !== opId);
-						if (realItem) {
+						if (realItem && !isOlderThanConfirmed) {
 							baseItems.set(id, realItem);
 							// Older uncommitted ops are superseded by the server snapshot.
 							const newerOnly = remaining.filter((op) => op.opId > opId);
@@ -230,8 +261,9 @@ export function createOptimisticList<T extends object>(
 									: realItem;
 							syncItemState(id, nextItem);
 						} else {
-							// Apply only the non-superseded fields from currentOp.changes so
-							// confirming an older op never overwrites a newer confirmed op.
+							// Apply only non-superseded fields from currentOp.changes so
+							// confirming an older op (with or without a stale snapshot)
+							// never overwrites a newer confirmed value.
 							const nextBase = { ...base, ...currentOp.changes };
 							baseItems.set(id, nextBase);
 							const confirmedKeys = Object.keys(currentOp.changes) as Array<keyof T>;
@@ -254,8 +286,6 @@ export function createOptimisticList<T extends object>(
 								syncItemState(id, nextBase);
 							}
 						}
-					} else if (realItem && !ops) {
-						syncItemState(id, realItem);
 					}
 				}
 				unmarkPending(id);
@@ -294,6 +324,7 @@ export function createOptimisticList<T extends object>(
 		pendingCounts.clear();
 		baseItems.clear();
 		activeUpdates.clear();
+		lastConfirmedOpId.clear();
 		removedEntries.clear();
 		store.set([...items]);
 		pending.set(new Set());

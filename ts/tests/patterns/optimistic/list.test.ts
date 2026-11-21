@@ -324,6 +324,55 @@ describe("createOptimisticList", () => {
 			expect(get(list.isPending)("1")).toBe(false);
 		});
 
+		it("ignores a stale server snapshot when an older update confirms after a newer snapshot confirm", () => {
+			const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
+
+			const first = list.update("1", { name: "Edit 1" });
+			const second = list.update("1", { name: "Edit 2" });
+
+			second.confirm({ id: "1", name: "Server 2" });
+			expect(get(list)[0].name).toBe("Server 2");
+			expect(get(list.isPending)("1")).toBe(true);
+
+			first.confirm({ id: "1", name: "Server 1" });
+			expect(get(list)[0].name).toBe("Server 2");
+			expect(get(list.isPending)("1")).toBe(false);
+		});
+
+		it("ignores a stale server snapshot when an older update confirms after a newer optimistic confirm", () => {
+			const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
+
+			const first = list.update("1", { name: "Edit 1" });
+			const second = list.update("1", { name: "Edit 2" });
+
+			second.confirm();
+			expect(get(list)[0].name).toBe("Edit 2");
+			expect(get(list.isPending)("1")).toBe(true);
+
+			first.confirm({ id: "1", name: "Server 1" });
+			expect(get(list)[0].name).toBe("Edit 2");
+			expect(get(list.isPending)("1")).toBe(false);
+		});
+
+		it("does not duplicate a refreshed row when a stale removal rolls back after set()", () => {
+			const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
+
+			const rem = list.remove("1");
+			list.set([{ id: "1", name: "Refreshed" }]);
+
+			rem.rollback();
+
+			expect(get(list)).toEqual([{ id: "1", name: "Refreshed" }]);
+			expect(get(list.isPending)("1")).toBe(false);
+		});
+
+		it("enforces required fields on add for default id lists", () => {
+			const list = createOptimisticList<Item>([]);
+			// @ts-expect-error required field `name` must be supplied when adding to default-key list
+			const invalidCall = () => list.add({});
+			expect(typeof invalidCall).toBe("function");
+		});
+
 		it("does not let a stale rollback after set() clear a newer update's pending flag", () => {
 			const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
 
