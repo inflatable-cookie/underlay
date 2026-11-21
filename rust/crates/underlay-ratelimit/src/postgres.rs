@@ -51,6 +51,25 @@ impl PostgresBackend {
         Ok(Self { pool, table })
     }
 
+    /// Delete rows whose `window_started_at` is older than `max_age`.
+    ///
+    /// Call periodically (e.g. from a background cleanup task) with `max_age`
+    /// at least as large as the longest configured rate-limit window so the
+    /// table does not grow without bound under key churn. Returns the number
+    /// of deleted rows.
+    pub async fn prune_expired(&self, max_age: std::time::Duration) -> Result<u64> {
+        let query = format!(
+            "DELETE FROM {} WHERE window_started_at <= NOW() - make_interval(secs => $1)",
+            self.table.quoted()
+        );
+        let result = sqlx::query(sqlx::AssertSqlSafe(query))
+            .bind(max_age.as_secs_f64())
+            .execute(&self.pool)
+            .await
+            .map_err(Self::map_err)?;
+        Ok(result.rows_affected())
+    }
+
     fn map_err(err: sqlx::Error) -> RateLimitError {
         RateLimitError::Backend(err.to_string())
     }

@@ -26,7 +26,6 @@ underlay-db = { path = "../underlay-db", optional = true }
 sqlx = { workspace = true, optional = true, features = ["macros", "postgres", "uuid", "chrono", "json"] }
 chrono = { workspace = true, optional = true }
 tokio = { workspace = true, features = ["sync"] }
-urlencoding = { version = "2.1" }
 
 # Optional OpenAPI schema types
 utoipa = { workspace = true, optional = true }

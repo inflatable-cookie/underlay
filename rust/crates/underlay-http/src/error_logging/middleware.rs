@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use super::{append_error_log, ErrorLoggingConfig};
 use crate::errors::ErrorDetail;
 use axum::{body::Body, http::Request, middleware::Next, response::Response};
@@ -91,8 +93,20 @@ pub async fn error_logging_middleware(
         "handler_context": handler_context,
     });
 
+    let Ok(permit) = Arc::clone(&config.write_semaphore).try_acquire_owned() else {
+        tracing::warn!(
+            %path,
+            method = %method,
+            status_code,
+            %request_id,
+            "error log writer saturated; dropping error log entry"
+        );
+        return res;
+    };
+
     let pool = config.pool.clone();
     tokio::spawn(async move {
+        let _permit = permit;
         if let Err(err) = append_error_log(
             &pool,
             &path,

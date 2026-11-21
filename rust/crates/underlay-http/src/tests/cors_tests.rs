@@ -334,6 +334,48 @@ mod tests {
         assert!(try_cors_layer_for_env(config, Environment::Prod).is_ok());
     }
 
+    #[tokio::test]
+    async fn mirror_without_credentials_echoes_request_origin() {
+        use axum::{body::Body, routing::get, Router};
+        use http::{header, Request};
+        use tower::ServiceExt;
+
+        let layer = try_cors_layer_for_env(
+            CorsConfig::new()
+                .with_mirror_origin()
+                .with_credentials(false),
+            Environment::Prod,
+        )
+        .expect("mirror without credentials should build");
+
+        let app = Router::new()
+            .route("/ping", get(|| async { "ok" }))
+            .layer(layer);
+
+        let request = Request::builder()
+            .uri("/ping")
+            .header(header::ORIGIN, "https://client.example.com")
+            .body(Body::empty())
+            .expect("request should build");
+
+        let response = app.oneshot(request).await.expect("request should succeed");
+        assert_eq!(
+            response
+                .headers()
+                .get(header::ACCESS_CONTROL_ALLOW_ORIGIN)
+                .and_then(|v| v.to_str().ok()),
+            Some("https://client.example.com"),
+            "mirror_origin without credentials must echo the requesting origin"
+        );
+        assert!(
+            response
+                .headers()
+                .get(header::ACCESS_CONTROL_ALLOW_CREDENTIALS)
+                .is_none(),
+            "credentials header must not be emitted when allow_credentials is false"
+        );
+    }
+
     #[test]
     #[should_panic(expected = "explicit environment gate")]
     fn cors_layer_panics_on_mirror_with_credentials() {

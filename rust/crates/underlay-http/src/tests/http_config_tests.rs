@@ -62,6 +62,30 @@ fn test_try_new_rejects_path_public_host() {
 }
 
 #[test]
+fn test_try_new_rejects_hostname_with_port_and_accepts_ipv6() {
+    for bad in [
+        "localhost:8080",
+        "api.example.com:443",
+        "[::1]:8080",
+        "[localhost]",
+    ] {
+        let error = HttpServerConfig::try_new("127.0.0.1", 8080, bad)
+            .expect_err("non-IPv6 host with ':' or brackets must be rejected");
+        assert!(
+            matches!(error, HttpServerConfigError::InvalidPublicHost { .. }),
+            "expected InvalidPublicHost for {bad}, got {error:?}"
+        );
+    }
+
+    let bare_v6 = HttpServerConfig::try_new("::1", 8080, "::1").expect("bare IPv6 should pass");
+    assert_eq!(bare_v6.http_base_url(), "http://[::1]:8080");
+
+    let bracketed_v6 =
+        HttpServerConfig::try_new("::1", 8080, "[::1]").expect("bracketed IPv6 should pass");
+    assert_eq!(bracketed_v6.http_base_url(), "http://[::1]:8080");
+}
+
+#[test]
 fn test_base_url() {
     let config = HttpServerConfig::new("0.0.0.0", 8080, "api.example.com");
     assert_eq!(config.http_base_url(), "http://api.example.com:8080");

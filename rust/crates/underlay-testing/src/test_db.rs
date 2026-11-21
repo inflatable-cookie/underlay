@@ -174,7 +174,7 @@ impl TestDb {
 
     /// Execute a SQL file from a path
     pub async fn load_fixture_file(&self, path: &str) -> Result<(), Box<dyn std::error::Error>> {
-        let sql = std::fs::read_to_string(path)?;
+        let sql = tokio::fs::read_to_string(path).await?;
         self.load_fixture(&sql).await?;
         Ok(())
     }
@@ -206,29 +206,26 @@ impl TestDb {
         &self,
         migrations_path: &str,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        use std::fs;
         use std::path::Path;
 
         let path = Path::new(migrations_path);
-        if !path.exists() {
+        if !tokio::fs::try_exists(path).await? {
             return Err(format!("Migrations path does not exist: {}", migrations_path).into());
         }
 
-        let mut entries: Vec<_> = fs::read_dir(path)?
-            .filter_map(|e| e.ok())
-            .filter(|e| {
-                e.path()
-                    .extension()
-                    .map(|ext| ext == "sql")
-                    .unwrap_or(false)
-            })
-            .collect();
+        let mut dir = tokio::fs::read_dir(path).await?;
+        let mut entries = Vec::new();
+        while let Some(entry) = dir.next_entry().await? {
+            if entry.path().extension().is_some_and(|ext| ext == "sql") {
+                entries.push(entry);
+            }
+        }
 
         // Sort by filename to ensure correct order
         entries.sort_by_key(|e| e.file_name());
 
         for entry in entries {
-            let sql = fs::read_to_string(entry.path())?;
+            let sql = tokio::fs::read_to_string(entry.path()).await?;
             sqlx::raw_sql(sqlx::AssertSqlSafe(sql.as_str()))
                 .execute(&self.pool)
                 .await
@@ -286,7 +283,16 @@ fn unique_test_schema() -> SqlIdentifier {
 /// Check for Docker availability.
 fn assert_docker_available() {
     match std::process::Command::new("docker").arg("version").output() {
-        Ok(_) => (),
+        Ok(output) if output.status.success() => (),
+        Ok(output) => {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            panic!(
+                "docker daemon is not reachable (`docker version` exited with {}): {}\n\
+                 Start Docker Desktop or Colima (`colima start`), or set {TEST_DATABASE_URL_ENV}.",
+                output.status,
+                stderr.trim()
+            );
+        }
         Err(err) if err.kind() == std::io::ErrorKind::NotFound => {
             panic!(
                 "docker CLI not found. Install Colima + docker CLI and run `colima start`.\n\n\

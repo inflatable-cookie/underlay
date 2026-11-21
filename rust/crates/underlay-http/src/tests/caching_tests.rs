@@ -119,11 +119,11 @@ async fn singleflight_leader_cancellation_does_not_deadlock_waiters() {
 
 #[test]
 fn microcache_expires_entries() {
-    let cache = MicroCache::new(Duration::from_millis(10), 10);
+    let cache = MicroCache::new(Duration::from_millis(50), 10);
     cache.insert("k", 42);
     assert_eq!(cache.get("k"), Some(42));
 
-    std::thread::sleep(Duration::from_millis(20));
+    std::thread::sleep(Duration::from_millis(80));
     assert_eq!(cache.get("k"), None);
 }
 

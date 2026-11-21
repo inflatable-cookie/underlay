@@ -43,9 +43,8 @@ pub struct CorsConfig {
     /// If true, uses `*` (useful for internal services without credentials).
     /// Note: Cannot be true if `allow_credentials` is true.
     allow_any_origin: bool,
-    /// If true, mirrors the requesting origin in the response.
-    /// This allows credentials from any origin (useful for local dev).
-    /// Takes precedence over `allow_any_origin` when `allow_credentials` is true.
+    /// If true, mirrors the requesting origin in the response (works with or
+    /// without credentials; when combined with credentials, gated to local dev).
     mirror_origin: bool,
     /// Allowed origins when `allow_any_origin` is false.
     allowed_origins: Vec<HeaderValue>,
@@ -366,12 +365,12 @@ pub fn cors_layer(config: CorsConfig) -> CorsLayer {
 
 fn build_cors_layer(config: CorsConfig) -> CorsLayer {
     // Determine origin handling:
-    // 1. If credentials + mirror_origin: echo the requesting origin (for local dev)
+    // 1. If mirror_origin: echo the requesting origin (works with or without credentials)
     // 2. If credentials + explicit origins: use the explicit list
     // 3. If no credentials + allow_any: use wildcard *
     // 4. Otherwise: use explicit list
-    let allow_origin = if config.allow_credentials && config.mirror_origin {
-        // Mirror mode: echo back the requesting origin (works with credentials)
+    let allow_origin = if config.mirror_origin {
+        // Mirror mode: echo back the requesting origin
         AllowOrigin::mirror_request()
     } else if config.allow_credentials {
         // Must use explicit origins when credentials are enabled

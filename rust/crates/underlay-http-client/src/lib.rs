@@ -90,6 +90,8 @@ impl HttpClient {
     /// Build a client for **untrusted / user-influenced** outbound targets.
     ///
     /// Adds SSRF protection on top of the default timeouts:
+    /// - Disables system/environment proxies (`.no_proxy()`) so `HTTP_PROXY` /
+    ///   `HTTPS_PROXY` cannot bypass [`ExternalDnsResolver`].
     /// - Installs a custom async DNS resolver that validates every resolved IP
     ///   at connect time, rejecting private, loopback, link-local, and
     ///   unspecified addresses (closing the DNS-rebinding TOCTOU window).
@@ -97,10 +99,12 @@ impl HttpClient {
     ///   targets a non-http(s) scheme or non-public IP literal with an error.
     ///
     /// Callers should still pass each request URL through
-    /// [`validate_external_url`] before sending so IP-literal targets and bad
-    /// schemes fail before any network I/O.
+    /// [`validate_external_url_async`] (or [`validate_external_url`] in sync
+    /// code) before sending so IP-literal targets and bad schemes fail before
+    /// any network I/O.
     pub fn external() -> Result<Self, HttpClientError> {
         let inner = base_builder(concat!("underlay/", env!("CARGO_PKG_VERSION")).to_string())
+            .no_proxy()
             .redirect(external_redirect_policy())
             .dns_resolver(Arc::new(ExternalDnsResolver))
             .build()?;
@@ -266,24 +270,83 @@ fn host_is_blocked(url: &reqwest::Url) -> Result<bool, HttpClientError> {
     }
 }
 
-/// Validate a URL for the external profile before sending.
-///
-/// Rejects non-http(s) schemes and any host that resolves to a private,
-/// loopback, link-local, or unspecified address.
-pub fn validate_external_url(url: &str) -> Result<reqwest::Url, HttpClientError> {
+/// Parse a URL and ensure it uses an `http` or `https` scheme.
+fn parse_external_url(url: &str) -> Result<reqwest::Url, HttpClientError> {
     let parsed =
         reqwest::Url::parse(url).map_err(|e| HttpClientError::InvalidUrl(e.to_string()))?;
 
     match parsed.scheme() {
-        "http" | "https" => {}
-        other => {
-            return Err(HttpClientError::InvalidUrl(format!(
-                "unsupported scheme: {other}"
-            )))
+        "http" | "https" => Ok(parsed),
+        other => Err(HttpClientError::InvalidUrl(format!(
+            "unsupported scheme: {other}"
+        ))),
+    }
+}
+
+/// Async version of [`host_is_blocked`] using [`tokio::net::lookup_host`].
+async fn host_is_blocked_async(url: &reqwest::Url) -> Result<bool, HttpClientError> {
+    let host = url
+        .host()
+        .ok_or_else(|| HttpClientError::InvalidUrl(url.to_string()))?;
+
+    match host {
+        url::Host::Ipv4(v4) => Ok(!is_public_ip(IpAddr::V4(v4))),
+        url::Host::Ipv6(v6) => Ok(!is_public_ip(IpAddr::V6(v6))),
+        url::Host::Domain(domain) => {
+            let port = url.port_or_known_default().unwrap_or(80);
+            let addrs = tokio::net::lookup_host((domain, port))
+                .await
+                .map_err(|e| HttpClientError::InvalidUrl(format!("{domain}: {e}")))?;
+
+            let mut saw_any = false;
+            for addr in addrs {
+                saw_any = true;
+                if !is_public_ip(addr.ip()) {
+                    return Ok(true);
+                }
+            }
+
+            if !saw_any {
+                return Err(HttpClientError::InvalidUrl(format!(
+                    "{domain}: no addresses resolved"
+                )));
+            }
+
+            Ok(false)
         }
     }
+}
+
+/// Validate a URL for the external profile before sending (blocking).
+///
+/// Rejects non-http(s) schemes and any host that resolves to a private,
+/// loopback, link-local, or unspecified address.
+///
+/// **Blocking:** resolves domain names synchronously via [`ToSocketAddrs`],
+/// which blocks the calling thread. Async handlers should use
+/// [`validate_external_url_async`] to avoid blocking Tokio worker threads.
+pub fn validate_external_url(url: &str) -> Result<reqwest::Url, HttpClientError> {
+    let parsed = parse_external_url(url)?;
 
     if host_is_blocked(&parsed)? {
+        return Err(HttpClientError::BlockedTarget(
+            parsed.host_str().unwrap_or(url).to_string(),
+        ));
+    }
+
+    Ok(parsed)
+}
+
+/// Validate a URL for the external profile before sending without blocking
+/// Tokio worker threads.
+///
+/// Rejects non-http(s) schemes and any host that resolves to a private,
+/// loopback, link-local, or unspecified address using
+/// [`tokio::net::lookup_host`].
+pub async fn validate_external_url_async(url: &str) -> Result<reqwest::Url, HttpClientError> {
+    let parsed = parse_external_url(url)?;
+
+    if host_is_blocked_async(&parsed).await? {
         return Err(HttpClientError::BlockedTarget(
             parsed.host_str().unwrap_or(url).to_string(),
         ));
@@ -338,6 +401,18 @@ fn is_public_ip(ip: IpAddr) -> bool {
                 && segments[4] == 0
                 && segments[5] == 0
             {
+                return false;
+            }
+            // Local-use NAT64 64:ff9b:1::/48 (RFC 8215)
+            if segments[0] == 0x0064 && segments[1] == 0xFF9B && segments[2] == 0x0001 {
+                return false;
+            }
+            // 6to4 2002::/16 (RFC 3056, embeds an IPv4 address)
+            if seg0 == 0x2002 {
+                return false;
+            }
+            // Teredo 2001::/32 (RFC 4380) and Documentation 2001:db8::/32 (RFC 3849)
+            if seg0 == 0x2001 && (segments[1] == 0x0000 || segments[1] == 0x0DB8) {
                 return false;
             }
             // IPv4-mapped ::ffff:0:0/96

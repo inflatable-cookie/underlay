@@ -12,7 +12,7 @@ use tracing::{info, instrument};
 ///
 /// # Arguments
 ///
-/// * `pool` - Database connection pool
+/// * `executor` - Database connection pool, connection, or active transaction
 /// * `table` - Typed table location
 /// * `entry` - The audit entry to log
 ///
@@ -34,12 +34,15 @@ use tracing::{info, instrument};
 ///     ).with_details(serde_json::json!({ "title": title })),
 /// ).await?;
 /// ```
-#[instrument(skip(pool, entry), fields(action = %entry.action, resource_type = %entry.resource_type))]
-pub async fn append_audit_log_to_table(
-    pool: &DbPool,
+#[instrument(skip(executor, entry), fields(action = %entry.action, resource_type = %entry.resource_type))]
+pub async fn append_audit_log_to_table<'e, E>(
+    executor: E,
     table: &AuditTable,
     entry: AuditEntry,
-) -> AuditResult<AuditLogRow> {
+) -> AuditResult<AuditLogRow>
+where
+    E: sqlx::PgExecutor<'e>,
+{
     let table = table.quoted();
 
     let query = format!(
@@ -76,7 +79,7 @@ pub async fn append_audit_log_to_table(
         .bind(&entry.details)
         .bind(&entry.correlation_id)
         .bind(&entry.ip_address)
-        .fetch_one(pool)
+        .fetch_one(executor)
         .await?;
 
     info!(

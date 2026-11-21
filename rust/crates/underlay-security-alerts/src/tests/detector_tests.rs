@@ -90,4 +90,49 @@ mod tests {
         );
         assert!(quiet.is_empty());
     }
+
+    #[test]
+    fn security_alert_type_serde_uses_snake_case_matching_as_str() {
+        for alert_type in [
+            SecurityAlertType::LoginFailuresFromIp,
+            SecurityAlertType::MultiAccountFailuresFromIp,
+            SecurityAlertType::LockoutsFromIp,
+            SecurityAlertType::DormantAccountAccessAttempt,
+            SecurityAlertType::LoginFailuresForAccount,
+            SecurityAlertType::DistributedFailuresForAccount,
+            SecurityAlertType::GlobalLoginFailureSurge,
+        ] {
+            let serialized = serde_json::to_string(&alert_type).expect("serialize alert type");
+            assert_eq!(serialized, format!("\"{}\"", alert_type.as_str()));
+
+            let deserialized: SecurityAlertType =
+                serde_json::from_str(&serialized).expect("deserialize alert type");
+            assert_eq!(deserialized, alert_type);
+        }
+    }
+
+    #[test]
+    fn security_alert_config_validate_rejects_non_positive_values() {
+        use chrono::Duration;
+
+        assert!(SecurityAlertConfig::default().validate().is_ok());
+
+        for bad in [
+            SecurityAlertConfig::default().with_window(Duration::zero()),
+            SecurityAlertConfig::default().with_window(Duration::seconds(-1)),
+            SecurityAlertConfig::default().with_cooldown(Duration::zero()),
+            SecurityAlertConfig::default().with_cooldown(Duration::seconds(-5)),
+            SecurityAlertConfig::default().with_failed_attempts_threshold(0),
+            SecurityAlertConfig::default().with_distinct_users_threshold(-1),
+            SecurityAlertConfig::default().with_lockouts_threshold(0),
+            SecurityAlertConfig::default().with_account_failed_attempts_threshold(0),
+            SecurityAlertConfig::default().with_account_distinct_ips_threshold(-2),
+            SecurityAlertConfig::default().with_global_failed_attempts_threshold(0),
+        ] {
+            assert!(
+                bad.validate().is_err(),
+                "expected invalid config to fail validation: {bad:?}"
+            );
+        }
+    }
 }

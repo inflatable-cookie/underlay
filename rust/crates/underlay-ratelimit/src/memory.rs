@@ -211,6 +211,10 @@ impl InMemoryBackend {
 #[async_trait]
 impl RateLimitBackend for InMemoryBackend {
     async fn check(&self, key: &str, config: &RateLimitConfig) -> Result<RateLimitResult> {
+        if config.max_requests() == 0 {
+            return Ok(RateLimitResult::denied(0, config.window()));
+        }
+
         let Some(entry) = self.entries.get(key) else {
             return Ok(RateLimitResult::allowed(config.max_requests(), 0));
         };
@@ -256,6 +260,10 @@ impl RateLimitBackend for InMemoryBackend {
         key: &str,
         config: &RateLimitConfig,
     ) -> Result<RateLimitResult> {
+        if config.max_requests() == 0 {
+            return Ok(RateLimitResult::denied(0, config.window()));
+        }
+
         self.evict_if_full(key);
 
         let mut entry = self
