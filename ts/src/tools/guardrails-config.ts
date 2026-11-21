@@ -8,19 +8,20 @@
  * 4. Built-in defaults (lowest priority)
  */
 
-import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
-import type { BannedPattern, ModuleScopeCheck, GuardrailsConfig } from './guardrails.js';
+import { readFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import type { BannedPattern, ModuleScopeCheck, GuardrailsConfig } from "./guardrails.js";
 
 interface GuardrailsConfigFile {
 	srcDir?: string;
 	extensions?: string[];
 	bannedPatterns?:
 		| Array<{
-		name: string;
-		regex: string;
-		message: string;
-	}>
+				name: string;
+				regex: string;
+				message: string;
+		  }>
 		| string;
 	moduleScopeChecks?: ModuleScopeCheck[] | string; // Can be array or template reference
 	suppressionPrefix?: string;
@@ -31,23 +32,30 @@ function parsePatternConfigs(
 		name: string;
 		regex: string;
 		message: string;
-	}>
+	}>,
 ): BannedPattern[] {
 	return patterns.map((p) => ({
 		name: p.name,
-		regex: new RegExp(p.regex, 'g'),
-		message: p.message
+		regex: new RegExp(p.regex, "g"),
+		message: p.message,
 	}));
 }
+
+const TEMPLATE_SPECIFIER_PREFIX = "@inflatable-cookie/underlay/tools/templates/";
+
+/** Templated rule packs shipped alongside this module. */
+const BUNDLED_TEMPLATE_DIR = resolve(dirname(fileURLToPath(import.meta.url)), "templates");
 
 async function importTemplateModule(templateRef: string): Promise<unknown> {
 	try {
 		return await import(templateRef);
 	} catch {
-		const localTemplatePath = templateRef.replace(
-			'@inflatable-cookie/underlay/tools/templates/',
-			resolve(process.cwd(), 'ts/src/tools/templates/') + '/'
-		);
+		// Fallback for repo checkouts without the package alias. Resolve relative to
+		// this module, not the caller's cwd, so the tool works from any directory.
+		const normalizedRef = templateRef.startsWith(TEMPLATE_SPECIFIER_PREFIX)
+			? templateRef.slice(TEMPLATE_SPECIFIER_PREFIX.length)
+			: templateRef;
+		const localTemplatePath = pathToFileURL(resolve(BUNDLED_TEMPLATE_DIR, normalizedRef)).href;
 		return await import(localTemplatePath);
 	}
 }
@@ -55,31 +63,34 @@ async function importTemplateModule(templateRef: string): Promise<unknown> {
 /**
  * Load configuration from file system
  */
-export async function loadConfig(configPath?: string, srcDirOverride?: string): Promise<GuardrailsConfig> {
+export async function loadConfig(
+	configPath?: string,
+	srcDirOverride?: string,
+): Promise<GuardrailsConfig> {
 	let config: GuardrailsConfigFile = {};
 
 	// Try loading from config file
 	if (configPath) {
 		let parsed: unknown;
 		try {
-			const content = await readFile(configPath, 'utf8');
+			const content = await readFile(configPath, "utf8");
 			parsed = JSON.parse(content);
 		} catch (error) {
 			throw new Error(`Could not load config from ${configPath}`, { cause: error });
 		}
-		if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+		if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
 			throw new Error(`Config file ${configPath} must contain a JSON object`);
 		}
 		config = parsed as GuardrailsConfigFile;
 	} else {
 		// Try .guardrailsrc.json
 		try {
-			const content = await readFile('.guardrailsrc.json', 'utf8');
+			const content = await readFile(".guardrailsrc.json", "utf8");
 			config = JSON.parse(content);
 		} catch {
 			// Try package.json
 			try {
-				const pkgContent = await readFile('package.json', 'utf8');
+				const pkgContent = await readFile("package.json", "utf8");
 				const pkg = JSON.parse(pkgContent);
 				if (pkg.guardrails) {
 					config = pkg.guardrails;
@@ -92,13 +103,13 @@ export async function loadConfig(configPath?: string, srcDirOverride?: string): 
 
 	// Load banned patterns (can be template reference or inline array)
 	let bannedPatterns: BannedPattern[] = [];
-	if (typeof config.bannedPatterns === 'string') {
+	if (typeof config.bannedPatterns === "string") {
 		let template: unknown;
 		try {
 			template = await importTemplateModule(config.bannedPatterns);
 		} catch (error) {
 			throw new Error(`Could not load bannedPatterns template ${config.bannedPatterns}`, {
-				cause: error
+				cause: error,
 			});
 		}
 		const resolved = template as { bannedPatterns?: BannedPattern[]; default?: BannedPattern[] };
@@ -113,13 +124,13 @@ export async function loadConfig(configPath?: string, srcDirOverride?: string): 
 
 	// Load module scope checks (can be template reference or inline array)
 	let moduleScopeChecks: ModuleScopeCheck[] = [];
-	if (typeof config.moduleScopeChecks === 'string') {
+	if (typeof config.moduleScopeChecks === "string") {
 		let template: unknown;
 		try {
 			template = await importTemplateModule(config.moduleScopeChecks);
 		} catch (error) {
 			throw new Error(`Could not load moduleScopeChecks template ${config.moduleScopeChecks}`, {
-				cause: error
+				cause: error,
 			});
 		}
 		const resolved = template as {
@@ -129,7 +140,7 @@ export async function loadConfig(configPath?: string, srcDirOverride?: string): 
 		const checks = resolved.moduleScopeChecks ?? resolved.default;
 		if (!Array.isArray(checks)) {
 			throw new Error(
-				`Template ${config.moduleScopeChecks} did not export a moduleScopeChecks array`
+				`Template ${config.moduleScopeChecks} did not export a moduleScopeChecks array`,
 			);
 		}
 		moduleScopeChecks = checks;
@@ -138,11 +149,11 @@ export async function loadConfig(configPath?: string, srcDirOverride?: string): 
 	}
 
 	return {
-		srcDir: srcDirOverride ?? config.srcDir ?? './src',
-		extensions: config.extensions ?? ['.ts', '.svelte'],
+		srcDir: srcDirOverride ?? config.srcDir ?? "./src",
+		extensions: config.extensions ?? [".ts", ".svelte"],
 		bannedPatterns,
 		moduleScopeChecks,
-		suppressionPrefix: config.suppressionPrefix ?? 'guardrails-disable'
+		suppressionPrefix: config.suppressionPrefix ?? "guardrails-disable",
 	};
 }
 
@@ -151,10 +162,10 @@ export async function loadConfig(configPath?: string, srcDirOverride?: string): 
  */
 export function getDefaultConfig(): GuardrailsConfig {
 	return {
-		srcDir: './src',
-		extensions: ['.ts', '.svelte'],
+		srcDir: "./src",
+		extensions: [".ts", ".svelte"],
 		bannedPatterns: [],
 		moduleScopeChecks: [],
-		suppressionPrefix: 'guardrails-disable'
+		suppressionPrefix: "guardrails-disable",
 	};
 }

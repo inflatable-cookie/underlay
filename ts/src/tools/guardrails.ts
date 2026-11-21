@@ -67,12 +67,17 @@ interface SvelteScriptBlock {
 // File Walker
 // =============================================================================
 
+// Directories that never hold project source worth scanning. Skipping them
+// keeps a scan of a repo root (or a nested checkout) bounded.
+const SKIPPED_DIRECTORIES = new Set(["node_modules", "dist", "build"]);
+
 async function* walk(dirUrl: URL, extensions: string[]): AsyncGenerator<URL> {
 	const dirPath = fileURLToPath(dirUrl);
 	const entries = await readdir(dirPath, { withFileTypes: true });
 
 	for (const entry of entries) {
 		if (entry.name.startsWith(".")) continue;
+		if (entry.isDirectory() && SKIPPED_DIRECTORIES.has(entry.name)) continue;
 
 		const entryPath = path.join(dirPath, entry.name) + (entry.isDirectory() ? path.sep : "");
 		const entryUrl = pathToFileURL(entryPath);
@@ -131,10 +136,22 @@ export async function scanFiles(config: GuardrailsConfig): Promise<number> {
 
 		// Scan for banned patterns
 		for (const pattern of config.bannedPatterns) {
-			pattern.regex.lastIndex = 0;
+			// A non-global expression never advances `lastIndex`, so looping over
+			// it would match the same index forever. Work on a global copy.
+			const regex = pattern.regex.global
+				? pattern.regex
+				: new RegExp(pattern.regex.source, `${pattern.regex.flags}g`);
+			regex.lastIndex = 0;
 
 			let match: RegExpExecArray | null;
-			while ((match = pattern.regex.exec(text))) {
+			while ((match = regex.exec(text))) {
+				if (match[0].length === 0) {
+					// Zero-width match: `exec()` does not advance `lastIndex`, so step
+					// past it. A pattern that matches nothing has no violation to report.
+					regex.lastIndex = match.index + 1;
+					continue;
+				}
+
 				if (
 					isSuppressed(
 						text,

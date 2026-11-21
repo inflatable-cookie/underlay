@@ -138,6 +138,26 @@ describe("client/useAuth actions", () => {
 		expect(get(auth.state).error).toBeNull();
 	});
 
+	it("deduplicates concurrent refresh calls into one request", async () => {
+		const { commands, tokenStore } = makeDeps();
+		const auth = createAuthStore({ commands: commands as any, tokenStore: tokenStore as any });
+
+		commands.refresh.mockImplementation(
+			() =>
+				new Promise((resolve) => {
+					setTimeout(() => resolve(makeSession("shared")), 0);
+				}),
+		);
+
+		const [first, second] = await Promise.all([auth.refresh(), auth.refresh()]);
+
+		expect(commands.refresh).toHaveBeenCalledOnce();
+		expect(tokenStore.setAccessToken).toHaveBeenCalledTimes(1);
+		expect(first).toEqual(makeSession("shared"));
+		expect(second).toEqual(makeSession("shared"));
+		expect(get(auth.state).status).toBe("authenticated");
+	});
+
 	it("logout always clears tokens and returns anonymous, even when command fails", async () => {
 		const { commands, tokenStore } = makeDeps();
 		const auth = createAuthStore({ commands: commands as any, tokenStore: tokenStore as any });

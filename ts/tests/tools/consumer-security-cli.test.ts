@@ -82,4 +82,22 @@ describe("tools CLI entrypoints and security script", () => {
 		expect(envRelOut.stdout).toContain("All env authority checks passed.");
 		expect(envLinkOut.stdout).toContain("All env authority checks passed.");
 	});
+
+	it("exits non-zero with a clear message on unknown flags", async () => {
+		for (const tool of [workspaceShapeTool, envAuthorityTool]) {
+			let exitCode: number | undefined;
+			let stderr = "";
+
+			try {
+				await execFileAsync("bun", [tool, "--unknown-flag"], { cwd: repoRoot });
+			} catch (err) {
+				const error = err as { code?: number; stderr?: string };
+				exitCode = error.code;
+				stderr = error.stderr ?? "";
+			}
+
+			expect(exitCode).not.toBe(0);
+			expect(stderr).toContain("Unknown option: --unknown-flag");
+		}
+	});
 });

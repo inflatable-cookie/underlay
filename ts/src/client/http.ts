@@ -23,6 +23,65 @@ export type {
 } from "./http-types.js";
 export { MemoryTokenStore } from "./http-token-store.js";
 
+/**
+ * Lowercased media type of a response, or `null` when the server sent no
+ * usable `Content-Type`. Parameters such as `; charset=utf-8` are dropped.
+ */
+function responseMediaType(res: Response): string | null {
+	const raw = res.headers?.get?.("content-type");
+	if (typeof raw !== "string") {
+		return null;
+	}
+	const mediaType = raw.split(";", 1)[0]?.trim().toLowerCase() ?? "";
+	return mediaType === "" ? null : mediaType;
+}
+
+/**
+ * JSON and structured-suffix types (`application/json`,
+ * `application/problem+json`, `application/ld+json`, ...).
+ */
+function isJsonMediaType(mediaType: string | null): boolean {
+	if (mediaType === null) {
+		return false;
+	}
+	return mediaType.endsWith("/json") || mediaType.endsWith("+json");
+}
+
+/**
+ * Read a response whose `Content-Type` is missing. Untyped bodies are read as
+ * text and only parsed as JSON when they actually are JSON, so empty and
+ * non-JSON responses stay plain values instead of becoming parse errors.
+ */
+async function readUntypedBody(res: Response): Promise<unknown> {
+	if (typeof res.text === "function") {
+		const text = await res.text();
+		if (text.trim() === "") {
+			return null;
+		}
+		try {
+			return JSON.parse(text) as unknown;
+		} catch {
+			return text;
+		}
+	}
+	if (typeof res.json === "function") {
+		return await res.json();
+	}
+	return null;
+}
+
+/**
+ * Refresh failures that may clear on their own: network errors and 5xx.
+ * Stored tokens are preserved for these so a recoverable outage does not
+ * silently sign the user out.
+ */
+export function isTransientRefreshError(err: unknown): boolean {
+	return (
+		err instanceof TypeError ||
+		(err instanceof UnderlayHttpError && (err.status === 0 || err.status >= 500))
+	);
+}
+
 export function createHttpClient(options: HttpClientOptions): HttpClient {
 	const fetchImpl = options.fetch ?? globalThis.fetch;
 	const timeoutMs = options.timeoutMs ?? 8000;
@@ -117,17 +176,17 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
 					credentials,
 				});
 
-				const contentType = res.headers?.get?.("content-type") ?? "application/json";
-				const hasJson = contentType.includes("application/json");
+				const mediaType = responseMediaType(res);
+				const hasJson = isJsonMediaType(mediaType);
 
 				const acceptedStatuses = new Set(opts?.acceptedStatuses ?? []);
 				const isAccepted = res.ok || acceptedStatuses.has(res.status);
 
 				if (!isAccepted) {
 					let parsed: unknown;
-					if (hasJson) {
+					if (hasJson || mediaType === null) {
 						try {
-							parsed = await res.json();
+							parsed = hasJson ? await res.json() : await readUntypedBody(res);
 						} catch (parseErr) {
 							if (
 								parseErr instanceof Error &&
@@ -154,15 +213,18 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
 				} else {
 					const responseHeaders = headersToRecord(res.headers);
 
-					if (res.status === 204) {
-						return { status: res.status, headers: responseHeaders, body: null };
-					}
-
-					if (res.status === 304) {
+					if (res.status === 204 || res.status === 304) {
 						return { status: res.status, headers: responseHeaders, body: null };
 					}
 
 					if (!hasJson) {
+						if (mediaType === null) {
+							return {
+								status: res.status,
+								headers: responseHeaders,
+								body: (await readUntypedBody(res)) as T,
+							};
+						}
 						return {
 							status: res.status,
 							headers: responseHeaders,
@@ -255,33 +317,29 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
 		}
 	}
 
-	async function requestWithMeta<T>(
-		req: HttpRequest,
-		requestOptions?: HttpRequestOptions,
-	): Promise<HttpResponse<T>> {
-		const hasExplicitAuth =
-			hasHeader(req.headers ?? {}, "Authorization") ||
-			hasHeader(options.defaultHeaders ?? {}, "Authorization");
-		const token = hasExplicitAuth ? null : ((await getAccessToken?.()) ?? null);
-
+	function authHeaders(req: HttpRequest, token: string | null): Record<string, string> {
 		const headers: Record<string, string> = { ...(req.headers ?? {}) };
 		if (token && isBaseOrigin(req.path)) {
 			setHeaderIfMissing(headers, "Authorization", `Bearer ${token}`);
 		}
+		return headers;
+	}
 
-		try {
-			return await rawRequest<T>({ ...req, headers }, requestOptions);
-		} catch (err) {
-			if (!(err instanceof UnderlayHttpError)) throw err;
-
-			if (err.status !== 401 || hasExplicitAuth || !options.auth?.refresh) {
-				throw err;
+	/**
+	 * Run the configured refresh handler at most once across concurrent waiters.
+	 * Token store writes and clears happen inside this promise so every waiter
+	 * observes one rotation instead of repeating it (rotating refresh tokens
+	 * revoke each other when written twice).
+	 */
+	async function runRefreshOnce(): Promise<RefreshResult> {
+		if (refreshInFlight === null) {
+			const refreshFn = options.auth?.refresh;
+			if (!refreshFn) {
+				throw new Error("No refresh handler configured");
 			}
-
-			if (!refreshInFlight) {
-				const refreshFn = options.auth.refresh;
-				refreshInFlight = (async () =>
-					refreshFn({
+			refreshInFlight = (async () => {
+				try {
+					const refreshed = await refreshFn({
 						rawRequest: rawRequestBody,
 						rawRequestWithMeta,
 						tokenStore,
@@ -292,44 +350,82 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
 						setRefreshToken: async (t) => {
 							await setRefreshToken?.(t);
 						},
-					}))().finally(() => {
-					refreshInFlight = null;
-				});
-			}
+					});
 
-			let refreshed: RefreshResult;
-			try {
-				refreshed = await refreshInFlight;
-			} catch (refreshErr) {
-				const isTransient =
-					refreshErr instanceof TypeError ||
-					(refreshErr instanceof UnderlayHttpError &&
-						(refreshErr.status === 0 || refreshErr.status >= 500));
-				if (!isTransient) {
-					await clearStoredTokens();
+					if (!refreshed.success) {
+						await clearStoredTokens();
+						return refreshed;
+					}
+
+					if (refreshed.accessToken !== undefined) {
+						await setAccessToken?.(refreshed.accessToken);
+					}
+					if (refreshed.refreshToken !== undefined) {
+						await setRefreshToken?.(refreshed.refreshToken);
+					}
+					return refreshed;
+				} catch (refreshErr) {
+					// A transient failure (5xx or network) must not discard a session
+					// that may still be valid once the server recovers.
+					if (!isTransientRefreshError(refreshErr)) {
+						await clearStoredTokens();
+					}
+					throw refreshErr;
 				}
-				throw refreshErr;
-			}
+			})().finally(() => {
+				refreshInFlight = null;
+			});
+		}
 
-			if (!refreshed.success) {
-				await clearStoredTokens();
+		return await refreshInFlight;
+	}
+
+	async function requestWithMeta<T>(
+		req: HttpRequest,
+		requestOptions?: HttpRequestOptions,
+	): Promise<HttpResponse<T>> {
+		const hasExplicitAuth =
+			hasHeader(req.headers ?? {}, "Authorization") ||
+			hasHeader(options.defaultHeaders ?? {}, "Authorization");
+
+		// Remember the token this attempt was built with. A 401 that lands after
+		// another request already rotated the token is stale: retry with the
+		// current token instead of refreshing (and revoking) the new family again.
+		const startedWithToken = hasExplicitAuth ? null : ((await getAccessToken?.()) ?? null);
+
+		const attempt = (token: string | null) =>
+			rawRequest<T>({ ...req, headers: authHeaders(req, token) }, requestOptions);
+
+		try {
+			return await attempt(startedWithToken);
+		} catch (err) {
+			if (!(err instanceof UnderlayHttpError)) throw err;
+
+			if (err.status !== 401 || hasExplicitAuth || !options.auth?.refresh) {
 				throw err;
 			}
 
-			if (refreshed.accessToken !== undefined) {
-				await setAccessToken?.(refreshed.accessToken);
+			if (startedWithToken !== null) {
+				const currentToken = (await getAccessToken?.()) ?? null;
+				if (currentToken !== null && currentToken !== startedWithToken) {
+					try {
+						return await attempt(currentToken);
+					} catch (retryErr) {
+						if (!(retryErr instanceof UnderlayHttpError) || retryErr.status !== 401) {
+							throw retryErr;
+						}
+					}
+				}
 			}
-			if (refreshed.refreshToken !== undefined) {
-				await setRefreshToken?.(refreshed.refreshToken);
+
+			const refreshed = await runRefreshOnce();
+
+			if (!refreshed.success) {
+				throw err;
 			}
 
 			const retryToken = (await getAccessToken?.()) ?? null;
-			const retryHeaders: Record<string, string> = { ...(req.headers ?? {}) };
-			if (retryToken && isBaseOrigin(req.path)) {
-				setHeaderIfMissing(retryHeaders, "Authorization", `Bearer ${retryToken}`);
-			}
-
-			return await rawRequest<T>({ ...req, headers: retryHeaders }, requestOptions);
+			return await attempt(retryToken);
 		}
 	}
 

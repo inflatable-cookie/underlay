@@ -9,7 +9,7 @@ import type {
 	RegisterParams,
 	SessionInfo,
 } from "./auth";
-import type { TokenStore } from "./http";
+import { isTransientRefreshError, type TokenStore } from "./http";
 
 export type AuthStatus = "unknown" | "anonymous" | "authenticated";
 
@@ -84,7 +84,13 @@ export function createAuthStore(options: CreateAuthStoreOptions): AuthStore {
 		state.set({ status: "anonymous", session: null, loading: false, error });
 	}
 
-	async function init() {
+	// One init()/refresh() at a time: a component mounting twice (or a second
+	// caller while the first refresh is in flight) must not start a competing
+	// refresh, which would rotate the refresh token twice and revoke the family.
+	let initInFlight: Promise<void> | null = null;
+	let refreshInFlight: Promise<AuthSession> | null = null;
+
+	async function runInit(): Promise<void> {
 		state.update((s) => ({ ...s, loading: true, error: null }));
 
 		try {
@@ -101,7 +107,11 @@ export function createAuthStore(options: CreateAuthStoreOptions): AuthStore {
 						setAuthenticated(refreshed);
 						return;
 					} catch (refreshErr) {
-						await clearTokens();
+						// Match the HTTP client: a 5xx or network failure may recover, so
+						// keep stored tokens instead of signing the user out.
+						if (!isTransientRefreshError(refreshErr)) {
+							await clearTokens();
+						}
 						setAnonymous(refreshErr instanceof UnderlayHttpError ? refreshErr : null);
 						return;
 					}
@@ -114,6 +124,15 @@ export function createAuthStore(options: CreateAuthStoreOptions): AuthStore {
 
 			setAnonymous(err instanceof UnderlayHttpError ? err : null);
 		}
+	}
+
+	function init(): Promise<void> {
+		if (initInFlight === null) {
+			initInFlight = runInit().finally(() => {
+				initInFlight = null;
+			});
+		}
+		return initInFlight;
 	}
 
 	async function register(params: RegisterParams): Promise<AuthSession> {
@@ -167,7 +186,7 @@ export function createAuthStore(options: CreateAuthStoreOptions): AuthStore {
 		}
 	}
 
-	async function refresh(): Promise<AuthSession> {
+	async function runRefresh(): Promise<AuthSession> {
 		state.update((s) => ({ ...s, loading: true, error: null }));
 
 		try {
@@ -185,6 +204,15 @@ export function createAuthStore(options: CreateAuthStoreOptions): AuthStore {
 			}
 			throw err;
 		}
+	}
+
+	function refresh(): Promise<AuthSession> {
+		if (refreshInFlight === null) {
+			refreshInFlight = runRefresh().finally(() => {
+				refreshInFlight = null;
+			});
+		}
+		return refreshInFlight;
 	}
 
 	async function logout(): Promise<void> {

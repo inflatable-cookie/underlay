@@ -246,7 +246,7 @@ export function appendQueryParams(path: string, params: QueryParams): string {
 /**
  * Convert QueryParams to a flat Record<string, string> suitable for API commands.
  *
- * Cattle-grid API commands expect flat key-value queries (like URL search params).
+ * API commands expect flat key-value queries (like URL search params).
  * This converts the structured QueryParams back to that format.
  *
  * @example

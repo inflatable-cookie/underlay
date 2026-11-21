@@ -131,6 +131,19 @@ describe("client/route-protection", () => {
 		expect(redirect.headers.get("location")).toBe("https://example.com/login");
 	});
 
+	it("preserves the query string in the redirect param", () => {
+		const redirect = createLoginRedirect(new URL("https://example.com/admin/users?tab=2&q=ada"));
+
+		expect(redirect.headers.get("location")).toBe(
+			"https://example.com/login?redirectTo=%2Fadmin%2Fusers%3Ftab%3D2%26q%3Dada",
+		);
+	});
+
+	it("keeps rejecting traversal attempted through a path with a query string", () => {
+		const redirect = createLoginRedirect(new URL("https://example.com/a/%252e%252e/b?x=1"));
+		expect(redirect.headers.get("location")).toBe("https://example.com/login");
+	});
+
 	it("builds a route protection function", () => {
 		const protectRoute = createRouteProtection({
 			publicPaths: ["/login", "/auth/*"],

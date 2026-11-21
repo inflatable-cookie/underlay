@@ -361,8 +361,8 @@ export function runEnvAuthorityCli(argv: string[] = process.argv): void {
 		const args = argv.slice(2);
 		let rootArg: string | undefined;
 
-		for (let i = 0; i < args.length; i++) {
-			if (args[i] === "--help" || args[i] === "-h") {
+		for (const arg of args) {
+			if (arg === "--help" || arg === "-h") {
 				console.log(`
 Env authority - Consumer env/secret inventory conformance
 
@@ -381,9 +381,11 @@ Live value presence remains scripts/check-env-manifest.sh.
 				process.exit(0);
 			}
 
-			if (!args[i].startsWith("-")) {
-				rootArg = args[i];
+			if (arg.startsWith("-")) {
+				throw new Error(`Unknown option: ${arg}. Run with --help for usage.`);
 			}
+
+			rootArg = arg;
 		}
 
 		const root = path.resolve(rootArg ?? process.cwd());
@@ -393,7 +395,10 @@ Live value presence remains scripts/check-env-manifest.sh.
 		if (violations.length > 0) {
 			process.exit(1);
 		}
-	})();
+	})().catch((error: unknown) => {
+		console.error(error instanceof Error ? error.message : String(error));
+		process.exit(1);
+	});
 }
 
 if (isCliEntrypoint(import.meta.url)) {

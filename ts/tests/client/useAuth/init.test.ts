@@ -136,9 +136,11 @@ describe("client/useAuth init", () => {
 		});
 	});
 
-	it("sets anonymous with null error when session throws non-http error during init", async () => {
+	it("preserves stored tokens when a refresh on init fails with a transient 5xx", async () => {
 		const { commands, tokenStore } = makeDeps();
-		commands.session.mockRejectedValue(new Error("network down"));
+		const unavailable = new UnderlayHttpError(503, "Service unavailable");
+		commands.session.mockRejectedValue(new UnderlayHttpError(401, "Unauthorized"));
+		commands.refresh.mockRejectedValue(unavailable);
 		const auth = createAuthStore({ commands: commands as any, tokenStore: tokenStore as any });
 
 		await auth.init();
@@ -147,6 +149,44 @@ describe("client/useAuth init", () => {
 		expect(get(auth.state)).toEqual({
 			status: "anonymous",
 			session: null,
+			loading: false,
+			error: unavailable,
+		});
+	});
+
+	it("preserves stored tokens when a refresh on init fails with a network error", async () => {
+		const { commands, tokenStore } = makeDeps();
+		commands.session.mockRejectedValue(new UnderlayHttpError(401, "Unauthorized"));
+		commands.refresh.mockRejectedValue(new TypeError("fetch failed"));
+		const auth = createAuthStore({ commands: commands as any, tokenStore: tokenStore as any });
+
+		await auth.init();
+
+		expect(tokenStore.clear).not.toHaveBeenCalled();
+		expect(get(auth.state)).toEqual({
+			status: "anonymous",
+			session: null,
+			loading: false,
+			error: null,
+		});
+	});
+
+	it("deduplicates concurrent init calls into one session request", async () => {
+		const { commands, tokenStore } = makeDeps();
+		commands.session.mockImplementation(
+			() =>
+				new Promise((resolve) => {
+					setTimeout(() => resolve(makeSessionInfo("shared")), 0);
+				}),
+		);
+		const auth = createAuthStore({ commands: commands as any, tokenStore: tokenStore as any });
+
+		await Promise.all([auth.init(), auth.init()]);
+
+		expect(commands.session).toHaveBeenCalledOnce();
+		expect(get(auth.state)).toEqual({
+			status: "authenticated",
+			session: makeSessionInfo("shared"),
 			loading: false,
 			error: null,
 		});
