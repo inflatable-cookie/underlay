@@ -90,6 +90,52 @@ async fn handle_google_callback_requires_verified_email() {
 }
 
 #[tokio::test]
+async fn callback_links_an_existing_email_only_with_opt_in_and_a_verified_email() {
+    for (opted_in, email_verified) in [(false, true), (true, false), (true, true)] {
+        let repo = MemoryRepo::new();
+        let user = UserRepository::create(&repo, "claire@example.com", None)
+            .await
+            .unwrap();
+        let service = GoogleOAuthAppService::new(StubProvider {
+            token_set: token_set_with_refresh(),
+            userinfo: super::super::GoogleUserInfo {
+                email_verified: Some(email_verified),
+                ..verified_userinfo()
+            },
+        })
+        .with_require_verified_email(false);
+        let service = if opted_in {
+            service.with_verified_email_auto_linking()
+        } else {
+            service
+        };
+
+        let result = service
+            .handle_google_callback(
+                &repo,
+                callback_request("state"),
+                login_state("state"),
+                |token| Ok(format!("enc:{token}")),
+            )
+            .await;
+        let credential = repo
+            .find_oauth_by_user_and_provider(user.id, CredentialType::OAuthGoogle)
+            .await
+            .unwrap();
+
+        if opted_in && email_verified {
+            let linked = result.unwrap();
+            assert!(!linked.is_new_user);
+            assert_eq!(linked.user.id, user.id);
+            assert_eq!(credential, Some(linked.credential));
+        } else {
+            assert!(matches!(result, Err(AuthError::OAuthError(_))));
+            assert!(credential.is_none());
+        }
+    }
+}
+
+#[tokio::test]
 async fn callback_rejects_a_different_google_subject_for_the_same_email() {
     let repo = MemoryRepo::new();
     let mut provider = StubProvider {
@@ -108,6 +154,7 @@ async fn callback_rejects_a_different_google_subject_for_the_same_email() {
 
     provider.userinfo.sub = "different-google-subject".into();
     let result = GoogleOAuthAppService::new(provider)
+        .with_verified_email_auto_linking()
         .handle_google_callback(
             &repo,
             callback_request("state"),

@@ -1,5 +1,31 @@
-use super::super::{AuthError, GoogleOAuthService};
+use super::super::{AuthError, GoogleOAuthConfig, GoogleOAuthService};
 use super::support::{restore_env_var, with_env_var, ENV_LOCK};
+
+#[test]
+fn constructor_validates_the_redirect_uri() {
+    for uri in [
+        "relative/callback",
+        "ftp://example.com/callback",
+        "http://example.com/callback",
+        "https://example.com/callback#fragment",
+        "https://name@example.com/callback",
+    ] {
+        assert!(
+            GoogleOAuthService::new(GoogleOAuthConfig::new("id", "secret", uri)).is_err(),
+            "invalid redirect URI {uri}"
+        );
+    }
+    for uri in [
+        "https://example.com/callback?variant=web",
+        "http://localhost:8080/callback",
+        "http://[::1]:8080/callback",
+    ] {
+        assert!(
+            GoogleOAuthService::new(GoogleOAuthConfig::new("id", "secret", uri)).is_ok(),
+            "valid redirect URI {uri}"
+        );
+    }
+}
 
 #[test]
 fn from_env_requires_config_vars() {

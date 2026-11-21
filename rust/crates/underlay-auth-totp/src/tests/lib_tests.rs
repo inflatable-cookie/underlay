@@ -80,6 +80,25 @@ fn verify_totp_rejects_replay() {
 }
 
 #[test]
+fn later_match_in_the_skew_window_is_valid_after_an_earlier_replay() {
+    let service = TotpService::new(None);
+    let secret = b"12345678901234567890";
+    // Both adjacent counters produce the same six-digit code for the RFC test secret.
+    let last_counter = 910_737;
+    let current_counter = last_counter + 1;
+    let now = UNIX_EPOCH + std::time::Duration::from_secs(current_counter * 30);
+
+    let verified = service
+        .verify_totp_bytes_at(secret, "911617", now, Some(last_counter))
+        .unwrap();
+    assert_eq!(verified.counter, current_counter);
+    assert!(matches!(
+        service.verify_totp_bytes_at(secret, "911617", now, Some(current_counter)),
+        Err(TotpError::Replay)
+    ));
+}
+
+#[test]
 fn provisioning_uri_contains_expected_fields() {
     let service = TotpService::new(Some(TotpConfig::default().with_issuer("My App")));
 

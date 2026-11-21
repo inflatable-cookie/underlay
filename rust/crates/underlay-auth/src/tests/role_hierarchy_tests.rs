@@ -1,5 +1,25 @@
 use super::*;
 
+#[test]
+fn can_assign_rejects_roles_outside_the_hierarchy() {
+    let hierarchy = RoleHierarchy::standard();
+    for caller in ["admin", "superadmin"] {
+        assert_eq!(
+            hierarchy.can_assign(&[caller], "unknown"),
+            Err(RoleHierarchyError::UnknownRole)
+        );
+    }
+
+    let custom = RoleHierarchy::new(&[("guest", -1), ("member", 0)], "owner");
+    assert_eq!(
+        custom.can_assign(&["unknown"], "guest"),
+        Err(RoleHierarchyError::UnknownRole)
+    );
+    assert!(custom.can_assign(&[], "guest").is_err());
+    assert!(custom.can_assign(&["member"], "guest").is_ok());
+    assert!(custom.can_assign(&["owner"], "member").is_ok());
+}
+
 fn standard() -> RoleHierarchy {
     RoleHierarchy::standard()
 }

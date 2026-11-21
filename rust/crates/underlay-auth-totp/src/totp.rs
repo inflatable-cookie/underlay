@@ -60,6 +60,7 @@ impl TotpService {
 
         let period = self.config.period_seconds().max(1);
         let current_counter = now_secs / period;
+        let mut replayed = false;
 
         for step in -self.config.skew_steps()..=self.config.skew_steps() {
             let counter = if step.is_negative() {
@@ -75,17 +76,20 @@ impl TotpService {
                 self.config.algorithm(),
             );
             if expected == code {
-                if let Some(last) = last_counter {
-                    if counter <= last {
-                        return Err(TotpError::Replay);
-                    }
+                if last_counter.is_some_and(|last| counter <= last) {
+                    replayed = true;
+                    continue;
                 }
 
                 return Ok(VerifiedTotp { counter });
             }
         }
 
-        Err(TotpError::InvalidCode)
+        if replayed {
+            Err(TotpError::Replay)
+        } else {
+            Err(TotpError::InvalidCode)
+        }
     }
 }
 

@@ -150,7 +150,7 @@ impl WebAuthnService {
 
         let stored_counter = stored
             .counter
-            .or_else(|| Self::passkey_counter_from_json(&stored.passkey_json));
+            .max(Self::passkey_counter_from_json(&stored.passkey_json));
 
         let new_counter = result.counter();
         if let Some(old_counter) = stored_counter {

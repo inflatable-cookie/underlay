@@ -7,7 +7,7 @@ pub struct PasswordConfig {
     lockout_duration_seconds: u64,
     /// Rate limit window in seconds.
     rate_limit_window_seconds: u64,
-    /// Maximum attempts per rate limit window.
+    /// Maximum attempts per window for login per email and IP, and password change per user.
     rate_limit_max_attempts: u32,
     /// Maximum attempts per window keyed on email alone, independent of IP.
     /// Backstop against attackers rotating spoofed or real IPs to reset the
@@ -84,6 +84,7 @@ impl PasswordConfig {
         self
     }
 
+    /// Set the per-email/IP login limit and per-user password change limit.
     pub fn with_rate_limit_max_attempts(mut self, attempts: u32) -> Self {
         self.rate_limit_max_attempts = attempts;
         self

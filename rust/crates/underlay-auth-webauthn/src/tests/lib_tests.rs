@@ -25,22 +25,6 @@ fn start_registration_produces_challenge_and_state() {
 }
 
 #[test]
-fn start_authentication_allows_discoverable_credentials() {
-    let svc = service();
-    let (rcr, _state) = svc.start_passkey_authentication(vec![]).unwrap();
-
-    let json = serde_json::to_value(&rcr).unwrap();
-    assert!(json.get("publicKey").is_some());
-
-    let allow_credentials = json
-        .get("publicKey")
-        .and_then(|v| v.get("allowCredentials"))
-        .and_then(|v| v.as_array())
-        .unwrap();
-    assert!(allow_credentials.is_empty());
-}
-
-#[test]
 fn http_start_registration_returns_state_id_and_options() {
     let svc = service();
 
@@ -67,6 +51,9 @@ fn http_start_registration_returns_state_id_and_options() {
     let json = serde_json::to_value(&resp.options).unwrap();
     assert!(json.get("publicKey").is_some());
 }
+
+#[path = "authentication.rs"]
+mod authentication;
 
 #[test]
 fn credential_id_to_base64url_round_trips() {

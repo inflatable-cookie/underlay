@@ -1,8 +1,9 @@
 use serde::{Deserialize, Serialize};
 use underlay_core::Uuid;
 use webauthn_rs::prelude::{
-    AuthenticationResult, CreationChallengeResponse, PublicKeyCredential,
-    RegisterPublicKeyCredential, RequestChallengeResponse,
+    AuthenticationResult, CreationChallengeResponse, DiscoverableAuthentication,
+    PasskeyAuthentication, PublicKeyCredential, RegisterPublicKeyCredential,
+    RequestChallengeResponse,
 };
 
 use crate::CredentialId;
@@ -73,12 +74,34 @@ pub struct FinishPasskeyRegistrationResponse {
     pub stored_passkey: StoredPasskey,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+/// Server-side input for starting passkey authentication.
+///
+/// Load allowed credentials from trusted storage. This input cannot be
+/// deserialized from an HTTP body.
+///
+/// ```compile_fail
+/// use underlay_auth_webauthn::StartPasskeyAuthenticationRequest;
+/// let _: StartPasskeyAuthenticationRequest = serde_json::from_str("{}").unwrap();
+/// ```
+#[derive(Debug, Clone, Serialize)]
 pub struct StartPasskeyAuthenticationRequest {
     /// JSON-encoded `Passkey` values that are allowed for this authentication.
     ///
     /// For discoverable credentials, pass an empty list.
     pub allowed_credentials: Vec<String>,
+}
+
+/// Server-side state to persist until the matching authentication finish step.
+#[derive(Debug, Clone)]
+#[cfg_attr(
+    feature = "danger-allow-state-serialisation",
+    derive(Serialize, Deserialize)
+)]
+pub enum PasskeyAuthenticationState {
+    /// The browser must select from credentials loaded for a known user.
+    AllowListed(PasskeyAuthentication),
+    /// The browser discovers the user's credential through conditional UI.
+    Discoverable(DiscoverableAuthentication),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

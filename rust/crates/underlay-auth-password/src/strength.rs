@@ -16,11 +16,11 @@ pub(crate) const MIN_PASSWORD_STRENGTH: PasswordStrength = PasswordStrength::Goo
 pub struct PasswordRequirements {
     /// Minimum password length.
     pub min_length: usize,
-    /// Whether mixed case (upper + lower) is recommended.
+    /// Whether mixed case (upper + lower) is required.
     pub require_mixed_case: bool,
-    /// Whether at least one digit is recommended.
+    /// Whether at least one digit is required.
     pub require_digit: bool,
-    /// Whether at least one special character is recommended.
+    /// Whether at least one special character is required.
     pub require_special: bool,
     /// Minimum zxcvbn score required (0-4, where 3 = "Good").
     pub min_strength_score: u8,
@@ -189,13 +189,12 @@ impl PasswordStrengthAnalyzer {
     pub fn requirements(&self) -> PasswordRequirements {
         PasswordRequirements {
             min_length: self.min_length,
-            // These are recommendations for achieving a good zxcvbn score
-            require_mixed_case: true,
-            require_digit: true,
-            require_special: true,
+            require_mixed_case: false,
+            require_digit: false,
+            require_special: false,
             min_strength_score: MIN_PASSWORD_STRENGTH as u8,
             description: format!(
-                "Password must be at least {} characters with a mix of letters, numbers, and symbols. Avoid common words and patterns.",
+                "Use at least {} characters and a strength score of Good or higher. Common passwords are rejected.",
                 self.min_length
             ),
         }

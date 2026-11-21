@@ -33,6 +33,25 @@ pub trait PasswordAuthRepository: Send + Sync {
         password_hash: &str,
     ) -> PasswordAuthResult<()>;
 
+    /// Whether this repository implements atomic password hash replacement.
+    fn supports_password_rehash(&self) -> bool {
+        false
+    }
+
+    /// Replace a password hash during login if the stored hash still matches.
+    ///
+    /// Repositories that enable rehashing must test the credential ID and
+    /// expected hash in the same operation as the update. Return `false` if
+    /// the credential was removed or changed in the meantime.
+    async fn update_password_credential_if_current(
+        &self,
+        _credential_id: Uuid,
+        _expected_hash: &str,
+        _password_hash: &str,
+    ) -> PasswordAuthResult<bool> {
+        Ok(false)
+    }
+
     /// Delete a password credential.
     async fn delete_password_credential(&self, credential_id: Uuid) -> PasswordAuthResult<()>;
 

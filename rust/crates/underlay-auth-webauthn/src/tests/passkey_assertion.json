@@ -1,0 +1,44 @@
+{
+  "user_id": "2ae03bf1-0680-4cdc-8596-afb8121feecf",
+  "challenge": "BKqd6L-UpFQ2R8bui7OKRcAxxJVU-M_oRLe2gr4UCTM",
+  "passkey": {
+    "cred": {
+      "cred_id": "cNDsffcI00ppjU9HnnYJKB5NkAJN4q3Kesvo0a6alWk",
+      "cred": {
+        "type_": "ES256",
+        "key": {
+          "EC_EC2": {
+            "curve": "SECP256R1",
+            "x": "SgxUhHPgwa_iC1t_l8IxU5W2vaF7aDezGMy2omWmIYU",
+            "y": "KuDJzvK8yxdkHnnT_DF4oXdHvsj9Qlf88L57mGyXPsw"
+          }
+        }
+      },
+      "counter": 1,
+      "transports": [
+        "internal"
+      ],
+      "user_verified": true,
+      "backup_eligible": false,
+      "backup_state": false,
+      "registration_policy": "required",
+      "extensions": {},
+      "attestation": {
+        "data": "None",
+        "metadata": "None"
+      },
+      "attestation_format": "none"
+    }
+  },
+  "assertion": {
+    "id": "cNDsffcI00ppjU9HnnYJKB5NkAJN4q3Kesvo0a6alWk",
+    "rawId": "cNDsffcI00ppjU9HnnYJKB5NkAJN4q3Kesvo0a6alWk",
+    "type": "public-key",
+    "response": {
+      "authenticatorData": "o3mm9u6vuaVeN4wRgDTidR5oL6ufLTCrE9ISVYbOGUcFAAAAAg",
+      "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uZ2V0IiwiY2hhbGxlbmdlIjoiQktxZDZMLVVwRlEyUjhidWk3T0tSY0F4eEpWVS1NX29STGUyZ3I0VUNUTSIsIm9yaWdpbiI6Imh0dHBzOi8vZXhhbXBsZS5jb20ifQ",
+      "signature": "MEYCIQD8fzmzfR-lZxrEe6tN10_iUN1T8aiedwb2lYj84YEYigIhAPfMj68OTCykPqCIx-2ZV5P2zrSHApctTG0axE9jZB74",
+      "userHandle": "KuA78QaATNyFlq-4Eh_uzw"
+    }
+  }
+}

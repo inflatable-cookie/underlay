@@ -38,6 +38,7 @@ where
 
     async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
         let token = extract_bearer(parts.headers.get(AUTHORIZATION_HEADER))
+            .map_err(reject)?
             .ok_or_else(|| reject(AuthError::Unauthorized))?;
 
         let principal = state
@@ -57,7 +58,9 @@ where
     type Rejection = AuthRejection;
 
     async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
-        let Some(token) = extract_bearer(parts.headers.get(AUTHORIZATION_HEADER)) else {
+        let Some(token) =
+            extract_bearer(parts.headers.get(AUTHORIZATION_HEADER)).map_err(reject)?
+        else {
             return Ok(OptionalAuthenticated(None));
         };
 
@@ -89,19 +92,21 @@ fn reject(err: AuthError) -> AuthRejection {
     )
 }
 
-pub(crate) fn extract_bearer(header: Option<&http::HeaderValue>) -> Option<String> {
-    let value = header?.to_str().ok()?;
+pub(crate) fn extract_bearer(header: Option<&HeaderValue>) -> Result<Option<String>, AuthError> {
+    let Some(value) = header.and_then(|value| value.to_str().ok()) else {
+        return Ok(None);
+    };
     let value = value.trim();
 
-    let (scheme, rest) = value.split_once(' ')?;
+    let (scheme, rest) = value.split_once(' ').unwrap_or((value, ""));
     if !scheme.eq_ignore_ascii_case("bearer") {
-        return None;
+        return Ok(None);
     }
 
     let token = rest.trim();
     if token.is_empty() {
-        return None;
+        return Err(AuthError::BadRequest("missing bearer token".into()));
     }
 
-    Some(token.to_string())
+    Ok(Some(token.to_string()))
 }
