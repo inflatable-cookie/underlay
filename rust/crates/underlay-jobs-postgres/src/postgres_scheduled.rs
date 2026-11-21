@@ -290,13 +290,32 @@ impl PgJobNotifier {
         }
     }
 
-    /// Drain any pending notifications without blocking.
+    /// Drain any already-buffered notifications without blocking on the socket.
     ///
-    /// Useful after processing a batch of jobs to clear queued notifications
-    /// that are no longer relevant (since we just checked the queue).
+    /// Useful after waking or processing a batch of jobs to coalesce burst
+    /// notifications without stalling shutdown or fallback polling.
     pub fn drain(&mut self) {
-        // PgListener doesn't have a direct drain method, but try_recv would work
-        // For now, this is a no-op placeholder. The notifications will be
-        // consumed on the next wait() call anyway.
+        while self.listener.next_buffered().is_some() {}
+    }
+
+    /// Coalesce up to `max_notifications` notifications already queued on the
+    /// internal buffer or LISTEN socket, waiting at most `per_read_timeout` per
+    /// socket read so an empty socket returns promptly.
+    pub async fn coalesce_pending(
+        &mut self,
+        max_notifications: usize,
+        per_read_timeout: Duration,
+    ) -> usize {
+        let mut drained = 0usize;
+        while drained < max_notifications && self.listener.next_buffered().is_some() {
+            drained += 1;
+        }
+        while drained < max_notifications {
+            match tokio::time::timeout(per_read_timeout, self.listener.try_recv()).await {
+                Ok(Ok(Some(_))) => drained += 1,
+                Ok(Ok(None)) | Ok(Err(_)) | Err(_) => break,
+            }
+        }
+        drained
     }
 }

@@ -3,8 +3,7 @@
 //! This crate provides a complete media management solution including:
 //!
 //! - **Domain types**: Media items, versions, renditions, and usage tracking
-//! - **Repository trait**: Abstract interface for media storage operations
-//! - **PostgreSQL implementation**: Production-ready database backend via `underlay-media-postgres`
+//! - **Repository trait**: Abstract interface for media storage operations (implemented by each app against its own schema)
 //! - **Rendition service**: Automatic thumbnail/preview generation (with `renditions` feature)
 //!
 //! # Quick Start
@@ -13,11 +12,8 @@
 //! use underlay_media::{
 //!     MediaRepository, MediaId, CreateMediaInput, MediaKind, MediaVisibility,
 //! };
-//! use underlay_media_postgres::PostgresMediaRepository;
 //!
-//! // Create a repository
-//! let repo = PostgresMediaRepository::new(pool);
-//!
+//! // Given an app-implemented `MediaRepository`:
 //! // Create a media item
 //! let input = CreateMediaInput {
 //!     kind: MediaKind::Image,

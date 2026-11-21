@@ -37,16 +37,20 @@ impl TryFrom<EmailAddressFields> for EmailAddress {
 impl EmailAddress {
     /// Create a new email address without a display name.
     pub fn new(email: impl Into<String>) -> EmailResult<Self> {
-        let email = email.into();
-        Self::validate_email(&email)?;
-        Ok(Self { email, name: None })
+        let raw = email.into();
+        Self::validate_email(&raw)?;
+        Ok(Self {
+            email: raw.trim().to_string(),
+            name: None,
+        })
     }
 
     /// Create a new email address with a display name.
     pub fn with_name(email: impl Into<String>, name: impl Into<String>) -> EmailResult<Self> {
-        let email = email.into();
+        let raw = email.into();
+        Self::validate_email(&raw)?;
         let address = Self {
-            email,
+            email: raw.trim().to_string(),
             name: Some(name.into()),
         };
         address.validate()?;

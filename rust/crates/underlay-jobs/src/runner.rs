@@ -16,15 +16,18 @@
 //! runner.run_forever().await?;
 //! ```
 
+use std::any::Any;
 use std::future::{self, Future};
-use std::pin::pin;
+use std::panic::{self, AssertUnwindSafe};
+use std::pin::{pin, Pin};
+use std::task::{Context, Poll};
 use std::time::Duration;
 
 use tracing::{debug, error, info, warn};
 
 use crate::events::{JobEvent, JobEventHub, JobEventSink};
 use crate::registry::JobRegistry;
-use crate::store::JobStore;
+use crate::store::{JobCompletionOutcome, JobStore};
 use crate::types::{Job, JobConfig, JobHandlerError};
 
 /// Configuration for the job runner.
@@ -158,37 +161,66 @@ where
 
         let handler_config = handler.config();
 
-        let handle_result = if let Some(timeout_secs) = handler_config.timeout_seconds() {
-            let timeout = std::time::Duration::from_secs(u64::from(timeout_secs.max(1)));
-            match tokio::time::timeout(timeout, handler.handle(job.clone())).await {
-                Ok(res) => res,
-                Err(_) => Err(JobHandlerError::new(format!(
-                    "job timed out after {}s",
-                    timeout.as_secs()
-                ))),
+        let handle_result = match panic::catch_unwind(AssertUnwindSafe(|| {
+            handler.handle(job.clone())
+        })) {
+            Err(payload) => Err(JobHandlerError::new(format!(
+                "job handler panicked: {}",
+                panic_payload_to_string(payload)
+            ))),
+            Ok(fut) => {
+                let guarded = CatchUnwindFuture(fut);
+                let outcome = if let Some(timeout_secs) = handler_config.timeout_seconds() {
+                    let timeout = std::time::Duration::from_secs(u64::from(timeout_secs.max(1)));
+                    match tokio::time::timeout(timeout, guarded).await {
+                        Ok(res) => res,
+                        Err(_) => Ok(Err(JobHandlerError::new(format!(
+                            "job timed out after {}s",
+                            timeout.as_secs()
+                        )))),
+                    }
+                } else {
+                    guarded.await
+                };
+                match outcome {
+                    Ok(res) => res,
+                    Err(payload) => Err(JobHandlerError::new(format!(
+                        "job handler panicked: {}",
+                        panic_payload_to_string(payload)
+                    ))),
+                }
             }
-        } else {
-            handler.handle(job.clone()).await
         };
 
         match handle_result {
             Ok(()) => {
-                self.store.mark_success(job.id).await?;
-                let duration = job
-                    .started_at
-                    .or(job.claimed_at)
-                    .and_then(|started_at| (chrono::Utc::now() - started_at).to_std().ok());
-                self.events.emit(JobEvent::Completed {
-                    job_id: job.id,
-                    job_type: job.job_type.clone(),
-                    attempt: job.attempts,
-                    duration,
-                });
-                info!(
-                    job_type = %job.job_type,
-                    job_id = %job.id,
-                    "Job completed successfully"
-                );
+                match self.store.mark_success(&job).await? {
+                    JobCompletionOutcome::Succeeded => {
+                        let duration = job
+                            .started_at
+                            .or(job.claimed_at)
+                            .and_then(|started_at| (chrono::Utc::now() - started_at).to_std().ok());
+                        self.events.emit(JobEvent::Completed {
+                            job_id: job.id,
+                            job_type: job.job_type.clone(),
+                            attempt: job.attempts,
+                            duration,
+                        });
+                        info!(
+                            job_type = %job.job_type,
+                            job_id = %job.id,
+                            "Job completed successfully"
+                        );
+                    }
+                    JobCompletionOutcome::LostOwnership => {
+                        warn!(
+                            job_type = %job.job_type,
+                            job_id = %job.id,
+                            attempt = job.attempts,
+                            "Job completion ignored because attempt no longer owns the running claim"
+                        );
+                    }
+                }
                 Ok(true)
             }
             Err(err) => {
@@ -309,6 +341,33 @@ where
         }
 
         Ok(processed)
+    }
+}
+
+struct CatchUnwindFuture<F>(F);
+
+impl<F> Future for CatchUnwindFuture<F>
+where
+    F: Future + Unpin,
+{
+    type Output = std::thread::Result<F::Output>;
+
+    fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        match panic::catch_unwind(AssertUnwindSafe(|| Pin::new(&mut self.0).poll(cx))) {
+            Ok(Poll::Ready(output)) => Poll::Ready(Ok(output)),
+            Ok(Poll::Pending) => Poll::Pending,
+            Err(payload) => Poll::Ready(Err(payload)),
+        }
+    }
+}
+
+fn panic_payload_to_string(payload: Box<dyn Any + Send>) -> String {
+    if let Some(msg) = payload.downcast_ref::<&str>() {
+        (*msg).to_string()
+    } else if let Some(msg) = payload.downcast_ref::<String>() {
+        msg.clone()
+    } else {
+        "unknown panic payload".to_string()
     }
 }
 

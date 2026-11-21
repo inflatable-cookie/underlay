@@ -36,5 +36,5 @@
 mod params;
 mod query;
 
-pub use params::SuggestionParams;
+pub use params::{SuggestionParams, MAX_RECENT_HINTS};
 pub use query::{SuggestionOrder, SuggestionQuery};

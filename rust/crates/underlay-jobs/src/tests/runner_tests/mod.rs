@@ -7,7 +7,9 @@ use serde_json::json;
 use crate::types::{
     Job, JobConfig, JobFailureOutcome, JobHandler, JobHandlerError, JobId, JobStatus,
 };
-use crate::{JobEvent, JobEventSink, JobRegistry, JobRunner, JobRunnerConfig, JobStore};
+use crate::{
+    JobCompletionOutcome, JobEvent, JobEventSink, JobRegistry, JobRunner, JobRunnerConfig, JobStore,
+};
 
 mod batch;
 mod dispatch;
@@ -17,6 +19,7 @@ mod failures;
 struct MemStore {
     queue: Mutex<Vec<Job>>,
     ignore_allowed_types: bool,
+    stale_completion_ids: Mutex<Vec<JobId>>,
     successes: Mutex<Vec<JobId>>,
     failures: Mutex<Vec<JobId>>,
     failure_calls: Mutex<Vec<FailureCall>>,
@@ -54,9 +57,12 @@ impl JobStore for Arc<MemStore> {
         Ok(idx.map(|i| q.remove(i)))
     }
 
-    async fn mark_success(&self, job_id: JobId) -> Result<(), Self::Error> {
-        self.successes.lock().unwrap().push(job_id);
-        Ok(())
+    async fn mark_success(&self, job: &Job) -> Result<JobCompletionOutcome, Self::Error> {
+        if self.stale_completion_ids.lock().unwrap().contains(&job.id) {
+            return Ok(JobCompletionOutcome::LostOwnership);
+        }
+        self.successes.lock().unwrap().push(job.id);
+        Ok(JobCompletionOutcome::Succeeded)
     }
 
     async fn mark_failure(

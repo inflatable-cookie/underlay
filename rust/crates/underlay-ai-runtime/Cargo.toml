@@ -12,6 +12,7 @@ serde_json = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true, features = ["time"] }
 underlay-core = { path = "../underlay-core" }
+url = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt", "time"] }

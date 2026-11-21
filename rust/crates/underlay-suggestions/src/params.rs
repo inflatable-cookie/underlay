@@ -2,6 +2,9 @@
 
 use serde::Deserialize;
 
+/// Maximum number of client-provided recent hint IDs returned by [`SuggestionParams::recent_hints`].
+pub const MAX_RECENT_HINTS: usize = 50;
+
 /// Parameters for suggestion requests, parsed from query string.
 ///
 /// # Query String Format
@@ -97,6 +100,7 @@ impl SuggestionParams {
             .split(',')
             .map(|s| s.trim())
             .filter(|s| !s.is_empty())
+            .take(MAX_RECENT_HINTS)
             .collect()
     }
 

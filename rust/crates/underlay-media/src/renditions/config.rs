@@ -1,3 +1,6 @@
+/// Default maximum source object size (25 MiB) read into memory when generating renditions.
+pub const DEFAULT_MAX_SOURCE_BYTES: u64 = 25 * 1024 * 1024;
+
 /// Configuration for rendition generation.
 #[derive(Clone, Debug)]
 pub struct RenditionConfig {
@@ -17,6 +20,8 @@ pub struct RenditionConfig {
     thumbnail_name: String,
     /// Custom preview rendition name.
     preview_name: String,
+    /// Maximum source object size in bytes fetched from blob storage.
+    max_source_bytes: u64,
 }
 
 impl Default for RenditionConfig {
@@ -30,6 +35,7 @@ impl Default for RenditionConfig {
             generate_previews: false,
             thumbnail_name: "thumb".to_string(),
             preview_name: "preview".to_string(),
+            max_source_bytes: DEFAULT_MAX_SOURCE_BYTES,
         }
     }
 }
@@ -145,5 +151,21 @@ impl RenditionConfig {
     /// Return the preview rendition name.
     pub fn preview_name_ref(&self) -> &str {
         &self.preview_name
+    }
+
+    /// Set the maximum source object size in bytes fetched for rendition generation.
+    ///
+    /// Rendition generation reads sources via `BlobAdapter::get_bytes_bounded`.
+    /// Custom `BlobAdapter` implementations must override `get_bytes_bounded`
+    /// because the default trait implementation fails closed with
+    /// `BlobError::Unsupported`.
+    pub fn with_max_source_bytes(mut self, max_bytes: u64) -> Self {
+        self.max_source_bytes = max_bytes.max(1);
+        self
+    }
+
+    /// Return the maximum source object size in bytes fetched for rendition generation.
+    pub fn max_source_bytes(&self) -> u64 {
+        self.max_source_bytes
     }
 }

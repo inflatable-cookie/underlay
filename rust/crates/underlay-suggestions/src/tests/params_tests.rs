@@ -46,3 +46,21 @@ fn test_empty_hint_filtering() {
     let params = SuggestionParams::from_query_string("suggestions=true&recentHints=id1,,id3");
     assert_eq!(params.recent_hints(), vec!["id1", "id3"]);
 }
+
+#[test]
+fn recent_hints_are_capped_at_max_recent_hints() {
+    let ids: Vec<String> = (0..(MAX_RECENT_HINTS + 25))
+        .map(|i| format!("hint-{i}"))
+        .collect();
+    let query = format!("suggestions=true&recentHints={}", ids.join(","));
+    let params = SuggestionParams::from_query_string(&query);
+
+    let hints = params.recent_hints();
+    assert_eq!(hints.len(), MAX_RECENT_HINTS);
+    assert_eq!(params.hint_count(), MAX_RECENT_HINTS);
+    assert_eq!(hints[0], "hint-0");
+    assert_eq!(
+        hints[MAX_RECENT_HINTS - 1],
+        format!("hint-{}", MAX_RECENT_HINTS - 1)
+    );
+}
