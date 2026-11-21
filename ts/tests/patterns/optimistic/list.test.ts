@@ -470,9 +470,18 @@ describe("createOptimisticList", () => {
 			upd.rollback();
 			expect(get(listDirect)[0].name).toBe("Alpha");
 
-			// Default-ID typed options preserve Omit<T, "id"> add and OptimisticList<T> assignment.
+			// Default-ID typed options preserve Omit<T, "id"> add and OptimisticList<T> assignment,
+			// and still populate `id` on the emitted row when `opts` carries a custom key.
 			listFromTempOpts.add({ slug: "gamma", name: "Gamma" });
+			expect(get(listFromTempOpts)[0]).toEqual({ id: "temp-1", slug: "gamma", name: "Gamma" });
+
 			listFromOpts.add({ slug: "beta", name: "Beta" });
+			const emittedFromOpts = get(listFromOpts)[0];
+			expect(emittedFromOpts.id).toMatch(/^temp-/);
+			expect(emittedFromOpts.slug).toBe(emittedFromOpts.id);
+			expect(emittedFromOpts.name).toBe("Beta");
+			expect(emittedFromOpts.id.toUpperCase()).toMatch(/^TEMP-/);
+
 			listFromUndefined.add({ id: "4", slug: "delta", name: "Delta" });
 			listTypedKey.add({ id: "5", name: "Epsilon" });
 
@@ -494,11 +503,19 @@ describe("createOptimisticList", () => {
 			const badNumericKey = () => createOptimisticList([{ id: 1, name: "A" }], { key: "id" });
 			// @ts-expect-error rows without string `id` require an explicit key option
 			const badMissingId = () => createOptimisticList([{ slug: "one", name: "One" }]);
+			interface NarrowSlugPost {
+				slug: `post-${string}`;
+				title: string;
+			}
+			const badNarrowKey = () =>
+				// @ts-expect-error narrower template-literal string key cannot accept arbitrary tempId() strings
+				createOptimisticList<NarrowSlugPost, "slug">([], { key: "slug", tempId: () => "temp" });
 			expect(typeof badOneArg).toBe("function");
 			expect(typeof badTypedKey).toBe("function");
 			expect(typeof badUnionKey).toBe("function");
 			expect(typeof badNumericKey).toBe("function");
 			expect(typeof badMissingId).toBe("function");
+			expect(typeof badNarrowKey).toBe("function");
 		});
 	});
 

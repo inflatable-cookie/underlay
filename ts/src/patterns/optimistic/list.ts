@@ -17,7 +17,7 @@ export interface OptimisticUpdateOperation<T> {
 }
 
 export type OptimisticStringKey<T extends object> = {
-	[K in keyof T]-?: T[K] extends string ? K : never;
+	[K in keyof T]-?: [string] extends [T[K]] ? ([T[K]] extends [string] ? K : never) : never;
 }[keyof T];
 
 type UnionToIntersection<U> = (U extends unknown ? (arg: U) => void : never) extends (
@@ -141,7 +141,10 @@ export function createOptimisticList<T extends object>(
 
 	function add(item: Partial<T>): OptimisticAddOperation<T> {
 		const id = tempId();
-		const optimisticItem = { ...item, [keyField]: id } as T;
+		const optimisticItem =
+			keyField !== "id" && keyField in item && !("id" in item)
+				? ({ ...item, id, [keyField]: id } as T)
+				: ({ ...item, [keyField]: id } as T);
 		const generation = listGeneration;
 		let settled = false;
 
