@@ -32,21 +32,30 @@ fn pattern_cache() -> &'static Mutex<HashMap<String, CachedPattern>> {
 /// Return the cached compilation outcome for `pattern`, compiling and caching
 /// it on first use.
 fn cached_pattern(pattern: &str) -> CachedPattern {
-    let cache = pattern_cache();
-    // A panic elsewhere while holding the lock must not turn every later
-    // validation call into a panic; recover the inner map instead.
-    let mut cache = cache
-        .lock()
-        .unwrap_or_else(|poisoned| poisoned.into_inner());
-
-    if let Some(cached) = cache.get(pattern) {
-        return cached.clone();
+    let cache_mutex = pattern_cache();
+    {
+        // A panic elsewhere while holding the lock must not turn every later
+        // validation call into a panic; recover the inner map instead.
+        let cache = cache_mutex
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        if let Some(cached) = cache.get(pattern) {
+            return cached.clone();
+        }
     }
 
+    // Compile outside the global cache mutex so regex compilation does not block other threads.
     let compiled = match Regex::new(pattern) {
         Ok(regex) => CachedPattern::Compiled(regex),
         Err(_) => CachedPattern::Invalid,
     };
+
+    let mut cache = cache_mutex
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    if let Some(cached) = cache.get(pattern) {
+        return cached.clone();
+    }
 
     if cache.len() >= PATTERN_CACHE_CAPACITY {
         if let Some(evicted) = cache.keys().next().cloned() {

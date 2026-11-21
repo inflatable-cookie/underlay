@@ -13,7 +13,7 @@ async fn run_resumes_from_completed_normalize_stage() {
     let fixture = pipeline_fixture(false, false, false);
     let store = InMemoryRunStore::default();
     let run = RunMetadata::new("plugin-v1", "schema-v1");
-    let ctx = MigrationContext::new(run.clone(), PipelinePolicy::default());
+    let ctx = MigrationContext::new(run.clone(), verified_policy());
 
     let extract_output = crate::ExtractStageOutput {
         batches: vec![LegacyRecordBatch {
@@ -84,7 +84,7 @@ async fn run_rejects_incompatible_resume_checkpoint() {
     let fixture = pipeline_fixture(false, false, false);
     let store = InMemoryRunStore::default();
     let run = RunMetadata::new("plugin-v1", "schema-v1");
-    let ctx = MigrationContext::new(run.clone(), PipelinePolicy::default());
+    let ctx = MigrationContext::new(run.clone(), verified_policy());
 
     store
         .write_stage_checkpoint(StageCheckpoint {

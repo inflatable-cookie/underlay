@@ -104,7 +104,7 @@ pub fn parse_sort_string(s: &str) -> Vec<SortField> {
             }
 
             let (field, direction) = if let Some((f, d)) = part.split_once(':') {
-                let dir = d.parse().unwrap_or(SortDirection::Asc);
+                let dir = d.trim().parse().unwrap_or(SortDirection::Asc);
                 (f.trim().to_string(), dir)
             } else {
                 (part.to_string(), SortDirection::Asc)
@@ -129,5 +129,17 @@ mod tests {
         assert_eq!(err.input(), "sideways");
         assert!(err.to_string().contains("sideways"));
         let _: &dyn std::error::Error = &err;
+    }
+
+    #[test]
+    fn parse_sort_string_trims_direction_whitespace() {
+        assert_eq!(
+            parse_sort_string("created_at: desc"),
+            vec![SortField::desc("created_at")]
+        );
+        assert_eq!(
+            parse_sort_string(" created_at : DESC , name : asc "),
+            vec![SortField::desc("created_at"), SortField::asc("name")]
+        );
     }
 }

@@ -2,6 +2,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+use crate::errors::{MigrationError, MigrationResult};
 use crate::integrity::{IntegrityEvidence, IntegrityPolicy};
 use crate::verification_rules::VerificationRule;
 
@@ -46,12 +47,52 @@ pub struct PipelinePolicy {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[serde(try_from = "AiThresholdPolicyUnchecked")]
 pub struct AiThresholdPolicy {
     default_confidence_threshold: f64,
     decision_type_overrides: HashMap<String, f64>,
 }
 
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "snake_case")]
+struct AiThresholdPolicyUnchecked {
+    default_confidence_threshold: f64,
+    decision_type_overrides: HashMap<String, f64>,
+}
+
+impl TryFrom<AiThresholdPolicyUnchecked> for AiThresholdPolicy {
+    type Error = MigrationError;
+
+    fn try_from(raw: AiThresholdPolicyUnchecked) -> Result<Self, Self::Error> {
+        let policy = Self {
+            default_confidence_threshold: raw.default_confidence_threshold,
+            decision_type_overrides: raw.decision_type_overrides,
+        };
+        policy.validate()?;
+        Ok(policy)
+    }
+}
+
+fn validate_threshold(value: f64, label: &str) -> MigrationResult<f64> {
+    if value.is_finite() && (0.0..=1.0).contains(&value) {
+        Ok(value)
+    } else {
+        Err(MigrationError::DeterminismViolation(format!(
+            "{label} must be finite and within 0.0..=1.0, got {value}"
+        )))
+    }
+}
+
 impl AiThresholdPolicy {
+    /// Construct a policy after validating that `default_confidence_threshold` is finite and in `0.0..=1.0`.
+    pub fn try_new(default_confidence_threshold: f64) -> MigrationResult<Self> {
+        validate_threshold(default_confidence_threshold, "default_confidence_threshold")?;
+        Ok(Self {
+            default_confidence_threshold,
+            decision_type_overrides: HashMap::new(),
+        })
+    }
+
     pub fn new(default_confidence_threshold: f64) -> Self {
         Self {
             default_confidence_threshold,
@@ -59,9 +100,35 @@ impl AiThresholdPolicy {
         }
     }
 
+    /// Update the default confidence threshold after validating that it is finite and in `0.0..=1.0`.
+    pub fn try_with_default_confidence_threshold(
+        mut self,
+        threshold: f64,
+    ) -> MigrationResult<Self> {
+        validate_threshold(threshold, "default_confidence_threshold")?;
+        self.default_confidence_threshold = threshold;
+        Ok(self)
+    }
+
     pub fn with_default_confidence_threshold(mut self, threshold: f64) -> Self {
         self.default_confidence_threshold = threshold;
         self
+    }
+
+    /// Add or replace an override threshold after validating that it is finite and in `0.0..=1.0`.
+    pub fn try_with_decision_type_override(
+        mut self,
+        decision_type: impl Into<String>,
+        threshold: f64,
+    ) -> MigrationResult<Self> {
+        let decision_type = decision_type.into();
+        validate_threshold(
+            threshold,
+            &format!("override threshold for {decision_type}"),
+        )?;
+        self.decision_type_overrides
+            .insert(decision_type, threshold);
+        Ok(self)
     }
 
     pub fn with_decision_type_override(
@@ -74,11 +141,33 @@ impl AiThresholdPolicy {
         self
     }
 
+    /// Validate that the default threshold and all overrides are finite and within `0.0..=1.0`.
+    pub fn validate(&self) -> MigrationResult<()> {
+        validate_threshold(
+            self.default_confidence_threshold,
+            "default_confidence_threshold",
+        )?;
+        for (decision_type, &threshold) in &self.decision_type_overrides {
+            validate_threshold(
+                threshold,
+                &format!("override threshold for {decision_type}"),
+            )?;
+        }
+        Ok(())
+    }
+
+    /// Return the effective threshold for `decision_type`, failing closed to `1.0` if invalid.
     pub fn threshold_for(&self, decision_type: &str) -> f64 {
-        self.decision_type_overrides
+        let threshold = self
+            .decision_type_overrides
             .get(decision_type)
             .copied()
-            .unwrap_or(self.default_confidence_threshold)
+            .unwrap_or(self.default_confidence_threshold);
+        if threshold.is_finite() && (0.0..=1.0).contains(&threshold) {
+            threshold
+        } else {
+            1.0
+        }
     }
 
     pub fn default_confidence_threshold(&self) -> f64 {
@@ -185,5 +274,47 @@ pub struct MigrationContext {
 impl MigrationContext {
     pub fn new(run: RunMetadata, policy: PipelinePolicy) -> Self {
         Self { run, policy }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn ai_threshold_policy_rejects_nan_and_out_of_range() {
+        for invalid in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY, -0.01, 1.01] {
+            assert!(
+                AiThresholdPolicy::try_new(invalid).is_err(),
+                "try_new should reject {invalid}"
+            );
+            assert!(
+                AiThresholdPolicy::default()
+                    .try_with_default_confidence_threshold(invalid)
+                    .is_err(),
+                "try_with_default_confidence_threshold should reject {invalid}"
+            );
+            assert!(
+                AiThresholdPolicy::default()
+                    .try_with_decision_type_override("record", invalid)
+                    .is_err(),
+                "try_with_decision_type_override should reject {invalid}"
+            );
+
+            let legacy = AiThresholdPolicy::new(invalid);
+            assert!(legacy.validate().is_err());
+            assert_eq!(legacy.threshold_for("record"), 1.0);
+        }
+
+        assert!(AiThresholdPolicy::try_new(0.0).is_ok());
+        assert!(AiThresholdPolicy::try_new(1.0).is_ok());
+        assert!(AiThresholdPolicy::try_new(0.85)
+            .unwrap()
+            .try_with_decision_type_override("record", 0.95)
+            .is_ok());
+
+        let invalid_json =
+            r#"{"default_confidence_threshold": -0.5, "decision_type_overrides": {}}"#;
+        assert!(serde_json::from_str::<AiThresholdPolicy>(invalid_json).is_err());
     }
 }

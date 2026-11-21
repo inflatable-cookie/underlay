@@ -12,6 +12,9 @@ pub async fn metrics_handler(State(registry): State<DefaultRegistry>) -> impl In
             body,
         )
             .into_response(),
-        Err(_) => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+        Err(err) => {
+            tracing::error!(error = %err, "failed to encode prometheus metrics");
+            StatusCode::INTERNAL_SERVER_ERROR.into_response()
+        }
     }
 }

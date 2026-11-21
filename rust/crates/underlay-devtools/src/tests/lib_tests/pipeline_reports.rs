@@ -1,3 +1,5 @@
+use underlay_migration_core::{evaluate_integrity_gate, IntegrityEvidence, IntegrityPolicy};
+
 use super::support::temp_dir;
 use super::*;
 
@@ -47,7 +49,14 @@ fn load_decide_stage_output_supports_decide_and_pipeline_shapes() {
             record_count: 0,
         },
         decide,
-        integrity_gate: underlay_migration_core::IntegrityGateResult::default(),
+        integrity_gate: evaluate_integrity_gate(
+            &IntegrityPolicy::default(),
+            &IntegrityEvidence {
+                digest_verified: true,
+                sidecar_checksums_verified: true,
+                ..IntegrityEvidence::default()
+            },
+        ),
         materialize: MaterializeStageOutput {
             inserted: 0,
             updated: 0,

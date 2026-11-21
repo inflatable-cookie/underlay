@@ -7,13 +7,18 @@ pub struct PaginatedResponse<T> {
     /// The items for the current page.
     pub data: Vec<T>,
 
-    /// Cursor to fetch the next page, or null if no more pages.
+    /// Cursor to fetch the next page (after this page in forward order), or `None` if at the end.
     pub next_cursor: Option<String>,
 
-    /// Cursor to fetch the previous page, or null if at the start.
+    /// Cursor to fetch the previous page (before this page in forward order), or `None` if at the start.
     pub prev_cursor: Option<String>,
 
-    /// Whether there are more items after this page.
+    /// Whether there are more items further in the requested traversal direction.
+    ///
+    /// For [`PaginationDirection::Forward`](super::PaginationDirection::Forward) queries, this means
+    /// there are more items *after* this page (`next_cursor` is `Some`). For
+    /// [`PaginationDirection::Backward`](super::PaginationDirection::Backward) queries, this means
+    /// there are more items *before* this page (`prev_cursor` is `Some`), not after it.
     pub has_more: bool,
 
     /// Total count of items (null if not requested or unavailable).

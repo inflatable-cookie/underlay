@@ -19,7 +19,7 @@ pub trait ErrorCode {
 ///
 /// This is intentionally minimal; domain crates are expected to define
 /// more specific constructors and stable error codes.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AppError {
     pub code: &'static str,
     pub message: String,

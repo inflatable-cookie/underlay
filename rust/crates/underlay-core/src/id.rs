@@ -8,7 +8,7 @@ pub use uuid::Uuid as RawUuid;
 ///
 /// This is a thin newtype wrapper around `uuid::Uuid` so that
 /// we can centralise generation and parsing rules.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct Uuid(pub InnerUuid);
 
@@ -32,6 +32,32 @@ impl Uuid {
 impl std::fmt::Display for Uuid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
+    }
+}
+
+impl From<RawUuid> for Uuid {
+    fn from(id: RawUuid) -> Self {
+        Self(id)
+    }
+}
+
+impl From<Uuid> for RawUuid {
+    fn from(id: Uuid) -> Self {
+        id.0
+    }
+}
+
+impl AsRef<RawUuid> for Uuid {
+    fn as_ref(&self) -> &RawUuid {
+        &self.0
+    }
+}
+
+impl std::str::FromStr for Uuid {
+    type Err = uuid::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::parse_str(s)
     }
 }
 

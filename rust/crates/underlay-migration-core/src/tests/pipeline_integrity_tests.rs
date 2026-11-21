@@ -76,6 +76,8 @@ async fn run_fails_pre_apply_when_signature_rollout_enforces_preprod() {
                 .with_run_scope(IntegrityRunScope::PreProduction),
         )
         .with_integrity_evidence(IntegrityEvidence {
+            digest_verified: true,
+            sidecar_checksums_verified: true,
             signature_verified: None,
             ..Default::default()
         });
@@ -116,11 +118,12 @@ async fn run_fails_pre_apply_when_signature_evidence_is_incomplete() {
     let policy = PipelinePolicy::default()
         .with_integrity_policy(IntegrityPolicy::default().with_signature_verification(true))
         .with_integrity_evidence(IntegrityEvidence {
+            digest_verified: true,
+            sidecar_checksums_verified: true,
             signature_verified: Some(true),
             signature_verified_at: None,
             signer_identity: Some("".to_string()),
             signature_key_id: Some("".to_string()),
-            ..Default::default()
         });
 
     let orchestrator = MigrationOrchestrator::new(source, plugin, resolver, assets);

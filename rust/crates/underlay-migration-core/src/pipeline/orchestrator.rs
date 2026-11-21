@@ -64,6 +64,7 @@ where
     where
         R: RunStore,
     {
+        ctx.policy.ai_threshold_policy().validate()?;
         let started_at = Utc::now();
         let resume_plan = validate_resume_compatibility(ctx, run_store).await?;
         let resume_from = resume_plan.resume_from;

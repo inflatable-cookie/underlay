@@ -2,14 +2,21 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{Attribute, Expr, Ident, Result as SynResult};
 
+pub(crate) struct ParsedValidateAttr {
+    pub(crate) validations: Vec<TokenStream>,
+    pub(crate) skip: bool,
+    pub(crate) required: bool,
+}
+
 pub(crate) fn parse_validate_attr(
     attr: &Attribute,
     field_name: &Ident,
     field_name_str: &str,
     is_option: bool,
-) -> SynResult<(Vec<TokenStream>, bool)> {
+) -> SynResult<ParsedValidateAttr> {
     let mut validations = Vec::new();
     let mut skip = false;
+    let mut required = false;
 
     let ref_expr = if is_option {
         quote! { __underlay_val }
@@ -59,6 +66,7 @@ pub(crate) fn parse_validate_attr(
         }
 
         if path.is_ident("required") {
+            required = true;
             validations.push(quote! {
                 if let Err(e) = ::underlay_validation::validators::required(#ref_expr) {
                     errors.add_field(#field_name_str, e);
@@ -245,5 +253,9 @@ pub(crate) fn parse_validate_attr(
         Err(meta.error(format!("unknown validator: {}", quote!(#path))))
     })?;
 
-    Ok((validations, skip))
+    Ok(ParsedValidateAttr {
+        validations,
+        skip,
+        required,
+    })
 }

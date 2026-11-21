@@ -86,3 +86,23 @@ fn test_validation_error_display_is_deterministic() {
         "Validation failed: alpha: bad alpha, mid: bad mid, zeta: bad zeta"
     );
 }
+
+#[test]
+fn test_add_field_preserves_multiple_errors_without_overwriting() {
+    let mut err = ValidationError::new();
+    err.add_field(
+        "email",
+        FieldError::with_code("Invalid email address", "email.invalid"),
+    );
+    err.add_field(
+        "email",
+        FieldError::with_code("Must be at least 5 characters", "length.min"),
+    );
+
+    let field_err = err.get_field("email").expect("email error should exist");
+    assert_eq!(
+        field_err.message,
+        "Invalid email address; Must be at least 5 characters"
+    );
+    assert_eq!(field_err.code.as_deref(), Some("email.invalid"));
+}

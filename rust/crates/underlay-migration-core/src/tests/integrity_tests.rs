@@ -1,9 +1,25 @@
 use chrono::Utc;
 
 use crate::{
-    evaluate_integrity_gate, IntegrityEvidence, IntegrityPolicy, IntegrityRunScope,
-    SignatureEnforcementPhase,
+    evaluate_integrity_gate, IntegrityEvidence, IntegrityGateResult, IntegrityPolicy,
+    IntegrityRunScope, SignatureEnforcementPhase,
 };
+
+#[test]
+fn integrity_defaults_are_fail_closed() {
+    let evidence = IntegrityEvidence::default();
+    assert!(!evidence.digest_verified);
+    assert!(!evidence.sidecar_checksums_verified);
+    assert_eq!(evidence.signature_verified, None);
+
+    let default_gate = IntegrityGateResult::default();
+    assert!(!default_gate.passed);
+    assert_eq!(default_gate.blockers.len(), 2);
+
+    let evaluated = evaluate_integrity_gate(&IntegrityPolicy::default(), &evidence);
+    assert!(!evaluated.passed);
+    assert_eq!(evaluated.blockers.len(), 2);
+}
 
 #[test]
 fn integrity_gate_blocks_when_required_evidence_missing() {

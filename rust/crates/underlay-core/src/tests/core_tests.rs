@@ -1,4 +1,4 @@
-use crate::{AppError, Uuid};
+use crate::{AppError, ErrorBody, ErrorEnvelope, ListResponse, RawUuid, SingleResponse, Uuid};
 
 #[test]
 fn uuid_round_trips_from_string() {
@@ -8,6 +8,42 @@ fn uuid_round_trips_from_string() {
     let parsed = Uuid::parse_str(&raw).expect("uuid should parse");
     assert_eq!(parsed, id);
     assert_eq!(parsed.into_inner(), id.into_inner());
+
+    let from_str_parsed: Uuid = raw.parse().expect("FromStr should parse");
+    assert_eq!(from_str_parsed, id);
+
+    let raw_uuid: RawUuid = id.into();
+    assert_eq!(Uuid::from(raw_uuid), id);
+    assert_eq!(id.as_ref(), &raw_uuid);
+
+    let low = Uuid::from(RawUuid::from_u128(1));
+    let high = Uuid::from(RawUuid::from_u128(2));
+    assert!(low < high);
+}
+
+#[test]
+fn core_dtos_support_equality() {
+    assert_eq!(SingleResponse { data: "ok" }, SingleResponse { data: "ok" });
+    assert_eq!(
+        ListResponse { data: vec![1, 2] },
+        ListResponse { data: vec![1, 2] }
+    );
+    assert_eq!(
+        ErrorEnvelope {
+            error: ErrorBody {
+                code: "c".to_string(),
+                message: "m".to_string(),
+                field_errors: None,
+            },
+        },
+        ErrorEnvelope {
+            error: ErrorBody {
+                code: "c".to_string(),
+                message: "m".to_string(),
+                field_errors: None,
+            },
+        }
+    );
 }
 
 #[test]

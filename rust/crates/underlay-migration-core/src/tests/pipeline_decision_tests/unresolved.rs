@@ -4,7 +4,7 @@ use super::*;
 async fn run_queues_low_confidence_ai_decisions_as_unresolved() {
     let fixture = decision_pipeline_fixture(false);
 
-    let policy = PipelinePolicy::default()
+    let policy = verified_policy()
         .with_fail_on_unresolved_decisions(false)
         .with_ai_threshold_policy(
             AiThresholdPolicy::default()

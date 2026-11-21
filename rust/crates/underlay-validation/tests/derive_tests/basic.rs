@@ -89,4 +89,62 @@ fn test_derived_option_skips_none_and_validates_some() {
     assert!(err.has_field("email"));
     assert!(err.has_field("rating"));
     assert_eq!(err.field_count(), 2);
+
+    let email_msg = &err.get_field("email").unwrap().message;
+    assert!(email_msg.contains("Invalid email address"));
+    assert!(email_msg.contains("Must be at least 5 characters"));
+}
+
+#[derive(Validate)]
+struct RequiredOptionalRequest {
+    #[validate(required)]
+    name: Option<String>,
+
+    #[validate(required, email)]
+    email: Option<String>,
+}
+
+#[test]
+fn test_derived_required_on_option_rejects_none_and_blank() {
+    let missing = RequiredOptionalRequest {
+        name: None,
+        email: None,
+    };
+    let err = missing.validate().unwrap_err();
+    assert_eq!(err.field_count(), 2);
+    assert_eq!(
+        err.get_field("name").and_then(|e| e.code.as_deref()),
+        Some("required")
+    );
+    assert_eq!(
+        err.get_field("email").and_then(|e| e.code.as_deref()),
+        Some("required")
+    );
+
+    let blank = RequiredOptionalRequest {
+        name: Some("   ".to_string()),
+        email: Some("".to_string()),
+    };
+    let err = blank.validate().unwrap_err();
+    assert_eq!(err.field_count(), 2);
+    assert_eq!(
+        err.get_field("name").and_then(|e| e.code.as_deref()),
+        Some("required")
+    );
+    assert!(err
+        .get_field("email")
+        .unwrap()
+        .message
+        .contains("This field is required"));
+    assert!(err
+        .get_field("email")
+        .unwrap()
+        .message
+        .contains("Invalid email address"));
+
+    let valid = RequiredOptionalRequest {
+        name: Some("Alice".to_string()),
+        email: Some("alice@example.com".to_string()),
+    };
+    assert!(valid.validate().is_ok());
 }

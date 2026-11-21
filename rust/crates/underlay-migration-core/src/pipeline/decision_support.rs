@@ -36,7 +36,14 @@ pub(super) fn low_confidence_reason(
     }
 
     match decision.confidence {
-        Some(value) if value >= threshold => None,
+        Some(value)
+            if value.is_finite()
+                && threshold.is_finite()
+                && (0.0..=1.0).contains(&threshold)
+                && value >= threshold =>
+        {
+            None
+        }
         Some(_) => Some("low_confidence_ai"),
         None => Some("missing_confidence_ai"),
     }

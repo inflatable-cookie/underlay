@@ -108,6 +108,9 @@ fn test_username() {
 fn test_slug() {
     assert!(slug("my-article").is_ok());
     assert!(slug("article123").is_ok());
+    assert!(slug("ab").is_ok());
+    assert!(slug("a").is_err());
+    assert!(slug(&"a".repeat(101)).is_err());
     assert!(slug("My-Article").is_err());
     assert!(slug("my--article").is_err());
     assert!(slug("-article").is_err());

@@ -28,6 +28,7 @@ use std::collections::HashMap;
 /// assert_eq!(clause, "m.pathway_id = $1 AND m.weight >= $2");
 /// assert_eq!(values, vec!["abc123", "10"]);
 /// ```
+#[derive(Debug, Clone)]
 pub struct WhereBuilder {
     conditions: Vec<String>,
     values: Vec<String>,

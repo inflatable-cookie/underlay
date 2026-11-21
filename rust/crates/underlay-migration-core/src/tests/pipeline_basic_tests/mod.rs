@@ -1,8 +1,8 @@
 use std::sync::{Arc, Mutex};
 
 use crate::{
-    DecisionReusePolicy, MigrationContext, MigrationOrchestrator, PipelinePolicy, RunMetadata,
-    StageName,
+    DecisionReusePolicy, IntegrityEvidence, MigrationContext, MigrationOrchestrator,
+    PipelinePolicy, RunMetadata, StageName,
 };
 
 use super::support::{
@@ -21,10 +21,18 @@ fn counter_value(counter: &Arc<Mutex<u64>>) -> u64 {
     *counter.lock().expect("lock should succeed")
 }
 
+fn verified_policy() -> PipelinePolicy {
+    PipelinePolicy::default().with_integrity_evidence(IntegrityEvidence {
+        digest_verified: true,
+        sidecar_checksums_verified: true,
+        ..Default::default()
+    })
+}
+
 fn default_context() -> MigrationContext {
     MigrationContext::new(
         RunMetadata::new("plugin-v1", "schema-v1"),
-        PipelinePolicy::default(),
+        verified_policy(),
     )
 }
 
