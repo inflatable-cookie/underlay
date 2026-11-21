@@ -22,9 +22,9 @@ export interface CookieTokenStoreOptions {
  * Configuration for auth cookie helpers.
  */
 export interface AuthCookieConfig {
-	/** Cookie name for the access token (e.g., "bloom_access_token") */
+	/** Cookie name for the access token (e.g., "app_access_token") */
 	accessTokenName: string;
-	/** Cookie name for the refresh token (e.g., "bloom_refresh_token") */
+	/** Cookie name for the refresh token (e.g., "app_refresh_token") */
 	refreshTokenName: string;
 	/** Cookie options (path, domain, httpOnly, sameSite, maxAge, etc.) */
 	options?: {
@@ -64,8 +64,8 @@ export interface AuthCookieHelpers {
  * import { createAuthCookieHelpers } from "@inflatable-cookie/underlay/client/sveltekit";
  *
  * export const authCookies = createAuthCookieHelpers({
- *   accessTokenName: "bloom_access_token",
- *   refreshTokenName: "bloom_refresh_token",
+ *   accessTokenName: "app_access_token",
+ *   refreshTokenName: "app_refresh_token",
  *   options: { maxAge: 60 * 60 * 24 * 7 }
  * });
  *

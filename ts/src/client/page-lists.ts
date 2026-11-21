@@ -6,45 +6,51 @@
  */
 
 export interface PageListParams {
-  /** Page number (1-indexed). */
-  page?: number;
-  /** Number of items per page. */
-  limit?: number;
+	/** Page number (1-indexed). */
+	page?: number;
+	/** Number of items per page. */
+	limit?: number;
 }
 
 export function buildPageListQuery(params: PageListParams): Record<string, string> {
-  const query: Record<string, string> = {};
+	const query: Record<string, string> = {};
 
-  if (params.page !== undefined) {
-    query.page = String(params.page);
-  }
-  if (params.limit !== undefined) {
-    query.limit = String(params.limit);
-  }
+	if (params.page !== undefined) {
+		query.page = String(params.page);
+	}
+	if (params.limit !== undefined) {
+		query.limit = String(params.limit);
+	}
 
-  return query;
+	return query;
 }
 
 export function appendPageListParams(path: string, params: PageListParams): string {
-  const query = buildPageListQuery(params);
-  const entries = Object.entries(query);
+	const query = buildPageListQuery(params);
+	const entries = Object.entries(query);
 
-  if (entries.length === 0) {
-    return path;
-  }
+	if (entries.length === 0) {
+		return path;
+	}
 
-  const queryString = entries
-    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
-    .join("&");
+	const hashIndex = path.indexOf("#");
+	const pathWithoutHash = hashIndex === -1 ? path : path.slice(0, hashIndex);
+	const hash = hashIndex === -1 ? "" : path.slice(hashIndex);
 
-  if (!path.includes("?")) {
-    return `${path}?${queryString}`;
-  }
+	const queryString = entries
+		.map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+		.join("&");
 
-  const [basePath, existingQuery] = path.split("?", 2);
-  const merged = new URLSearchParams(existingQuery);
-  for (const [key, value] of entries) {
-    merged.set(key, value);
-  }
-  return `${basePath}?${merged.toString()}`;
+	const queryIndex = pathWithoutHash.indexOf("?");
+	if (queryIndex === -1) {
+		return `${pathWithoutHash}?${queryString}${hash}`;
+	}
+
+	const basePath = pathWithoutHash.slice(0, queryIndex);
+	const existingQuery = pathWithoutHash.slice(queryIndex + 1);
+	const merged = new URLSearchParams(existingQuery);
+	for (const [key, value] of entries) {
+		merged.set(key, value);
+	}
+	return `${basePath}?${merged.toString()}${hash}`;
 }

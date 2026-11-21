@@ -23,9 +23,7 @@ describe("client/suggestions", () => {
 			limit: 12.8,
 		});
 
-		expect(params.toString()).toBe(
-			"suggestions=true&recentHints=a%2Cb&query=alpha&limit=12",
-		);
+		expect(params.toString()).toBe("suggestions=true&recentHints=a%2Cb&query=alpha&limit=12");
 		expect(
 			buildSuggestionParams({
 				suggestions: false,
@@ -46,14 +44,24 @@ describe("client/suggestions", () => {
 				limit: 5,
 			}),
 		).toBe("/api/items?suggestions=true&recentHints=id1&query=beta&limit=5");
-		expect(
-			appendSuggestionParams("/api/items?archived=true", { suggestions: true }),
-		).toBe("/api/items?archived=true&suggestions=true");
+		expect(appendSuggestionParams("/api/items?archived=true", { suggestions: true })).toBe(
+			"/api/items?archived=true&suggestions=true",
+		);
 		expect(
 			appendSuggestionParams("/api/items?suggestions=false", {
 				suggestions: true,
 			}),
 		).toBe("/api/items?suggestions=true");
 		expect(appendSuggestionParams("/api/items")).toBe("/api/items");
+	});
+
+	it("preserves hash fragments", () => {
+		expect(appendSuggestionParams("/api/items#results", { suggestions: true })).toBe(
+			"/api/items?suggestions=true#results",
+		);
+		expect(appendSuggestionParams("/api/items?archived=true#results", { query: "beta" })).toBe(
+			"/api/items?archived=true&query=beta#results",
+		);
+		expect(appendSuggestionParams("/api/items#results")).toBe("/api/items#results");
 	});
 });

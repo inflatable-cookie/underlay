@@ -67,12 +67,17 @@ interface SvelteScriptBlock {
 // File Walker
 // =============================================================================
 
+// Directories that never hold project source worth scanning. Skipping them
+// keeps a scan of a repo root (or a nested checkout) bounded.
+const SKIPPED_DIRECTORIES = new Set(["node_modules", "dist", "build"]);
+
 async function* walk(dirUrl: URL, extensions: string[]): AsyncGenerator<URL> {
 	const dirPath = fileURLToPath(dirUrl);
 	const entries = await readdir(dirPath, { withFileTypes: true });
 
 	for (const entry of entries) {
 		if (entry.name.startsWith(".")) continue;
+		if (entry.isDirectory() && SKIPPED_DIRECTORIES.has(entry.name)) continue;
 
 		const entryPath = path.join(dirPath, entry.name) + (entry.isDirectory() ? path.sep : "");
 		const entryUrl = pathToFileURL(entryPath);
@@ -131,10 +136,14 @@ export async function scanFiles(config: GuardrailsConfig): Promise<number> {
 
 		// Scan for banned patterns
 		for (const pattern of config.bannedPatterns) {
-			pattern.regex.lastIndex = 0;
+			const { regex } = pattern;
+			const flags = regex.global ? regex.flags : `${regex.flags}g`;
+			// matchAll advances past empty matches, including full code points in Unicode mode.
+			for (const match of text.matchAll(new RegExp(regex.source, flags))) {
+				if (match[0].length === 0) {
+					continue;
+				}
 
-			let match: RegExpExecArray | null;
-			while ((match = pattern.regex.exec(text))) {
 				if (
 					isSuppressed(
 						text,

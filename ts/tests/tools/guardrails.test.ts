@@ -5,6 +5,7 @@ import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { scanFiles } from "@inflatable-cookie/underlay/tools/guardrails";
 import { loadConfig } from "@inflatable-cookie/underlay/tools/guardrails-config";
+import { scanModuleScopeBrowserApis } from "../../src/tools/guardrails/scanner";
 import { moduleScopeChecks } from "@inflatable-cookie/underlay/tools/templates/sveltekit-ssr";
 import { bannedPatterns } from "@inflatable-cookie/underlay/tools/templates/banned-apis";
 
@@ -209,6 +210,97 @@ describe("tools/guardrails", () => {
 			{ encoding: "utf8" },
 		);
 		expect(cliBadTemplate.status).not.toBe(0);
+	});
+
+	it("skips node_modules, dist, and build directories", async () => {
+		const dir = await makeTempDir();
+		await writeFile(path.join(dir, "ok.ts"), "export const ok = 1;\n");
+		for (const skipped of ["node_modules", "dist", "build"]) {
+			const skippedDir = path.join(dir, skipped, "nested");
+			await mkdir(skippedDir, { recursive: true });
+			await writeFile(path.join(skippedDir, "bad.ts"), "const w = window.innerWidth;\n");
+		}
+		vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+		const failures = await scanFiles({
+			srcDir: dir,
+			extensions: [".ts"],
+			bannedPatterns: [],
+			moduleScopeChecks,
+			suppressionPrefix: "guardrails-disable",
+		});
+
+		expect(failures).toBe(0);
+	});
+
+	it("terminates on non-global and zero-width banned patterns", async () => {
+		const dir = await makeTempDir();
+		await writeFile(path.join(dir, "sample.ts"), "debugger;\n");
+		vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+		const nonGlobal = await scanFiles({
+			srcDir: dir,
+			extensions: [".ts"],
+			bannedPatterns: [{ name: "non-global", regex: /debugger/, message: "no debugger" }],
+			moduleScopeChecks: [],
+			suppressionPrefix: "guardrails-disable",
+		});
+		expect(nonGlobal).toBe(1);
+
+		const zeroWidth = await scanFiles({
+			srcDir: dir,
+			extensions: [".ts"],
+			bannedPatterns: [{ name: "zero-width", regex: /(?=debugger)/g, message: "no debugger" }],
+			moduleScopeChecks: [],
+			suppressionPrefix: "guardrails-disable",
+		});
+		expect(zeroWidth).toBe(0);
+	});
+
+	it("continues past zero-width Unicode matches at astral characters", async () => {
+		const dir = await makeTempDir();
+		const rulesPath = path.join(dir, "rules.mjs");
+		const configPath = path.join(dir, "guardrails.json");
+		await writeFile(path.join(dir, "sample.ts"), '// "😀"\ndebugger;\n');
+		await writeFile(
+			rulesPath,
+			`export const bannedPatterns = [
+				{ name: "unicode", regex: /(?=😀)|debugger/gu, message: "no debugger" },
+				{ name: "unicode-sets", regex: /(?=😀)|debugger/gv, message: "no debugger" },
+			];`,
+		);
+		await writeFile(
+			configPath,
+			JSON.stringify({ srcDir: dir, extensions: [".ts"], bannedPatterns: rulesPath }),
+		);
+
+		// A subprocess timeout bounds the test if a scan gets stuck in the regex loop.
+		const result = spawnSync("bun", ["ts/src/tools/guardrails.ts", "--config", configPath], {
+			encoding: "utf8",
+			timeout: 3_000,
+		});
+		expect(result.error).toBeUndefined();
+		expect(result.status).toBe(1);
+		expect(result.stderr).toContain("sample.ts:2: banned unicode.");
+		expect(result.stderr).toContain("sample.ts:2: banned unicode-sets.");
+		expect(result.stderr).toContain("2 issue(s) found");
+	});
+
+	it("does not flag prefix checks on member access of another object", () => {
+		const issues = scanModuleScopeBrowserApis(
+			[
+				"const a = obj.window.foo;",
+				"const b = el.location.href;",
+				"const c = window.innerWidth;",
+			].join("\n"),
+			0,
+			[
+				{ name: "window.*", kind: "prefix", value: "window.", message: "no browser globals" },
+				{ name: "location.*", kind: "prefix", value: "location.", message: "no browser globals" },
+			],
+		);
+
+		expect(issues.map((issue) => issue.name)).toEqual(["window.*"]);
 	});
 
 	it("scans directories with spaces/special chars and runs CLI via symlink, relative path, and spaces", async () => {

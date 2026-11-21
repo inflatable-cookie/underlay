@@ -143,8 +143,9 @@ export function createLoginRedirect(url: URL, config?: LoginRedirectOptions | st
 
 	if (useRedirectTo && url.pathname !== loginPath) {
 		// Guard the producer too: a protocol-relative pathname (`//evil.com`)
-		// must never be written into the redirect param.
-		const safeTarget = resolveRedirectTo(url.pathname, "");
+		// must never be written into the redirect param. Keep the query string so
+		// post-login navigation returns to the same state (filters, pagination).
+		const safeTarget = resolveRedirectTo(`${url.pathname}${url.search}`, "");
 		if (safeTarget) {
 			loginUrl.searchParams.set(redirectToParam, safeTarget);
 		}

@@ -92,5 +92,11 @@ describe("toRomanNumerals", () => {
 			expect(toRomanNumerals(Number.POSITIVE_INFINITY)).toBe("Infinity");
 			expect(toRomanNumerals(Number.NEGATIVE_INFINITY)).toBe("-Infinity");
 		});
+
+		it("returns string for non-integer numbers", () => {
+			expect(toRomanNumerals(1.5)).toBe("1.5");
+			expect(toRomanNumerals(3999.5)).toBe("3999.5");
+			expect(toRomanNumerals(2.0)).toBe("ii");
+		});
 	});
 });

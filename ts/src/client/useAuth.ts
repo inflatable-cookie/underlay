@@ -9,7 +9,7 @@ import type {
 	RegisterParams,
 	SessionInfo,
 } from "./auth";
-import type { TokenStore } from "./http";
+import { isTransientRefreshError, type TokenStore } from "./http";
 
 export type AuthStatus = "unknown" | "anonymous" | "authenticated";
 
@@ -84,7 +84,13 @@ export function createAuthStore(options: CreateAuthStoreOptions): AuthStore {
 		state.set({ status: "anonymous", session: null, loading: false, error });
 	}
 
-	async function init() {
+	let initInFlight: Promise<void> | null = null;
+	let refreshInFlight: Promise<AuthSession> | null = null;
+	// Retain an overlapping refresh until init's session check finishes. Its
+	// 401 may arrive after the refresh has already rotated the tokens.
+	let refreshDuringInit: Promise<AuthSession> | null = null;
+
+	async function runInit(): Promise<void> {
 		state.update((s) => ({ ...s, loading: true, error: null }));
 
 		try {
@@ -96,15 +102,20 @@ export function createAuthStore(options: CreateAuthStoreOptions): AuthStore {
 			if (err instanceof UnderlayHttpError && err.status === 401) {
 				if (refreshOnUnauthorized) {
 					try {
-						const refreshed = await options.commands.refresh();
-						await setTokens(refreshed);
-						setAuthenticated(refreshed);
-						return;
+						await (refreshDuringInit ?? refresh());
 					} catch (refreshErr) {
-						await clearTokens();
+						// The shared refresh already clears tokens and state on a 401.
+						if (refreshErr instanceof UnderlayHttpError && refreshErr.status === 401) {
+							return;
+						}
+						// Match the HTTP client: a 5xx or network failure may recover, so
+						// keep stored tokens instead of signing the user out.
+						if (!isTransientRefreshError(refreshErr)) {
+							await clearTokens();
+						}
 						setAnonymous(refreshErr instanceof UnderlayHttpError ? refreshErr : null);
-						return;
 					}
+					return;
 				}
 
 				await clearTokens();
@@ -114,6 +125,17 @@ export function createAuthStore(options: CreateAuthStoreOptions): AuthStore {
 
 			setAnonymous(err instanceof UnderlayHttpError ? err : null);
 		}
+	}
+
+	function init(): Promise<void> {
+		if (initInFlight === null) {
+			refreshDuringInit = refreshInFlight;
+			initInFlight = runInit().finally(() => {
+				refreshDuringInit = null;
+				initInFlight = null;
+			});
+		}
+		return initInFlight;
 	}
 
 	async function register(params: RegisterParams): Promise<AuthSession> {
@@ -167,7 +189,7 @@ export function createAuthStore(options: CreateAuthStoreOptions): AuthStore {
 		}
 	}
 
-	async function refresh(): Promise<AuthSession> {
+	async function runRefresh(): Promise<AuthSession> {
 		state.update((s) => ({ ...s, loading: true, error: null }));
 
 		try {
@@ -185,6 +207,18 @@ export function createAuthStore(options: CreateAuthStoreOptions): AuthStore {
 			}
 			throw err;
 		}
+	}
+
+	function refresh(): Promise<AuthSession> {
+		if (refreshInFlight === null) {
+			refreshInFlight = runRefresh().finally(() => {
+				refreshInFlight = null;
+			});
+			if (initInFlight !== null) {
+				refreshDuringInit = refreshInFlight;
+			}
+		}
+		return refreshInFlight;
 	}
 
 	async function logout(): Promise<void> {

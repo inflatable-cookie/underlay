@@ -1,64 +1,68 @@
 export interface SuggestionRequestOptions {
-  suggestions?: boolean;
-  recentHints?: string[];
-  query?: string;
-  limit?: number;
+	suggestions?: boolean;
+	recentHints?: string[];
+	query?: string;
+	limit?: number;
 }
 
 export function formatHintsParam(hints: string[]): string {
-  return hints.join(",");
+	return hints.join(",");
 }
 
 export function parseHintsParam(value: string | null | undefined): string[] {
-  if (!value) {
-    return [];
-  }
-  return value
-    .split(",")
-    .map((entry) => entry.trim())
-    .filter((entry) => entry.length > 0);
+	if (!value) {
+		return [];
+	}
+	return value
+		.split(",")
+		.map((entry) => entry.trim())
+		.filter((entry) => entry.length > 0);
 }
 
-export function buildSuggestionParams(
-  options?: SuggestionRequestOptions,
-): URLSearchParams {
-  const params = new URLSearchParams();
+export function buildSuggestionParams(options?: SuggestionRequestOptions): URLSearchParams {
+	const params = new URLSearchParams();
 
-  if (options?.suggestions) {
-    params.set("suggestions", "true");
-  }
-  if (options?.recentHints && options.recentHints.length > 0) {
-    params.set("recentHints", formatHintsParam(options.recentHints));
-  }
-  if (options?.query && options.query.trim().length > 0) {
-    params.set("query", options.query.trim());
-  }
-  if (typeof options?.limit === "number" && Number.isFinite(options.limit)) {
-    params.set("limit", String(Math.max(1, Math.trunc(options.limit))));
-  }
+	if (options?.suggestions) {
+		params.set("suggestions", "true");
+	}
+	if (options?.recentHints && options.recentHints.length > 0) {
+		params.set("recentHints", formatHintsParam(options.recentHints));
+	}
+	if (options?.query && options.query.trim().length > 0) {
+		params.set("query", options.query.trim());
+	}
+	if (typeof options?.limit === "number" && Number.isFinite(options.limit)) {
+		params.set("limit", String(Math.max(1, Math.trunc(options.limit))));
+	}
 
-  return params;
+	return params;
 }
 
 export function appendSuggestionParams(
-  basePath: string,
-  options?: SuggestionRequestOptions,
+	basePath: string,
+	options?: SuggestionRequestOptions,
 ): string {
-  const queryString = buildSuggestionParams(options).toString();
-  if (!queryString) {
-    return basePath;
-  }
+	const queryString = buildSuggestionParams(options).toString();
+	if (!queryString) {
+		return basePath;
+	}
 
-  if (!basePath.includes("?")) {
-    return `${basePath}?${queryString}`;
-  }
+	const hashIndex = basePath.indexOf("#");
+	const pathWithoutHash = hashIndex === -1 ? basePath : basePath.slice(0, hashIndex);
+	const hash = hashIndex === -1 ? "" : basePath.slice(hashIndex);
 
-  // Merge into existing query string to avoid duplicate keys
-  const [path, existingQuery] = basePath.split("?", 2);
-  const merged = new URLSearchParams(existingQuery);
-  const newParams = new URLSearchParams(queryString);
-  for (const [key, value] of newParams) {
-    merged.set(key, value);
-  }
-  return `${path}?${merged.toString()}`;
+	const queryIndex = pathWithoutHash.indexOf("?");
+	if (queryIndex === -1) {
+		return `${pathWithoutHash}?${queryString}${hash}`;
+	}
+
+	// Merge into existing query string to avoid duplicate keys
+	const path = pathWithoutHash.slice(0, queryIndex);
+	const existingQuery = pathWithoutHash.slice(queryIndex + 1);
+	const merged = new URLSearchParams(existingQuery);
+	const newParams = new URLSearchParams(queryString);
+	for (const [key, value] of newParams) {
+		merged.set(key, value);
+	}
+	return `${path}?${merged.toString()}${hash}`;
 }
