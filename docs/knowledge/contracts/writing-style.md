@@ -55,8 +55,3 @@ sibling repositories, and no absolute local filesystem paths.
   risk, or next action
 - do not force the full end-of-turn frame into every message when a shorter
   answer is enough
-
-## Next Task
-
-Point `AGENTS.md` and `CLAUDE.md` here with a short note instead of repeating
-the full style rule inline.

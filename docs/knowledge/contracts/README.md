@@ -42,6 +42,8 @@ machine-readable policy files.
 | [120-tooling-testing-and-contract-artifacts.md](120-tooling-testing-and-contract-artifacts.md) | M | Shared Rust/TS test harnesses, migration/schema devtools, guardrail scanners, and machine-readable contract-artifact boundary |
 | [122-rust-public-api-inventory.md](122-rust-public-api-inventory.md) | M | Rust public API classification and first typed-boundary migration gates for the `g06` platform-contract transition |
 | [123-local-rust-routing-and-scratch-placement.md](123-local-rust-routing-and-scratch-placement.md) | L | Local-host Oxide routing for this checkout, the remaining Cargo uses by class, and agent/proof scratch placement on the Builds volume |
+| [release.md](release.md) | M | Immutable Git-tag release steps, synchronized version gates, verification, and rollback posture |
+| [writing-style.md](writing-style.md) | M | Glue-light internal writing style, end-of-turn reply shape, and link conventions for agents and operators |
 
 ## Supporting artifacts
 

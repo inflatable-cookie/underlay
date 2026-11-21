@@ -6,11 +6,12 @@ briefs. An answered question keeps only its pointer to where the answer lives.
 ## Q-001 — Where does each consumer stand on the Nightfire repoint?
 
 Status: open
-Context: Underlay's side is done: it consumes `nightfire` `v0.4.1` and keeps the
-historical Rust `underlay-nightfire` crate name and TypeScript
-`@inflatable-cookie/underlay/nightfire/*` subpaths as deprecation facades. Froyo,
+Context: Underlay consumes `nightfire` `v0.4.1` directly. The historical Rust
+`underlay-nightfire` facade and the 14 pass-through
+`@inflatable-cookie/underlay/nightfire/*` shims are retired (only
+`./nightfire/editor` and `./nightfire/media` remain in Underlay). Froyo,
 Farmyard and Bovine Desktop repoint in their own repositories (acowtancy owns
-those). Retiring the facades needs a caller inventory and consumer proof, per
+those), per
 [contract 023](contracts/023-release-and-compatibility-rollout.md).
 
 ## Q-002 — Which consumers still need verified media adoption?

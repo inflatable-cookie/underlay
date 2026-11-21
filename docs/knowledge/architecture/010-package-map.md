@@ -31,7 +31,7 @@ batches, proven against the four-consumer fleet: `underlay-reference`,
 |-------|---------|
 | `underlay-auth` | Auth boundary types + `AuthProvider` trait + Axum `Authenticated` extractor |
 | `underlay-auth-session` | Session contracts and workflow helpers |
-| `underlay-auth-jwt` | JWT session management: token creation, validation, refresh |
+| `underlay-auth-jwt` | JWT token issuance, verification, claims, key loading, and token fingerprinting (session lifecycle lives in `underlay-auth-session`) |
 | `underlay-auth-password` | Password authentication with Argon2id hashing |
 | `underlay-auth-totp` | Time-based One-Time Password (TOTP) primitives |
 | `underlay-auth-email-totp` | Email-based OTP verification flows |
@@ -114,9 +114,12 @@ TypeScript/Svelte package `@inflatable-cookie/nightfire` in
 The standalone package owns its own focused subpaths for protocol types,
 registries, validation, rendering, editing, markdown, strategies, and media
 helpers. It must not depend on Underlay, SvelteKit, Vite, Underlay templates,
-or Underlay client/runtime surfaces. Underlay may depend on a released
-Nightfire Git tag and temporarily re-export the historical
-`@inflatable-cookie/underlay/nightfire/*` paths.
+or Underlay client/runtime surfaces. Underlay's Rust workspace depends on a
+released `nightfire` Git tag in `Cargo.toml`, while its TypeScript package
+consumes `@inflatable-cookie/nightfire` from npm (`>=0.4.1 <0.5` in
+`package.json`). Only `@inflatable-cookie/underlay/nightfire/editor` and
+`@inflatable-cookie/underlay/nightfire/media` remain exported by Underlay; the
+14 pass-through `./nightfire/*` shims are retired.
 
 The standalone Nightfire repository owns both Rust crate `nightfire` and the
 TypeScript/Svelte package. The `underlay-nightfire` Rust facade is retired.

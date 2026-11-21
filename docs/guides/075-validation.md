@@ -532,8 +532,7 @@ Slug fields now follow this validation order in app code:
 
 If any step fails, subsequent steps are skipped.
 
-For the reusable cross-app recipe, see Poodle
-[Slug Field Recipes](../../../poodle/docs/guides/007-slug-field-recipes.md).
+For the reusable cross-app recipe, see `Slug Field Recipes` in the Poodle guide set.
 
 ### Backend Validation Endpoints
 

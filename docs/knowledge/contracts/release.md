@@ -29,7 +29,7 @@ asks, and never pushes a tag on its own.
 3. Check readiness: `effigy release status --check-gates`. It runs the six
    gates declared in `effigy.toml` under `[release.gates]`: `version-sync`
    (`effigy check:release-version-sync`), `validate` (`effigy validate`),
-   `rust-check` (`effigy rust:check`), `rust-clippy` (`effigy rust:clippy`),
+   `clippy` (`effigy rust:clippy`), `rust` (`effigy rust:check`),
    `rust-test` (`effigy rust:test`), and `docs` (`effigy qa:docs`).
 4. Prepare: `effigy release prepare --plan` to review, then
    `effigy release prepare`. This bumps the version and syncs `Cargo.lock` and

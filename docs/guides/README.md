@@ -202,9 +202,8 @@ bootstrap fixture and converges on it in `g09.025`.
 
 When making architecture or implementation decisions that depend on external comparison or source-backed learning:
 
-- Early research lives in Git history; its open leads are in Queue
-- Use `master-index.md` to navigate from questions to relevant artifacts
-- Follow the `research-to-implementation-playbook.md` to carry research into delivery
+- Open architectural and fleet questions live in [`docs/knowledge/questions.md`](../knowledge/questions.md)
+- Active tasks, briefs, status, and outcomes live in Nucleus; earlier research lives in Git history
 
 ## Getting Help
 

@@ -5,7 +5,7 @@ specific to `rust/`.
 
 ## Scope
 
-One Cargo workspace, 37 `underlay-*` crates under `rust/crates/`, all published
+One Cargo workspace, 35 `underlay-*` crates under `rust/crates/`, all published
 together at a single `[workspace.package]` version. Crates are layered: a small
 foundation (`underlay-core`, `underlay-config`, `underlay-validation`), then
 capability crates (`underlay-http`, `underlay-auth*`, `underlay-media`,
@@ -51,7 +51,7 @@ effigy rust:test -- -p underlay-db --test postgres_integration -- --ignored
 
 ## Source of Truth
 
-- `../AGENTS.md`
-- `../docs/contracts/122-rust-public-api-inventory.md`
-- `../docs/contracts/023-release-and-compatibility-rollout.md`
-- `../docs/architecture/020-rust-api-foundation.md`
+- [`../AGENTS.md`](../AGENTS.md)
+- [`../docs/knowledge/contracts/122-rust-public-api-inventory.md`](../docs/knowledge/contracts/122-rust-public-api-inventory.md)
+- [`../docs/knowledge/contracts/023-release-and-compatibility-rollout.md`](../docs/knowledge/contracts/023-release-and-compatibility-rollout.md)
+- [`../docs/knowledge/architecture/020-reference-grade-underlay-architecture.md`](../docs/knowledge/architecture/020-reference-grade-underlay-architecture.md)
