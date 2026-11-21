@@ -197,7 +197,9 @@ pub fn username(value: &str) -> Result<(), FieldError> {
     }
 }
 
-/// Validate a slug format (lowercase, alphanumeric, hyphen).
+/// Validate a slug format (lowercase, alphanumeric, hyphen, 2-100 chars).
+///
+/// Uses the same format rules as [`crate::slugify::is_valid_slug_format`].
 ///
 /// # Example
 ///
@@ -208,15 +210,11 @@ pub fn username(value: &str) -> Result<(), FieldError> {
 /// assert!(validators::slug("My Article").is_err());
 /// ```
 pub fn slug(value: &str) -> Result<(), FieldError> {
-    static SLUG_REGEX: LazyLock<Regex> = LazyLock::new(|| {
-        Regex::new(r"^[a-z0-9]+(-[a-z0-9]+)*$").expect("slug regex should compile")
-    });
-
-    if SLUG_REGEX.is_match(value) {
+    if crate::slugify::is_valid_slug_format(value) {
         Ok(())
     } else {
         Err(FieldError::with_code(
-            "Must be a valid slug (lowercase letters, numbers, and hyphens)",
+            "Must be a valid slug (2-100 lowercase letters, numbers, and hyphens)",
             "slug.invalid",
         ))
     }

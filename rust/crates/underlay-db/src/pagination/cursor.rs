@@ -1,6 +1,6 @@
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use uuid::Uuid;
 
 use super::errors::CursorError;
@@ -11,11 +11,11 @@ const MAX_ENCODED_CURSOR_LEN: usize = 8 * 1024;
 ///
 /// Cursors encode the sort column values and a tiebreaker ID to enable
 /// efficient keyset pagination that works consistently at any depth.
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Cursor {
-    /// The cursor values as a JSON map.
+    /// The cursor values as a deterministically ordered JSON map.
     #[serde(flatten)]
-    values: HashMap<String, serde_json::Value>,
+    values: BTreeMap<String, serde_json::Value>,
 }
 
 impl Cursor {
@@ -134,7 +134,7 @@ impl Cursor {
 
         let json = String::from_utf8(bytes).map_err(|e| CursorError::DecodeError(e.to_string()))?;
 
-        let values: HashMap<String, serde_json::Value> =
+        let values: BTreeMap<String, serde_json::Value> =
             serde_json::from_str(&json).map_err(|e| CursorError::ParseError(e.to_string()))?;
 
         Ok(Self { values })

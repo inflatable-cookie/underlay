@@ -82,8 +82,37 @@ impl ValidationError {
     }
 
     /// Add a field error.
+    ///
+    /// When multiple validators fail on the same field, messages are appended
+    /// cleanly (`"; "`-delimited) instead of overwriting earlier failures, and
+    /// the first non-empty error code is preserved.
     pub fn add_field(&mut self, field: impl Into<String>, error: impl Into<FieldError>) {
-        self.field_errors.insert(field.into(), error.into());
+        let field = field.into();
+        let incoming = error.into();
+        match self.field_errors.entry(field) {
+            std::collections::hash_map::Entry::Vacant(entry) => {
+                entry.insert(incoming);
+            }
+            std::collections::hash_map::Entry::Occupied(mut entry) => {
+                let existing = entry.get_mut();
+                if !incoming.message.is_empty()
+                    && !existing
+                        .message
+                        .split("; ")
+                        .any(|part| part == incoming.message)
+                {
+                    if existing.message.is_empty() {
+                        existing.message = incoming.message;
+                    } else {
+                        existing.message.push_str("; ");
+                        existing.message.push_str(&incoming.message);
+                    }
+                }
+                if existing.code.is_none() {
+                    existing.code = incoming.code;
+                }
+            }
+        }
     }
 
     /// Check if there are any field errors.
@@ -127,7 +156,7 @@ impl ValidationError {
     /// Merge another validation error into this one.
     pub fn merge(&mut self, other: ValidationError) {
         for (field, error) in other.field_errors {
-            self.field_errors.insert(field, error);
+            self.add_field(field, error);
         }
     }
 
@@ -138,7 +167,7 @@ impl ValidationError {
         } else {
             format!("{}.{}", prefix, field)
         };
-        self.field_errors.insert(key, error.into());
+        self.add_field(key, error);
     }
 
     /// Merge another validation error with a prefix.

@@ -14,17 +14,19 @@ pub(crate) fn generate_field_validation(field: &Field) -> SynResult<Option<Token
     let is_option = is_option_type(&field.ty);
 
     let mut validations = Vec::new();
+    let mut is_required = false;
 
     for attr in &field.attrs {
         if !attr.path().is_ident("validate") {
             continue;
         }
 
-        let (parsed, skip) = parse_validate_attr(attr, field_name, &field_name_str, is_option)?;
-        if skip {
+        let parsed = parse_validate_attr(attr, field_name, &field_name_str, is_option)?;
+        if parsed.skip {
             return Ok(None);
         }
-        validations.extend(parsed);
+        is_required |= parsed.required;
+        validations.extend(parsed.validations);
     }
 
     if validations.is_empty() {
@@ -32,9 +34,25 @@ pub(crate) fn generate_field_validation(field: &Field) -> SynResult<Option<Token
     }
 
     let combined = if is_option {
-        quote! {
-            if let Some(ref __underlay_val) = self.#field_name {
-                #(#validations)*
+        if is_required {
+            quote! {
+                if let Some(ref __underlay_val) = self.#field_name {
+                    #(#validations)*
+                } else {
+                    errors.add_field(
+                        #field_name_str,
+                        ::underlay_validation::FieldError::with_code(
+                            "This field is required",
+                            "required",
+                        ),
+                    );
+                }
+            }
+        } else {
+            quote! {
+                if let Some(ref __underlay_val) = self.#field_name {
+                    #(#validations)*
+                }
             }
         }
     } else {

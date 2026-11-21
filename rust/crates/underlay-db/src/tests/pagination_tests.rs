@@ -18,6 +18,43 @@ fn test_cursor_encode_decode() {
 }
 
 #[test]
+fn test_cursor_encode_is_deterministic_across_insertion_order() {
+    let id = test_uuid();
+    let cursor_a = Cursor::new()
+        .with_weight(5)
+        .with_id(id)
+        .with_string("zeta", "last")
+        .with_string("alpha", "first");
+    let cursor_b = Cursor::new()
+        .with_string("alpha", "first")
+        .with_string("zeta", "last")
+        .with_id(id)
+        .with_weight(5);
+
+    assert_eq!(cursor_a, cursor_b);
+    assert_eq!(cursor_a.encode(), cursor_b.encode());
+}
+
+#[test]
+fn test_backward_build_response_sets_has_more_for_prev_cursor() {
+    let params = CursorPaginationParams::new()
+        .with_limit(2)
+        .with_cursor("existing-cursor")
+        .with_direction(PaginationDirection::Backward);
+    let builder = PaginationBuilder::new(params);
+
+    // Backward queries fetch 3 items in reversed order (3, 2, 1), then restore forward display order (2, 3).
+    let response = builder.build_response(vec![3_i64, 2, 1], Some(10), |v| {
+        Cursor::new().with_int("v", *v)
+    });
+
+    assert_eq!(response.data, vec![2, 3]);
+    assert!(response.has_more);
+    assert!(response.prev_cursor.is_some());
+    assert!(response.next_cursor.is_some());
+}
+
+#[test]
 fn test_cursor_decode_rejects_oversized_input() {
     let oversized = "A".repeat(8 * 1024 + 1);
     let err = Cursor::decode(&oversized).expect_err("oversized cursor should fail");

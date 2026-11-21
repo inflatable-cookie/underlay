@@ -7,6 +7,7 @@ license.workspace = true
 [dependencies]
 axum = { workspace = true }
 prometheus = { workspace = true }
+tracing = { workspace = true }
 
 [features]
 default = ["process"]

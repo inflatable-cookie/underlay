@@ -172,8 +172,10 @@ impl PaginationBuilder {
 
     /// Build response from fetched items.
     ///
-    /// Items should be fetched with `query_limit()` (limit + 1).
-    /// This method will trim to the actual page size and set has_more.
+    /// Items should be fetched with `query_limit()` (`limit + 1`).
+    /// This method trims to the actual page size and sets `has_more` to
+    /// indicate whether more items exist in the requested traversal direction
+    /// (`next_cursor` for `Forward`, `prev_cursor` for `Backward`).
     pub fn build_response<T, F>(
         &self,
         mut items: Vec<T>,

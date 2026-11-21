@@ -5,7 +5,8 @@ use serde_json::{json, Value};
 
 use crate::{
     AiThresholdPolicy, DecisionFingerprintInput, DecisionJournalRecord, DecisionReusePolicy,
-    MigrationContext, MigrationOrchestrator, PipelinePolicy, RunMetadata, RunStore,
+    IntegrityEvidence, MigrationContext, MigrationOrchestrator, PipelinePolicy, RunMetadata,
+    RunStore,
 };
 
 use super::support::{
@@ -22,10 +23,18 @@ fn counter() -> Arc<Mutex<u64>> {
     Arc::new(Mutex::new(0))
 }
 
+fn verified_policy() -> PipelinePolicy {
+    PipelinePolicy::default().with_integrity_evidence(IntegrityEvidence {
+        digest_verified: true,
+        sidecar_checksums_verified: true,
+        ..Default::default()
+    })
+}
+
 fn default_context() -> MigrationContext {
     MigrationContext::new(
         RunMetadata::new("plugin-v1", "schema-v1"),
-        PipelinePolicy::default(),
+        verified_policy(),
     )
 }
 

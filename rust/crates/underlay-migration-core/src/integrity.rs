@@ -116,7 +116,7 @@ impl IntegrityPolicy {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct IntegrityEvidence {
     pub digest_verified: bool,
@@ -128,19 +128,6 @@ pub struct IntegrityEvidence {
     pub signer_identity: Option<String>,
     #[serde(default)]
     pub signature_key_id: Option<String>,
-}
-
-impl Default for IntegrityEvidence {
-    fn default() -> Self {
-        Self {
-            digest_verified: true,
-            sidecar_checksums_verified: true,
-            signature_verified: None,
-            signature_verified_at: None,
-            signer_identity: None,
-            signature_key_id: None,
-        }
-    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -165,14 +152,7 @@ impl Default for IntegrityGateResult {
     fn default() -> Self {
         let policy = IntegrityPolicy::default();
         let evidence = IntegrityEvidence::default();
-        Self {
-            effective_require_signature_verification: policy
-                .effective_requires_signature_verification(),
-            policy,
-            evidence,
-            passed: true,
-            blockers: Vec::new(),
-        }
+        evaluate_integrity_gate(&policy, &evidence)
     }
 }
 

@@ -3,8 +3,12 @@
 //! Canonical contract: clients submit the complete ordered id list for a
 //! scope; the server diffs against the current set inside one transaction
 //! and either rewrites weights in a single statement or returns a
-//! [`ReorderConflict`] the client can merge and retry (see
-//! `ts/src/patterns/reorder-conflict.ts`).
+//! [`ReorderConflict`] describing the set difference. Note that
+//! [`ReorderConflict`] names fields from the submission's perspective
+//! (`added_ids` = submitted but missing in DB; `removed_ids` = persisted in DB
+//! but missing from submission), which is the inverse of the server-mutation
+//! naming in `ts/src/patterns/reorder-conflict.ts`. HTTP handlers that surface
+//! this struct to the TS recovery helper must map accordingly.
 //!
 //! Replaces per-row UPDATE loops, which are non-transactional and corrupt
 //! weights on partial failure.
@@ -14,14 +18,24 @@ use uuid::Uuid;
 
 use crate::identifiers::{QualifiedTableName, SqlIdentifier};
 
-/// The submitted set no longer matches the persisted set: items were
-/// added or removed concurrently. The client should merge these into its
-/// working order and retry the save.
+/// The submitted id set does not match the persisted set in the target scope.
+///
+/// Field names reflect the **submitted list relative to the persisted set**
+/// (`submitted - persisted` and `persisted - submitted`), not concurrent server
+/// mutations:
+/// - `added_ids`: ids present in the client's submission that are not in the
+///   persisted set (for example, items deleted on the server concurrently).
+/// - `removed_ids`: ids present in the persisted set that are missing from the
+///   client's submission (for example, items created on the server concurrently).
+///
+/// Handlers adapting this error for `ts/src/patterns/reorder-conflict.ts`
+/// (`extractReorderConflict`, which uses server-mutation semantics) must swap
+/// the two lists at the HTTP response boundary.
 #[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
 pub struct ReorderConflict {
-    /// Ids present in the submission but not in the persisted set.
+    /// Ids present in the submission but not in the persisted set (`submitted - persisted`).
     pub added_ids: Vec<Uuid>,
-    /// Ids present in the persisted set but missing from the submission.
+    /// Ids present in the persisted set but missing from the submission (`persisted - submitted`).
     pub removed_ids: Vec<Uuid>,
 }
 

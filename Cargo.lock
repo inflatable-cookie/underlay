@@ -5635,6 +5635,7 @@ dependencies = [
  "axum",
  "prometheus",
  "tokio",
+ "tracing",
 ]
 
 [[package]]
