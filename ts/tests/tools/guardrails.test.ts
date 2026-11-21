@@ -257,6 +257,35 @@ describe("tools/guardrails", () => {
 		expect(zeroWidth).toBe(0);
 	});
 
+	it("continues past zero-width Unicode matches at astral characters", async () => {
+		const dir = await makeTempDir();
+		const rulesPath = path.join(dir, "rules.mjs");
+		const configPath = path.join(dir, "guardrails.json");
+		await writeFile(path.join(dir, "sample.ts"), '// "😀"\ndebugger;\n');
+		await writeFile(
+			rulesPath,
+			`export const bannedPatterns = [
+				{ name: "unicode", regex: /(?=😀)|debugger/gu, message: "no debugger" },
+				{ name: "unicode-sets", regex: /(?=😀)|debugger/gv, message: "no debugger" },
+			];`,
+		);
+		await writeFile(
+			configPath,
+			JSON.stringify({ srcDir: dir, extensions: [".ts"], bannedPatterns: rulesPath }),
+		);
+
+		// A subprocess timeout bounds the test if a scan gets stuck in the regex loop.
+		const result = spawnSync("bun", ["ts/src/tools/guardrails.ts", "--config", configPath], {
+			encoding: "utf8",
+			timeout: 3_000,
+		});
+		expect(result.error).toBeUndefined();
+		expect(result.status).toBe(1);
+		expect(result.stderr).toContain("sample.ts:2: banned unicode.");
+		expect(result.stderr).toContain("sample.ts:2: banned unicode-sets.");
+		expect(result.stderr).toContain("2 issue(s) found");
+	});
+
 	it("does not flag prefix checks on member access of another object", () => {
 		const issues = scanModuleScopeBrowserApis(
 			[

@@ -136,19 +136,11 @@ export async function scanFiles(config: GuardrailsConfig): Promise<number> {
 
 		// Scan for banned patterns
 		for (const pattern of config.bannedPatterns) {
-			// A non-global expression never advances `lastIndex`, so looping over
-			// it would match the same index forever. Work on a global copy.
-			const regex = pattern.regex.global
-				? pattern.regex
-				: new RegExp(pattern.regex.source, `${pattern.regex.flags}g`);
-			regex.lastIndex = 0;
-
-			let match: RegExpExecArray | null;
-			while ((match = regex.exec(text))) {
+			const { regex } = pattern;
+			const flags = regex.global ? regex.flags : `${regex.flags}g`;
+			// matchAll advances past empty matches, including full code points in Unicode mode.
+			for (const match of text.matchAll(new RegExp(regex.source, flags))) {
 				if (match[0].length === 0) {
-					// Zero-width match: `exec()` does not advance `lastIndex`, so step
-					// past it. A pattern that matches nothing has no violation to report.
-					regex.lastIndex = match.index + 1;
 					continue;
 				}
 
