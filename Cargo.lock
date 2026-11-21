@@ -5246,6 +5246,7 @@ dependencies = [
  "thiserror 2.0.21",
  "tokio",
  "underlay-core",
+ "url",
 ]
 
 [[package]]
@@ -5441,7 +5442,6 @@ dependencies = [
  "aws-smithy-runtime-api",
  "aws-smithy-types",
  "aws-types",
- "base64 0.22.1",
  "chrono",
  "hex",
  "http 1.5.0",

@@ -16,8 +16,16 @@
 
 use image::{
     imageops::FilterType, ColorType, DynamicImage, GenericImageView, ImageFormat, ImageReader,
+    Limits,
 };
 use std::io::Cursor;
+
+/// Maximum decoded image width in pixels allowed during thumbnail generation.
+pub const DEFAULT_MAX_IMAGE_WIDTH: u32 = 16_384;
+/// Maximum decoded image height in pixels allowed during thumbnail generation.
+pub const DEFAULT_MAX_IMAGE_HEIGHT: u32 = 16_384;
+/// Maximum decoded image allocation in bytes (128 MiB) allowed during thumbnail generation.
+pub const DEFAULT_MAX_DECODE_ALLOC_BYTES: u64 = 128 * 1024 * 1024;
 
 /// Error type for image processing operations.
 #[derive(Debug, thiserror::Error)]
@@ -80,11 +88,11 @@ impl Default for ThumbnailConfig {
 }
 
 impl ThumbnailConfig {
-    /// Create a new thumbnail config with the given dimensions.
+    /// Create a new thumbnail config with the given dimensions (clamped to at least 1x1).
     pub fn new(max_width: u32, max_height: u32) -> Self {
         Self {
-            max_width,
-            max_height,
+            max_width: max_width.max(1),
+            max_height: max_height.max(1),
             quality: 85,
         }
     }
@@ -181,12 +189,8 @@ pub fn generate_thumbnail(
     data: &[u8],
     config: &ThumbnailConfig,
 ) -> Result<ThumbnailResult, ImageError> {
-    // Decode the source image
-    let img = ImageReader::new(Cursor::new(data))
-        .with_guessed_format()
-        .map_err(|e| ImageError::DecodeError(e.to_string()))?
-        .decode()
-        .map_err(|e| ImageError::DecodeError(e.to_string()))?;
+    // Decode the source image with explicit dimension and memory limits
+    let img = decode_image_with_limits(data)?;
 
     // Calculate dimensions preserving aspect ratio
     let (orig_width, orig_height) = img.dimensions();
@@ -308,6 +312,21 @@ pub fn generate_square_thumbnail_preserving_alpha(
     })
 }
 
+fn decode_image_with_limits(data: &[u8]) -> Result<DynamicImage, ImageError> {
+    let mut limits = Limits::default();
+    limits.max_image_width = Some(DEFAULT_MAX_IMAGE_WIDTH);
+    limits.max_image_height = Some(DEFAULT_MAX_IMAGE_HEIGHT);
+    limits.max_alloc = Some(DEFAULT_MAX_DECODE_ALLOC_BYTES);
+
+    let mut reader = ImageReader::new(Cursor::new(data))
+        .with_guessed_format()
+        .map_err(|e| ImageError::DecodeError(e.to_string()))?;
+    reader.limits(limits);
+    reader
+        .decode()
+        .map_err(|e| ImageError::DecodeError(e.to_string()))
+}
+
 fn decode_square_thumbnail_source(data: &[u8], size: u32) -> Result<DynamicImage, ImageError> {
     if size == 0 {
         return Err(ImageError::EncodeError(
@@ -315,11 +334,7 @@ fn decode_square_thumbnail_source(data: &[u8], size: u32) -> Result<DynamicImage
         ));
     }
 
-    ImageReader::new(Cursor::new(data))
-        .with_guessed_format()
-        .map_err(|e| ImageError::DecodeError(e.to_string()))?
-        .decode()
-        .map_err(|e| ImageError::DecodeError(e.to_string()))
+    decode_image_with_limits(data)
 }
 
 fn square_crop_image(img: DynamicImage, size: u32) -> DynamicImage {
@@ -381,6 +396,10 @@ pub fn calculate_thumbnail_dimensions(
     max_width: u32,
     max_height: u32,
 ) -> (u32, u32) {
+    if orig_width == 0 || orig_height == 0 || max_width == 0 || max_height == 0 {
+        return (1, 1);
+    }
+
     let width_ratio = max_width as f32 / orig_width as f32;
     let height_ratio = max_height as f32 / orig_height as f32;
     let ratio = width_ratio.min(height_ratio);

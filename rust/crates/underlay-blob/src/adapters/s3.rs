@@ -40,13 +40,16 @@ impl BlobAdapter for S3Adapter {
             .build()
             .map_err(|e| BlobError::PresignError(e.to_string()))?;
 
+        let content_length = i64::try_from(request.content_length)
+            .map_err(|_| BlobError::TooLarge(request.content_length, i64::MAX as u64))?;
+
         let mut put_request = self
             .presign_client
             .put_object()
             .bucket(self.config.bucket())
             .key(request.key.as_str())
             .content_type(&request.content_type)
-            .content_length(request.content_length as i64);
+            .content_length(content_length);
 
         // Add metadata
         for (k, v) in &request.metadata {
@@ -167,7 +170,7 @@ impl BlobAdapter for S3Adapter {
 
         Ok(ObjectInfo {
             key: key.to_string(),
-            size: response.content_length().unwrap_or(0) as u64,
+            size: u64::try_from(response.content_length().unwrap_or(0)).unwrap_or(0),
             content_type: response
                 .content_type()
                 .unwrap_or("application/octet-stream")
@@ -192,7 +195,10 @@ impl BlobAdapter for S3Adapter {
             .body
             .collect()
             .await
-            .map_err(|e| BlobError::DownloadFailed(format!("Failed to read object body: {}", e)))?
+            .map_err(|e| {
+                warn!(operation = "get_object.body", error = %e, "S3 response body read failed");
+                BlobError::DownloadFailed("failed to read object body".to_string())
+            })?
             .into_bytes()
             .to_vec();
 
@@ -207,6 +213,11 @@ impl BlobAdapter for S3Adapter {
     ) -> BlobResult<StoredObject> {
         self.ensure_bucket_exists().await?;
 
+        let content_length = i64::try_from(data.len())
+            .map_err(|_| BlobError::UploadFailed("object length exceeds i64::MAX".to_string()))?;
+        let size = u64::try_from(data.len())
+            .map_err(|_| BlobError::UploadFailed("object length exceeds u64::MAX".to_string()))?;
+
         let body = aws_sdk_s3::primitives::ByteStream::from(data.to_vec());
 
         let response = self
@@ -215,7 +226,7 @@ impl BlobAdapter for S3Adapter {
             .bucket(self.config.bucket())
             .key(key)
             .content_type(content_type)
-            .content_length(data.len() as i64)
+            .content_length(content_length)
             .body(body)
             .send()
             .await
@@ -225,7 +236,7 @@ impl BlobAdapter for S3Adapter {
             provider: "s3".to_string(),
             bucket: self.config.bucket().to_string(),
             key: key.to_string(),
-            size: data.len() as u64,
+            size,
             content_type: content_type.to_string(),
             etag: response.e_tag().map(|s| s.trim_matches('"').to_string()),
         })
@@ -244,7 +255,7 @@ impl BlobAdapter for S3Adapter {
         // Retain at most `max_bytes + 1` bytes regardless of what the
         // provider's headers claim, so a hostile or misbehaving backend
         // cannot force an unbounded buffer by lying about content length.
-        let cap = max_bytes.saturating_add(1) as usize;
+        let cap = usize::try_from(max_bytes.saturating_add(1)).unwrap_or(usize::MAX);
         let mut buf: Vec<u8> = Vec::with_capacity(cap.min(8 * 1024 * 1024));
 
         while buf.len() < cap {
@@ -262,8 +273,9 @@ impl BlobAdapter for S3Adapter {
             buf.extend_from_slice(&chunk[..take]);
         }
 
-        if buf.len() as u64 > max_bytes {
-            return Err(BlobError::TooLarge(buf.len() as u64, max_bytes));
+        let observed = u64::try_from(buf.len()).unwrap_or(u64::MAX);
+        if observed > max_bytes {
+            return Err(BlobError::TooLarge(observed, max_bytes));
         }
 
         Ok(buf)
@@ -327,6 +339,11 @@ impl S3Adapter {
         // one conditional PUT to the destination, never a HEAD or
         // create-bucket call first. Verified promotion only ever targets a
         // bucket that already received the staging upload.
+        let content_length = i64::try_from(data.len())
+            .map_err(|_| BlobError::UploadFailed("object length exceeds i64::MAX".to_string()))?;
+        let size = u64::try_from(data.len())
+            .map_err(|_| BlobError::UploadFailed("object length exceeds u64::MAX".to_string()))?;
+
         let body = aws_sdk_s3::primitives::ByteStream::from(data.to_vec());
 
         let mut request = self
@@ -339,7 +356,7 @@ impl S3Adapter {
             // condition on collision.
             .if_none_match("*")
             .content_type(content_type)
-            .content_length(data.len() as i64)
+            .content_length(content_length)
             .body(body);
 
         if let Some(facts) = owned {
@@ -355,7 +372,7 @@ impl S3Adapter {
                 provider: "s3".to_string(),
                 bucket: self.config.bucket().to_string(),
                 key: key.to_string(),
-                size: data.len() as u64,
+                size,
                 content_type: content_type.to_string(),
                 etag: response.e_tag().map(|s| s.trim_matches('"').to_string()),
             }),

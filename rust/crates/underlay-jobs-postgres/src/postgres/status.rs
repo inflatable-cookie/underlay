@@ -2,7 +2,7 @@ use chrono::Utc;
 use tracing::instrument;
 
 use underlay_core::Uuid;
-use underlay_jobs::JobProgress;
+use underlay_jobs::{Job, JobProgress};
 
 use super::{to_raw, JobRepository, RepoError, Result};
 
@@ -74,8 +74,64 @@ impl JobRepository {
     /// Mark a job as succeeded.
     ///
     /// Also updates `last_completed_at` on any scheduled task with a matching job_type.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`RepoError::NotFound`] if the job does not exist or
+    /// [`RepoError::Conflict`] if the job is no longer running.
     #[instrument(skip(self))]
     pub async fn mark_succeeded(&self, job_id: Uuid) -> Result<()> {
+        self.mark_succeeded_inner(job_id, None).await
+    }
+
+    /// Mark a claimed job as succeeded, fencing on its attempt count.
+    ///
+    /// Also updates `last_completed_at` on any scheduled task with a matching job_type.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`RepoError::NotFound`] if the job does not exist or
+    /// [`RepoError::Conflict`] if the supplied attempt no longer owns the running row.
+    #[instrument(skip(self, job), fields(job_id = %job.id, attempts = job.attempts))]
+    pub async fn mark_succeeded_for_job(&self, job: &Job) -> Result<()> {
+        self.mark_succeeded_inner(job.id, Some(job.attempts)).await
+    }
+
+    async fn mark_succeeded_inner(
+        &self,
+        job_id: Uuid,
+        expected_attempts: Option<i32>,
+    ) -> Result<()> {
+        let mut tx = self.pool.begin().await?;
+
+        let row: Option<(i32, bool)> = sqlx::query_as(
+            r#"
+            SELECT attempts, status = 'running'
+            FROM platform.job
+            WHERE id = $1
+            FOR UPDATE
+            "#,
+        )
+        .bind(to_raw(job_id))
+        .fetch_optional(&mut *tx)
+        .await?;
+
+        let Some((attempts, is_running)) = row else {
+            return Err(RepoError::NotFound(job_id));
+        };
+        if !is_running {
+            return Err(RepoError::Conflict(format!(
+                "job {job_id} is no longer running"
+            )));
+        }
+        if let Some(expected) = expected_attempts {
+            if attempts != expected {
+                return Err(RepoError::Conflict(format!(
+                    "job {job_id} is no longer running attempt {expected}"
+                )));
+            }
+        }
+
         let now = Utc::now();
 
         sqlx::query(
@@ -84,7 +140,7 @@ impl JobRepository {
                 UPDATE platform.job
                 SET status = 'succeeded',
                     finished_at = $2
-                WHERE id = $1 AND status = 'running'
+                WHERE id = $1 AND status = 'running' AND attempts = $3
                 RETURNING job_type
             )
             UPDATE platform.scheduled_task
@@ -94,9 +150,11 @@ impl JobRepository {
         )
         .bind(to_raw(job_id))
         .bind(now)
-        .execute(&self.pool)
+        .bind(attempts)
+        .execute(&mut *tx)
         .await?;
 
+        tx.commit().await?;
         Ok(())
     }
 

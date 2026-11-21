@@ -35,6 +35,7 @@ impl<B: BlobAdapter> RenditionService<B> {
             target_key,
             self.config.thumbnail_max_dimension(),
             self.config.jpeg_quality(),
+            self.config.max_source_bytes(),
             "thumbnail",
         )
         .await
@@ -66,6 +67,7 @@ impl<B: BlobAdapter> RenditionService<B> {
             target_key,
             self.config.preview_max_dimension(),
             self.config.jpeg_quality(),
+            self.config.max_source_bytes(),
             "preview",
         )
         .await

@@ -57,6 +57,10 @@ impl JobStore for JobRepository {
         self.mark_succeeded(job_id).await
     }
 
+    async fn mark_success_for_job(&self, job: &Job) -> Result<()> {
+        self.mark_succeeded_for_job(job).await
+    }
+
     async fn mark_failure(
         &self,
         job: &Job,

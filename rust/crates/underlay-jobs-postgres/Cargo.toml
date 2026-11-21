@@ -12,7 +12,7 @@ cron = "0.16"
 serde_json = { workspace = true }
 sqlx = { workspace = true }
 thiserror = { workspace = true }
-tokio = { workspace = true, features = ["time"] }
+tokio = { workspace = true, features = ["macros", "time"] }
 tracing = { workspace = true }
 underlay-core = { path = "../underlay-core" }
 underlay-jobs = { path = "../underlay-jobs" }
