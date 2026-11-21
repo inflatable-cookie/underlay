@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onDestroy } from "svelte";
   import { Dialog, FileUpload, Tabs } from "@inflatable-cookie/poodle-svelte";
   import type { FileUploadItem, TabItem } from "@inflatable-cookie/poodle-svelte";
   import {
@@ -75,6 +76,7 @@
   let browseState = $state(createResetMediaBrowseState<MediaPickerWorkflowItem>());
   let browseLoading = $state(false);
   let browseError = $state<string | null>(null);
+  let hasLoadedBrowse = $state(false);
   let uploadFiles = $state<FileUploadItem[]>([]);
   let uploadFile = $state<File | null>(null);
   let uploadStep = $state<MediaUploadDisplayStep>("select");
@@ -83,19 +85,33 @@
   let duplicateMedia = $state<MediaPickerWorkflowItem | null>(null);
   let uploadedMedia = $state<MediaPickerWorkflowItem | null>(null);
 
+  let browseGeneration = 0;
+  let uploadGeneration = 0;
+  let disposed = false;
+
+  onDestroy(() => {
+    disposed = true;
+    browseGeneration += 1;
+    uploadGeneration += 1;
+  });
+
   const browseItems = $derived(
     browseState.items.map((media) => toPickerItem(media))
   );
   const accept = $derived(filterKind ? `${filterKind}/*` : null);
 
   $effect(() => {
-    if (open && browseState.items.length === 0 && !browseLoading) {
+    if (open && !hasLoadedBrowse && !browseLoading) {
       void loadBrowseItems();
     }
   });
 
   $effect(() => {
     if (!open) {
+      browseGeneration += 1;
+      hasLoadedBrowse = false;
+      browseLoading = false;
+      browseError = null;
       activeTab = "browse";
       resetUploadState();
     }
@@ -126,6 +142,10 @@
   }
 
   async function loadBrowseItems(cursor?: string): Promise<void> {
+    const generation = ++browseGeneration;
+    const isStale = () => disposed || !open || generation !== browseGeneration;
+
+    hasLoadedBrowse = true;
     browseLoading = true;
     browseError = null;
 
@@ -135,6 +155,8 @@
         cursor,
         limit: pageSize
       });
+
+      if (isStale()) return;
 
       const filteredItems = filterKind
         ? nextPage.items.filter((item) => item.kind === filterKind)
@@ -146,13 +168,17 @@
         hasMore: nextPage.hasMore
       };
     } catch (error) {
+      if (isStale()) return;
       browseError = error instanceof Error ? error.message : "Could not load media";
     } finally {
-      browseLoading = false;
+      if (!disposed && generation === browseGeneration) {
+        browseLoading = false;
+      }
     }
   }
 
   function resetUploadState(): void {
+    uploadGeneration += 1;
     uploadFiles = [];
     uploadFile = null;
     uploadStep = "select";
@@ -168,6 +194,9 @@
   }
 
   async function startUpload(file: File, skipDuplicateCheck = false): Promise<void> {
+    const generation = ++uploadGeneration;
+    const isStale = () => disposed || !open || generation !== uploadGeneration;
+
     uploadFile = file;
     uploadError = null;
     duplicateMedia = null;
@@ -197,12 +226,16 @@
         buildFinaliseRequest: (nextFile, fileHash) => buildFinaliseRequest(nextFile, fileHash),
         toCreatedItem,
         onStep: (step) => {
+          if (isStale()) return;
           uploadStep = step;
         },
         onProgress: (percent) => {
+          if (isStale()) return;
           uploadProgress = percent;
         }
       });
+
+      if (isStale()) return;
 
       if (result.kind === "duplicate") {
         duplicateMedia = result.existingItem;
@@ -217,6 +250,7 @@
         items: [result.createdItem, ...browseState.items.filter((item) => item.id !== result.createdItem.id)]
       };
     } catch (error) {
+      if (isStale()) return;
       uploadError = error instanceof Error ? error.message : "Upload failed";
       uploadStep = "error";
     }

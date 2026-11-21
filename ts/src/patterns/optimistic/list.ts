@@ -16,13 +16,16 @@ export interface OptimisticUpdateOperation<T> {
 	rollback: () => void;
 }
 
-export interface OptimisticListOptions<T> {
+export interface OptimisticListOptions<T, K extends keyof T = keyof T> {
 	tempId?: () => string;
-	key?: keyof T;
+	key?: K;
 }
 
-export interface OptimisticList<T extends { id: string }> extends Readable<T[]> {
-	add: (item: Omit<T, "id">) => OptimisticAddOperation<T>;
+export interface OptimisticList<
+	T extends object,
+	K extends keyof T = "id" extends keyof T ? "id" : keyof T,
+> extends Readable<T[]> {
+	add: (item: Omit<T, K>) => OptimisticAddOperation<T>;
 	remove: (id: string) => OptimisticOperation;
 	update: (id: string, changes: Partial<T>) => OptimisticUpdateOperation<T>;
 	set: (items: T[]) => void;
@@ -34,54 +37,106 @@ function generateTempId(): string {
 	return `temp-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-export function createOptimisticList<T extends { id: string }>(
-	initial: T[] = [],
-	options: OptimisticListOptions<T> = {}
-): OptimisticList<T> {
+interface ActiveUpdateEntry<T> {
+	opId: number;
+	changes: Partial<T>;
+}
+
+export function createOptimisticList<
+	T extends object,
+	K extends keyof T = "id" extends keyof T ? "id" : keyof T,
+>(initial: T[] = [], options: OptimisticListOptions<T, K> = {}): OptimisticList<T, K> {
 	const { tempId = generateTempId } = options;
+	const keyField = (options.key ?? ("id" as K)) as keyof T;
+	const getKey = (item: T): string => String(item[keyField]);
 
 	const store: Writable<T[]> = writable([...initial]);
 	const pending: Writable<Set<string>> = writable(new Set());
+	const pendingCounts = new Map<string, number>();
+	const baseItems = new Map<string, T>();
+	const activeUpdates = new Map<string, ActiveUpdateEntry<T>[]>();
+	let nextOpId = 0;
 
-	function add(item: Omit<T, "id">): OptimisticAddOperation<T> {
+	function markPending(id: string): void {
+		const count = (pendingCounts.get(id) ?? 0) + 1;
+		pendingCounts.set(id, count);
+		if (count === 1) {
+			pending.update((p) => withSetValue(p, id));
+		}
+	}
+
+	function unmarkPending(id: string): void {
+		const count = pendingCounts.get(id) ?? 0;
+		if (count <= 1) {
+			pendingCounts.delete(id);
+			pending.update((p) => withoutSetValue(p, id));
+		} else {
+			pendingCounts.set(id, count - 1);
+		}
+	}
+
+	function recomputeItem(id: string): T | undefined {
+		const base = baseItems.get(id);
+		if (!base) return undefined;
+		const ops = activeUpdates.get(id) ?? [];
+		let result: T = { ...base };
+		for (const op of ops) {
+			result = { ...result, ...op.changes };
+		}
+		return result;
+	}
+
+	function add(item: Omit<T, K>): OptimisticAddOperation<T> {
 		const id = tempId();
-		const optimisticItem = { ...item, id } as T;
+		const optimisticItem = { ...item, [keyField]: id } as T;
+		let settled = false;
 
 		store.update((items) => [...items, optimisticItem]);
-		pending.update((p) => withSetValue(p, id));
+		markPending(id);
 
 		return {
 			confirm: (realItem: T) => {
-				store.update((items) => items.map((i) => (i.id === id ? realItem : i)));
-				pending.update((p) => withoutSetValue(p, id));
+				if (settled) return;
+				settled = true;
+				store.update((items) => items.map((i) => (getKey(i) === id ? realItem : i)));
+				unmarkPending(id);
 			},
 			rollback: () => {
-				store.update((items) => items.filter((i) => i.id !== id));
-				pending.update((p) => withoutSetValue(p, id));
-			}
+				if (settled) return;
+				settled = true;
+				store.update((items) => items.filter((i) => getKey(i) !== id));
+				unmarkPending(id);
+			},
 		};
 	}
 
 	function remove(id: string): OptimisticOperation {
 		let removedItem: T | undefined;
-		let removedIndex: number = -1;
+		let removedIndex = -1;
+		let settled = false;
 
 		store.update((items) => {
-			removedIndex = items.findIndex((i) => i.id === id);
+			removedIndex = items.findIndex((i) => getKey(i) === id);
 			if (removedIndex !== -1) {
 				removedItem = items[removedIndex];
-				return items.filter((i) => i.id !== id);
+				return items.filter((i) => getKey(i) !== id);
 			}
 			return items;
 		});
 
-		pending.update((p) => withSetValue(p, id));
+		markPending(id);
 
 		return {
 			confirm: () => {
-				pending.update((p) => withoutSetValue(p, id));
+				if (settled) return;
+				settled = true;
+				baseItems.delete(id);
+				activeUpdates.delete(id);
+				unmarkPending(id);
 			},
 			rollback: () => {
+				if (settled) return;
+				settled = true;
 				if (removedItem) {
 					store.update((items) => {
 						if (removedIndex >= 0 && removedIndex <= items.length) {
@@ -92,43 +147,123 @@ export function createOptimisticList<T extends { id: string }>(
 						return [...items, removedItem!];
 					});
 				}
-				pending.update((p) => withoutSetValue(p, id));
-			}
+				unmarkPending(id);
+			},
 		};
 	}
 
 	function update(id: string, changes: Partial<T>): OptimisticUpdateOperation<T> {
-		let previousItem: T | undefined;
+		const opId = ++nextOpId;
+		let found = false;
+		let settled = false;
 
 		store.update((items) =>
 			items.map((i) => {
-				if (i.id === id) {
-					previousItem = i;
-					return { ...i, ...changes };
+				if (getKey(i) === id) {
+					found = true;
+					if (!baseItems.has(id)) {
+						baseItems.set(id, i);
+					}
+					const ops = activeUpdates.get(id) ?? [];
+					ops.push({ opId, changes: { ...changes } });
+					activeUpdates.set(id, ops);
+					return recomputeItem(id) ?? { ...i, ...changes };
 				}
 				return i;
-			})
+			}),
 		);
 
-		pending.update((p) => withSetValue(p, id));
+		markPending(id);
 
 		return {
 			confirm: (realItem?: T) => {
-				if (realItem) {
-					store.update((items) => items.map((i) => (i.id === id ? realItem : i)));
+				if (settled) return;
+				settled = true;
+
+				if (found) {
+					const ops = activeUpdates.get(id);
+					const base = baseItems.get(id);
+					if (ops && base) {
+						const remaining = ops.filter((op) => op.opId !== opId);
+						if (realItem) {
+							baseItems.set(id, realItem);
+							// Older uncommitted ops are superseded by the server snapshot.
+							const newerOnly = remaining.filter((op) => op.opId > opId);
+							if (newerOnly.length > 0) {
+								activeUpdates.set(id, newerOnly);
+							} else {
+								activeUpdates.delete(id);
+								baseItems.delete(id);
+							}
+							const nextItem =
+								newerOnly.length > 0
+									? newerOnly.reduce((acc, op) => ({ ...acc, ...op.changes }), { ...realItem })
+									: realItem;
+							store.update((items) => items.map((i) => (getKey(i) === id ? nextItem : i)));
+						} else {
+							const nextBase = { ...base, ...changes };
+							baseItems.set(id, nextBase);
+							// Strip fields confirmed by this op from older still-pending ops
+							// so their later rollback/replay cannot overwrite newer confirmed values.
+							const confirmedKeys = Object.keys(changes) as Array<keyof T>;
+							for (const op of remaining) {
+								if (op.opId < opId) {
+									for (const k of confirmedKeys) {
+										delete op.changes[k];
+									}
+								}
+							}
+							if (remaining.length > 0) {
+								activeUpdates.set(id, remaining);
+								const nextItem = recomputeItem(id);
+								if (nextItem) {
+									store.update((items) => items.map((i) => (getKey(i) === id ? nextItem : i)));
+								}
+							} else {
+								activeUpdates.delete(id);
+								baseItems.delete(id);
+								store.update((items) => items.map((i) => (getKey(i) === id ? nextBase : i)));
+							}
+						}
+					} else if (realItem) {
+						store.update((items) => items.map((i) => (getKey(i) === id ? realItem : i)));
+					}
 				}
-				pending.update((p) => withoutSetValue(p, id));
+				unmarkPending(id);
 			},
 			rollback: () => {
-				if (previousItem) {
-					store.update((items) => items.map((i) => (i.id === id ? previousItem! : i)));
+				if (settled) return;
+				settled = true;
+
+				if (found) {
+					const ops = activeUpdates.get(id);
+					if (ops) {
+						const remaining = ops.filter((op) => op.opId !== opId);
+						if (remaining.length > 0) {
+							activeUpdates.set(id, remaining);
+							const nextItem = recomputeItem(id);
+							if (nextItem) {
+								store.update((items) => items.map((i) => (getKey(i) === id ? nextItem : i)));
+							}
+						} else {
+							const base = baseItems.get(id);
+							activeUpdates.delete(id);
+							baseItems.delete(id);
+							if (base) {
+								store.update((items) => items.map((i) => (getKey(i) === id ? base : i)));
+							}
+						}
+					}
 				}
-				pending.update((p) => withoutSetValue(p, id));
-			}
+				unmarkPending(id);
+			},
 		};
 	}
 
 	function set(items: T[]): void {
+		pendingCounts.clear();
+		baseItems.clear();
+		activeUpdates.clear();
 		store.set([...items]);
 		pending.set(new Set());
 	}
@@ -143,6 +278,6 @@ export function createOptimisticList<T extends { id: string }>(
 		update,
 		set,
 		isPending,
-		pendingIds
+		pendingIds,
 	};
 }

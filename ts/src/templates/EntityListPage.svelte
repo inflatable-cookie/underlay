@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="ts" generics="T extends object = Record<string, unknown>">
   import { onMount } from "svelte";
   import type { BreadcrumbItem } from "../patterns/types";
   import {
@@ -196,9 +196,6 @@
     /** Custom reorder error handler for conflict recovery */
     onReorderError?: EntityListSharedProps<T>["onReorderError"];
   }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type T = any;
 
   // --- Props ---
 

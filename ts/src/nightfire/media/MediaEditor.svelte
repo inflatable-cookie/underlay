@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onDestroy } from "svelte";
   import { Button, MediaThumbnail } from "@inflatable-cookie/poodle-svelte";
   import { Select, TextInput } from "@inflatable-cookie/poodle-svelte";
   import { useNightfireMedia, type NightfireMediaPickResult } from "./context";
@@ -69,20 +70,30 @@
     });
   }
 
+  let disposed = false;
+
+  onDestroy(() => {
+    disposed = true;
+  });
+
   async function handlePickMedia() {
-    if (!mediaContext || picking) return;
+    if (!mediaContext || picking || disposed) return;
     picking = true;
     pickError = null;
 
     try {
       const result = await mediaContext.pickMedia();
+      if (disposed) return;
       if (result) {
         applySelection(result);
       }
     } catch (err) {
+      if (disposed) return;
       pickError = err instanceof Error ? err.message : "Failed to pick media";
     } finally {
-      picking = false;
+      if (!disposed) {
+        picking = false;
+      }
     }
   }
 
@@ -114,7 +125,18 @@
 <div class="underlay-media-editor">
   <!-- Media selection -->
   <div class="underlay-media-editor__selector">
-    {#if mediaId}
+    {#if !mediaContext}
+      <!-- Fallback: plain text input when no media context is configured -->
+      <label class="underlay-media-editor__field" for={`${uid}-media-id`}>
+        <span class="underlay-media-editor__label">Media ID</span>
+        <TextInput
+          id={`${uid}-media-id`}
+          placeholder="Media ID"
+          value={mediaId}
+          onValueChange={(nextValue) => emit({ media_id: nextValue })}
+        />
+      </label>
+    {:else if mediaId}
       <div class="underlay-media-editor__preview">
         <MediaThumbnail
           kind={toPoodleMediaKind(selectedKind)}
@@ -136,18 +158,16 @@
           </span>
           <span class="underlay-media-editor__preview-id">{mediaId}</span>
           <div class="underlay-media-editor__preview-actions">
-            {#if mediaContext}
-              <Button type="button" variant="secondary" size="sm" onClick={handlePickMedia} disabled={picking}>
-                Change
-              </Button>
-            {/if}
+            <Button type="button" variant="secondary" size="sm" onClick={handlePickMedia} disabled={picking}>
+              Change
+            </Button>
             <Button type="button" variant="ghost" tone="danger" size="sm" onClick={handleRemove}>
               Remove
             </Button>
           </div>
         </div>
       </div>
-    {:else if mediaContext}
+    {:else}
       <Button
         type="button"
         variant="secondary"
@@ -156,17 +176,6 @@
       >
         {picking ? "Opening picker…" : "Select media"}
       </Button>
-    {:else}
-      <!-- Fallback: plain text input when no media context is configured -->
-      <label class="underlay-media-editor__field" for={`${uid}-media-id`}>
-        <span class="underlay-media-editor__label">Media ID</span>
-        <TextInput
-          id={`${uid}-media-id`}
-          placeholder="Media ID"
-          value={mediaId}
-          onValueChange={(nextValue) => emit({ media_id: nextValue })}
-        />
-      </label>
     {/if}
     {#if pickError}
       <p class="underlay-media-editor__error" role="alert">{pickError}</p>

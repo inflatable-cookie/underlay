@@ -134,7 +134,7 @@
       case "edit":
         void gotoWithContext(`${usersBaseHref}/${user.id}/edit`, {
           label: title,
-          href: backHref,
+          href: usersBaseHref,
           type: "list"
         });
         break;
@@ -157,7 +157,7 @@
     }
     void gotoWithContext(`${usersBaseHref}/new`, {
       label: title,
-      href: backHref,
+      href: usersBaseHref,
       type: "list"
     });
   }

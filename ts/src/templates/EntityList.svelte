@@ -4,28 +4,13 @@
   import { useBatchActions } from "../patterns/batch-actions.svelte";
   import { useToasts } from "../runtime/feedback";
   import {
-    FilterToolbar,
     ListContainer,
     PageLoading,
-    ListGrid,
-    DataTable,
-    BulkActionBar,
-    AlertDialog,
-    Dialog,
     Callout,
     EmptyState,
-    EditableList,
-    ListCard,
-    LogList,
-    TextInput,
-    Select,
-    OrderBy,
     IconButton,
     Button,
-    Pill,
-    Pagination,
-    PaginationSummary,
-    CardToggleGroup
+    Pagination
   } from "@inflatable-cookie/poodle-svelte";
   import type {
     TableColumn,
@@ -34,8 +19,7 @@
     BulkAction,
     CardToggleItem
   } from "@inflatable-cookie/poodle-svelte";
-  import type { QueryParams, SortField } from "../client/query";
-  import { orderByToSortFields } from "../client/query";
+  import type { SortField } from "../client/query";
   import { DEFAULT_PAGE_SIZE } from "../patterns/pagination-types";
   import {
     claimListSelectionScope,
@@ -54,6 +38,9 @@
   import { useEntityListFilterOptions, useEntityListSearch } from "./entity-list-filters.svelte";
   import { isListReorderAvailable, useEntityListReorder } from "./entity-list-reorder.svelte";
   import { default as EntityReorderControls } from "./EntityReorderControls.svelte";
+  import { default as EntityListToolbar } from "./EntityListToolbar.svelte";
+  import { default as EntityListBody } from "./EntityListBody.svelte";
+  import { default as EntityListBatchControls } from "./EntityListBatchControls.svelte";
   import {
     UNDERLAY_ENTITY_LIST_CONTEXT_KEY,
     type EntityListContext
@@ -78,19 +65,19 @@
   interface Props {
     /** Optional title for inline use (omitted when inside EntityListPage) */
     title?: string;
-    
+
     /** Data loading function. Must return paged results for the current query state. */
     dataLoader: EntityListDataLoader<T>;
 
     /** Optional external reload signal for non-query data refreshes. */
     reloadKey?: string | number;
-    
+
     /** Unique identifier field (default: "id") */
     idField?: string;
-    
+
     /** Presentation mode */
     presentation: "cards" | "table" | "log";
-    
+
     /** For cards: render snippet for each item (receives item + selection context) */
     renderItem?: TemplateSurface;
 
@@ -100,10 +87,10 @@
 
     /** For reorder mode: custom item rendering */
     renderReorderItem?: TemplateSurface;
-    
+
     /** For table: column definitions */
     columns?: TableColumn[];
-    
+
     /** For table: row actions */
     rowActions?: EntityListSharedProps<T>["rowActions"];
 
@@ -145,7 +132,7 @@
 
     /** For log presentation: derive resource hrefs. */
     getResourceHref?: EntityListSharedProps<T>["getResourceHref"];
-    
+
     /** Declarative filter configuration */
     filters?: FilterConfig[];
 
@@ -160,26 +147,26 @@
 
     /** Effective default sort shown when the query has no explicit sort override. */
     defaultSort?: SortField[];
-    
+
     /** Batch action configuration */
     batchActions?: BatchActionConfig[];
-    
+
     /** Reorder configuration */
     reorder?: ReorderConfig<T>;
 
     /** Optional custom reorder surface for non-flat reorder workflows */
     customReorderContent?: TemplateSurface;
-    
+
     /** Optional add button */
     onAdd?: () => void;
     addLabel?: string;
-    
+
     /** Optional callback when data changes */
     onDataChange?: () => void;
 
     /** Optional callback when selected item IDs change */
     onSelectedIdsChange?: (ids: string[]) => void;
-    
+
     /** Optional callback when visible item count changes */
     onVisibleCountChange?: (count: number) => void;
 
@@ -509,24 +496,6 @@
     return visibleCount;
   }
 
-  function getVariantPillTone(
-    tone: ListVariantDefinition["tone"]
-  ): "neutral" | "info" | "success" | "warning" | "danger" {
-    switch (tone) {
-      case "info":
-      case "success":
-      case "warning":
-      case "danger":
-        return tone;
-      default:
-        return "neutral";
-    }
-  }
-
-  function getSearchPlaceholder(filter: FilterConfig): string {
-    return filter.placeholder ?? `Search ${filter.label.toLowerCase()}...`;
-  }
-
   function applyFilterChange(filter: FilterConfig, value: string) {
     if (getListFilterValue(currentQuery, filter) === value) {
       return;
@@ -590,21 +559,8 @@
     });
   }
 
-  function getSortOrderValue() {
-    return effectiveSort.map((field) => ({
-      key: field.field,
-      direction: field.direction
-    }));
-  }
-
   function getItemKey(item: T): string {
     return String((item as Record<string, unknown>)[idField]);
-  }
-
-  function handleRowActionSelect(event: { row: TableRow; action: TableRowAction }) {
-    // Poodle's DataTable emits a non-generic TableRow; our row payload is
-    // TableRow<T> at runtime.
-    onRowActionSelect?.(event.row as TableRow<T>, event.action);
   }
 
   function setSelectionMode(enabled: boolean) {
@@ -669,20 +625,6 @@
       }
     }
   }
-
-  const tableColumns = $derived<TableColumn[]>(columns ?? []);
-
-  // Table rows
-  const tableRows = $derived<TableRow<T>[]>(
-    items.map((item) => ({
-      id: getItemKey(item),
-      cells: tableColumns.reduce((acc, col) => {
-        acc[col.id] = String((item as Record<string, unknown>)[col.id] ?? "");
-        return acc;
-      }, {} as Record<string, string>),
-      data: item
-    }))
-  );
 
   function toBulkActionTone(tone: "default" | "danger" | "warning" | undefined): BulkAction["tone"] {
     if (tone === "danger" || tone === "warning") {
@@ -760,237 +702,94 @@
   function handleDialogCancel() {
     pendingDialogAction = null;
   }
-
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
 
 {#snippet filterToolbar(ariaLabel: string, queryVariantAriaLabel: string)}
-  <FilterToolbar
+  <EntityListToolbar
+    {uid}
     {ariaLabel}
-    summaryText="Views & Filters"
-    size="sm"
+    {queryVariantAriaLabel}
     collapsed={filterToolbarCollapsed}
-  >
-    {#snippet summary()}
-      <span class="underlay-entity-list__toolbar-summary">
-        <PaginationSummary
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalItems={totalCount}
-          pageSize={currentPageSize}
-        />
-        {#if isRefetching}
-          <span
-            class="underlay-entity-list__refetching"
-            role="status"
-            aria-live="polite"
-          >
-            Updating…
-          </span>
-        {/if}
-        {#if activeQueryVariant}
-          <Pill
-            tone={getVariantPillTone(activeQueryVariant.tone)}
-            appearance="badge"
-            size="xs"
-            typography="inherit"
-          >
-            {activeQueryVariant.label}
-          </Pill>
-        {/if}
-        {#if activeAdHocFilterCount > 0}
-          <Pill tone="neutral" appearance="badge" size="xs" typography="inherit">
-            {activeAdHocFilterCount} filter{activeAdHocFilterCount === 1 ? "" : "s"}
-          </Pill>
-        {/if}
-        {#if currentSort.length > 0}
-          <Pill tone="neutral" appearance="badge" size="xs" typography="inherit">
-            Sorted
-          </Pill>
-        {/if}
-      </span>
-    {/snippet}
-
-    {#snippet actions()}
-      {#if hasActiveEphemeralControls}
-        <IconButton
-          icon="x"
-          variant="ghost"
-          size="sm"
-          ariaLabel="Clear filters and sort"
-          tooltip="Clear filters and sort"
-          onClick={clearEphemeralControls}
-        />
-      {/if}
-      <IconButton
-        icon="refresh-cw"
-        variant="ghost"
-        size="sm"
-        ariaLabel="Refresh list"
-        tooltip="Refresh"
-        onClick={() => pageData.refetch()}
-      />
-    {/snippet}
-
-    {#if queryVariantItems.length > 0}
-      <div class="underlay-entity-list__query-variants">
-        <CardToggleGroup
-          items={queryVariantItems}
-          value={currentVariantId}
-          columns={queryVariantColumns}
-          allowDeactivation
-          size="xs"
-          density="compact"
-          ariaLabel={queryVariantAriaLabel}
-          onValueChange={handleQueryVariantChange}
-        />
-      </div>
-    {/if}
-
-    {#each effectiveFilterConfigs as filter (filter.id)}
-      <div
-        class="underlay-entity-list__filter-control"
-        data-active={isListFilterActive(currentQuery, filter)}
-      >
-        {#if filter.type === "search"}
-          <TextInput
-            id={`${uid}-filter-${filter.id}`}
-            type="search"
-            size="sm"
-            value={search.value(filter, getListFilterValue(currentQuery, filter))}
-            ariaLabel={filter.label}
-            placeholder={getSearchPlaceholder(filter)}
-            onValueChange={(value) =>
-              search.change(filter, value, searchDebounceMs, () => applyFilterChange(filter, value))}
-          />
-        {:else if filter.type === "select"}
-          <Select
-            id={`${uid}-filter-${filter.id}`}
-            size="sm"
-            disabled={filter.disabled ?? false}
-            value={getListFilterValue(currentQuery, filter)}
-            options={getSelectItems(filter)}
-            loadOptions={filter.searchable ? filter.loadOptions ?? null : null}
-            loadKey={filter.loadKey ?? null}
-            searchable={filter.searchable ?? false}
-            native={false}
-            clearable
-            placeholder={filter.placeholder ?? filter.label}
-            ariaLabel={filter.label}
-            onValueChange={(value) => applyFilterChange(filter, value)}
-          />
-        {:else if filter.type === "sort" && filter.sortFields}
-          <OrderBy
-            fields={filter.sortFields}
-            value={getSortOrderValue()}
-            size="sm"
-            ariaLabel={filter.label}
-            showClearButton={false}
-            onChange={(value) => handleSortChange(orderByToSortFields(value))}
-            compact
-          />
-        {/if}
-      </div>
-    {/each}
-  </FilterToolbar>
+    {currentPage}
+    {totalPages}
+    {totalCount}
+    {currentPageSize}
+    {isRefetching}
+    {activeQueryVariant}
+    {activeAdHocFilterCount}
+    hasSort={currentSort.length > 0}
+    {hasActiveEphemeralControls}
+    {queryVariantItems}
+    {currentVariantId}
+    {queryVariantColumns}
+    filters={effectiveFilterConfigs}
+    {currentQuery}
+    {effectiveSort}
+    {searchDebounceMs}
+    {getSelectItems}
+    getSearchValue={search.value}
+    onSearchChange={search.change}
+    onApplyFilter={applyFilterChange}
+    onVariantChange={handleQueryVariantChange}
+    onSortChange={handleSortChange}
+    onClearEphemeral={clearEphemeralControls}
+    onRefresh={() => pageData.refetch()}
+  />
 {/snippet}
 
-<!--
-  Shared list body for the titled (ListContainer) and untitled (EntityListPage)
-  render paths. Only the log empty message differs between the two, so it is
-  passed in; everything else is identical.
--->
 {#snippet listBody(logEmptyMessage: string)}
-  {#if reorderMode && customReorderContent}
-    {@render customReorderContent({
-      items,
-      cancel: reorderSession.exit,
-      refetch: () => pageData.refetch()
-    })}
-  {:else if reorderMode && reorderController}
-    <EditableList
-      items={reorderSession.editableItems}
-      embeddedHandle
-      dirty={reorderController.isDirty}
-      submitting={reorderController.isPending}
-      errorMessage={reorderSession.error}
-      showWorkflowChrome={false}
-      onSubmit={reorderSession.save}
-      onCancel={reorderSession.exit}
-      onReorder={reorderSession.updateOrder}
-    >
-      {#snippet item(reorderEntry)}
-        {@const originalItem = reorderSession.originalItem(reorderEntry.id)}
-        {#if renderReorderItem && originalItem}
-          <div data-reorder-highlighted={reorderSession.isHighlighted(reorderEntry.id)}>
-            {@render renderReorderItem(originalItem, {
-              ...getItemContext(originalItem),
-              highlighted: reorderSession.isHighlighted(reorderEntry.id)
-            })}
-          </div>
-        {:else if renderItem && originalItem}
-          {@render renderItem(originalItem, getItemContext(originalItem))}
-        {:else}
-          <ListCard title={reorderEntry.id} layout="compact" showReorderHandle />
-        {/if}
-      {/snippet}
-    </EditableList>
-  {:else if presentation === "cards"}
-    <ListGrid minItemWidth="var(--underlay-list-grid-min, 20rem)" variant={listGridVariant} gap={listGridGap}>
-      {#each items as item (getItemKey(item))}
-        {#if renderItem}
-          {@render renderItem(item, getItemContext(item))}
-        {/if}
-      {/each}
-    </ListGrid>
-  {:else if presentation === "log"}
-    <LogList
-      entries={logEntries}
-      variant="audit"
-      emptyMessage={logEmptyMessage}
-      actionIcon={actionIcon}
-      entryDetails={entryDetails}
-      {getActionType}
-      {formatAction}
-      {formatResourceType}
-      {getActorHref}
-      {getResourceHref}
-    />
-  {:else if presentation === "table"}
-    <DataTable
-      columns={tableColumns}
-      rows={tableRows}
-      {expandedRowIds}
-      {showRowActions}
-      rowActions={rowActions as unknown as TableRowAction[] | ((row: TableRow) => TableRowAction[]) | undefined}
-      selectable={selectionMode}
-      selectedRowIds={batch.selectedIds}
-      emptyMessage="No items found"
-      onRowActionSelect={handleRowActionSelect}
-      onRowToggle={({ rowId, selected }) => batch.toggle(rowId, selected)}
-      onToggleAll={({ selected }) => {
-        if (selected) {
-          batch.selectAll(itemIds);
-        } else {
-          batch.clear();
-        }
-      }}
-    >
-      {#snippet cell(column, row, value)}
-        {#if renderCell}
-          {@render renderCell(column, row, value)}
-        {:else}
-          {value}
-        {/if}
-      {/snippet}
-      {#snippet expandedRow(row)}
-        {#if renderExpandedRow}
-          {@render renderExpandedRow(row)}
-        {/if}
-      {/snippet}
-    </DataTable>
-  {/if}
+  <EntityListBody
+    {presentation}
+    {items}
+    {itemIds}
+    {getItemKey}
+    {getItemContext}
+    {logEmptyMessage}
+    {reorderMode}
+    hasReorderController={Boolean(reorderController)}
+    reorderDirty={Boolean(reorderController?.isDirty)}
+    reorderSubmitting={Boolean(reorderController?.isPending)}
+    reorderError={reorderSession.error}
+    editableItems={reorderSession.editableItems}
+    getReorderOriginalItem={reorderSession.originalItem}
+    isReorderHighlighted={reorderSession.isHighlighted}
+    onReorderSave={reorderSession.save}
+    onReorderCancel={reorderSession.exit}
+    onReorderUpdate={reorderSession.updateOrder}
+    {customReorderContent}
+    {renderReorderItem}
+    onRefetch={() => pageData.refetch()}
+    {renderItem}
+    {listGridVariant}
+    {listGridGap}
+    {columns}
+    {rowActions}
+    {showRowActions}
+    {renderCell}
+    {renderExpandedRow}
+    {expandedRowIds}
+    {selectionMode}
+    selectedIds={batch.selectedIds}
+    {onRowActionSelect}
+    onRowToggle={(rowId, selected) => batch.toggle(rowId, selected)}
+    onToggleAll={(selected) => {
+      if (selected) {
+        batch.selectAll(itemIds);
+      } else {
+        batch.clear();
+      }
+    }}
+    {logEntries}
+    {actionIcon}
+    {entryDetails}
+    {getActionType}
+    {formatAction}
+    {formatResourceType}
+    {getActorHref}
+    {getResourceHref}
+  />
 {/snippet}
 
 {#snippet retryCallout(message: string, retry: () => Promise<void>, title?: string)}
@@ -1081,7 +880,7 @@
   {#if (queryVariantItems.length > 0 || effectiveFilterConfigs.length > 0) && !reorderMode}
     {@render filterToolbar("Filters", "Query variants")}
   {/if}
-  
+
   {#if pageData.loading && items.length === 0}
     <PageLoading presentation="inline" message="Loading..." />
   {:else if pageData.error}
@@ -1110,135 +909,31 @@
   {/if}
 {/if}
 
-<!-- Batch action bar -->
-{#if batchActions.length > 0 && selectionMode}
-  <BulkActionBar
-    selectionCount={batch.count}
-    totalCount={items.length}
-    actions={bulkActions}
-    loading={batch.executing}
-    showSelectAll
-    allSelected={batch.count > 0 && batch.count === items.length}
-    onClear={() => {
-      batch.clear();
-      setSelectionMode(false);
-    }}
-    onSelectAll={() => batch.selectAll(itemIds)}
-    onAction={handleBatchAction}
-  />
-{/if}
-
-<!-- Batch action confirmation dialog -->
-{#if batch.pendingAction}
-  <AlertDialog
-    open={true}
-    title={batch.pendingAction.confirm?.title ?? "Confirm"}
-    description={batch.getConfirmDescription()}
-    confirmLabel={batch.pendingAction.confirm?.confirmLabel ?? "Confirm"}
-    cancelLabel={batch.pendingAction.confirm?.cancelLabel ?? "Cancel"}
-    tone={batch.pendingAction.variant === "danger" ? "danger" : "warning"}
-    onConfirm={confirmPendingBatchAction}
-    onCancel={() => batch.cancelPendingAction()}
-  />
-{/if}
-
-<!-- Batch action custom dialog -->
-{#if pendingDialogAction?.dialog}
-  <Dialog
-    open={true}
-    title={pendingDialogAction.dialog.title}
-    onRequestClose={handleDialogCancel}
-  >
-    {@render pendingDialogAction.dialog.content({
-      ids: batch.selectedIds,
-      onSubmit: handleDialogSubmit,
-      onCancel: handleDialogCancel
-    })}
-  </Dialog>
-{/if}
+<EntityListBatchControls
+  showBar={batchActions.length > 0 && selectionMode}
+  selectionCount={batch.count}
+  totalCount={items.length}
+  selectedIds={batch.selectedIds}
+  {bulkActions}
+  executing={batch.executing}
+  pendingAction={batch.pendingAction}
+  confirmDescription={batch.getConfirmDescription()}
+  {pendingDialogAction}
+  onClearSelection={() => {
+    batch.clear();
+    setSelectionMode(false);
+  }}
+  onSelectAll={() => batch.selectAll(itemIds)}
+  onAction={handleBatchAction}
+  onConfirmPendingAction={confirmPendingBatchAction}
+  onCancelPendingAction={() => batch.cancelPendingAction()}
+  onDialogSubmit={handleDialogSubmit}
+  onDialogCancel={handleDialogCancel}
+/>
 
 <style>
-  .underlay-entity-list__toolbar-summary {
-    display: inline-flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    min-width: 0;
-  }
-
-  .underlay-entity-list__toolbar-summary :global(.poodle-pagination-summary) {
-    font-size: 0.875em;
-  }
-
-  .underlay-entity-list__refetching {
-    font-size: 0.8125em;
-    opacity: 0.7;
-    font-style: italic;
-  }
-
-  .underlay-entity-list__filter-control {
-    min-width: 0;
-    opacity: 0.68;
-    transition:
-      opacity 120ms ease,
-      filter 120ms ease;
-  }
-
-  .underlay-entity-list__filter-control[data-active="true"],
-  .underlay-entity-list__filter-control:focus-within,
-  .underlay-entity-list__filter-control:hover {
-    opacity: 1;
-  }
-
-  .underlay-entity-list__filter-control[data-active="false"] :global(.poodle-select__value[data-placeholder="true"]),
-  .underlay-entity-list__filter-control[data-active="false"] :global(.poodle-order-by__summary[data-placeholder="true"]) {
-    color: var(--poodle-color-text-muted);
-  }
-
-  .underlay-entity-list__query-variants {
-    display: grid;
-    grid-column: 1 / -1;
-    margin-bottom: 0.125rem;
-  }
-
-  .underlay-entity-list__query-variants :global(.poodle-card) {
-    --poodle-recipe-card-fill: color-mix(
-      in srgb,
-      var(--poodle-color-background-elevated) 95%,
-      var(--poodle-color-text-primary)
-    );
-    --poodle-recipe-card-hover-fill: color-mix(
-      in srgb,
-      var(--poodle-color-background-elevated) 92%,
-      var(--poodle-color-text-primary)
-    );
-    --poodle-recipe-card-border: color-mix(
-      in srgb,
-      var(--poodle-color-border-default) 28%,
-      transparent
-    );
-    --poodle-recipe-card-shadow:
-      0 0.375rem 0.875rem color-mix(in srgb, black 12%, transparent),
-      inset 0 0 0 0.0625rem color-mix(in srgb, var(--poodle-color-border-default) 18%, transparent);
-  }
-
-  :global([data-theme="light"]) .underlay-entity-list__query-variants :global(.poodle-card) {
-    --poodle-recipe-card-fill: var(--poodle-color-background-elevated);
-    --poodle-recipe-card-hover-fill: color-mix(
-      in srgb,
-      var(--poodle-color-background-elevated) 92%,
-      var(--poodle-color-background-surface)
-    );
-  }
-
   .underlay-entity-list__pagination {
     display: flex;
     justify-content: flex-end;
-  }
-
-  [data-reorder-highlighted="true"] {
-    outline: 2px solid var(--underlay-color-accent, #14b8a6);
-    outline-offset: 0.25rem;
-    border-radius: 0.75rem;
   }
 </style>

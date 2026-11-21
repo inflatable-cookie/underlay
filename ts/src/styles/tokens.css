@@ -143,6 +143,13 @@
   --underlay-summary-image-placeholder-min-height: 6rem;
   --underlay-summary-placeholder-opacity: 0.8;
   --underlay-summary-caption-opacity: 0.85;
+
+  /* Admin nav badges */
+  --underlay-admin-nav-badge-fg: #f9fafb;
+  --underlay-admin-nav-badge-overview: linear-gradient(135deg, #22c55e, #14b8a6);
+  --underlay-admin-nav-badge-users: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  --underlay-admin-nav-badge-media: linear-gradient(135deg, #f59e0b, #f97316);
+  --underlay-admin-nav-badge-system: linear-gradient(135deg, #94a3b8, #64748b);
 }
 
 [data-theme="dark"],
