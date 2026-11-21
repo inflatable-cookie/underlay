@@ -2,15 +2,20 @@ use super::*;
 
 #[test]
 fn test_smtp_config_builder() {
+    let default_config = SmtpConfig::new("smtp.example.com");
+    assert_eq!(default_config.timeout(), std::time::Duration::from_secs(30));
+
     let config = SmtpConfig::new("smtp.example.com")
         .with_port(587)
         .with_credentials("user", "pass")
-        .with_tls_mode(TlsMode::Required);
+        .with_tls_mode(TlsMode::Required)
+        .with_timeout(std::time::Duration::from_secs(12));
 
     assert_eq!(config.host(), "smtp.example.com");
     assert_eq!(config.port(), 587);
     assert_eq!(config.username(), Some("user"));
     assert_eq!(config.password(), Some("pass"));
+    assert_eq!(config.timeout(), std::time::Duration::from_secs(12));
 }
 
 #[test]

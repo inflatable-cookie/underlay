@@ -128,3 +128,17 @@ fn formatted_email_address_quotes_and_escapes_display_names() {
     let unnamed = EmailAddress::new("user@example.com").unwrap();
     assert_eq!(unnamed.formatted(), "user@example.com");
 }
+
+#[test]
+fn email_address_stores_trimmed_email() {
+    let addr = EmailAddress::new("  user@example.com  ").unwrap();
+    assert_eq!(addr.email, "user@example.com");
+
+    let named = EmailAddress::with_name("  user@example.com  ", "Jane Doe").unwrap();
+    assert_eq!(named.email, "user@example.com");
+    assert_eq!(named.formatted(), "Jane Doe <user@example.com>");
+
+    // Control characters are still rejected prior to trimming.
+    assert!(EmailAddress::new("user@example.com\r\n").is_err());
+    assert!(EmailAddress::with_name("user@example.com\n", "Jane Doe").is_err());
+}

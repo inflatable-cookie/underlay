@@ -295,8 +295,12 @@ impl PgJobNotifier {
     /// Useful after processing a batch of jobs to clear queued notifications
     /// that are no longer relevant (since we just checked the queue).
     pub fn drain(&mut self) {
-        // PgListener doesn't have a direct drain method, but try_recv would work
-        // For now, this is a no-op placeholder. The notifications will be
-        // consumed on the next wait() call anyway.
+        // Retained synchronous no-op for compatibility; async callers can use
+        // `drain_pending` to coalesce already-buffered notifications.
+    }
+
+    /// Coalesce and discard any notifications already buffered on the listener.
+    pub async fn drain_pending(&mut self) {
+        while let Ok(Some(_)) = self.listener.try_recv().await {}
     }
 }

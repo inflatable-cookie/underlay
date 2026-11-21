@@ -11,10 +11,11 @@ pub(crate) async fn read_generate_and_store<B: BlobAdapter>(
     target_key: &BlobObjectKey,
     max_dimension: u32,
     jpeg_quality: u8,
+    max_source_bytes: u64,
     store_label: &str,
 ) -> MediaResult<RenditionResult> {
     let source_bytes = blob_adapter
-        .get_object_bytes(source_key)
+        .get_bytes_bounded(source_key.as_str(), max_source_bytes)
         .await
         .map_err(|e| MediaError::storage(format!("Failed to read source: {}", e)))?;
 

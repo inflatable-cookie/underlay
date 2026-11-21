@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::time::Duration;
 
 use crate::adapter::EmailAdapter;
 use crate::error::EmailResult;
@@ -90,6 +91,9 @@ pub enum AdapterType {
     Ses(SesConfig),
 }
 
+/// Default SMTP connection/request timeout.
+pub const DEFAULT_SMTP_TIMEOUT: Duration = Duration::from_secs(30);
+
 /// SMTP adapter configuration.
 #[derive(Clone, PartialEq, Eq)]
 pub struct SmtpConfig {
@@ -103,6 +107,8 @@ pub struct SmtpConfig {
     password: Option<String>,
     /// TLS mode.
     tls_mode: TlsMode,
+    /// Socket/operation timeout for SMTP connections.
+    timeout: Duration,
 }
 
 /// TLS mode for SMTP connections.
@@ -134,6 +140,7 @@ impl Default for SmtpConfig {
             username: None,
             password: None,
             tls_mode: TlsMode::Required,
+            timeout: DEFAULT_SMTP_TIMEOUT,
         }
     }
 }
@@ -182,6 +189,7 @@ impl std::fmt::Debug for SmtpConfig {
             .field("username", &self.username)
             .field("password", &self.password.as_ref().map(|_| "[REDACTED]"))
             .field("tls_mode", &self.tls_mode)
+            .field("timeout", &self.timeout)
             .finish()
     }
 }
@@ -218,6 +226,12 @@ impl SmtpConfig {
         self
     }
 
+    /// Set the SMTP operation timeout.
+    pub fn with_timeout(mut self, timeout: Duration) -> Self {
+        self.timeout = timeout;
+        self
+    }
+
     /// Return the SMTP host.
     pub fn host(&self) -> &str {
         &self.host
@@ -241,6 +255,11 @@ impl SmtpConfig {
     /// Return the SMTP TLS mode.
     pub fn tls_mode(&self) -> TlsMode {
         self.tls_mode
+    }
+
+    /// Return the configured SMTP timeout.
+    pub fn timeout(&self) -> Duration {
+        self.timeout
     }
 }
 

@@ -44,7 +44,7 @@ impl SmtpAdapter {
             TlsMode::None => AsyncSmtpTransport::<Tokio1Executor>::builder_dangerous(config.host()),
         };
 
-        let mut builder = builder.port(config.port());
+        let mut builder = builder.port(config.port()).timeout(Some(config.timeout()));
 
         // Add credentials if provided
         if let (Some(username), Some(password)) = (config.username(), config.password()) {
