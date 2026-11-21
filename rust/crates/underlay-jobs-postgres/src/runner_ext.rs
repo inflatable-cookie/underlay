@@ -18,13 +18,26 @@ pub trait PostgresJobRunnerExt {
     ///
     /// A shutdown wakes an idle runner immediately. If a job is already in
     /// progress, the runner settles that job before shutting down.
+    ///
+    /// Kept `Self: Sized` with a default implementation so existing
+    /// implementations and `dyn PostgresJobRunnerExt` trait objects remain
+    /// source-compatible.
     async fn run_with_notifier_until_shutdown<F>(
         &self,
         notifier: &mut PgJobNotifier,
         shutdown: F,
     ) -> Result<(), RepoError>
     where
-        F: Future<Output = ()> + Send;
+        Self: Sized + Sync,
+        F: Future<Output = ()> + Send,
+    {
+        let mut shutdown = pin!(shutdown);
+        tokio::select! {
+            biased;
+            () = &mut shutdown => Ok(()),
+            res = self.run_with_notifier(notifier) => res,
+        }
+    }
 }
 
 #[async_trait]
@@ -56,6 +69,8 @@ where
 
         loop {
             let mut processed_in_batch = 0usize;
+            let mut hit_batch_limit = false;
+
             loop {
                 tokio::select! {
                     biased;
@@ -71,13 +86,22 @@ where
                 if batch_size > 0 {
                     processed_in_batch += 1;
                     if processed_in_batch >= batch_size {
+                        hit_batch_limit = true;
                         break;
                     }
                 }
             }
 
-            // Coalesce burst notifications that arrived while draining the batch.
-            notifier.drain_pending().await;
+            // Coalesce already-buffered notifications without blocking on the socket.
+            notifier.drain();
+
+            // When a bounded batch filled completely, more jobs may still be pending.
+            // Yield once so shutdown and other tasks get a turn, then continue draining
+            // immediately instead of sleeping for `poll_interval`.
+            if hit_batch_limit {
+                tokio::task::yield_now().await;
+                continue;
+            }
 
             debug!(
                 timeout_secs = poll_interval.as_secs(),
@@ -91,7 +115,7 @@ where
                     match wait_result {
                         Ok(Some(job_type)) => {
                             debug!(job_type = %job_type, "Woke up from notification");
-                            notifier.drain_pending().await;
+                            notifier.drain();
                         }
                         Ok(None) => {
                             debug!("Woke up from fallback timeout");
@@ -108,5 +132,15 @@ where
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::PostgresJobRunnerExt;
+
+    #[test]
+    fn postgres_job_runner_ext_remains_object_safe() {
+        fn _assert_object_safe(_: &dyn PostgresJobRunnerExt) {}
     }
 }

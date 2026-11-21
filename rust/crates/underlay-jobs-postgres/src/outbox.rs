@@ -29,7 +29,7 @@
 
 use std::collections::HashMap;
 use std::future::{self, Future};
-use std::pin::pin;
+use std::pin::{pin, Pin};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
@@ -260,6 +260,12 @@ impl FailureTracker {
             self.entries.remove(&oldest_id);
         }
     }
+}
+
+struct BatchReport {
+    processed: usize,
+    exhausted: bool,
+    shutdown_requested: bool,
 }
 
 enum ProcessOneOutcome {
@@ -526,8 +532,13 @@ impl OutboxProcessor {
                 }
             }
 
-            let count = self.process_batch_with(backend, &handler).await?;
-            should_wait = count == 0;
+            let report = self
+                .process_batch_with(backend, &handler, shutdown.as_mut())
+                .await?;
+            if report.shutdown_requested {
+                return Ok(());
+            }
+            should_wait = report.exhausted;
         }
     }
 
@@ -545,22 +556,30 @@ impl OutboxProcessor {
         F: Fn(OutboxEvent) -> Fut + Send + Sync,
         Fut: Future<Output = Result<(), Box<dyn std::error::Error + Send + Sync>>> + Send,
     {
-        self.process_batch_with(pool, handler).await
+        let shutdown = pin!(future::pending::<()>());
+        let report = self.process_batch_with(pool, handler, shutdown).await?;
+        Ok(report.processed)
     }
 
-    async fn process_batch_with<B, F, Fut>(
+    async fn process_batch_with<B, F, Fut, S>(
         &self,
         backend: &B,
         handler: &F,
-    ) -> Result<usize, B::Error>
+        mut shutdown: Pin<&mut S>,
+    ) -> Result<BatchReport, B::Error>
     where
         B: OutboxBackend,
         F: Fn(OutboxEvent) -> Fut + Send + Sync,
         Fut: Future<Output = Result<(), Box<dyn std::error::Error + Send + Sync>>> + Send,
+        S: Future<Output = ()>,
     {
         let batch_limit = self.config.batch_size();
         if batch_limit == 0 {
-            return Ok(0);
+            return Ok(BatchReport {
+                processed: 0,
+                exhausted: true,
+                shutdown_requested: false,
+            });
         }
 
         let mut skip_ids = {
@@ -573,14 +592,30 @@ impl OutboxProcessor {
 
         let mut processed = 0usize;
         let mut attempted = 0usize;
+        let mut exhausted = false;
 
         while attempted < batch_limit {
+            tokio::select! {
+                biased;
+                () = shutdown.as_mut() => {
+                    return Ok(BatchReport {
+                        processed,
+                        exhausted: false,
+                        shutdown_requested: true,
+                    });
+                }
+                () = future::ready(()) => {}
+            }
+
             let outcome = backend
                 .process_next(&skip_ids, self.config.handler_timeout(), handler)
                 .await?;
 
             match outcome {
-                ProcessOneOutcome::Empty => break,
+                ProcessOneOutcome::Empty => {
+                    exhausted = true;
+                    break;
+                }
                 ProcessOneOutcome::Succeeded(event_id) => {
                     self.failures
                         .lock()
@@ -618,7 +653,11 @@ impl OutboxProcessor {
             }
         }
 
-        Ok(processed)
+        Ok(BatchReport {
+            processed,
+            exhausted,
+            shutdown_requested: false,
+        })
     }
 
     /// Run the processor in polling mode (without LISTEN/NOTIFY).
@@ -683,8 +722,13 @@ impl OutboxProcessor {
                 } => {}
             }
 
-            let count = self.process_batch_with(backend, &handler).await?;
-            should_sleep = count == 0;
+            let report = self
+                .process_batch_with(backend, &handler, shutdown.as_mut())
+                .await?;
+            if report.shutdown_requested {
+                return Ok(());
+            }
+            should_sleep = report.exhausted;
         }
     }
 }

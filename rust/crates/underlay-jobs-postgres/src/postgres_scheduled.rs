@@ -290,17 +290,11 @@ impl PgJobNotifier {
         }
     }
 
-    /// Drain any pending notifications without blocking.
+    /// Drain any already-buffered notifications without blocking on the socket.
     ///
-    /// Useful after processing a batch of jobs to clear queued notifications
-    /// that are no longer relevant (since we just checked the queue).
+    /// Useful after waking or processing a batch of jobs to coalesce burst
+    /// notifications without stalling shutdown or fallback polling.
     pub fn drain(&mut self) {
-        // Retained synchronous no-op for compatibility; async callers can use
-        // `drain_pending` to coalesce already-buffered notifications.
-    }
-
-    /// Coalesce and discard any notifications already buffered on the listener.
-    pub async fn drain_pending(&mut self) {
-        while let Ok(Some(_)) = self.listener.try_recv().await {}
+        while self.listener.next_buffered().is_some() {}
     }
 }

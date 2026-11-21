@@ -16,7 +16,7 @@ chrono = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
-tokio = { workspace = true }
+tokio = { workspace = true, features = ["time"] }
 uuid = { workspace = true, features = ["serde", "v7"] }
 
 # SMTP adapter (optional)
@@ -30,7 +30,7 @@ underlay-aws = { workspace = true, optional = true }
 tera = { version = "2", features = ["glob_fs"], optional = true }
 
 [dev-dependencies]
-tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+tokio = { workspace = true, features = ["macros", "net", "rt-multi-thread", "time"] }
 
 [lints]
 workspace = true

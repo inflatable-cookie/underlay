@@ -71,7 +71,11 @@ impl JobRepository {
         Ok(())
     }
 
-    /// Mark a job as succeeded.
+    /// Legacy unfenced compatibility entry point for ID-only callers.
+    ///
+    /// Worker completion paths must use [`Self::mark_succeeded_for_job`] or
+    /// [`Self::mark_succeeded_attempt`] so a stale worker cannot finalize a
+    /// newer claim after stall recovery.
     ///
     /// Also updates `last_completed_at` on any scheduled task with a matching job_type.
     ///
@@ -81,27 +85,6 @@ impl JobRepository {
     /// [`RepoError::Conflict`] if the job is no longer running.
     #[instrument(skip(self))]
     pub async fn mark_succeeded(&self, job_id: Uuid) -> Result<()> {
-        self.mark_succeeded_inner(job_id, None).await
-    }
-
-    /// Mark a claimed job as succeeded, fencing on its attempt count.
-    ///
-    /// Also updates `last_completed_at` on any scheduled task with a matching job_type.
-    ///
-    /// # Errors
-    ///
-    /// Returns [`RepoError::NotFound`] if the job does not exist or
-    /// [`RepoError::Conflict`] if the supplied attempt no longer owns the running row.
-    #[instrument(skip(self, job), fields(job_id = %job.id, attempts = job.attempts))]
-    pub async fn mark_succeeded_for_job(&self, job: &Job) -> Result<()> {
-        self.mark_succeeded_inner(job.id, Some(job.attempts)).await
-    }
-
-    async fn mark_succeeded_inner(
-        &self,
-        job_id: Uuid,
-        expected_attempts: Option<i32>,
-    ) -> Result<()> {
         let mut tx = self.pool.begin().await?;
 
         let row: Option<(i32, bool)> = sqlx::query_as(
@@ -124,14 +107,68 @@ impl JobRepository {
                 "job {job_id} is no longer running"
             )));
         }
-        if let Some(expected) = expected_attempts {
-            if attempts != expected {
-                return Err(RepoError::Conflict(format!(
-                    "job {job_id} is no longer running attempt {expected}"
-                )));
-            }
+
+        Self::finalize_succeeded_in_tx(&mut tx, job_id, attempts).await?;
+        tx.commit().await?;
+        Ok(())
+    }
+
+    /// Mark a claimed job as succeeded, fencing on its claimed attempt count.
+    ///
+    /// Also updates `last_completed_at` on any scheduled task with a matching job_type.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`RepoError::NotFound`] if the job does not exist or
+    /// [`RepoError::Conflict`] if the supplied attempt no longer owns the running row.
+    #[instrument(skip(self, job), fields(job_id = %job.id, attempts = job.attempts))]
+    pub async fn mark_succeeded_for_job(&self, job: &Job) -> Result<()> {
+        self.mark_succeeded_attempt(job.id, job.attempts).await
+    }
+
+    /// Mark a job as succeeded only if it is currently running the expected attempt.
+    ///
+    /// Also updates `last_completed_at` on any scheduled task with a matching job_type.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`RepoError::NotFound`] if the job does not exist or
+    /// [`RepoError::Conflict`] if the supplied attempt no longer owns the running row.
+    #[instrument(skip(self))]
+    pub async fn mark_succeeded_attempt(&self, job_id: Uuid, expected_attempts: i32) -> Result<()> {
+        let mut tx = self.pool.begin().await?;
+
+        let row: Option<(i32, bool)> = sqlx::query_as(
+            r#"
+            SELECT attempts, status = 'running'
+            FROM platform.job
+            WHERE id = $1
+            FOR UPDATE
+            "#,
+        )
+        .bind(to_raw(job_id))
+        .fetch_optional(&mut *tx)
+        .await?;
+
+        let Some((attempts, is_running)) = row else {
+            return Err(RepoError::NotFound(job_id));
+        };
+        if !is_running || attempts != expected_attempts {
+            return Err(RepoError::Conflict(format!(
+                "job {job_id} is no longer running attempt {expected_attempts}"
+            )));
         }
 
+        Self::finalize_succeeded_in_tx(&mut tx, job_id, expected_attempts).await?;
+        tx.commit().await?;
+        Ok(())
+    }
+
+    async fn finalize_succeeded_in_tx(
+        tx: &mut sqlx::Transaction<'_, sqlx::Postgres>,
+        job_id: Uuid,
+        attempts: i32,
+    ) -> Result<()> {
         let now = Utc::now();
 
         sqlx::query(
@@ -151,10 +188,9 @@ impl JobRepository {
         .bind(to_raw(job_id))
         .bind(now)
         .bind(attempts)
-        .execute(&mut *tx)
+        .execute(&mut **tx)
         .await?;
 
-        tx.commit().await?;
         Ok(())
     }
 

@@ -182,58 +182,65 @@ fn thumbnail_config_and_dimensions_guard_zero() {
     assert_eq!(calculate_thumbnail_dimensions(100, 100, 256, 0), (1, 1));
 }
 
-fn minimal_png_with_dimensions(width: u32, height: u32) -> Vec<u8> {
-    let mut bytes = Vec::new();
-    // PNG signature
-    bytes.extend_from_slice(&[137, 80, 78, 71, 13, 10, 26, 10]);
-    // IHDR chunk: length = 13
-    bytes.extend_from_slice(&13u32.to_be_bytes());
-    let mut ihdr = Vec::with_capacity(17);
-    ihdr.extend_from_slice(b"IHDR");
-    ihdr.extend_from_slice(&width.to_be_bytes());
-    ihdr.extend_from_slice(&height.to_be_bytes());
-    ihdr.push(8); // bit depth
-    ihdr.push(6); // color type RGBA
-    ihdr.push(0); // compression
-    ihdr.push(0); // filter
-    ihdr.push(0); // interlace
-    bytes.extend_from_slice(&ihdr);
-    // CRC32 over type + data
-    let mut crc: u32 = 0xffff_ffff;
-    for &byte in &ihdr {
-        crc ^= u32::from(byte);
-        for _ in 0..8 {
-            crc = if crc & 1 != 0 {
-                (crc >> 1) ^ 0xedb8_8320
-            } else {
-                crc >> 1
-            };
-        }
-    }
-    bytes.extend_from_slice(&(!crc).to_be_bytes());
-    bytes
+fn assert_limit_decode_error(result: Result<ThumbnailResult, ImageError>, context: &str) {
+    let Err(ImageError::DecodeError(message)) = result else {
+        panic!("expected DecodeError for {context}, got {result:?}");
+    };
+    let lower = message.to_ascii_lowercase();
+    assert!(
+        lower.contains("limit") || lower.contains("exceed") || lower.contains("memory"),
+        "expected decode limit error for {context}, got: {message}"
+    );
+    assert!(
+        !lower.contains("eof") && !lower.contains("end of file"),
+        "fixture must fail due to decode limits rather than EOF for {context}, got: {message}"
+    );
 }
 
 #[test]
 fn decode_rejects_images_exceeding_dimension_or_alloc_limits() {
-    let oversized_dimensions = minimal_png_with_dimensions(DEFAULT_MAX_IMAGE_WIDTH + 1, 16);
-    assert!(matches!(
-        generate_thumbnail(&oversized_dimensions, &ThumbnailConfig::medium()),
-        Err(ImageError::DecodeError(_))
-    ));
-    assert!(matches!(
-        generate_square_thumbnail(&oversized_dimensions, 64, 80),
-        Err(ImageError::DecodeError(_))
-    ));
+    use image::codecs::png::{CompressionType, FilterType as PngFilterType, PngEncoder};
+    use image::ImageEncoder;
 
-    // 10_000 x 10_000 RGBA8 = 400 MiB > 128 MiB max_alloc while under max_image_width/height
-    let oversized_alloc = minimal_png_with_dimensions(10_000, 10_000);
-    assert!(matches!(
+    // 1. Complete, valid PNG exceeding DEFAULT_MAX_IMAGE_WIDTH (16385x1 RGB8).
+    let mut oversized_dimensions = Vec::new();
+    let width = DEFAULT_MAX_IMAGE_WIDTH + 1;
+    let row = vec![0u8; (width as usize) * 3];
+    PngEncoder::new_with_quality(
+        &mut oversized_dimensions,
+        CompressionType::Fast,
+        PngFilterType::NoFilter,
+    )
+    .write_image(&row, width, 1, image::ExtendedColorType::Rgb8)
+    .expect("encode oversized-dimension png");
+
+    assert_limit_decode_error(
+        generate_thumbnail(&oversized_dimensions, &ThumbnailConfig::medium()),
+        "generate_thumbnail dimension limit",
+    );
+    assert_limit_decode_error(
+        generate_square_thumbnail(&oversized_dimensions, 64, 80),
+        "generate_square_thumbnail dimension limit",
+    );
+
+    // 2. Complete, valid PNG within max_image_width/height (4200x4200 RGBA16 = ~134.6 MiB > 128 MiB).
+    let mut oversized_alloc = Vec::new();
+    let dim = 4_200u32;
+    let pixels = vec![0u8; (dim as usize) * (dim as usize) * 8];
+    PngEncoder::new_with_quality(
+        &mut oversized_alloc,
+        CompressionType::Fast,
+        PngFilterType::NoFilter,
+    )
+    .write_image(&pixels, dim, dim, image::ExtendedColorType::Rgba16)
+    .expect("encode oversized-alloc png");
+
+    assert_limit_decode_error(
         generate_thumbnail(&oversized_alloc, &ThumbnailConfig::medium()),
-        Err(ImageError::DecodeError(_))
-    ));
-    assert!(matches!(
+        "generate_thumbnail alloc limit",
+    );
+    assert_limit_decode_error(
         generate_square_thumbnail(&oversized_alloc, 64, 80),
-        Err(ImageError::DecodeError(_))
-    ));
+        "generate_square_thumbnail alloc limit",
+    );
 }

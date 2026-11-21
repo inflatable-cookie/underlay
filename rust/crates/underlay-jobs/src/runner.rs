@@ -27,7 +27,7 @@ use tracing::{debug, error, info, warn};
 
 use crate::events::{JobEvent, JobEventHub, JobEventSink};
 use crate::registry::JobRegistry;
-use crate::store::JobStore;
+use crate::store::{JobCompletionOutcome, JobStore};
 use crate::types::{Job, JobConfig, JobHandlerError};
 
 /// Configuration for the job runner.
@@ -194,22 +194,33 @@ where
 
         match handle_result {
             Ok(()) => {
-                self.store.mark_success_for_job(&job).await?;
-                let duration = job
-                    .started_at
-                    .or(job.claimed_at)
-                    .and_then(|started_at| (chrono::Utc::now() - started_at).to_std().ok());
-                self.events.emit(JobEvent::Completed {
-                    job_id: job.id,
-                    job_type: job.job_type.clone(),
-                    attempt: job.attempts,
-                    duration,
-                });
-                info!(
-                    job_type = %job.job_type,
-                    job_id = %job.id,
-                    "Job completed successfully"
-                );
+                match self.store.mark_success_for_job(&job).await? {
+                    JobCompletionOutcome::Succeeded => {
+                        let duration = job
+                            .started_at
+                            .or(job.claimed_at)
+                            .and_then(|started_at| (chrono::Utc::now() - started_at).to_std().ok());
+                        self.events.emit(JobEvent::Completed {
+                            job_id: job.id,
+                            job_type: job.job_type.clone(),
+                            attempt: job.attempts,
+                            duration,
+                        });
+                        info!(
+                            job_type = %job.job_type,
+                            job_id = %job.id,
+                            "Job completed successfully"
+                        );
+                    }
+                    JobCompletionOutcome::LostOwnership => {
+                        warn!(
+                            job_type = %job.job_type,
+                            job_id = %job.id,
+                            attempt = job.attempts,
+                            "Job completion ignored because attempt no longer owns the running claim"
+                        );
+                    }
+                }
                 Ok(true)
             }
             Err(err) => {

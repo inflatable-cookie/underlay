@@ -154,6 +154,11 @@ impl RenditionConfig {
     }
 
     /// Set the maximum source object size in bytes fetched for rendition generation.
+    ///
+    /// Rendition generation reads sources via `BlobAdapter::get_bytes_bounded`.
+    /// Custom `BlobAdapter` implementations must override `get_bytes_bounded`
+    /// because the default trait implementation fails closed with
+    /// `BlobError::Unsupported`.
     pub fn with_max_source_bytes(mut self, max_bytes: u64) -> Self {
         self.max_source_bytes = max_bytes.max(1);
         self

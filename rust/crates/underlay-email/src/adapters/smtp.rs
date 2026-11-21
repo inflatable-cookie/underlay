@@ -2,6 +2,7 @@
 
 use std::error::Error as _;
 use std::io;
+use std::time::Duration;
 
 use async_trait::async_trait;
 use lettre::message::{
@@ -21,6 +22,7 @@ use crate::types::{Email, EmailAddress, SendResult};
 /// SMTP email adapter using the lettre library.
 pub struct SmtpAdapter {
     transport: AsyncSmtpTransport<Tokio1Executor>,
+    timeout: Duration,
 }
 
 impl SmtpAdapter {
@@ -52,9 +54,10 @@ impl SmtpAdapter {
             builder = builder.credentials(credentials);
         }
 
+        let timeout = config.timeout();
         let transport = builder.build();
 
-        Ok(Self { transport })
+        Ok(Self { transport, timeout })
     }
 
     /// Convert an EmailAddress to a lettre Mailbox.
@@ -164,13 +167,17 @@ impl EmailAdapter for SmtpAdapter {
     async fn send(&self, email: &Email) -> EmailResult<SendResult> {
         let message = Self::build_message(email)?;
 
-        match self.transport.send(message).await {
-            Ok(response) => {
+        match tokio::time::timeout(self.timeout, self.transport.send(message)).await {
+            Ok(Ok(response)) => {
                 // response.message() returns an iterator of response lines
                 let message_id = response.message().next().map(|s| s.to_string());
                 Ok(SendResult::success(email.id, message_id))
             }
-            Err(e) => Err(classify_send_error(&e)),
+            Ok(Err(e)) => Err(classify_send_error(&e)),
+            Err(_) => Err(EmailError::ConnectionFailed(format!(
+                "SMTP send timed out after {:?}",
+                self.timeout
+            ))),
         }
     }
 
@@ -179,12 +186,15 @@ impl EmailAdapter for SmtpAdapter {
     }
 
     async fn health_check(&self) -> EmailResult<()> {
-        // Test the connection by checking if we can connect
-        self.transport
-            .test_connection()
-            .await
-            .map_err(|e| EmailError::ConnectionFailed(e.to_string()))?;
-        Ok(())
+        // Test the connection by checking if we can connect within the configured timeout.
+        match tokio::time::timeout(self.timeout, self.transport.test_connection()).await {
+            Ok(Ok(_)) => Ok(()),
+            Ok(Err(e)) => Err(EmailError::ConnectionFailed(e.to_string())),
+            Err(_) => Err(EmailError::ConnectionFailed(format!(
+                "SMTP health check timed out after {:?}",
+                self.timeout
+            ))),
+        }
     }
 }
 

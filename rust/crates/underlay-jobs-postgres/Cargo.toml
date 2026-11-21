@@ -19,7 +19,7 @@ underlay-jobs = { path = "../underlay-jobs" }
 uuid = { workspace = true }
 
 [dev-dependencies]
-tokio = { workspace = true, features = ["macros", "rt", "time", "test-util"] }
+tokio = { workspace = true, features = ["macros", "rt", "sync", "time", "test-util"] }
 underlay-testing = { path = "../underlay-testing", features = ["db"] }
 
 [lints]

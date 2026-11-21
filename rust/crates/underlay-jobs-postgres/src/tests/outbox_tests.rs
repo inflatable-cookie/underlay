@@ -177,22 +177,22 @@ async fn poison_pill_event_does_not_starve_newer_events_and_recovers_after_backo
     };
 
     // First batch: poison event fails once, but both newer healthy events still succeed.
-    let processed = processor
-        .process_batch_with(&outbox, &handler)
+    let report = processor
+        .process_batch_with(&outbox, &handler, pin!(future::pending::<()>()))
         .await
         .unwrap();
-    assert_eq!(processed, 2);
+    assert_eq!(report.processed, 2);
     assert_eq!(poison_attempts.load(Ordering::SeqCst), 1);
     assert_eq!(outbox.processed_ids(), vec![healthy_a, healthy_b]);
 
     // While poison event is still in backoff, a new healthy event is processed
     // without re-running the failing poison event.
     let healthy_c = outbox.push("healthy.c");
-    let processed = processor
-        .process_batch_with(&outbox, &handler)
+    let report = processor
+        .process_batch_with(&outbox, &handler, pin!(future::pending::<()>()))
         .await
         .unwrap();
-    assert_eq!(processed, 1);
+    assert_eq!(report.processed, 1);
     assert_eq!(poison_attempts.load(Ordering::SeqCst), 1);
     assert_eq!(
         outbox.processed_ids(),
@@ -202,16 +202,128 @@ async fn poison_pill_event_does_not_starve_newer_events_and_recovers_after_backo
     // After backoff expires, the poison event is retried and succeeds once fixed.
     tokio::time::advance(Duration::from_secs(10)).await;
     fail_poison.store(false, Ordering::SeqCst);
-    let processed = processor
-        .process_batch_with(&outbox, &handler)
+    let report = processor
+        .process_batch_with(&outbox, &handler, pin!(future::pending::<()>()))
         .await
         .unwrap();
-    assert_eq!(processed, 1);
+    assert_eq!(report.processed, 1);
     assert_eq!(poison_attempts.load(Ordering::SeqCst), 2);
     assert_eq!(
         outbox.processed_ids(),
         vec![poison_id, healthy_a, healthy_b, healthy_c]
     );
+}
+
+#[tokio::test(start_paused = true)]
+async fn single_event_batch_keeps_draining_healthy_events_past_failed_head() {
+    let outbox = MemOutbox::default();
+    let _poison_id = outbox.push("poison.event");
+    let healthy_id = outbox.push("healthy.event");
+
+    // Mirrors the Postgres reproduction: batch_size = 1, short backoff (10ms)
+    // shorter than fallback_interval (75ms).
+    let processor = OutboxProcessor::new(
+        OutboxConfig::default()
+            .with_batch_size(1)
+            .with_failure_backoff(Duration::from_millis(10))
+            .with_max_failure_backoff(Duration::from_millis(10))
+            .with_fallback_interval(Duration::from_millis(75)),
+    );
+
+    let (shutdown_tx, shutdown_rx) = tokio::sync::oneshot::channel::<()>();
+    let shutdown_tx = Arc::new(Mutex::new(Some(shutdown_tx)));
+    let poison_attempts = Arc::new(AtomicUsize::new(0));
+
+    processor
+        .run_polling_backend_until_shutdown(
+            &outbox,
+            {
+                let poison_attempts = Arc::clone(&poison_attempts);
+                let shutdown_tx = Arc::clone(&shutdown_tx);
+                move |event: OutboxEvent| {
+                    let poison_attempts = Arc::clone(&poison_attempts);
+                    let shutdown_tx = Arc::clone(&shutdown_tx);
+                    async move {
+                        if event.event_type == "poison.event" {
+                            poison_attempts.fetch_add(1, Ordering::SeqCst);
+                            return Err("poison failure".into());
+                        }
+                        if let Some(tx) = shutdown_tx.lock().unwrap().take() {
+                            let _ = tx.send(());
+                        }
+                        Ok(())
+                    }
+                }
+            },
+            async move {
+                let _ = shutdown_rx.await;
+            },
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(poison_attempts.load(Ordering::SeqCst), 1);
+    assert_eq!(outbox.processed_ids(), vec![healthy_id]);
+}
+
+#[tokio::test(start_paused = true)]
+async fn active_handler_shutdown_settles_current_event_and_claims_no_more() {
+    for use_notifier in [false, true] {
+        let outbox = MemOutbox::default();
+        let first_id = outbox.push("first.event");
+        let _second_id = outbox.push("second.event");
+
+        let processor = OutboxProcessor::new(
+            OutboxConfig::default()
+                .with_batch_size(10)
+                .with_fallback_interval(Duration::from_secs(30)),
+        );
+
+        let (shutdown_tx, shutdown_rx) = tokio::sync::oneshot::channel::<()>();
+        let shutdown_tx = Arc::new(Mutex::new(Some(shutdown_tx)));
+        let handled = Arc::new(AtomicUsize::new(0));
+
+        let handler = {
+            let shutdown_tx = Arc::clone(&shutdown_tx);
+            let handled = Arc::clone(&handled);
+            move |_event: OutboxEvent| {
+                let shutdown_tx = Arc::clone(&shutdown_tx);
+                let handled = Arc::clone(&handled);
+                async move {
+                    handled.fetch_add(1, Ordering::SeqCst);
+                    if let Some(tx) = shutdown_tx.lock().unwrap().take() {
+                        let _ = tx.send(());
+                    }
+                    tokio::time::sleep(Duration::from_millis(20)).await;
+                    Ok(())
+                }
+            }
+        };
+
+        let shutdown = async move {
+            let _ = shutdown_rx.await;
+        };
+
+        if use_notifier {
+            let mut notifier = IdleNotifier;
+            processor
+                .run_with_notifier_backend_until_shutdown(&outbox, &mut notifier, handler, shutdown)
+                .await
+                .unwrap();
+        } else {
+            processor
+                .run_polling_backend_until_shutdown(&outbox, handler, shutdown)
+                .await
+                .unwrap();
+        }
+
+        assert_eq!(
+            handled.load(Ordering::SeqCst),
+            1,
+            "must not claim a second event after shutdown is signaled (use_notifier={use_notifier})"
+        );
+        assert_eq!(outbox.processed_ids(), vec![first_id]);
+    }
 }
 
 #[tokio::test(start_paused = true)]
