@@ -21,13 +21,7 @@ export interface OptimisticListOptions<T> {
 	key?: keyof T;
 }
 
-export type OptimisticAnyKeyOmit<T extends object> = {
-	[K in keyof T]: Omit<T, K>;
-}[keyof T];
-
-export type OptimisticDefaultAddItem<T extends object> = "id" extends keyof T
-	? Omit<T, "id">
-	: OptimisticAnyKeyOmit<T>;
+export type OptimisticDefaultAddItem<T extends object> = "id" extends keyof T ? Omit<T, "id"> : T;
 
 export interface OptimisticList<
 	T extends object,
@@ -59,14 +53,18 @@ export function createOptimisticList<T extends { id: string }>(
 	initial?: T[],
 	options?: { tempId?: () => string; key?: "id" },
 ): OptimisticList<T, Omit<T, "id">>;
+export function createOptimisticList<T extends object, K extends keyof T>(
+	initial: T[] | undefined,
+	options: { tempId?: () => string; key: K },
+): OptimisticList<T, Omit<T, K>>;
 export function createOptimisticList<T extends object>(
-	initial: T[],
-	options: { tempId?: () => string; key: keyof T },
-): OptimisticList<T, OptimisticAnyKeyOmit<T>>;
+	initial?: T[],
+	options?: OptimisticListOptions<T>,
+): OptimisticList<T, T>;
 export function createOptimisticList<T extends object>(
 	initial: T[] = [],
 	options: OptimisticListOptions<T> = {},
-): OptimisticList<T, OptimisticAnyKeyOmit<T>> {
+): OptimisticList<T, Partial<T>> {
 	const { tempId = generateTempId } = options;
 	const keyField = (options.key ?? ("id" as keyof T)) as keyof T;
 	const getKey = (item: T): string => String(item[keyField]);
@@ -118,7 +116,7 @@ export function createOptimisticList<T extends object>(
 		store.update((items) => items.map((i) => (getKey(i) === id ? nextItem : i)));
 	}
 
-	function add(item: OptimisticAnyKeyOmit<T>): OptimisticAddOperation<T> {
+	function add(item: Partial<T>): OptimisticAddOperation<T> {
 		const id = tempId();
 		const optimisticItem = { ...item, [keyField]: id } as T;
 		const generation = listGeneration;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { get } from "svelte/store";
-import { createOptimisticList } from "../../../src/patterns/optimistic";
+import { createOptimisticList, type OptimisticListOptions } from "../../../src/patterns/optimistic";
 
 interface Item {
 	id: string;
@@ -413,7 +413,7 @@ describe("createOptimisticList", () => {
 				title: string;
 			}
 
-			const list = createOptimisticList<SlugItem>([{ slug: "alpha", title: "Alpha" }], {
+			const list = createOptimisticList([{ slug: "alpha", title: "Alpha" }] as SlugItem[], {
 				key: "slug",
 				tempId: () => "temp-slug",
 			});
@@ -436,21 +436,43 @@ describe("createOptimisticList", () => {
 			expect(get(list)).toHaveLength(2);
 		});
 
-		it("supports one-type-argument call when item has both id and custom key", () => {
+		it("supports one-type-argument calls, OptimisticListOptions<T>, and omitted initial list", () => {
 			interface ItemWithSlug {
 				id: string;
 				slug: string;
 				name: string;
 			}
 
-			const list = createOptimisticList<ItemWithSlug>([{ id: "1", slug: "alpha", name: "Alpha" }], {
-				key: "slug",
-			});
+			const slugOpts: OptimisticListOptions<ItemWithSlug> = { key: "slug" };
+			const tempOnlyOpts: OptimisticListOptions<ItemWithSlug> = { tempId: () => "temp-1" };
 
-			const upd = list.update("alpha", { name: "Alpha 2" });
-			expect(get(list)[0].name).toBe("Alpha 2");
+			const listFromOpts = createOptimisticList<ItemWithSlug>([], slugOpts);
+			const listFromTempOpts = createOptimisticList<ItemWithSlug>([], tempOnlyOpts);
+			const listFromUndefined = createOptimisticList<ItemWithSlug>(undefined, { key: "slug" });
+			const listDirect = createOptimisticList<ItemWithSlug>(
+				[{ id: "1", slug: "alpha", name: "Alpha" }],
+				{ key: "slug" },
+			);
+			const listTypedKey = createOptimisticList<ItemWithSlug, "slug">(undefined, { key: "slug" });
+
+			const upd = listDirect.update("alpha", { name: "Alpha 2" });
+			expect(get(listDirect)[0].name).toBe("Alpha 2");
 			upd.rollback();
-			expect(get(list)[0].name).toBe("Alpha");
+			expect(get(listDirect)[0].name).toBe("Alpha");
+
+			// Valid adds: complete item when key is unknown to TS; Omit<T, "slug"> when key is known.
+			listFromOpts.add({ id: "2", slug: "beta", name: "Beta" });
+			listFromTempOpts.add({ id: "3", slug: "gamma", name: "Gamma" });
+			listFromUndefined.add({ id: "4", slug: "delta", name: "Delta" });
+			listTypedKey.add({ id: "5", name: "Epsilon" });
+
+			// Invalid incomplete adds must be rejected by TypeScript:
+			// @ts-expect-error missing required `name` field when key is unknown to TS
+			const badOneArg = () => listDirect.add({ id: "1", slug: "alpha" });
+			// @ts-expect-error missing required `name` field when key is `"slug"`
+			const badTypedKey = () => listTypedKey.add({ id: "1", slug: "alpha" });
+			expect(typeof badOneArg).toBe("function");
+			expect(typeof badTypedKey).toBe("function");
 		});
 	});
 
