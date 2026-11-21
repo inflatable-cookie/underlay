@@ -5,18 +5,6 @@ use async_trait::async_trait;
 use sha1::{Digest, Sha1};
 use underlay_http_client::{reqwest::Url, HttpClient};
 
-/// Check a password against the HIBP Pwned Passwords k-anonymity range API.
-///
-/// Only the first 5 hex characters of the SHA-1 hash are sent over the network.
-pub async fn hibp_k_anonymity_check(
-    password: &str,
-    api_base_url: &str,
-    user_agent: &str,
-) -> PasswordAuthResult<bool> {
-    let client = HttpHibpRangeClient::new(api_base_url, user_agent)?;
-    hibp_k_anonymity_check_with_client(password, &client).await
-}
-
 fn http_host_is_local(url: &Url) -> bool {
     url.scheme() == "http"
         && url.host_str().is_some_and(|host| {
@@ -101,7 +89,7 @@ impl HibpRangeClient for HttpHibpRangeClient {
 
 /// Check a password against HIBP using an injected client implementation.
 ///
-/// Useful for end-to-end checks without relying on external network.
+/// Only the first 5 hex characters of the SHA-1 hash are sent to the client.
 pub async fn hibp_k_anonymity_check_with_client<C>(
     password: &str,
     client: &C,
