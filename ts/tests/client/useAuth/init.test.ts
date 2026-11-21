@@ -58,7 +58,41 @@ describe("client/useAuth init", () => {
 		expect("refreshToken" in storedSession).toBe(false);
 	});
 
-	it("becomes anonymous when refresh on init fails", async () => {
+	it.each(["during refresh", "after refresh"])(
+		"shares one refresh when the init session request returns 401 %s",
+		async (timing) => {
+			const { commands, tokenStore } = makeDeps();
+			const unauthorized = new UnderlayHttpError(401, "Unauthorized");
+			const refreshed = makeSession("shared");
+			let rejectSession: ((error: UnderlayHttpError) => void) | undefined;
+			commands.session.mockReturnValue(
+				new Promise((_, reject) => {
+					rejectSession = reject;
+				}),
+			);
+			commands.refresh.mockResolvedValue(refreshed);
+			const auth = createAuthStore({ commands, tokenStore });
+
+			const initializing = auth.init();
+			const refreshing = auth.refresh();
+			if (timing === "after refresh") await refreshing;
+			rejectSession?.(unauthorized);
+			await initializing;
+			await expect(refreshing).resolves.toEqual(refreshed);
+
+			expect(commands.refresh).toHaveBeenCalledOnce();
+			expect(tokenStore.setAccessToken).toHaveBeenCalledExactlyOnceWith(refreshed.accessToken);
+			expect(tokenStore.setRefreshToken).toHaveBeenCalledExactlyOnceWith(refreshed.refreshToken);
+			expect(get(auth.state)).toEqual({
+				status: "authenticated",
+				session: makeSessionInfo("shared"),
+				loading: false,
+				error: null,
+			});
+		},
+	);
+
+	it("clears tokens once when a shared init and refresh fails with 401", async () => {
 		const { commands, tokenStore } = makeDeps();
 		const unauthorized = new UnderlayHttpError(401, "Unauthorized");
 		const refreshErr = new UnderlayHttpError(401, "Refresh failed");
@@ -66,8 +100,9 @@ describe("client/useAuth init", () => {
 		commands.refresh.mockRejectedValue(refreshErr);
 		const auth = createAuthStore({ commands: commands as any, tokenStore: tokenStore as any });
 
-		await auth.init();
+		await Promise.all([auth.init(), expect(auth.refresh()).rejects.toBe(refreshErr)]);
 
+		expect(commands.refresh).toHaveBeenCalledOnce();
 		expect(tokenStore.clear).toHaveBeenCalledOnce();
 		expect(get(auth.state)).toEqual({
 			status: "anonymous",

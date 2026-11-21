@@ -84,11 +84,11 @@ export function createAuthStore(options: CreateAuthStoreOptions): AuthStore {
 		state.set({ status: "anonymous", session: null, loading: false, error });
 	}
 
-	// One init()/refresh() at a time: a component mounting twice (or a second
-	// caller while the first refresh is in flight) must not start a competing
-	// refresh, which would rotate the refresh token twice and revoke the family.
 	let initInFlight: Promise<void> | null = null;
 	let refreshInFlight: Promise<AuthSession> | null = null;
+	// Retain an overlapping refresh until init's session check finishes. Its
+	// 401 may arrive after the refresh has already rotated the tokens.
+	let refreshDuringInit: Promise<AuthSession> | null = null;
 
 	async function runInit(): Promise<void> {
 		state.update((s) => ({ ...s, loading: true, error: null }));
@@ -102,19 +102,20 @@ export function createAuthStore(options: CreateAuthStoreOptions): AuthStore {
 			if (err instanceof UnderlayHttpError && err.status === 401) {
 				if (refreshOnUnauthorized) {
 					try {
-						const refreshed = await options.commands.refresh();
-						await setTokens(refreshed);
-						setAuthenticated(refreshed);
-						return;
+						await (refreshDuringInit ?? refresh());
 					} catch (refreshErr) {
+						// The shared refresh already clears tokens and state on a 401.
+						if (refreshErr instanceof UnderlayHttpError && refreshErr.status === 401) {
+							return;
+						}
 						// Match the HTTP client: a 5xx or network failure may recover, so
 						// keep stored tokens instead of signing the user out.
 						if (!isTransientRefreshError(refreshErr)) {
 							await clearTokens();
 						}
 						setAnonymous(refreshErr instanceof UnderlayHttpError ? refreshErr : null);
-						return;
 					}
+					return;
 				}
 
 				await clearTokens();
@@ -128,7 +129,9 @@ export function createAuthStore(options: CreateAuthStoreOptions): AuthStore {
 
 	function init(): Promise<void> {
 		if (initInFlight === null) {
+			refreshDuringInit = refreshInFlight;
 			initInFlight = runInit().finally(() => {
+				refreshDuringInit = null;
 				initInFlight = null;
 			});
 		}
@@ -211,6 +214,9 @@ export function createAuthStore(options: CreateAuthStoreOptions): AuthStore {
 			refreshInFlight = runRefresh().finally(() => {
 				refreshInFlight = null;
 			});
+			if (initInFlight !== null) {
+				refreshDuringInit = refreshInFlight;
+			}
 		}
 		return refreshInFlight;
 	}
