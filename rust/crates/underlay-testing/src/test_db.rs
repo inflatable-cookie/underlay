@@ -63,7 +63,7 @@ impl BlockingHandle {
         let (shutdown_tx, shutdown_rx) = std::sync::mpsc::channel::<()>();
         let (done_tx, done_rx) = tokio::sync::oneshot::channel::<()>();
 
-        std::thread::Builder::new()
+        let worker = std::thread::Builder::new()
             .name("underlay-test-db-container".to_string())
             .spawn(move || {
                 let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(init));
@@ -82,9 +82,17 @@ impl BlockingHandle {
                         let _ = ready_tx.send(Err(panic_payload));
                     }
                 }
-                let _ = done_tx.send(());
             })
             .expect("failed to spawn test database container thread");
+
+        // Track the teardown thread inside a Tokio-managed blocking task so
+        // normal Tokio runtime shutdown waits for Docker container removal to
+        // finish, while `BlockingHandle::drop` stays non-blocking on the
+        // executor.
+        tokio::task::spawn_blocking(move || {
+            let _ = worker.join();
+            let _ = done_tx.send(());
+        });
 
         let handle = Self {
             shutdown_tx: Some(shutdown_tx),

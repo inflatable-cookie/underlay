@@ -210,3 +210,66 @@ async fn blocking_handle_cancellation_during_startup_does_not_block_executor() {
         .expect("cancelled startup must still drop resource off-runtime");
     assert!(dropped.load(Ordering::SeqCst));
 }
+
+#[test]
+fn blocking_handle_ordinary_drop_completes_before_tokio_runtime_shutdown() {
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::Arc;
+    use std::time::Duration;
+
+    struct DelayedBlockOnResource {
+        dropped: Arc<AtomicBool>,
+        delay: Duration,
+    }
+
+    impl Drop for DelayedBlockOnResource {
+        fn drop(&mut self) {
+            assert!(
+                tokio::runtime::Handle::try_current().is_err(),
+                "drop must run outside any Tokio runtime context"
+            );
+            std::thread::sleep(self.delay);
+            let rt = tokio::runtime::Builder::new_current_thread()
+                .build()
+                .expect("build nested runtime in Drop");
+            rt.block_on(async {});
+            self.dropped.store(true, Ordering::SeqCst);
+        }
+    }
+
+    let dropped = Arc::new(AtomicBool::new(false));
+    let dropped_ref = Arc::clone(&dropped);
+    let dropped_check = Arc::clone(&dropped);
+
+    let rt = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .expect("build test runtime");
+
+    rt.block_on(async move {
+        let (_url, handle) = BlockingHandle::spawn(move || {
+            let resource = DelayedBlockOnResource {
+                dropped: dropped_ref,
+                delay: Duration::from_millis(50),
+            };
+            ("postgres://127.0.0.1:5432/postgres".to_string(), resource)
+        })
+        .await;
+
+        // Ordinary fixture drop (without calling `wait_for_shutdown`) must not
+        // block the Tokio executor.
+        drop(handle);
+        assert!(
+            !dropped_check.load(Ordering::SeqCst),
+            "ordinary drop should return without waiting for slow teardown"
+        );
+    });
+
+    // Normal Tokio runtime shutdown must wait for the tracked blocking task to
+    // finish joining the teardown thread before returning.
+    drop(rt);
+    assert!(
+        dropped.load(Ordering::SeqCst),
+        "container teardown must complete before Tokio runtime shutdown finishes"
+    );
+}
