@@ -12,8 +12,6 @@
     type EntityListContext
   } from "./entity-list-context";
 
-  const PoodleListCard: any = ListCard;
-
   let {
     title,
     subtitle = null,
@@ -167,143 +165,40 @@
   </div>
 {/snippet}
 
-{#if showLeading}
-  {#if hasFooter}
-    <PoodleListCard
-      {title}
-      subtitle={resolvedSubtitle}
-      meta={resolvedMeta}
-      href={resolvedHref}
-      size={resolvedSize}
-      density={resolvedDensity}
-      layout={resolvedLayout}
-      interactive={resolvedInteractive}
-      {disabled}
-      selectable={selectionMode}
-      {selected}
-      {highlighted}
-      {selectionIndicator}
-      showReorderHandle={resolvedShowReorderHandle}
-      {notLive}
-      {sash}
-      {sashColor}
-      {accentColor}
-      {ariaLabel}
-      {leadingShape}
-      {leadingFill}
-      contextMenuItems={resolvedContextMenuItems}
-      {contextMenuAriaLabel}
-      {contextMenuTrigger}
-      onContextAction={handleContextAction}
-      onSelectedChange={handleSelectedChange}
-      onClick={handleClick}
-      {titleContent}
-      leading={leadingVisual}
-      badges={resolvedBadgeItems.length > 0 ? badgeContent : undefined}
-      corner={cornerContent}
-      footer={footerBlock}
-    />
-  {:else}
-    <PoodleListCard
-      {title}
-      subtitle={resolvedSubtitle}
-      meta={resolvedMeta}
-      href={resolvedHref}
-      size={resolvedSize}
-      density={resolvedDensity}
-      layout={resolvedLayout}
-      interactive={resolvedInteractive}
-      {disabled}
-      selectable={selectionMode}
-      {selected}
-      {highlighted}
-      {selectionIndicator}
-      showReorderHandle={resolvedShowReorderHandle}
-      {notLive}
-      {sash}
-      {sashColor}
-      {accentColor}
-      {ariaLabel}
-      {leadingShape}
-      {leadingFill}
-      contextMenuItems={resolvedContextMenuItems}
-      {contextMenuAriaLabel}
-      {contextMenuTrigger}
-      onContextAction={handleContextAction}
-      onSelectedChange={handleSelectedChange}
-      onClick={handleClick}
-      {titleContent}
-      leading={leadingVisual}
-      badges={resolvedBadgeItems.length > 0 ? badgeContent : undefined}
-      corner={cornerContent}
-    />
-  {/if}
-{:else if hasFooter}
-  <PoodleListCard
-    {title}
-    subtitle={resolvedSubtitle}
-    meta={resolvedMeta}
-    href={resolvedHref}
-    size={resolvedSize}
-    density={resolvedDensity}
-    layout={resolvedLayout}
-    interactive={resolvedInteractive}
-    {disabled}
-    selectable={selectionMode}
-    {selected}
-    {highlighted}
-    {selectionIndicator}
-    showReorderHandle={resolvedShowReorderHandle}
-    {notLive}
-    {sash}
-    {sashColor}
-    {accentColor}
-    {ariaLabel}
-    {leadingShape}
-    {leadingFill}
-    contextMenuItems={resolvedContextMenuItems}
-    {contextMenuAriaLabel}
-    onContextAction={handleContextAction}
-    onSelectedChange={handleSelectedChange}
-    onClick={handleClick}
-    {titleContent}
-    badges={resolvedBadgeItems.length > 0 ? badgeContent : undefined}
-    corner={cornerContent}
-    footer={footerBlock}
-  />
-{:else}
-  <PoodleListCard
-    {title}
-    subtitle={resolvedSubtitle}
-    meta={resolvedMeta}
-    href={resolvedHref}
-    size={resolvedSize}
-    density={resolvedDensity}
-    layout={resolvedLayout}
-    interactive={resolvedInteractive}
-    {disabled}
-    selectable={selectionMode}
-    {selected}
-    {highlighted}
-    {selectionIndicator}
-    showReorderHandle={resolvedShowReorderHandle}
-    {notLive}
-    {sash}
-    {sashColor}
-    {accentColor}
-    {ariaLabel}
-    {leadingShape}
-    {leadingFill}
-    contextMenuItems={resolvedContextMenuItems}
-    {contextMenuAriaLabel}
-    onContextAction={handleContextAction}
-    onSelectedChange={handleSelectedChange}
-    onClick={handleClick}
-    {titleContent}
-    badges={resolvedBadgeItems.length > 0 ? badgeContent : undefined}
-    corner={cornerContent}
-  />
-{/if}
+<ListCard
+  {title}
+  subtitle={resolvedSubtitle}
+  meta={resolvedMeta}
+  href={resolvedHref}
+  size={resolvedSize}
+  density={resolvedDensity}
+  layout={resolvedLayout}
+  interactive={resolvedInteractive}
+  {disabled}
+  selectable={selectionMode}
+  {selected}
+  {highlighted}
+  {selectionIndicator}
+  showReorderHandle={resolvedShowReorderHandle}
+  {notLive}
+  {sash}
+  {sashColor}
+  {accentColor}
+  {ariaLabel}
+  {leadingShape}
+  {leadingFill}
+  contextMenuItems={resolvedContextMenuItems}
+  {contextMenuAriaLabel}
+  {contextMenuTrigger}
+  onContextAction={handleContextAction}
+  onSelectedChange={handleSelectedChange}
+  onClick={handleClick}
+  {titleContent}
+  leading={showLeading ? leadingVisual : undefined}
+  badges={resolvedBadgeItems.length > 0 ? badgeContent : undefined}
+  corner={cornerContent}
+  footer={hasFooter ? footerBlock : undefined}
+/>
 
 <style>
   .underlay-entity-list-card__leading-image {

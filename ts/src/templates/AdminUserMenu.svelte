@@ -1,10 +1,12 @@
 <script lang="ts">
+  import { onDestroy } from "svelte";
   import User from "lucide-svelte/icons/user";
   import LogOut from "lucide-svelte/icons/log-out";
   import {
     AlertDialog as PoodleAlertDialog,
     Popover as PoodlePopover
   } from "@inflatable-cookie/poodle-svelte";
+  import { resolveRedirectTo } from "../client/route-protection";
 
   interface Props {
     displayName?: string | null;
@@ -17,12 +19,17 @@
     onNavigate?: () => void;
   }
 
+  // Theme token keeps the avatar gradient in step with the admin nav badges;
+  // the literal is only a fallback for apps that do not load Underlay tokens.
+  const DEFAULT_AVATAR_GRADIENT =
+    "var(--underlay-admin-nav-badge-overview, linear-gradient(135deg, #22c55e, #14b8a6))";
+
   let {
     displayName = null,
     roles = null,
     appName = "Admin",
     accountHref = "/account",
-    avatarGradient = "linear-gradient(135deg, #22c55e, #14b8a6)",
+    avatarGradient = DEFAULT_AVATAR_GRADIENT,
     onLogout,
     variant = "desktop",
     onNavigate
@@ -31,6 +38,15 @@
   let userMenuOpen = $state(false);
   let logoutOpen = $state(false);
   let loggingOut = $state(false);
+  let logoutError = $state<string | null>(null);
+
+  let disposed = false;
+
+  onDestroy(() => {
+    disposed = true;
+  });
+
+  const safeAccountHref = $derived(resolveRedirectTo(accountHref, "/account"));
 
   const initialsFromName = (name: string) => {
     const parts = name
@@ -54,12 +70,25 @@
   const confirmLogout = async () => {
     if (loggingOut) return;
     loggingOut = true;
+    logoutError = null;
     try {
       await onLogout();
+    } catch (e) {
+      // A rejected logout must not silently close the dialog: keep it open and
+      // surface the failure so the user can retry instead of believing they
+      // are signed out.
+      if (disposed) return;
+      logoutError =
+        e instanceof Error && e.message.trim()
+          ? e.message.trim()
+          : "Log out failed. Please try again.";
+      return;
     } finally {
-      loggingOut = false;
-      logoutOpen = false;
+      if (!disposed) loggingOut = false;
     }
+
+    if (disposed) return;
+    logoutOpen = false;
   };
 
   const handleNavigate = () => {
@@ -69,6 +98,7 @@
 
   const handleLogoutClick = () => {
     userMenuOpen = false;
+    logoutError = null;
     onNavigate?.();
     logoutOpen = true;
   };
@@ -89,7 +119,7 @@
     {/snippet}
 
     <nav class="admin-nav__user-menu" aria-label="User menu">
-      <a href={accountHref} class="admin-nav__user-menu-item" onclick={handleNavigate}>
+      <a href={safeAccountHref} class="admin-nav__user-menu-item" onclick={handleNavigate}>
         <User class="admin-nav__user-menu-icon" aria-hidden="true" />
         <span>Account</span>
       </a>
@@ -108,7 +138,7 @@
   <PoodleAlertDialog
     bind:open={logoutOpen}
     title="Log out?"
-    description="You'll be signed out of {appName}."
+    description={logoutError ?? `You'll be signed out of ${appName}.`}
     confirmLabel={loggingOut ? "Logging out..." : "Log out"}
     cancelLabel="Cancel"
     onConfirm={confirmLogout}

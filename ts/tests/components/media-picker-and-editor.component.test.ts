@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import MediaPickerWorkflow from "../../src/templates/MediaPickerWorkflow.svelte";
 import MediaEditor from "../../src/nightfire/media/MediaEditor.svelte";
 import MediaEditorFallbackHarness from "./MediaEditorFallbackHarness.svelte";
+import MediaEditorContextHarness from "./MediaEditorContextHarness.svelte";
 
 describe("templates/MediaPickerWorkflow", () => {
 	const baseProps = () => ({
@@ -90,5 +91,110 @@ describe("nightfire/media/MediaEditor", () => {
 		expect((screen.getByLabelText("Media ID") as HTMLInputElement).value).toBe("existing-id");
 		expect(screen.getByLabelText("Caption")).toBeTruthy();
 		expect(screen.getByLabelText("Alt text")).toBeTruthy();
+	});
+
+	it("hydrates saved media metadata for a reopened block through resolveMedia", async () => {
+		const onBlockChange = vi.fn();
+		const resolveMedia = vi.fn(async (id: string) => ({
+			id,
+			thumbnailUrl: "https://example.invalid/hero.png",
+			title: "Hero image",
+			kind: "image",
+		}));
+
+		render(MediaEditorContextHarness, {
+			mediaId: "media-1",
+			resolveMedia,
+			onBlockChange,
+		});
+
+		expect(await screen.findByText("Hero image")).toBeTruthy();
+		expect(resolveMedia).toHaveBeenCalledWith("media-1");
+		const thumbnail = document.querySelector<HTMLImageElement>(
+			".underlay-media-editor__thumbnail-image",
+		);
+		expect(thumbnail?.getAttribute("src")).toBe("https://example.invalid/hero.png");
+		// Hydration must not rewrite the block it is hydrating.
+		expect(onBlockChange).not.toHaveBeenCalled();
+	});
+
+	it("ignores a stale resolveMedia response after the block moves to another id", async () => {
+		let releaseFirst: (value: {
+			id: string;
+			title: string;
+			thumbnailUrl: string | null;
+			kind: string;
+		}) => void = () => {};
+		const resolveMedia = vi.fn((id: string) => {
+			if (id === "media-a") {
+				return new Promise((resolve) => {
+					releaseFirst = resolve;
+				});
+			}
+			return Promise.resolve({
+				id,
+				title: "Second media",
+				thumbnailUrl: null,
+				kind: "document",
+			});
+		});
+
+		const { rerender } = render(MediaEditorContextHarness, {
+			mediaId: "media-a",
+			resolveMedia,
+		});
+
+		await rerender({ mediaId: "media-b" });
+		expect(await screen.findByText("Second media")).toBeTruthy();
+
+		releaseFirst({ id: "media-a", title: "First media", thumbnailUrl: null, kind: "image" });
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		expect(screen.queryByText("First media")).toBeNull();
+		expect(screen.getByText("Second media")).toBeTruthy();
+	});
+
+	it("disables Remove while a media pick is in flight", async () => {
+		let releasePick: (value: null) => void = () => {};
+		const pickMedia = vi.fn(
+			() =>
+				new Promise<null>((resolve) => {
+					releasePick = resolve;
+				}),
+		);
+
+		render(MediaEditorContextHarness, {
+			mediaId: "media-1",
+			pickMedia,
+			resolveMedia: async (id: string) => ({
+				id,
+				title: "Existing media",
+				thumbnailUrl: null,
+				kind: "image",
+			}),
+		});
+
+		await screen.findByText("Existing media");
+		const removeButton = screen.getByRole("button", { name: "Remove" }) as HTMLButtonElement;
+		expect(removeButton.disabled).toBe(false);
+
+		await fireEvent.click(screen.getByRole("button", { name: "Change" }));
+		expect(pickMedia).toHaveBeenCalledTimes(1);
+		expect((screen.getByRole("button", { name: "Remove" }) as HTMLButtonElement).disabled).toBe(
+			true,
+		);
+
+		releasePick(null);
+		await waitFor(() => {
+			expect((screen.getByRole("button", { name: "Remove" }) as HTMLButtonElement).disabled).toBe(
+				false,
+			);
+		});
+	});
+
+	it("does not hydrate when resolveMedia is not configured", async () => {
+		render(MediaEditorContextHarness, { mediaId: "media-1", pickMedia: async () => null });
+
+		expect(screen.getByText("Selected media")).toBeTruthy();
 	});
 });

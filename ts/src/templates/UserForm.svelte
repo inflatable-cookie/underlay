@@ -9,7 +9,8 @@
     Switch,
     TextInput
   } from "@inflatable-cookie/poodle-svelte";
-  import { navigateOnCancel } from "../client/navigation";
+  import { navigateBack } from "../client/navigation";
+  import { resolveRedirectTo } from "../client/route-protection";
   import { untrack } from "svelte";
   import {
     DEFAULT_USER_ROLE_OPTIONS,
@@ -107,10 +108,46 @@
 
   let actionBarElement = $state<HTMLDivElement | null>(null);
 
-  const isFormValid = $derived.by(() => {
-    const email = emailValue.trim();
-    return Boolean(email && email.includes("@") && roleValue && statusValue);
-  });
+  const EMAIL_MAX_LENGTH = 320;
+  const EMAIL_LOCAL_MAX_LENGTH = 64;
+  const EMAIL_LOCAL_CHARS = /^[A-Za-z0-9!#$%&'*+/=?^_`{|}~.-]+$/;
+  const EMAIL_DOMAIN_CHARS = /^[A-Za-z0-9.-]+$/;
+
+  /**
+   * Validate an admin user email address.
+   *
+   * Deliberately stricter than `email.includes('@')`: exactly one separator with
+   * non-empty local part and domain, no whitespace, no empty dot-separated
+   * labels, and a dotted domain so `@`, `a@`, `@b`, `a b@example.com` and
+   * `a@example` are all rejected before the form can submit.
+   */
+  function isValidEmail(value: string): boolean {
+    const email = value.trim();
+    if (!email || email.length > EMAIL_MAX_LENGTH) return false;
+    if (/\s/.test(email)) return false;
+
+    const atIndex = email.indexOf("@");
+    if (atIndex <= 0 || atIndex !== email.lastIndexOf("@") || atIndex === email.length - 1) {
+      return false;
+    }
+
+    const local = email.slice(0, atIndex);
+    const domain = email.slice(atIndex + 1);
+    if (local.length > EMAIL_LOCAL_MAX_LENGTH) return false;
+    if (!EMAIL_LOCAL_CHARS.test(local)) return false;
+    if (!EMAIL_DOMAIN_CHARS.test(domain)) return false;
+    if (local.startsWith(".") || local.endsWith(".") || local.includes("..")) return false;
+    if (!domain.includes(".")) return false;
+
+    const labels = domain.split(".");
+    return labels.every(
+      (label) => label.length > 0 && !label.startsWith("-") && !label.endsWith("-")
+    );
+  }
+
+  const isFormValid = $derived.by(() =>
+    isValidEmail(emailValue) && Boolean(roleValue) && Boolean(statusValue)
+  );
 
   $effect(() => {
     if (mode === "create") {
@@ -118,8 +155,11 @@
     }
   });
 
+  // Reject unsafe explicit cancel targets instead of assigning them to location.
+  const safeCancelHref = $derived(cancelHref ? resolveRedirectTo(cancelHref, "") : "");
+
   function handleCancel() {
-    navigateOnCancel(cancelHref);
+    navigateBack(safeCancelHref || undefined);
   }
 
   function validationState(error?: string | null) {

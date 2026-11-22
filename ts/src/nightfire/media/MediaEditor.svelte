@@ -31,6 +31,7 @@
   let selectedKind = $state<string | null>(null);
   let picking = $state(false);
   let pickError = $state<string | null>(null);
+  let hydratingMediaId = $state<string | null>(null);
 
   // Derive current data from block
   const mediaId = $derived(block?.data?.media_id ?? "");
@@ -46,6 +47,51 @@
       selectedThumbnailUrl = null;
       selectedKind = null;
     }
+  });
+
+  const resolveMedia = mediaContext?.resolveMedia;
+
+  let disposed = false;
+
+  onDestroy(() => {
+    disposed = true;
+  });
+
+  /**
+   * Hydrate saved media metadata for a block that was reopened with an existing
+   * `media_id`.
+   *
+   * Guards against disposal and against a stale response: the requested id must
+   * still be the block's current id (and must not have been replaced by a pick
+   * in the meantime) when the promise resolves.
+   */
+  $effect(() => {
+    const id = mediaId;
+    const resolve = resolveMedia;
+    if (!id || !resolve || selectedMediaId === id) return;
+
+    let cancelled = false;
+    hydratingMediaId = id;
+
+    void resolve(id)
+      .then((result) => {
+        if (cancelled || disposed) return;
+        if (mediaId !== id || selectedMediaId === id) return;
+        applyResolvedMedia(id, result);
+      })
+      .catch(() => {
+        // Hydration is best-effort: keep the raw id visible rather than
+        // failing the block, so nothing is reported as a media error here.
+      })
+      .finally(() => {
+        if (cancelled || disposed) return;
+        if (hydratingMediaId === id) hydratingMediaId = null;
+      });
+
+    return () => {
+      cancelled = true;
+      if (!disposed && hydratingMediaId === id) hydratingMediaId = null;
+    };
   });
 
   const displayOptions = [
@@ -68,12 +114,6 @@
       }
     });
   }
-
-  let disposed = false;
-
-  onDestroy(() => {
-    disposed = true;
-  });
 
   async function handlePickMedia() {
     if (!mediaContext || picking || disposed) return;
@@ -102,6 +142,15 @@
     selectedThumbnailUrl = result.thumbnailUrl;
     selectedKind = result.kind;
     emit({ media_id: result.id });
+  }
+
+  /** Apply metadata resolved for an already-saved block without emitting changes. */
+  function applyResolvedMedia(id: string, result: NightfireMediaPickResult | null) {
+    if (!result) return;
+    selectedMediaId = id;
+    selectedTitle = result.title || result.originalFilename || null;
+    selectedThumbnailUrl = result.thumbnailUrl;
+    selectedKind = result.kind;
   }
 
   function handleRemove() {
@@ -153,14 +202,21 @@
         </MediaThumbnail>
         <div class="underlay-media-editor__preview-info">
           <span class="underlay-media-editor__preview-title">
-            {selectedTitle || "Selected media"}
+            {selectedTitle || (hydratingMediaId === mediaId ? "Loading media…" : "Selected media")}
           </span>
           <span class="underlay-media-editor__preview-id">{mediaId}</span>
           <div class="underlay-media-editor__preview-actions">
             <Button type="button" variant="secondary" size="sm" onClick={handlePickMedia} disabled={picking}>
               Change
             </Button>
-            <Button type="button" variant="ghost" tone="danger" size="sm" onClick={handleRemove}>
+            <Button
+              type="button"
+              variant="ghost"
+              tone="danger"
+              size="sm"
+              onClick={handleRemove}
+              disabled={picking}
+            >
               Remove
             </Button>
           </div>

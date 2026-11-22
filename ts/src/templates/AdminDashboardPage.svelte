@@ -1,6 +1,6 @@
 <script lang="ts">
   import { PageHeader } from "@inflatable-cookie/poodle-svelte";
-  import { getBackButtonInfo } from "../patterns/navigation";
+  import { useTemplateBackInfo } from "./template-back-info.svelte";
   import type { AdminDashboardSectionConfig, TemplateSurface } from "./template.types";
 
   interface Props {
@@ -29,31 +29,20 @@
     content
   }: Props = $props();
 
-  let resolvedBackInfo = $state<{ href: string; label: string; contextual: boolean } | null>(null);
+  const getResolvedBackInfo = useTemplateBackInfo(() => ({
+    href: backHref,
+    label: backLabel,
+    contextual: backIsContextual,
+    resolveContext: resolveBackContext
+  }));
 
-  $effect(() => {
-    if (!backHref) {
-      resolvedBackInfo = null;
-      return;
-    }
+  let resolvedBackInfo = $derived(getResolvedBackInfo());
 
-    const fallbackLabel = backLabel ?? "Back";
-    if (!resolveBackContext) {
-      resolvedBackInfo = {
-        href: backHref,
-        label: fallbackLabel,
-        contextual: backIsContextual
-      };
-      return;
-    }
-
-    const contextualBackInfo = getBackButtonInfo(fallbackLabel, backHref);
-    resolvedBackInfo = {
-      href: contextualBackInfo.href,
-      label: contextualBackInfo.label,
-      contextual: Boolean(contextualBackInfo.isContextual || backIsContextual)
-    };
-  });
+  // Render the caller's href during SSR and the first client paint, then let the
+  // contextual resolution take over once navigation context is readable.
+  let backInfoHref = $derived(resolvedBackInfo?.href ?? backHref);
+  let backInfoLabel = $derived(resolvedBackInfo?.label ?? backLabel);
+  let backInfoIsContextual = $derived(resolvedBackInfo?.contextual ?? backIsContextual);
 </script>
 
 <div class="underlay-admin-dashboard-page">
@@ -61,9 +50,9 @@
     {title}
     {subtitle}
     sizeRole="prominent"
-    backHref={resolvedBackInfo?.href ?? null}
-    backLabel={resolvedBackInfo?.label ?? backLabel}
-    backIsContextual={resolvedBackInfo?.contextual ?? false}
+    backHref={backInfoHref}
+    backLabel={backInfoLabel}
+    backIsContextual={backInfoIsContextual}
     level={headerLevel}
   />
 
@@ -72,7 +61,7 @@
   {/if}
 
   {#if sections.length > 0}
-    {#each sections as section}
+    {#each sections as section (section.id)}
       <section class="underlay-admin-dashboard-page__section" data-section={section.id}>
         {#if section.title}
           <h2 class="underlay-admin-dashboard-page__section-title">{section.title}</h2>
