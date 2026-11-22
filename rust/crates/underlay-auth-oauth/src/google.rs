@@ -1,5 +1,7 @@
 //! Google OAuth2 provider implementation.
 
+use std::sync::LazyLock;
+
 use oauth2::basic::BasicClient;
 use oauth2::{
     AuthUrl, ClientId, ClientSecret, CsrfToken, PkceCodeChallenge, PkceCodeVerifier, RedirectUrl,
@@ -12,6 +14,22 @@ use url::{Host, Url};
 use crate::{
     GoogleOAuthConfig, GoogleUserInfo, OAuthProvider, OAuthServiceError, OAuthStart, TokenSet,
 };
+
+const GOOGLE_AUTH_ENDPOINT: &str = "https://accounts.google.com/o/oauth2/v2/auth";
+const GOOGLE_TOKEN_ENDPOINT: &str = "https://oauth2.googleapis.com/token";
+const GOOGLE_USERINFO_ENDPOINT: &str = "https://openidconnect.googleapis.com/v1/userinfo";
+
+static GOOGLE_AUTH_URL: LazyLock<AuthUrl> = LazyLock::new(|| {
+    AuthUrl::new(GOOGLE_AUTH_ENDPOINT.to_string()).expect("static Google auth URL is valid")
+});
+static GOOGLE_OAUTH_TOKEN_URL: LazyLock<TokenUrl> = LazyLock::new(|| {
+    TokenUrl::new(GOOGLE_TOKEN_ENDPOINT.to_string()).expect("static Google token URL is valid")
+});
+static GOOGLE_TOKEN_URL: LazyLock<Url> =
+    LazyLock::new(|| Url::parse(GOOGLE_TOKEN_ENDPOINT).expect("static Google token URL is valid"));
+static GOOGLE_USERINFO_URL: LazyLock<Url> = LazyLock::new(|| {
+    Url::parse(GOOGLE_USERINFO_ENDPOINT).expect("static Google userinfo URL is valid")
+});
 
 #[derive(Clone, Serialize, Deserialize)]
 struct GoogleTokenResponse {
@@ -36,7 +54,6 @@ pub struct GoogleOAuthService {
 
 impl GoogleOAuthService {
     pub fn new(config: GoogleOAuthConfig) -> AuthResult<Self> {
-        let token_url_string = "https://oauth2.googleapis.com/token".to_string();
         let (client_id, client_secret, redirect_uri, scopes) = config.into_parts();
         let redirect_uri =
             RedirectUrl::new(redirect_uri).map_err(|_| OAuthServiceError::InvalidConfig)?;
@@ -57,10 +74,8 @@ impl GoogleOAuthService {
             return Err(OAuthServiceError::InvalidConfig.into());
         }
 
-        let token_url =
-            Url::parse(&token_url_string).map_err(|_| OAuthServiceError::InvalidConfig)?;
-        let userinfo_url = Url::parse("https://openidconnect.googleapis.com/v1/userinfo")
-            .map_err(|_| OAuthServiceError::InvalidConfig)?;
+        let token_url = GOOGLE_TOKEN_URL.clone();
+        let userinfo_url = GOOGLE_USERINFO_URL.clone();
 
         let scopes = if scopes.is_empty() {
             vec![
@@ -73,8 +88,10 @@ impl GoogleOAuthService {
         };
 
         Ok(Self {
-            // Timeouts so a stalled Google endpoint cannot hang the request.
+            // Timeouts and disabled redirects so a stalled or redirecting endpoint
+            // cannot hang the request or leak credentials across hosts.
             http: reqwest::Client::builder()
+                .redirect(reqwest::redirect::Policy::none())
                 .connect_timeout(std::time::Duration::from_secs(10))
                 .timeout(std::time::Duration::from_secs(30))
                 .build()
@@ -123,14 +140,8 @@ impl OAuthProvider for GoogleOAuthService {
         let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
         let client = BasicClient::new(ClientId::new(self.client_id.clone()))
             .set_client_secret(ClientSecret::new(self.client_secret.clone()))
-            .set_auth_uri(
-                AuthUrl::new("https://accounts.google.com/o/oauth2/v2/auth".to_string())
-                    .map_err(|_| OAuthServiceError::InvalidConfig)?,
-            )
-            .set_token_uri(
-                TokenUrl::new(self.token_url.to_string())
-                    .map_err(|_| OAuthServiceError::InvalidConfig)?,
-            )
+            .set_auth_uri(GOOGLE_AUTH_URL.clone())
+            .set_token_uri(GOOGLE_OAUTH_TOKEN_URL.clone())
             .set_redirect_uri(self.redirect_uri.clone());
 
         let (authorization_url, csrf_state) = client
@@ -151,14 +162,8 @@ impl OAuthProvider for GoogleOAuthService {
         let pkce_challenge = PkceCodeChallenge::from_code_verifier_sha256(&pkce_verifier);
         let client = BasicClient::new(ClientId::new(self.client_id.clone()))
             .set_client_secret(ClientSecret::new(self.client_secret.clone()))
-            .set_auth_uri(
-                AuthUrl::new("https://accounts.google.com/o/oauth2/v2/auth".to_string())
-                    .map_err(|_| OAuthServiceError::InvalidConfig)?,
-            )
-            .set_token_uri(
-                TokenUrl::new(self.token_url.to_string())
-                    .map_err(|_| OAuthServiceError::InvalidConfig)?,
-            )
+            .set_auth_uri(GOOGLE_AUTH_URL.clone())
+            .set_token_uri(GOOGLE_OAUTH_TOKEN_URL.clone())
             .set_redirect_uri(self.redirect_uri.clone());
 
         let (authorization_url, _csrf_state) = client

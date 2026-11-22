@@ -150,7 +150,7 @@ where
         // Absolute session lifetime cap.
         let session_age = Utc::now() - session.created_at;
         if session_age
-            > chrono::Duration::from_std(self.config.absolute_session_timeout)
+            > chrono::Duration::from_std(self.config.absolute_session_timeout())
                 .unwrap_or(chrono::Duration::days(30))
         {
             tracing::info!(
@@ -172,23 +172,24 @@ where
                     session_id = %session.id,
                     user_id = %session.user_id,
                     %mismatch,
-                    strict = self.config.refresh_fingerprint_strict,
+                    strict = self.config.refresh_fingerprint_strict(),
                     "session fingerprint mismatch on token refresh"
                 );
-                if self.config.refresh_fingerprint_strict {
+                if self.config.refresh_fingerprint_strict() {
                     return Err(AuthError::TokenFingerprintMismatch);
                 }
             }
         }
 
-        // Account re-check on every refresh: a suspended/deleted account
+        // Account re-check on every refresh: a missing/suspended/deleted account
         // must not keep a session alive, and role changes take effect on
         // rotation instead of waiting for re-login.
-        let account = self
-            .accounts
-            .account_state(session.user_id)
-            .await?
-            .ok_or(AuthError::UserNotFound)?;
+        let Some(account) = self.accounts.account_state(session.user_id).await? else {
+            self.repo
+                .revoke_session(session.id, "account_not_found")
+                .await?;
+            return Err(AuthError::UserNotFound);
+        };
         match account.status {
             AccountStatus::Active => {}
             AccountStatus::Suspended => {

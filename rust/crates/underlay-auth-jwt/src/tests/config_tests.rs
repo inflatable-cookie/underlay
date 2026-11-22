@@ -162,6 +162,27 @@ fn from_values_clamps_nonpositive_lifetimes() {
 }
 
 #[test]
+fn lifetimes_are_clamped_to_upper_bounds() {
+    let builder_config = JwtConfig::default()
+        .with_access_token_lifetime_minutes(i64::MAX)
+        .with_refresh_token_lifetime_days(i64::MAX);
+    assert_eq!(builder_config.access_token_lifetime_minutes(), 24 * 60);
+    assert_eq!(builder_config.refresh_token_lifetime_days(), 365);
+
+    let from_values_config = JwtConfig::from_values(
+        "private".into(),
+        "public".into(),
+        JwtBehaviorDefaults {
+            access_token_lifetime_minutes: 100_000,
+            refresh_token_lifetime_days: 10_000,
+            ..JwtBehaviorDefaults::default()
+        },
+    );
+    assert_eq!(from_values_config.access_token_lifetime_minutes(), 24 * 60);
+    assert_eq!(from_values_config.refresh_token_lifetime_days(), 365);
+}
+
+#[test]
 fn from_env_clamps_nonpositive_overrides_and_typed_defaults() {
     let _lock = ENV_LOCK.lock().unwrap();
     let prev_priv = with_env_var("AUTH_JWT_PRIVATE_KEY", Some("private"));

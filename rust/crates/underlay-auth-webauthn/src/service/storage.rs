@@ -20,9 +20,31 @@ impl WebAuthnService {
     /// This is intended for indexing/diagnostics only; rely on `AuthenticationResult` and
     /// `Passkey::update_credential` for counter updates.
     pub fn passkey_counter_from_json(passkey_json: &str) -> Option<u32> {
-        let value: serde_json::Value = serde_json::from_str(passkey_json).ok()?;
-        let counter = value.get("cred")?.get("counter")?.as_u64()?;
-        u32::try_from(counter).ok()
+        let value: serde_json::Value = match serde_json::from_str(passkey_json) {
+            Ok(v) => v,
+            Err(err) => {
+                tracing::warn!(error = %err, "failed to parse passkey JSON when extracting counter");
+                return None;
+            }
+        };
+        let Some(counter) = value
+            .get("cred")
+            .and_then(|cred| cred.get("counter"))
+            .and_then(|counter| counter.as_u64())
+        else {
+            tracing::warn!("webauthn-rs passkey JSON missing expected cred.counter field");
+            return None;
+        };
+        match u32::try_from(counter) {
+            Ok(counter) => Some(counter),
+            Err(_) => {
+                tracing::warn!(
+                    counter,
+                    "webauthn-rs passkey JSON cred.counter exceeds u32::MAX"
+                );
+                None
+            }
+        }
     }
 
     pub fn stored_passkey_from_passkey(&self, passkey: &Passkey) -> AuthResult<StoredPasskey> {
@@ -42,17 +64,12 @@ impl WebAuthnService {
         self.decode_passkey(&stored.passkey_json)
     }
 
-    pub fn passkey_transports_from_json(passkey_json: &str) -> Vec<String> {
-        let value: serde_json::Value = match serde_json::from_str(passkey_json) {
-            Ok(v) => v,
-            Err(_) => return vec![],
-        };
-
-        let Some(transports) = value.get("cred").and_then(|v| v.get("transports")) else {
-            return vec![];
-        };
-
-        let Some(transports) = transports.as_array() else {
+    fn passkey_transports_from_value(value: &serde_json::Value) -> Vec<String> {
+        let Some(transports) = value
+            .get("cred")
+            .and_then(|v| v.get("transports"))
+            .and_then(|v| v.as_array())
+        else {
             return vec![];
         };
 
@@ -60,6 +77,15 @@ impl WebAuthnService {
             .iter()
             .filter_map(|v| v.as_str().map(|s| s.to_string()))
             .collect()
+    }
+
+    pub fn passkey_transports_from_json(passkey_json: &str) -> Vec<String> {
+        let value: serde_json::Value = match serde_json::from_str(passkey_json) {
+            Ok(v) => v,
+            Err(_) => return vec![],
+        };
+
+        Self::passkey_transports_from_value(&value)
     }
 
     pub fn passkey_sync_info_from_json(passkey_json: &str) -> PasskeySyncInfo {
@@ -75,22 +101,20 @@ impl WebAuthnService {
             }
         };
 
-        let transports = Self::passkey_transports_from_json(passkey_json);
+        let transports = Self::passkey_transports_from_value(&value);
+        let cred = value.get("cred");
 
-        let backup_eligible = value
-            .get("cred")
+        let backup_eligible = cred
             .and_then(|v| v.get("backup_eligible"))
             .and_then(|v| v.as_bool())
             .unwrap_or(false);
 
-        let backup_state = value
-            .get("cred")
+        let backup_state = cred
             .and_then(|v| v.get("backup_state"))
             .and_then(|v| v.as_bool())
             .unwrap_or(false);
 
-        let user_verified = value
-            .get("cred")
+        let user_verified = cred
             .and_then(|v| v.get("user_verified"))
             .and_then(|v| v.as_bool())
             .unwrap_or(false);

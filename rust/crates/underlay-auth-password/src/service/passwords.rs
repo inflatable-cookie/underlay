@@ -5,6 +5,7 @@ use underlay_ratelimit::RateLimitBackend;
 
 use crate::errors::{PasswordAuthError, PasswordAuthResult};
 
+use super::core::MAX_PASSWORD_BYTES;
 use super::{PasswordAuthRepository, PasswordAuthService};
 
 impl<R, H, V, L> PasswordAuthService<R, H, V, L>
@@ -70,6 +71,10 @@ where
         )
         .await?;
 
+        if current_password.len() > MAX_PASSWORD_BYTES {
+            return Err(PasswordAuthError::WrongPassword);
+        }
+
         let credential = match self.repository.find_password_credential(user_id).await? {
             Some(c) => c,
             None => return Err(PasswordAuthError::CredentialNotFound),
@@ -117,6 +122,8 @@ where
         self.repository
             .update_password_credential(credential.id, &new_hash)
             .await?;
+
+        self.repository.reset_failed_logins(user_id).await?;
 
         Ok(())
     }

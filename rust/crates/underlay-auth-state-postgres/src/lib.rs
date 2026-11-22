@@ -2,7 +2,7 @@ use chrono::{Duration, Utc};
 use serde::{de::DeserializeOwned, Serialize};
 use sqlx::Row;
 
-use underlay_core::Uuid;
+use underlay_core::{RawUuid, Uuid};
 use underlay_db::QualifiedTableName;
 
 const DEFAULT_AUTH_STATE_TABLE: &str = "auth.auth_state";
@@ -50,7 +50,7 @@ impl AuthStateStore {
         state: serde_json::Value,
         ttl: Duration,
     ) -> Result<Uuid, AuthStateError> {
-        let id = Uuid::new_v7();
+        let id = Uuid::from(RawUuid::new_v4());
         let now = Utc::now();
         let expires_at = now + ttl;
 

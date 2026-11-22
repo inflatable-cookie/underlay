@@ -114,8 +114,18 @@ where
         R: UserRepository + GoogleOAuthCredentialRepository,
         E: FnOnce(&str) -> AuthResult<String>,
     {
-        if !constant_time_eq(&request.state, &stored_state.csrf_state) {
+        if stored_state.csrf_state.trim().is_empty()
+            || !constant_time_eq(&request.state, &stored_state.csrf_state)
+        {
             return Err(AuthError::BadRequest("invalid oauth state".into()));
+        }
+
+        if request.code.trim().is_empty() {
+            return Err(AuthError::BadRequest("missing oauth code".into()));
+        }
+
+        if stored_state.pkce_verifier.trim().is_empty() {
+            return Err(AuthError::BadRequest("missing oauth pkce verifier".into()));
         }
 
         let token_set = self
@@ -127,6 +137,12 @@ where
             .provider
             .fetch_userinfo(&token_set.access_token)
             .await?;
+
+        if userinfo.sub.trim().is_empty() {
+            return Err(AuthError::OAuthError(
+                "google userinfo missing subject".into(),
+            ));
+        }
 
         if self.require_verified_email && userinfo.email_verified != Some(true) {
             return Err(AuthError::OAuthError(

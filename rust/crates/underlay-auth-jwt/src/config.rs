@@ -5,6 +5,11 @@ use chrono::Duration;
 use crate::error::{JwtError, JwtResult};
 use crate::keys::KeyPair;
 
+/// Upper bound on access token lifetime (24 hours in minutes).
+const MAX_ACCESS_TOKEN_LIFETIME_MINUTES: i64 = 24 * 60;
+/// Upper bound on refresh token lifetime (365 days).
+const MAX_REFRESH_TOKEN_LIFETIME_DAYS: i64 = 365;
+
 #[derive(Clone)]
 pub struct JwtConfig {
     /// Base64-encoded PKCS#8 DER private key (Ed25519).
@@ -116,12 +121,12 @@ impl JwtConfig {
     }
 
     pub fn with_access_token_lifetime_minutes(mut self, minutes: i64) -> Self {
-        self.access_token_lifetime_minutes = minutes.max(1);
+        self.access_token_lifetime_minutes = minutes.clamp(1, MAX_ACCESS_TOKEN_LIFETIME_MINUTES);
         self
     }
 
     pub fn with_refresh_token_lifetime_days(mut self, days: i64) -> Self {
-        self.refresh_token_lifetime_days = days.max(1);
+        self.refresh_token_lifetime_days = days.clamp(1, MAX_REFRESH_TOKEN_LIFETIME_DAYS);
         self
     }
 
@@ -211,7 +216,8 @@ impl JwtConfig {
         ))
     }
 
-    /// Build a config with a minimum access lifetime of one minute and refresh lifetime of one day.
+    /// Build a config with access lifetime clamped to 1..=1440 minutes and
+    /// refresh lifetime clamped to 1..=365 days.
     pub fn from_values(
         private_key_b64: String,
         public_key_b64: String,
@@ -220,8 +226,12 @@ impl JwtConfig {
         Self {
             private_key_b64,
             public_key_b64,
-            access_token_lifetime_minutes: behavior.access_token_lifetime_minutes.max(1),
-            refresh_token_lifetime_days: behavior.refresh_token_lifetime_days.max(1),
+            access_token_lifetime_minutes: behavior
+                .access_token_lifetime_minutes
+                .clamp(1, MAX_ACCESS_TOKEN_LIFETIME_MINUTES),
+            refresh_token_lifetime_days: behavior
+                .refresh_token_lifetime_days
+                .clamp(1, MAX_REFRESH_TOKEN_LIFETIME_DAYS),
             issuer: behavior.issuer,
             audience: behavior.audience,
             leeway_seconds: behavior.leeway_seconds,
