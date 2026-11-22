@@ -264,6 +264,16 @@ export function useBatchActions<T = string>(): BatchActionsResult<T> {
 	let pendingAction = $state<BatchAction<T> | null>(null);
 	let executing = $state(false);
 	let error = $state<string | null>(null);
+	let disposed = false;
+
+	const markDisposed = () => {
+		disposed = true;
+	};
+	try {
+		$effect.pre(() => markDisposed);
+	} catch {
+		// Outside a Svelte component or $effect.root: lifecycle disposal is managed by the caller.
+	}
 
 	// === Selection methods ===
 
@@ -272,6 +282,7 @@ export function useBatchActions<T = string>(): BatchActionsResult<T> {
 	};
 
 	const toggle = (id: T, selected: boolean): void => {
+		if (disposed) return;
 		const newSet = new Set(selectedSet);
 		if (selected) {
 			newSet.add(id);
@@ -282,6 +293,7 @@ export function useBatchActions<T = string>(): BatchActionsResult<T> {
 	};
 
 	const select = (id: T): void => {
+		if (disposed) return;
 		if (!selectedSet.has(id)) {
 			const newSet = new Set(selectedSet);
 			newSet.add(id);
@@ -290,6 +302,7 @@ export function useBatchActions<T = string>(): BatchActionsResult<T> {
 	};
 
 	const deselect = (id: T): void => {
+		if (disposed) return;
 		if (selectedSet.has(id)) {
 			const newSet = new Set(selectedSet);
 			newSet.delete(id);
@@ -298,21 +311,25 @@ export function useBatchActions<T = string>(): BatchActionsResult<T> {
 	};
 
 	const selectAll = (ids: T[]): void => {
+		if (disposed) return;
 		selectedSet = new Set(ids);
 	};
 
 	const clear = (): void => {
+		if (disposed) return;
 		selectedSet = new Set();
 		pendingAction = null;
 	};
 
 	const set = (ids: T[]): void => {
+		if (disposed) return;
 		selectedSet = new Set(ids);
 	};
 
 	// === Action methods ===
 
 	const registerAction = (action: BatchAction<T>): void => {
+		if (disposed) return;
 		// Replace if exists, otherwise add
 		const existingIndex = actions.findIndex((a) => a.id === action.id);
 		if (existingIndex >= 0) {
@@ -323,6 +340,7 @@ export function useBatchActions<T = string>(): BatchActionsResult<T> {
 	};
 
 	const unregisterAction = (actionId: string): void => {
+		if (disposed) return;
 		actions = actions.filter((a) => a.id !== actionId);
 		if (pendingAction?.id === actionId) {
 			pendingAction = null;
@@ -332,7 +350,7 @@ export function useBatchActions<T = string>(): BatchActionsResult<T> {
 	const executeAction = async (action: BatchAction<T>): Promise<BatchActionResult | null> => {
 		// Block overlapping runs: a second click while one is in flight must not
 		// re-run the action on the same selection.
-		if (executing) {
+		if (disposed || executing) {
 			return null;
 		}
 		const ids = Array.from(selectedSet);
@@ -345,10 +363,20 @@ export function useBatchActions<T = string>(): BatchActionsResult<T> {
 
 		try {
 			const result = await action.execute(ids);
+			if (disposed) {
+				return result;
+			}
 
 			if (result.success) {
-				// Clear selection after successful action
-				clear();
+				// Remove only the executed IDs so selections made mid-flight are preserved.
+				const executedIds = new Set(ids);
+				const nextSet = new Set<T>();
+				for (const id of selectedSet) {
+					if (!executedIds.has(id)) {
+						nextSet.add(id);
+					}
+				}
+				selectedSet = nextSet;
 			} else {
 				error = result.message ?? `${action.label} failed`;
 			}
@@ -356,15 +384,22 @@ export function useBatchActions<T = string>(): BatchActionsResult<T> {
 			return result;
 		} catch (e) {
 			const errorMessage = e instanceof Error ? e.message : "Action failed";
-			error = errorMessage;
+			if (!disposed) {
+				error = errorMessage;
+			}
 			return { success: false, affected: 0, message: errorMessage };
 		} finally {
-			executing = false;
-			pendingAction = null;
+			if (!disposed) {
+				executing = false;
+				pendingAction = null;
+			}
 		}
 	};
 
 	const requestAction = async (actionId: string): Promise<BatchActionResult | null> => {
+		if (disposed || executing) {
+			return null;
+		}
 		const action = actions.find((a) => a.id === actionId);
 		if (!action) {
 			return null;
@@ -399,6 +434,9 @@ export function useBatchActions<T = string>(): BatchActionsResult<T> {
 	};
 
 	const confirmPendingAction = async (): Promise<BatchActionResult | null> => {
+		if (disposed || executing) {
+			return null;
+		}
 		const action = pendingAction;
 		if (!action) {
 			return null;
@@ -412,10 +450,12 @@ export function useBatchActions<T = string>(): BatchActionsResult<T> {
 	};
 
 	const cancelPendingAction = (): void => {
+		if (disposed) return;
 		pendingAction = null;
 	};
 
 	const clearError = (): void => {
+		if (disposed) return;
 		error = null;
 	};
 

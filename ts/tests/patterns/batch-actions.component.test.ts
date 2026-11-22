@@ -1,4 +1,7 @@
+import { flushSync } from "svelte";
 import { describe, expect, it, vi } from "vitest";
+import { useBatchActions } from "../../src/patterns/batch-actions.svelte";
+import { createEffectRoot } from "./effect-root.svelte";
 
 describe("patterns/batch-actions.svelte.ts", () => {
 	it("handles selection operations and action registration lifecycle", async () => {
@@ -233,5 +236,133 @@ describe("patterns/batch-actions.svelte.ts", () => {
 		expect(await batch.confirmPendingAction()).toBeNull();
 		expect(batch.pendingAction).toBeNull();
 		expect(execute).not.toHaveBeenCalled();
+	});
+
+	it("blocks opening a confirmation dialog via requestAction while another action is executing", async () => {
+		vi.resetModules();
+		const { useBatchActions } = await import("../../src/patterns/batch-actions.svelte");
+		const batch = useBatchActions<string>();
+
+		let release!: () => void;
+		batch.registerAction({
+			id: "slow",
+			label: "Slow",
+			execute: () =>
+				new Promise((resolve) => {
+					release = () => resolve({ success: true, affected: 1 });
+				}),
+		});
+		batch.registerAction({
+			id: "confirmable",
+			label: "Confirmable",
+			confirm: { title: "Confirm", description: "Proceed?" },
+			execute: vi.fn(async () => ({ success: true, affected: 1 })),
+		});
+
+		batch.selectAll(["a"]);
+		const inFlight = batch.requestAction("slow");
+		expect(batch.executing).toBe(true);
+
+		expect(await batch.requestAction("confirmable")).toBeNull();
+		expect(batch.pendingAction).toBeNull();
+
+		release();
+		await expect(inFlight).resolves.toEqual({ success: true, affected: 1 });
+		expect(batch.executing).toBe(false);
+		expect(batch.pendingAction).toBeNull();
+	});
+
+	it("removes only the executed IDs on success and preserves mid-flight selections", async () => {
+		vi.resetModules();
+		const { useBatchActions } = await import("../../src/patterns/batch-actions.svelte");
+		const batch = useBatchActions<string>();
+
+		let release!: () => void;
+		const execute = vi.fn(
+			() =>
+				new Promise<{ success: boolean; affected: number }>((resolve) => {
+					release = () => resolve({ success: true, affected: 2 });
+				}),
+		);
+		batch.registerAction({
+			id: "archive",
+			label: "Archive",
+			execute,
+		});
+
+		batch.selectAll(["a", "b"]);
+		const inFlight = batch.requestAction("archive");
+		expect(execute).toHaveBeenCalledWith(["a", "b"]);
+
+		// User selects "c" and deselects "b" while "archive" is in flight.
+		batch.select("c");
+		batch.deselect("b");
+
+		release();
+		await expect(inFlight).resolves.toEqual({ success: true, affected: 2 });
+		expect(batch.selectedIds).toEqual(["c"]);
+		expect(batch.count).toBe(1);
+	});
+
+	it("ignores post-disposal state mutations when unmounted mid-execution", async () => {
+		let resolveSuccess!: () => void;
+		let rejectFailure!: (reason: Error) => void;
+		const successBatchRef: { current?: ReturnType<typeof useBatchActions<string>> } = {};
+		const failureBatchRef: { current?: ReturnType<typeof useBatchActions<string>> } = {};
+
+		const disposeSuccess = createEffectRoot(() => {
+			successBatchRef.current = useBatchActions<string>();
+		});
+		const disposeFailure = createEffectRoot(() => {
+			failureBatchRef.current = useBatchActions<string>();
+		});
+		flushSync();
+
+		const successBatch = successBatchRef.current!;
+		successBatch.registerAction({
+			id: "run",
+			label: "Run",
+			execute: () =>
+				new Promise((resolve) => {
+					resolveSuccess = () => resolve({ success: true, affected: 1 });
+				}),
+		});
+		successBatch.selectAll(["a"]);
+
+		const pendingSuccess = successBatch.requestAction("run");
+		expect(successBatch.executing).toBe(true);
+
+		disposeSuccess();
+		flushSync();
+
+		resolveSuccess();
+		await pendingSuccess;
+
+		// Disposed instance must not mutate selection or executing after unmount.
+		expect(successBatch.selectedIds).toEqual(["a"]);
+		expect(successBatch.executing).toBe(true);
+		successBatch.select("b");
+		expect(successBatch.selectedIds).toEqual(["a"]);
+
+		const failureBatch = failureBatchRef.current!;
+		failureBatch.registerAction({
+			id: "fail",
+			label: "Fail",
+			execute: () =>
+				new Promise((_, reject) => {
+					rejectFailure = reject;
+				}),
+		});
+		failureBatch.selectAll(["x"]);
+
+		const pendingFailure = failureBatch.requestAction("fail");
+		disposeFailure();
+		flushSync();
+
+		rejectFailure(new Error("late failure"));
+		await pendingFailure;
+
+		expect(failureBatch.error).toBeNull();
+		expect(failureBatch.executing).toBe(true);
 	});
 });

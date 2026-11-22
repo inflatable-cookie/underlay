@@ -101,35 +101,53 @@ export function createLoadedReorderSession<TLoadedItem, TReorderItem extends Reo
 	const reorderItems = $derived(params.mapItems(loadedItems));
 	let controller = $state.raw<ReorderController<TReorderItem>>(createController([]));
 	let enterGeneration = 0;
+	let isStandalone = false;
+	let destroyed = false;
+	let stopStandaloneEffects: (() => void) | null = null;
 
 	const registerReactiveSync = () => {
 		$effect.pre(() => {
 			const currentItems = reorderItems;
 			untrack(() => {
-				if (reorderMode) {
+				if (!destroyed && reorderMode) {
 					syncReorderControllerItems(controller, currentItems);
 				}
 			});
 		});
 	};
 
+	const ensureStandaloneReactiveSync = () => {
+		if (!isStandalone || destroyed || stopStandaloneEffects) {
+			return;
+		}
+		stopStandaloneEffects = $effect.root(() => {
+			registerReactiveSync();
+		});
+	};
+
+	const teardownStandaloneReactiveSync = () => {
+		stopStandaloneEffects?.();
+		stopStandaloneEffects = null;
+	};
+
 	try {
 		registerReactiveSync();
 	} catch {
-		// Outside a Svelte component or $effect.root: create a dedicated effect root
-		// so standalone factory sessions still stay in sync with reactive mapItems.
-		$effect.root(() => {
-			registerReactiveSync();
-		});
+		// Outside a Svelte component or $effect.root: attach a dedicated effect root
+		// while an active standalone session is entered, and tear it down on exit/destroy.
+		isStandalone = true;
 	}
 
 	async function enter() {
+		if (destroyed) {
+			return;
+		}
 		const generation = ++enterGeneration;
 		params.clearSelectionMode?.();
 		params.clearSelection?.();
 
 		const { items, error } = await params.loadItems();
-		if (generation !== enterGeneration) {
+		if (destroyed || generation !== enterGeneration) {
 			return;
 		}
 		if (error) {
@@ -137,6 +155,7 @@ export function createLoadedReorderSession<TLoadedItem, TReorderItem extends Reo
 			return;
 		}
 
+		ensureStandaloneReactiveSync();
 		loadedItems = items;
 		controller = createController(params.mapItems(items));
 		highlightedIds = [];
@@ -149,11 +168,23 @@ export function createLoadedReorderSession<TLoadedItem, TReorderItem extends Reo
 		highlightedIds = [];
 		loadedItems = [];
 		controller = createController([]);
+		teardownStandaloneReactiveSync();
+	}
+
+	function destroy() {
+		destroyed = true;
+		exit();
 	}
 
 	async function handleSuccess(message?: string) {
+		if (destroyed) {
+			return;
+		}
 		exit();
 		await params.onRefresh();
+		if (destroyed) {
+			return;
+		}
 		params.onDataChange?.();
 		if (message && params.pushSuccess) {
 			params.pushSuccess(message);
@@ -161,6 +192,9 @@ export function createLoadedReorderSession<TLoadedItem, TReorderItem extends Reo
 	}
 
 	async function handleError(error: unknown): Promise<void | string> {
+		if (destroyed) {
+			return;
+		}
 		const conflict = extractReorderConflict(error);
 		if (!conflict) return;
 
@@ -185,6 +219,7 @@ export function createLoadedReorderSession<TLoadedItem, TReorderItem extends Reo
 		},
 		enter,
 		exit,
+		destroy,
 		handleSuccess,
 		handleError,
 	};

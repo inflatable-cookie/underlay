@@ -8,13 +8,13 @@
  */
 
 import {
-  type UploadPlan,
-  type UploadProgress,
-  type UploadResult,
-  type UploadOptions,
-  BlobUploadError,
-  ALLOWED_MEDIA_TYPES,
-  REJECTED_VIDEO_TYPES,
+	type UploadPlan,
+	type UploadProgress,
+	type UploadResult,
+	type UploadOptions,
+	BlobUploadError,
+	ALLOWED_MEDIA_TYPES,
+	REJECTED_VIDEO_TYPES,
 } from "./blob-types";
 
 /**
@@ -34,107 +34,110 @@ import {
  * ```
  */
 export async function uploadToBlob(
-  plan: UploadPlan,
-  file: File,
-  options: UploadOptions = {}
+	plan: UploadPlan,
+	file: File,
+	options: UploadOptions = {},
 ): Promise<UploadResult> {
-  const { onProgress, signal } = options;
+	const { onProgress, signal } = options;
 
-  // Validate file size
-  if (file.size > plan.maxBytes) {
-    throw new BlobUploadError(
-      `File size ${file.size} exceeds maximum ${plan.maxBytes} bytes`,
-      "FILE_TOO_LARGE"
-    );
-  }
+	// Validate file size
+	if (file.size > plan.maxBytes) {
+		throw new BlobUploadError(
+			`File size ${file.size} exceeds maximum ${plan.maxBytes} bytes`,
+			"FILE_TOO_LARGE",
+		);
+	}
 
-  // Validate content type
-  if (plan.allowedContentTypes.length > 0 && !matchesAllowedMimeType(file.type, plan.allowedContentTypes)) {
-    throw new BlobUploadError(
-      `Content type ${file.type} not in allowed types: ${plan.allowedContentTypes.join(", ")}`,
-      "INVALID_CONTENT_TYPE"
-    );
-  }
+	// Validate content type
+	if (
+		plan.allowedContentTypes.length > 0 &&
+		!matchesAllowedMimeType(file.type, plan.allowedContentTypes)
+	) {
+		throw new BlobUploadError(
+			`Content type ${file.type} not in allowed types: ${plan.allowedContentTypes.join(", ")}`,
+			"INVALID_CONTENT_TYPE",
+		);
+	}
 
-  // Check if upload URL has expired
-  const expiresAt = new Date(plan.expiresAt);
-  if (Number.isNaN(expiresAt.getTime())) {
-    throw new BlobUploadError("Upload plan has an invalid expiry", "VALIDATION_ERROR");
-  }
-  if (expiresAt < new Date()) {
-    throw new BlobUploadError("Upload URL has expired", "UPLOAD_EXPIRED");
-  }
+	// Check if upload URL has expired
+	const expiresAt = new Date(plan.expiresAt);
+	if (Number.isNaN(expiresAt.getTime())) {
+		throw new BlobUploadError("Upload plan has an invalid expiry", "VALIDATION_ERROR");
+	}
+	if (expiresAt < new Date()) {
+		throw new BlobUploadError("Upload URL has expired", "UPLOAD_EXPIRED");
+	}
 
-  // Build headers
-  const headers: Record<string, string> = {
-    "Content-Type": file.type,
-    ...plan.requiredHeaders,
-  };
+	// Build headers
+	const headers: Record<string, string> = {
+		"Content-Type": file.type,
+		...plan.requiredHeaders,
+	};
 
-  // Use XMLHttpRequest for progress tracking
-  const xhr = new XMLHttpRequest();
-  const onAbort = () => xhr.abort();
-  const detachAbort = () => signal?.removeEventListener("abort", onAbort);
+	// Use XMLHttpRequest for progress tracking
+	const xhr = new XMLHttpRequest();
+	const onAbort = () => xhr.abort();
+	const detachAbort = () => signal?.removeEventListener("abort", onAbort);
 
-  return new Promise<UploadResult>((resolve, reject) => {
-    // Do not start a request for a signal that has already fired.
-    if (signal?.aborted) {
-      reject(new BlobUploadError("Upload was aborted", "UPLOAD_ABORTED"));
-      return;
-    }
+	return new Promise<UploadResult>((resolve, reject) => {
+		// Do not start a request for a signal that has already fired.
+		if (signal?.aborted) {
+			reject(new BlobUploadError("Upload was aborted", "UPLOAD_ABORTED"));
+			return;
+		}
 
-    // Handle abort
-    signal?.addEventListener("abort", onAbort);
+		// Handle abort
+		signal?.addEventListener("abort", onAbort);
 
-    // Progress tracking
-    if (onProgress) {
-      xhr.upload.addEventListener("progress", (event) => {
-        if (event.lengthComputable) {
-          onProgress({
-            loaded: event.loaded,
-            total: event.total,
-            percent: Math.round((event.loaded / event.total) * 100),
-          });
-        }
-      });
-    }
+		// Progress tracking
+		if (onProgress) {
+			xhr.upload.addEventListener("progress", (event) => {
+				if (event.lengthComputable) {
+					onProgress({
+						loaded: event.loaded,
+						total: event.total,
+						percent: Math.round((event.loaded / event.total) * 100),
+					});
+				}
+			});
+		}
 
-    // Completion handling
-    xhr.addEventListener("load", () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        resolve({
-          objectKey: plan.objectKey,
-          size: file.size,
-          contentType: file.type,
-        });
-      } else {
-        reject(
-          new BlobUploadError(
-            `Upload failed with status ${xhr.status}: ${xhr.statusText}`,
-            "UPLOAD_FAILED",
-            xhr.status
-          )
-        );
-      }
-    });
+		// Completion handling
+		xhr.addEventListener("load", () => {
+			if (xhr.status >= 200 && xhr.status < 300) {
+				resolve({
+					objectKey: plan.objectKey,
+					size: file.size,
+					contentType: file.type,
+				});
+			} else {
+				reject(
+					new BlobUploadError(
+						`Upload failed with status ${xhr.status}: ${xhr.statusText}`,
+						"UPLOAD_FAILED",
+						xhr.status,
+					),
+				);
+			}
+		});
 
-    xhr.addEventListener("error", () => {
-      reject(new BlobUploadError("Network error during upload", "NETWORK_ERROR"));
-    });
+		xhr.addEventListener("error", () => {
+			reject(new BlobUploadError("Network error during upload", "NETWORK_ERROR"));
+		});
 
-    xhr.addEventListener("abort", () => {
-      reject(new BlobUploadError("Upload was aborted", "UPLOAD_ABORTED"));
-    });
+		xhr.addEventListener("abort", () => {
+			reject(new BlobUploadError("Upload was aborted", "UPLOAD_ABORTED"));
+		});
 
-    // Open and send
-    xhr.open(plan.method, plan.uploadUrl);
+		// Open and send
+		xhr.open(plan.method, plan.uploadUrl);
 
-    for (const [key, value] of Object.entries(headers)) {
-      xhr.setRequestHeader(key, value);
-    }
+		for (const [key, value] of Object.entries(headers)) {
+			xhr.setRequestHeader(key, value);
+		}
 
-    xhr.send(file);
-  }).finally(detachAbort);
+		xhr.send(file);
+	}).finally(detachAbort);
 }
 
 /**
@@ -156,19 +159,19 @@ export async function uploadToBlob(
  * ```
  */
 export async function computeFileHash(file: File): Promise<string> {
-  const buffer = await file.arrayBuffer();
-  const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
-  return bufferToHex(hashBuffer);
+	const buffer = await file.arrayBuffer();
+	const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
+	return bufferToHex(hashBuffer);
 }
 
 /**
  * Convert an ArrayBuffer to a hex string.
  */
 function bufferToHex(buffer: ArrayBuffer): string {
-  const bytes = new Uint8Array(buffer);
-  return Array.from(bytes)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+	const bytes = new Uint8Array(buffer);
+	return Array.from(bytes)
+		.map((b) => b.toString(16).padStart(2, "0"))
+		.join("");
 }
 
 /**
@@ -186,15 +189,15 @@ function bufferToHex(buffer: ArrayBuffer): string {
  * ```
  */
 export function validateFileType(
-  file: File,
-  allowedTypes: readonly string[] = ALLOWED_MEDIA_TYPES
+	file: File,
+	allowedTypes: readonly string[] = ALLOWED_MEDIA_TYPES,
 ): boolean {
-  return matchesAllowedMimeType(file.type, allowedTypes);
+	return matchesAllowedMimeType(file.type, allowedTypes);
 }
 
 function matchesAllowedMimeType(mimeType: string, allowedTypes: readonly string[]): boolean {
-  const baseType = mimeType.split(";", 1)[0]?.trim().toLowerCase();
-  return allowedTypes.some((allowedType) => allowedType.toLowerCase() === baseType);
+	const baseType = mimeType.split(";", 1)[0]?.trim().toLowerCase();
+	return allowedTypes.some((allowedType) => allowedType.toLowerCase() === baseType);
 }
 
 /**
@@ -204,10 +207,11 @@ function matchesAllowedMimeType(mimeType: string, allowedTypes: readonly string[
  * @returns True if the file appears to be a video
  */
 export function isVideoFile(file: File): boolean {
-  return (
-    REJECTED_VIDEO_TYPES.includes(file.type as (typeof REJECTED_VIDEO_TYPES)[number]) ||
-    file.type.startsWith("video/")
-  );
+	const baseType = file.type.split(";", 1)[0]?.trim().toLowerCase() ?? "";
+	return (
+		REJECTED_VIDEO_TYPES.includes(baseType as (typeof REJECTED_VIDEO_TYPES)[number]) ||
+		baseType.startsWith("video/")
+	);
 }
 
 /**
@@ -226,7 +230,7 @@ export function isVideoFile(file: File): boolean {
  * ```
  */
 export function validateFileSize(file: File, maxBytes: number): boolean {
-  return file.size <= maxBytes;
+	return file.size <= maxBytes;
 }
 
 /**
@@ -236,17 +240,17 @@ export function validateFileSize(file: File, maxBytes: number): boolean {
  * @returns Human-readable size string (e.g., "1.5 MB")
  */
 export function formatFileSize(bytes: number | null | undefined): string {
-  if (bytes == null || !Number.isFinite(bytes) || bytes < 0) return "—";
-  if (bytes === 0) return "0 B";
+	if (bytes == null || !Number.isFinite(bytes) || bytes < 0) return "—";
+	if (bytes === 0) return "0 B";
 
-  const units = ["B", "KB", "MB", "GB", "TB"];
-  const k = 1024;
-  // Clamp to the unit table: sub-byte values stay in B, and anything at or
-  // above 1 TB is shown in TB rather than indexing past the table.
-  const i = Math.min(Math.max(Math.floor(Math.log(bytes) / Math.log(k)), 0), units.length - 1);
-  const size = bytes / Math.pow(k, i);
+	const units = ["B", "KB", "MB", "GB", "TB"];
+	const k = 1024;
+	// Clamp to the unit table: sub-byte values stay in B, and anything at or
+	// above 1 TB is shown in TB rather than indexing past the table.
+	const i = Math.min(Math.max(Math.floor(Math.log(bytes) / Math.log(k)), 0), units.length - 1);
+	const size = bytes / Math.pow(k, i);
 
-  return `${size.toFixed(i > 0 ? 1 : 0)} ${units[i]}`;
+	return `${size.toFixed(i > 0 ? 1 : 0)} ${units[i]}`;
 }
 
 /**
@@ -256,20 +260,21 @@ export function formatFileSize(bytes: number | null | undefined): string {
  * @returns Human-readable description
  */
 export function getFileTypeDescription(mimeType: string): string {
-  const descriptions: Record<string, string> = {
-    "image/jpeg": "JPEG image",
-    "image/png": "PNG image",
-    "image/gif": "GIF image",
-    "image/webp": "WebP image",
-    "image/svg+xml": "SVG image",
-    "application/pdf": "PDF document",
-  };
+	const descriptions: Record<string, string> = {
+		"image/jpeg": "JPEG image",
+		"image/png": "PNG image",
+		"image/gif": "GIF image",
+		"image/webp": "WebP image",
+		"image/svg+xml": "SVG image",
+		"application/pdf": "PDF document",
+	};
 
-  return descriptions[mimeType] || mimeType;
+	return descriptions[mimeType] || mimeType;
 }
 
 /**
- * Validate a file before upload, checking type, size, and rejecting videos.
+ * Validate a file before upload, checking type and size against `allowedTypes`.
+ * By default `ALLOWED_MEDIA_TYPES` excludes video files.
  *
  * @param file - The file to validate
  * @param maxBytes - Maximum allowed size in bytes
@@ -277,30 +282,33 @@ export function getFileTypeDescription(mimeType: string): string {
  * @returns Validation result with any error message
  */
 export function validateFile(
-  file: File,
-  maxBytes: number,
-  allowedTypes: readonly string[] = ALLOWED_MEDIA_TYPES
+	file: File,
+	maxBytes: number,
+	allowedTypes: readonly string[] = ALLOWED_MEDIA_TYPES,
 ): { valid: boolean; error?: string } {
-  if (isVideoFile(file)) {
-    return {
-      valid: false,
-      error: "Video files are not supported.",
-    };
-  }
+	if (!validateFileType(file, allowedTypes)) {
+		if (
+			isVideoFile(file) &&
+			!allowedTypes.some((type) => type.trim().toLowerCase().startsWith("video/"))
+		) {
+			return {
+				valid: false,
+				error: "Video files are not supported.",
+			};
+		}
 
-  if (!validateFileType(file, allowedTypes)) {
-    return {
-      valid: false,
-      error: `File type "${file.type || "unknown"}" is not supported. Allowed types: ${allowedTypes.join(", ")}`,
-    };
-  }
+		return {
+			valid: false,
+			error: `File type "${file.type || "unknown"}" is not supported. Allowed types: ${allowedTypes.join(", ")}`,
+		};
+	}
 
-  if (!validateFileSize(file, maxBytes)) {
-    return {
-      valid: false,
-      error: `File is too large (${formatFileSize(file.size)}). Maximum size is ${formatFileSize(maxBytes)}.`,
-    };
-  }
+	if (!validateFileSize(file, maxBytes)) {
+		return {
+			valid: false,
+			error: `File is too large (${formatFileSize(file.size)}). Maximum size is ${formatFileSize(maxBytes)}.`,
+		};
+	}
 
-  return { valid: true };
+	return { valid: true };
 }
