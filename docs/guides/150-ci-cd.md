@@ -25,7 +25,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Read rust-toolchain.toml
+        id: toolchain
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import tomllib
+          with open("rust-toolchain.toml", "rb") as f:
+              tc = tomllib.load(f)["toolchain"]
+          print(f"channel={tc['channel']}")
+          print(f"components={','.join(tc.get('components', []))}")
+          PY
       - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ steps.toolchain.outputs.channel }}
+          components: ${{ steps.toolchain.outputs.components }}
       - name: Run tests
         run: |
           cd apps/api
@@ -46,10 +59,11 @@ jobs:
           effigy validate
 ```
 
-`dtolnay/rust-toolchain@master` reads the repository's `rust-toolchain.toml`
-automatically (including the `rustfmt` and `clippy` components). See Underlay's
-own workflows in [`.github/workflows/rust.yml`](../../.github/workflows/rust.yml)
-and [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) for complete
+Reading `rust-toolchain.toml` and passing its `channel` and `components`
+explicitly to `dtolnay/rust-toolchain@master` keeps CI aligned with the
+repository's pinned toolchain. See Underlay's own workflows in
+[`.github/workflows/rust.yml`](../../.github/workflows/rust.yml) and
+[`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) for complete
 examples.
 
 ## Next Steps

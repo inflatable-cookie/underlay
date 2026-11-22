@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { UnderlayHttpError, toUserMessage } from "../../src/client/errors";
 
 // Repo root: this file is ts/tests/client/, so up three levels.
 const repoRoot = path.resolve(fileURLToPath(new URL(".", import.meta.url)), "../../..");
@@ -262,9 +263,15 @@ describe("envelope contract drift", () => {
 		const rustCodeSet = new Set(rustCodes);
 		expect(rustCodeSet.size).toBe(rustCodes.length);
 
+		// Strip line and block comments before scanning for auth.* literals so
+		// commented-out comparisons cannot satisfy the drift check.
+		const tsCodeWithoutComments = tsErrorsSource
+			.replace(/\/\*[\s\S]*?\*\//g, "")
+			.replace(/\/\/[^\n]*/g, "");
+
 		const tsCodes = new Set<string>();
 		const tsRe = /"(auth\.[a-z0-9_]+)"/g;
-		while ((match = tsRe.exec(tsErrorsSource))) {
+		while ((match = tsRe.exec(tsCodeWithoutComments))) {
 			tsCodes.add(match[1]);
 		}
 
@@ -276,13 +283,31 @@ describe("envelope contract drift", () => {
 			).toBe(true);
 		}
 
-		expect(tsCodes).toEqual(
-			new Set([
-				"auth.session_expired",
-				"auth.session_revoked",
-				"auth.token_invalid",
-				"auth.token_fingerprint_mismatch",
-			]),
-		);
+		const expectedSessionExpiryCodes = [
+			"auth.session_expired",
+			"auth.session_revoked",
+			"auth.token_invalid",
+			"auth.token_fingerprint_mismatch",
+		];
+
+		expect(tsCodes).toEqual(new Set(expectedSessionExpiryCodes));
+
+		// Exercise the real client behavior for every session-expiry code to
+		// confirm each maps to the session-expired message rather than the
+		// generic 401 fallback.
+		for (const code of expectedSessionExpiryCodes) {
+			const error = new UnderlayHttpError(401, "", {
+				error: { code, message: "" },
+			});
+			expect(toUserMessage(error), `toUserMessage failed to handle ${code}`).toBe(
+				"Your session has expired. Please sign in again.",
+			);
+		}
+
+		// Control: an unrelated 401 auth code falls back to the generic prompt.
+		const genericUnauthorized = new UnderlayHttpError(401, "", {
+			error: { code: "auth.unauthorized", message: "" },
+		});
+		expect(toUserMessage(genericUnauthorized)).toBe("Please sign in to continue.");
 	});
 });
