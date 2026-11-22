@@ -89,26 +89,20 @@ impl HttpClient {
 
     /// Build a client for **untrusted / user-influenced** outbound targets.
     ///
-    /// Adds SSRF protection on top of the default timeouts:
+    /// Returns [`ExternalHttpClient`], which enforces SSRF checks on every
+    /// request and does not expose the raw [`reqwest::Client`] via `Deref` so
+    /// callers cannot bypass IP-literal validation:
+    /// - Validates every request URL's scheme (`http`/`https`) and rejects
+    ///   private, loopback, link-local, and unspecified IP literals before any
+    ///   network I/O.
     /// - Disables system/environment proxies (`.no_proxy()`) so `HTTP_PROXY` /
     ///   `HTTPS_PROXY` cannot bypass [`ExternalDnsResolver`].
     /// - Installs a custom async DNS resolver that validates every resolved IP
-    ///   at connect time, rejecting private, loopback, link-local, and
-    ///   unspecified addresses (closing the DNS-rebinding TOCTOU window).
+    ///   at connect time (closing the DNS-rebinding TOCTOU window).
     /// - Caps redirects at [`EXTERNAL_MAX_REDIRECTS`] and rejects any hop that
     ///   targets a non-http(s) scheme or non-public IP literal with an error.
-    ///
-    /// Callers should still pass each request URL through
-    /// [`validate_external_url_async`] (or [`validate_external_url`] in sync
-    /// code) before sending so IP-literal targets and bad schemes fail before
-    /// any network I/O.
-    pub fn external() -> Result<Self, HttpClientError> {
-        let inner = base_builder(concat!("underlay/", env!("CARGO_PKG_VERSION")).to_string())
-            .no_proxy()
-            .redirect(external_redirect_policy())
-            .dns_resolver(Arc::new(ExternalDnsResolver))
-            .build()?;
-        Ok(Self { inner })
+    pub fn external() -> Result<ExternalHttpClient, HttpClientError> {
+        ExternalHttpClient::new()
     }
 
     /// Get a reference to the underlying [`reqwest::Client`].
@@ -119,6 +113,108 @@ impl HttpClient {
     /// Consume the wrapper and return the underlying [`reqwest::Client`].
     pub fn into_inner(self) -> reqwest::Client {
         self.inner
+    }
+}
+
+/// An SSRF-guarded HTTP client for **untrusted / user-influenced** outbound
+/// targets.
+///
+/// Unlike [`HttpClient`], this type intentionally does **not** implement
+/// `Deref<Target = reqwest::Client>` and does not expose the inner
+/// `reqwest::Client`. `reqwest` skips custom DNS resolvers for IP-literal URLs,
+/// so every request helper validates the target scheme and IP literal before
+/// constructing or executing a request.
+#[derive(Debug, Clone)]
+pub struct ExternalHttpClient {
+    inner: reqwest::Client,
+}
+
+impl ExternalHttpClient {
+    /// Build a new SSRF-guarded HTTP client.
+    pub fn new() -> Result<Self, HttpClientError> {
+        let inner = base_builder(concat!("underlay/", env!("CARGO_PKG_VERSION")).to_string())
+            .no_proxy()
+            .redirect(external_redirect_policy())
+            .dns_resolver(Arc::new(ExternalDnsResolver))
+            .build()?;
+        Ok(Self { inner })
+    }
+
+    /// Start building an HTTP request after validating that the target URL
+    /// uses `http`/`https` and is not a non-public IP literal.
+    ///
+    /// Domain names are validated asynchronously at connect time by
+    /// [`ExternalDnsResolver`].
+    pub fn request(
+        &self,
+        method: reqwest::Method,
+        url: impl reqwest::IntoUrl,
+    ) -> Result<reqwest::RequestBuilder, HttpClientError> {
+        let parsed = url
+            .into_url()
+            .map_err(|err| HttpClientError::InvalidUrl(err.to_string()))?;
+        validate_external_target(&parsed)?;
+        Ok(self.inner.request(method, parsed))
+    }
+
+    /// Start building a `GET` request to a validated external target.
+    pub fn get(
+        &self,
+        url: impl reqwest::IntoUrl,
+    ) -> Result<reqwest::RequestBuilder, HttpClientError> {
+        self.request(reqwest::Method::GET, url)
+    }
+
+    /// Start building a `POST` request to a validated external target.
+    pub fn post(
+        &self,
+        url: impl reqwest::IntoUrl,
+    ) -> Result<reqwest::RequestBuilder, HttpClientError> {
+        self.request(reqwest::Method::POST, url)
+    }
+
+    /// Start building a `PUT` request to a validated external target.
+    pub fn put(
+        &self,
+        url: impl reqwest::IntoUrl,
+    ) -> Result<reqwest::RequestBuilder, HttpClientError> {
+        self.request(reqwest::Method::PUT, url)
+    }
+
+    /// Start building a `PATCH` request to a validated external target.
+    pub fn patch(
+        &self,
+        url: impl reqwest::IntoUrl,
+    ) -> Result<reqwest::RequestBuilder, HttpClientError> {
+        self.request(reqwest::Method::PATCH, url)
+    }
+
+    /// Start building a `DELETE` request to a validated external target.
+    pub fn delete(
+        &self,
+        url: impl reqwest::IntoUrl,
+    ) -> Result<reqwest::RequestBuilder, HttpClientError> {
+        self.request(reqwest::Method::DELETE, url)
+    }
+
+    /// Start building a `HEAD` request to a validated external target.
+    pub fn head(
+        &self,
+        url: impl reqwest::IntoUrl,
+    ) -> Result<reqwest::RequestBuilder, HttpClientError> {
+        self.request(reqwest::Method::HEAD, url)
+    }
+
+    /// Validate `request.url()` and execute the pre-built [`reqwest::Request`].
+    pub async fn execute(
+        &self,
+        request: reqwest::Request,
+    ) -> Result<reqwest::Response, HttpClientError> {
+        validate_external_target(request.url())?;
+        self.inner
+            .execute(request)
+            .await
+            .map_err(HttpClientError::from)
     }
 }
 
@@ -195,7 +291,7 @@ impl reqwest::dns::Resolve for ExternalDnsResolver {
     }
 }
 
-fn validate_redirect_target(url: &reqwest::Url) -> Result<(), HttpClientError> {
+fn validate_external_target(url: &reqwest::Url) -> Result<(), HttpClientError> {
     match url.scheme() {
         "http" | "https" => {}
         other => {
@@ -227,7 +323,7 @@ fn external_redirect_policy() -> reqwest::redirect::Policy {
         if attempt.previous().len() >= EXTERNAL_MAX_REDIRECTS {
             return attempt.error("too many redirects");
         }
-        match validate_redirect_target(attempt.url()) {
+        match validate_external_target(attempt.url()) {
             Ok(()) => attempt.follow(),
             Err(err) => attempt.error(err),
         }

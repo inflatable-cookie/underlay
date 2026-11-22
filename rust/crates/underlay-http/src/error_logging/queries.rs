@@ -2,6 +2,17 @@ use super::{filters::push_error_log_filters, ErrorLogFilters, ErrorLogRow};
 use sqlx::{Postgres, QueryBuilder};
 use underlay_db::DbPool;
 
+/// Maximum page size allowed for error log queries.
+pub const MAX_ERROR_LOG_LIMIT: i64 = 1_000;
+
+fn clamp_error_log_limit(limit: i64) -> i64 {
+    limit.clamp(1, MAX_ERROR_LOG_LIMIT)
+}
+
+fn clamp_error_log_offset(offset: i64) -> i64 {
+    offset.max(0)
+}
+
 /// Append a new error log entry to the database.
 ///
 /// This function inserts an error log record and returns the created row.
@@ -103,9 +114,9 @@ pub async fn list_error_logs(
     push_error_log_filters(&mut query, &filters);
     query
         .push(" ORDER BY occurred_at DESC LIMIT ")
-        .push_bind(filters.limit)
+        .push_bind(clamp_error_log_limit(filters.limit))
         .push(" OFFSET ")
-        .push_bind(filters.offset);
+        .push_bind(clamp_error_log_offset(filters.offset));
 
     query.build_query_as::<ErrorLogRow>().fetch_all(pool).await
 }
@@ -139,4 +150,24 @@ pub async fn count_error_logs(
     push_error_log_filters(&mut query, filters);
 
     query.build_query_scalar::<i64>().fetch_one(pool).await
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{clamp_error_log_limit, clamp_error_log_offset, MAX_ERROR_LOG_LIMIT};
+
+    #[test]
+    fn error_log_limit_and_offset_are_clamped() {
+        assert_eq!(clamp_error_log_limit(-10), 1);
+        assert_eq!(clamp_error_log_limit(0), 1);
+        assert_eq!(clamp_error_log_limit(50), 50);
+        assert_eq!(
+            clamp_error_log_limit(MAX_ERROR_LOG_LIMIT + 500),
+            MAX_ERROR_LOG_LIMIT
+        );
+
+        assert_eq!(clamp_error_log_offset(-5), 0);
+        assert_eq!(clamp_error_log_offset(0), 0);
+        assert_eq!(clamp_error_log_offset(42), 42);
+    }
 }

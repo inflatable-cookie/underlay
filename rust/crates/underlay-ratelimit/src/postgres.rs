@@ -93,6 +93,11 @@ impl PostgresBackend {
 #[async_trait]
 impl RateLimitBackend for PostgresBackend {
     async fn check(&self, key: &str, config: &RateLimitConfig) -> Result<RateLimitResult> {
+        if config.max_requests() == 0 {
+            let retry_after = config.window().max(std::time::Duration::from_secs(1));
+            return Ok(RateLimitResult::denied(0, retry_after));
+        }
+
         let query = format!(
             r#"
             SELECT count, EXTRACT(EPOCH FROM (NOW() - window_started_at))::float8 AS elapsed

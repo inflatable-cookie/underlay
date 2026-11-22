@@ -3,21 +3,25 @@ use crate::types::{
     SecurityAlertType,
 };
 
+fn threshold_reached(count: i64, threshold: i64) -> bool {
+    threshold > 0 && count >= threshold
+}
+
 pub fn evaluate_alerts(
     counts: LoginAttemptSignalCounts,
     config: &SecurityAlertConfig,
 ) -> Vec<SecurityAlertType> {
     let mut alerts = Vec::new();
 
-    if counts.failed_attempts >= config.failed_attempts_threshold() {
+    if threshold_reached(counts.failed_attempts, config.failed_attempts_threshold()) {
         alerts.push(SecurityAlertType::LoginFailuresFromIp);
     }
 
-    if counts.distinct_users >= config.distinct_users_threshold() {
+    if threshold_reached(counts.distinct_users, config.distinct_users_threshold()) {
         alerts.push(SecurityAlertType::MultiAccountFailuresFromIp);
     }
 
-    if counts.lockouts >= config.lockouts_threshold() {
+    if threshold_reached(counts.lockouts, config.lockouts_threshold()) {
         alerts.push(SecurityAlertType::LockoutsFromIp);
     }
 
@@ -33,11 +37,14 @@ pub fn evaluate_account_alerts(
 ) -> Vec<SecurityAlertType> {
     let mut alerts = Vec::new();
 
-    if counts.failed_attempts >= config.account_failed_attempts_threshold() {
+    if threshold_reached(
+        counts.failed_attempts,
+        config.account_failed_attempts_threshold(),
+    ) {
         alerts.push(SecurityAlertType::LoginFailuresForAccount);
     }
 
-    if counts.distinct_ips >= config.account_distinct_ips_threshold() {
+    if threshold_reached(counts.distinct_ips, config.account_distinct_ips_threshold()) {
         alerts.push(SecurityAlertType::DistributedFailuresForAccount);
     }
 
@@ -52,7 +59,10 @@ pub fn evaluate_global_alerts(
 ) -> Vec<SecurityAlertType> {
     let mut alerts = Vec::new();
 
-    if counts.failed_attempts >= config.global_failed_attempts_threshold() {
+    if threshold_reached(
+        counts.failed_attempts,
+        config.global_failed_attempts_threshold(),
+    ) {
         alerts.push(SecurityAlertType::GlobalLoginFailureSurge);
     }
 

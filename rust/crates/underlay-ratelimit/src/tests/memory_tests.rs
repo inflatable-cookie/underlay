@@ -148,3 +148,27 @@ async fn test_zero_max_requests_denies_without_inserting_entry() {
         "max_requests == 0 must not insert a map entry"
     );
 }
+
+#[test]
+fn test_cleanup_interval_clamps_zero_to_minimum() {
+    assert_eq!(clamp_cleanup_interval(Duration::ZERO), MIN_CLEANUP_INTERVAL);
+    assert_eq!(
+        clamp_cleanup_interval(Duration::from_millis(1)),
+        MIN_CLEANUP_INTERVAL
+    );
+    assert_eq!(
+        clamp_cleanup_interval(Duration::from_secs(5)),
+        Duration::from_secs(5)
+    );
+}
+
+#[tokio::test]
+async fn test_with_cleanup_zero_duration_does_not_busy_spin() {
+    let backend = InMemoryBackend::with_cleanup(Duration::ZERO);
+    let config = RateLimitConfig::new(5, Duration::from_secs(60));
+    let res = backend
+        .check_and_increment("cleanup:zero", &config)
+        .await
+        .expect("backend should remain responsive");
+    assert!(res.is_allowed());
+}

@@ -306,3 +306,25 @@ fn test_list_query_params_search_term_trims() {
     let params: ListQueryParams = serde_urlencoded::from_str("search=%20%20").unwrap();
     assert!(params.search_term().is_none());
 }
+
+#[test]
+fn test_query_params_filter_fields_order_is_deterministic() {
+    let params: QueryParams =
+        serde_urlencoded::from_str("filter[z]=1&filter[a]=2&filter[m][gte]=10&filter[b]=3")
+            .unwrap();
+
+    let filters = params.filter_fields();
+    let summary: Vec<(&str, FilterOperator, &str)> = filters
+        .iter()
+        .map(|f| (f.field.as_str(), f.operator, f.value.as_str()))
+        .collect();
+    assert_eq!(
+        summary,
+        vec![
+            ("a", FilterOperator::Eq, "2"),
+            ("b", FilterOperator::Eq, "3"),
+            ("m", FilterOperator::Gte, "10"),
+            ("z", FilterOperator::Eq, "1"),
+        ]
+    );
+}

@@ -135,7 +135,7 @@ impl PagePaginationParams {
                 total_pages: if self.limit == 0 {
                     0
                 } else {
-                    (total as f64 / self.limit as f64).ceil() as u32
+                    u32::try_from(total.div_ceil(u64::from(self.limit))).unwrap_or(u32::MAX)
                 },
             },
         }

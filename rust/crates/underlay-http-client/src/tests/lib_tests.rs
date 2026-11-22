@@ -89,8 +89,8 @@ fn into_inner_exposes_reqwest_client() {
 fn external_client_builds() {
     let client = super::HttpClient::external().expect("external client should build");
     client
-        .inner()
         .get("https://example.com")
+        .expect("public domain should be accepted")
         .build()
         .expect("request should build");
 }
@@ -353,7 +353,10 @@ async fn external_client_returns_error_on_blocked_redirect_ip() {
     let addr = redirect_server("http://169.254.169.254/latest/meta-data/").await;
     let client = HttpClient::external().expect("external client should build");
 
+    // Use `client.inner` directly in this unit test only so the initial hop can
+    // reach the loopback redirect fixture; the public API rejects 127.0.0.1.
     let err = client
+        .inner
         .get(format!("http://{addr}/start"))
         .send()
         .await
@@ -366,7 +369,10 @@ async fn external_client_returns_error_on_blocked_redirect_hostname() {
     let addr = redirect_server("http://localhost:1/internal").await;
     let client = HttpClient::external().expect("external client should build");
 
+    // Use `client.inner` directly in this unit test only so the initial hop can
+    // reach the loopback redirect fixture; the public API rejects 127.0.0.1.
     let err = client
+        .inner
         .get(format!("http://{addr}/start"))
         .send()
         .await
@@ -383,8 +389,71 @@ async fn external_client_blocks_loopback_hostname_at_connect_time() {
 
     let err = client
         .get("http://localhost:1/")
+        .expect("domain names pass synchronous URL validation and are checked by DNS resolver")
         .send()
         .await
         .expect_err("connect-time DNS resolver must reject loopback hostname");
     assert!(err.is_connect(), "expected connect error, got: {err}");
+}
+
+#[tokio::test]
+async fn external_client_rejects_ip_literal_ssrf_targets() {
+    use super::HttpClientError;
+
+    let client = HttpClient::external().expect("external client should build");
+
+    for blocked in [
+        "http://127.0.0.1/",
+        "http://127.0.0.1:8080/admin",
+        "http://169.254.169.254/latest/meta-data/",
+        "http://10.0.0.1/",
+        "http://172.16.0.1/",
+        "http://192.168.1.1/",
+        "http://0.0.0.0/",
+        "http://100.64.0.1/",
+        "http://[::1]/",
+        "http://[::ffff:127.0.0.1]/",
+        "http://[fc00::1]/",
+        "http://[fe80::1]/",
+    ] {
+        let err = client
+            .get(blocked)
+            .expect_err(&format!("GET {blocked} must be rejected"));
+        assert!(
+            matches!(err, HttpClientError::BlockedTarget(_)),
+            "expected BlockedTarget for {blocked}, got {err:?}"
+        );
+
+        let post_err = client
+            .post(blocked)
+            .expect_err(&format!("POST {blocked} must be rejected"));
+        assert!(
+            matches!(post_err, HttpClientError::BlockedTarget(_)),
+            "expected BlockedTarget for POST {blocked}, got {post_err:?}"
+        );
+
+        let raw_req = reqwest::Request::new(
+            reqwest::Method::GET,
+            reqwest::Url::parse(blocked).expect("valid url"),
+        );
+        let exec_err = client
+            .execute(raw_req)
+            .await
+            .expect_err(&format!("execute({blocked}) must be rejected"));
+        assert!(
+            matches!(exec_err, HttpClientError::BlockedTarget(_)),
+            "expected BlockedTarget for execute({blocked}), got {exec_err:?}"
+        );
+    }
+
+    let scheme_err = client
+        .get("file:///etc/passwd")
+        .expect_err("file:// scheme must be rejected");
+    assert!(matches!(scheme_err, HttpClientError::InvalidUrl(_)));
+
+    client
+        .get("https://1.1.1.1/")
+        .expect("public IP literal should be accepted")
+        .build()
+        .expect("request should build");
 }

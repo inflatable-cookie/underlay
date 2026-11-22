@@ -1,5 +1,5 @@
 use serde::{Deserialize, Deserializer};
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::str::FromStr;
 use underlay_query::{parse_sort_string, FilterField, FilterOperator, SortField};
 
@@ -116,7 +116,7 @@ pub struct QueryParams {
 
     /// Filter parameters: collected from `filter[field]=value` or `filter[field][op]=value`
     #[serde(default, flatten)]
-    pub(crate) filter_raw: HashMap<String, String>,
+    pub(crate) filter_raw: BTreeMap<String, String>,
 }
 
 fn deserialize_sort<'de, D>(deserializer: D) -> Result<Vec<SortField>, D::Error>

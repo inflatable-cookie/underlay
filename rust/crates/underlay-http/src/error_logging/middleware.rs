@@ -145,6 +145,45 @@ const SENSITIVE_QUERY_KEYS: &[&str] = &[
     "auth",
 ];
 
+/// Percent-decode a query parameter key (including `+` as space) without
+/// panicking on malformed `%` escapes.
+fn percent_decode_query_key(input: &str) -> String {
+    let bytes = input.as_bytes();
+    let mut out = Vec::with_capacity(bytes.len());
+    let mut i = 0;
+    while i < bytes.len() {
+        match bytes[i] {
+            b'+' => {
+                out.push(b' ');
+                i += 1;
+            }
+            b'%' if i + 2 < bytes.len() => {
+                if let (Some(hi), Some(lo)) = (hex_nibble(bytes[i + 1]), hex_nibble(bytes[i + 2])) {
+                    out.push((hi << 4) | lo);
+                    i += 3;
+                } else {
+                    out.push(b'%');
+                    i += 1;
+                }
+            }
+            b => {
+                out.push(b);
+                i += 1;
+            }
+        }
+    }
+    String::from_utf8_lossy(&out).into_owned()
+}
+
+fn hex_nibble(b: u8) -> Option<u8> {
+    match b {
+        b'0'..=b'9' => Some(b - b'0'),
+        b'a'..=b'f' => Some(b - b'a' + 10),
+        b'A'..=b'F' => Some(b - b'A' + 10),
+        _ => None,
+    }
+}
+
 /// Redact values of known-sensitive query parameters before the query string
 /// is persisted to the error log.
 fn redact_query(query: &str) -> String {
@@ -154,7 +193,8 @@ fn redact_query(query: &str) -> String {
             let Some((key, _)) = pair.split_once('=') else {
                 return pair.to_string();
             };
-            if SENSITIVE_QUERY_KEYS.contains(&key.trim().to_ascii_lowercase().as_str()) {
+            let decoded_key = percent_decode_query_key(key);
+            if SENSITIVE_QUERY_KEYS.contains(&decoded_key.trim().to_ascii_lowercase().as_str()) {
                 format!("{key}=[REDACTED]")
             } else {
                 pair.to_string()
@@ -198,6 +238,20 @@ mod tests {
         assert_eq!(redact_query("page=2&sort=name"), "page=2&sort=name");
         assert_eq!(redact_query("flag"), "flag");
         assert_eq!(redact_query(""), "");
+    }
+
+    #[test]
+    fn redact_query_decodes_percent_encoded_keys() {
+        assert_eq!(
+            redact_query("access%5Ftoken=secret123&page=2"),
+            "access%5Ftoken=[REDACTED]&page=2"
+        );
+        assert_eq!(
+            redact_query("%74%6f%6b%65%6e=abc&%20api_key%20=xyz&+secret+=s1"),
+            "%74%6f%6b%65%6e=[REDACTED]&%20api_key%20=[REDACTED]&+secret+=[REDACTED]"
+        );
+        // Malformed percent escapes must not panic and stay untouched if non-sensitive.
+        assert_eq!(redact_query("%ZZ=val&page%=1"), "%ZZ=val&page%=1");
     }
 
     #[test]

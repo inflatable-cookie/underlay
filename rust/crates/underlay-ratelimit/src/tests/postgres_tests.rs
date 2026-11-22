@@ -72,3 +72,28 @@ fn to_result_from_decision_denies_at_limit_without_inflating_count() {
     assert_eq!(result.remaining, 0);
     assert_eq!(result.retry_after_secs(), 50);
 }
+
+#[tokio::test]
+async fn check_denies_when_max_requests_is_zero() {
+    let pool = PgPool::connect_lazy("postgres://underlay:underlay@localhost/underlay")
+        .expect("lazy pool should construct");
+    let backend = PostgresBackend::new(pool);
+
+    let config = RateLimitConfig::new(0, Duration::from_secs(60));
+    let result = backend
+        .check("blocked:key", &config)
+        .await
+        .expect("check with max_requests = 0 should short-circuit without DB I/O");
+    assert!(result.is_denied());
+    assert_eq!(result.remaining, 0);
+    assert_eq!(result.count, 0);
+    assert_eq!(result.retry_after_secs(), 60);
+
+    let short_window = RateLimitConfig::new(0, Duration::from_millis(500));
+    let short_result = backend
+        .check("blocked:short", &short_window)
+        .await
+        .expect("check with max_requests = 0 and sub-second window should succeed");
+    assert!(short_result.is_denied());
+    assert_eq!(short_result.retry_after_secs(), 1);
+}

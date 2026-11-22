@@ -23,7 +23,7 @@
 //!     let db = TestDb::new().await;
 //!     db.load_fixture("users.sql").await;
 //!     
-//!     let server = TestServer::new(app(db.pool())).await;
+//!     let server = TestServer::new(app(db.pool()));
 //!     let response = server.get("/v1/users").send().await;
 //!     
 //!     assert_eq!(response.status(), 200);

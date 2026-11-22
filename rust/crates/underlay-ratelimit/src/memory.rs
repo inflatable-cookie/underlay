@@ -14,6 +14,13 @@ use crate::error::Result;
 /// entries are evicted to bound memory growth under key churn.
 pub const DEFAULT_MAX_KEYS: usize = 100_000;
 
+/// Minimum interval between background cleanup sweeps to prevent busy-spinning.
+pub const MIN_CLEANUP_INTERVAL: Duration = Duration::from_millis(10);
+
+/// Maximum number of entries inspected per eviction pass so hitting `max_keys`
+/// stays O(1) instead of scanning the entire map on every insertion.
+const EVICTION_SAMPLE_SIZE: usize = 32;
+
 /// Entry in the rate limit store.
 #[derive(Debug, Clone)]
 struct RateLimitEntry {
@@ -147,16 +154,18 @@ impl InMemoryBackend {
 
     /// Create a new in-memory backend with periodic cleanup.
     ///
-    /// Expired entries are cleaned up at the specified interval to prevent
+    /// Expired entries are cleaned up at the specified interval (clamped to at
+    /// least [`MIN_CLEANUP_INTERVAL`] to prevent busy-spinning) to prevent
     /// unbounded memory growth. The background task is aborted automatically
     /// when the last clone of this backend is dropped.
     pub fn with_cleanup(cleanup_interval: Duration) -> Self {
+        let interval = clamp_cleanup_interval(cleanup_interval);
         let entries: Arc<DashMap<String, RateLimitEntry>> = Arc::new(DashMap::new());
         let cleanup_entries = Arc::clone(&entries);
 
         let handle = tokio::spawn(async move {
             loop {
-                tokio::time::sleep(cleanup_interval).await;
+                tokio::time::sleep(interval).await;
                 // Remove entries where the window has expired
                 cleanup_entries
                     .retain(|_, entry| entry.window_start.elapsed() < entry.window_duration);
@@ -174,18 +183,38 @@ impl InMemoryBackend {
         }
     }
 
-    /// Evict expired (and, if still full, arbitrary) entries before inserting a
-    /// new key so tracked keys remain bounded under key churn.
+    /// Evict expired (and, if still full, oldest-sampled) entries before
+    /// inserting a new key so tracked keys remain bounded under key churn
+    /// without performing an O(N) full-map scan on every insertion.
     fn evict_if_full(&self, incoming_key: &str) {
         if self.entries.len() < self.max_keys || self.entries.contains_key(incoming_key) {
             return;
         }
 
-        self.entries
-            .retain(|_, entry| entry.window_start.elapsed() < entry.window_duration);
-
         while self.entries.len() >= self.max_keys {
-            let Some(victim) = self.entries.iter().next().map(|entry| entry.key().clone()) else {
+            let mut expired = Vec::new();
+            let mut oldest: Option<(String, Instant)> = None;
+
+            for entry in self.entries.iter().take(EVICTION_SAMPLE_SIZE) {
+                let value = entry.value();
+                if value.window_start.elapsed() >= value.window_duration {
+                    expired.push(entry.key().clone());
+                } else if oldest
+                    .as_ref()
+                    .is_none_or(|(_, oldest_start)| value.window_start < *oldest_start)
+                {
+                    oldest = Some((entry.key().clone(), value.window_start));
+                }
+            }
+
+            if !expired.is_empty() {
+                for key in expired {
+                    self.entries.remove(&key);
+                }
+                continue;
+            }
+
+            let Some((victim, _)) = oldest else {
                 break;
             };
             self.entries.remove(&victim);
@@ -281,6 +310,10 @@ impl RateLimitBackend for InMemoryBackend {
         let remaining = config.max_requests().saturating_sub(entry.count);
         Ok(RateLimitResult::allowed(remaining, entry.count))
     }
+}
+
+fn clamp_cleanup_interval(interval: Duration) -> Duration {
+    interval.max(MIN_CLEANUP_INTERVAL)
 }
 
 #[cfg(test)]

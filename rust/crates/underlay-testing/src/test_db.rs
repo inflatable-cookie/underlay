@@ -86,18 +86,23 @@ impl TestDb {
         let (database_url, container) = match std::env::var(TEST_DATABASE_URL_ENV) {
             Ok(url) if !url.trim().is_empty() => (url, None),
             _ => {
-                assert_docker_available();
-                let container = Arc::new(
-                    Postgres::default()
-                        .start()
-                        .expect("failed to start postgres test container"),
-                );
-                let url = format!(
-                    "postgres://postgres:postgres@127.0.0.1:{}/postgres",
-                    container
-                        .get_host_port_ipv4(5432)
-                        .expect("postgres port 5432 should be mapped")
-                );
+                let (url, container) = tokio::task::spawn_blocking(|| {
+                    assert_docker_available();
+                    let container = Arc::new(
+                        Postgres::default()
+                            .start()
+                            .expect("failed to start postgres test container"),
+                    );
+                    let url = format!(
+                        "postgres://postgres:postgres@127.0.0.1:{}/postgres",
+                        container
+                            .get_host_port_ipv4(5432)
+                            .expect("postgres port 5432 should be mapped")
+                    );
+                    (url, container)
+                })
+                .await
+                .expect("postgres test container setup task panicked");
                 (url, Some(container))
             }
         };

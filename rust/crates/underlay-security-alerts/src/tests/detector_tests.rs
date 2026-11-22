@@ -135,4 +135,55 @@ mod tests {
             );
         }
     }
+
+    #[test]
+    fn non_positive_thresholds_never_trigger_alerts() {
+        for threshold in [0, -1, -100] {
+            let config = SecurityAlertConfig::default()
+                .with_failed_attempts_threshold(threshold)
+                .with_distinct_users_threshold(threshold)
+                .with_lockouts_threshold(threshold)
+                .with_account_failed_attempts_threshold(threshold)
+                .with_account_distinct_ips_threshold(threshold)
+                .with_global_failed_attempts_threshold(threshold);
+
+            assert!(evaluate_alerts(
+                LoginAttemptSignalCounts {
+                    failed_attempts: 0,
+                    distinct_users: 0,
+                    lockouts: 0,
+                },
+                &config,
+            )
+            .is_empty());
+
+            assert!(evaluate_alerts(
+                LoginAttemptSignalCounts {
+                    failed_attempts: 50,
+                    distinct_users: 10,
+                    lockouts: 5,
+                },
+                &config,
+            )
+            .is_empty());
+
+            assert!(evaluate_account_alerts(
+                AccountSignalCounts {
+                    failed_attempts: 0,
+                    distinct_ips: 0,
+                },
+                &config,
+            )
+            .is_empty());
+
+            assert!(evaluate_global_alerts(
+                GlobalSignalCounts {
+                    failed_attempts: 0,
+                    distinct_ips: 0,
+                },
+                &config,
+            )
+            .is_empty());
+        }
+    }
 }
