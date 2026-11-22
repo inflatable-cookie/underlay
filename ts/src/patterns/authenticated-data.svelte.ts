@@ -1,3 +1,4 @@
+import { untrack } from "svelte";
 import * as authModule from "./auth";
 import {
 	errorFromUnknown,
@@ -280,7 +281,7 @@ export function useAuthenticatedData<T>(
 		};
 		const run = (async () => {
 			try {
-				const fetchKey = options.queryKey?.() ?? null;
+				const fetchKey = options.queryKey ? untrack(() => options.queryKey?.() ?? null) : null;
 				if (_previousQueryKey === null) {
 					_previousQueryKey = fetchKey;
 				}

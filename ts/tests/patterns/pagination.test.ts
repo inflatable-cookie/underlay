@@ -2,15 +2,13 @@ import { describe, expect, it, vi } from "vitest";
 
 type PaginationModule = typeof import("../../src/patterns/pagination.svelte");
 
-async function loadPaginationModule(options?: {
-	globalConfig?: Record<string, unknown> | null;
-}) {
+async function loadPaginationModule(options?: { globalConfig?: Record<string, unknown> | null }) {
 	vi.resetModules();
 	(globalThis as any).$state = <T>(initial: T) => initial;
-	(globalThis as any).$derived = Object.assign(
-		<T>(value: T) => value,
-		{ by: <T>(fn: () => T) => fn() }
-	);
+	(globalThis as any).$derived = Object.assign(<T>(value: T) => value, {
+		by: <T>(fn: () => T) => fn(),
+	});
+	(globalThis as any).$effect = () => {};
 
 	vi.doMock("../../src/patterns/auth", () => ({
 		getAuthConfig: () => options?.globalConfig ?? null,
@@ -30,7 +28,7 @@ describe("patterns/pagination.svelte.ts", () => {
 				hasMore: false,
 				total: 0,
 			}),
-			{}
+			{},
 		);
 		expect(controller.error).toBeNull();
 
@@ -116,10 +114,7 @@ describe("patterns/pagination.svelte.ts", () => {
 	});
 
 	it("handles server pagination error and refresh-retry branches", async () => {
-		const onRefresh = vi
-			.fn()
-			.mockResolvedValueOnce("fresh")
-			.mockResolvedValueOnce(null);
+		const onRefresh = vi.fn().mockResolvedValueOnce("fresh").mockResolvedValueOnce(null);
 		const mod = await loadPaginationModule({
 			globalConfig: {
 				getToken: () => "token",

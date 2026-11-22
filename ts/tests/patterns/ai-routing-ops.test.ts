@@ -3,16 +3,14 @@ import { describe, expect, it, vi } from "vitest";
 async function loadAiRoutingModule() {
 	vi.resetModules();
 	(globalThis as any).$state = <T>(initial: T) => initial;
+	(globalThis as any).$effect = () => {};
 	return await import("../../src/patterns/ai-routing-ops.svelte");
 }
 
 describe("patterns/ai-routing-ops.svelte.ts", () => {
 	it("refreshes all datasets and applies defaults", async () => {
-		const {
-			createAiRoutingOpsController,
-			toPercent,
-			estimateSuccessRate,
-		} = await loadAiRoutingModule();
+		const { createAiRoutingOpsController, toPercent, estimateSuccessRate } =
+			await loadAiRoutingModule();
 
 		const source = {
 			fetchDiagnostics: vi.fn(async () => ({
