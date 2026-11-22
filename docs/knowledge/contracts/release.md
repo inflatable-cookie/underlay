@@ -26,11 +26,12 @@ asks, and never pushes a tag on its own.
 2. Add the `CHANGELOG.md` entry. A consumer-affecting release needs the
    contract 023 upgrade block: impact class, exact consumer actions, any
    deprecation window, validation commands, and a rollback tag.
-3. Check readiness: `effigy release status --check-gates`. It runs the six
+3. Check readiness: `effigy release status --check-gates`. It runs the seven
    gates declared in `effigy.toml` under `[release.gates]`: `version-sync`
    (`effigy check:release-version-sync`), `validate` (`effigy validate`),
-   `clippy` (`effigy rust:clippy`), `rust` (`effigy rust:check`),
-   `rust-test` (`effigy rust:test`), and `docs` (`effigy qa:docs`).
+   `clippy` (`effigy rust:clippy`), `fmt-rust` (`effigy fmt:rust:check`),
+   `rust` (`effigy rust:check`), `rust-test` (`effigy rust:test`), and `docs`
+   (`effigy qa:docs`).
 4. Prepare: `effigy release prepare --plan` to review, then
    `effigy release prepare`. This bumps the version and syncs `Cargo.lock` and
    `package.json`. Those are the only `sync-files` in `effigy.toml`, so bump
@@ -49,7 +50,9 @@ asks, and never pushes a tag on its own.
 
 ## Verify
 
-- The `rust.yml` workflow passes on the release commit.
+- The `rust.yml` and `ci.yml` workflows pass on the release commit. `rust.yml`
+  runs the Rust build, test, clippy, format, and MSRV jobs; `ci.yml` runs the
+  `ts-and-docs` and `cargo-deny` jobs.
 - A consumer can resolve the new tag on both language surfaces.
 - For a consumer-affecting release, one reference consumer upgrades from the
   tag and runs its own validation.

@@ -52,7 +52,7 @@ jobs:
           PY
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@master
+        uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master (resolved 2026-11-22)
         with:
           toolchain: ${{ steps.toolchain.outputs.channel }}
           components: ${{ steps.toolchain.outputs.components }}
@@ -64,7 +64,7 @@ jobs:
         run: cargo fmt --all --check
 
       - name: Clippy
-        run: cargo clippy --workspace --all-targets -- -D warnings
+        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
 
       - name: Build
         run: cargo build --workspace --all-features --locked
@@ -92,3 +92,26 @@ jobs:
           cargo test --locked --lib
           -p underlay-ratelimit --features postgres
           -- --ignored
+
+  # Minimum supported Rust version: the workspace declares rust-version 1.97.1
+  # in Cargo.toml. rust-toolchain.toml pins the development channel, so the
+  # MSRV step overrides it explicitly with RUSTUP_TOOLCHAIN.
+  msrv:
+    name: MSRV (1.97.1)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Install Rust 1.97.1
+        uses: dtolnay/rust-toolchain@df2a88e9fe4098bad09cb42c3dec7187f15861fc # master (resolved 2026-11-22)
+        with:
+          toolchain: "1.97.1"
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+
+      - name: Check workspace on MSRV
+        env:
+          RUSTUP_TOOLCHAIN: "1.97.1"
+        run: cargo check --workspace --all-features --locked

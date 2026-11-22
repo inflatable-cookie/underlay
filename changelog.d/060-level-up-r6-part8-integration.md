@@ -1,0 +1,8 @@
+Closed the remaining Part 8 and Integration gaps from the Round 5 audit.
+
+- Enabled `--all-features` on Clippy: `effigy rust:clippy` and the `rust.yml` clippy step now check every feature. `underlay-media` renditions take a `ReadGenerateRequest` struct instead of eight positional arguments, which clears the `clippy::too_many_arguments` lint without an `#[allow]`.
+- Added an `msrv` job to `rust.yml` that runs `cargo check --workspace --all-features --locked` on Rust 1.97.1, the workspace `rust-version`. The job overrides the `rust-toolchain.toml` pin with `RUSTUP_TOOLCHAIN`.
+- Pinned `dtolnay/rust-toolchain`, `oven-sh/setup-bun`, and `EmbarkStudios/cargo-deny-action` to commit SHAs with version comments.
+- `ci.yml` now runs `effigy qa` (validate plus docs) in place of nine duplicated validation steps, and runs `effigy check:consumer-conformance-fixtures` on every pull request. The proof scripts use `${RUNNER_TEMP}/underlay-scratch` only inside GitHub Actions; the local `/Volumes/Builds` rule is unchanged. Contract 123 documents the exception.
+- `effigy.toml`: added `CHANGELOG.md` to `qa:docs:links` and a `fmt-rust` release gate (`effigy fmt:rust:check`).
+- Synced stale inventories and contracts: the system inventory now lists the four-consumer fleet and the live crates; the package map lists every `underlay-validation` feature and the `styles/` domain; contract 122 lists `underlay-query`; contract 023 has the current Nightfire range and retired `nightfire/*` shims; guide 076 uses the SSH Nightfire URL; `release.md` names `ci.yml` and the seven release gates; the README has a `ci.yml` badge.

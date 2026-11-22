@@ -4,11 +4,22 @@ set -euo pipefail
 REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 # Agent/proof scratch belongs on the Builds volume. Refuse when it is not
 # mounted instead of falling back to $TMPDIR, $HOME or the checkout.
-SCRATCH_BASE="/Volumes/Builds/scratch/underlay"
-if [[ ! -d "$SCRATCH_BASE" ]]; then
-	echo "error: agent/proof scratch volume is unavailable: $SCRATCH_BASE" >&2
-	echo 'Mount the Builds volume; do not fall back to $TMPDIR, $HOME or the checkout.' >&2
-	exit 1
+# Hosted GitHub Actions runners have no Builds volume, so inside Actions the
+# proof uses the runner's own temp directory (contract 123, CI-only exception).
+if [[ "${GITHUB_ACTIONS:-}" == true ]]; then
+	if [[ -z "${RUNNER_TEMP:-}" ]]; then
+		echo 'error: GITHUB_ACTIONS=true but RUNNER_TEMP is unset or empty; refusing to choose a scratch base' >&2
+		exit 1
+	fi
+	SCRATCH_BASE="${RUNNER_TEMP}/underlay-scratch"
+	mkdir -p -- "$SCRATCH_BASE"
+else
+	SCRATCH_BASE="/Volumes/Builds/scratch/underlay"
+	if [[ ! -d "$SCRATCH_BASE" ]]; then
+		echo "error: agent/proof scratch volume is unavailable: $SCRATCH_BASE" >&2
+		echo 'Mount the Builds volume; do not fall back to $TMPDIR, $HOME or the checkout.' >&2
+		exit 1
+	fi
 fi
 TMP_ROOT="$(mktemp -d "$SCRATCH_BASE/consumer-conformance.XXXXXXXX")"
 trap 'rm -rf -- "$TMP_ROOT"' EXIT

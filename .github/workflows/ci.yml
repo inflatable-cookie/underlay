@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
 
       - name: Setup Effigy
         uses: inflatable-cookie/setup-effigy@987fd556617ea2c3e0ab5cef6b47b250817f50c8 # v1.0.0
@@ -27,35 +27,13 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Check package exports
-        run: bun ts/scripts/check-exports.ts
+      # `effigy qa` is `validate` (health, svelte-check, tsc, unit and component
+      # tests) plus `qa:docs`, so CI and local Effigy share one definition.
+      - name: Validate and docs (effigy qa)
+        run: effigy qa
 
-      - name: Check component test hygiene
-        run: bun ts/scripts/check-component-test-hygiene.ts
-
-      - name: Check Poodle prop names
-        run: bun ts/scripts/check-poodle-prop-names.ts
-
-      - name: Check release version sync
-        run: bun ts/scripts/check-release-version-sync.ts
-
-      - name: Check guardrails
-        run: bun ts/src/tools/guardrails.ts
-
-      - name: Svelte check
-        run: bun x svelte-check --tsconfig ./ts/tsconfig.json
-
-      - name: TypeScript typecheck
-        run: bun x tsc -p ./ts/tsconfig.json
-
-      - name: Unit tests
-        run: bun x vitest run
-
-      - name: Component tests
-        run: bun x vitest run -c vitest.component.config.ts
-
-      - name: Docs checks
-        run: effigy qa:docs
+      - name: Consumer conformance fixtures
+        run: effigy check:consumer-conformance-fixtures
 
   cargo-deny:
     name: cargo-deny
@@ -65,4 +43,4 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Run cargo-deny
-        uses: EmbarkStudios/cargo-deny-action@v2
+        uses: EmbarkStudios/cargo-deny-action@17aeb3c839e42274e2b8adf721c8c65edfdc74dd # v2

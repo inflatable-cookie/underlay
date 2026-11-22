@@ -200,7 +200,7 @@ Rules:
 - every entry in `package.json` `dependencies` is a semver range; no exact
   versions
 - the Poodle range is `>=0.4.4 <0.5` and the Nightfire range is
-  `>=0.4.1 <0.5`
+  `>=0.6.0 <0.7`
 - dedupe holds only for a consumer pin inside the declared range; a pin below
   a range floor, such as Nightfire `0.4.0`, still yields two copies next to
   Underlay's
@@ -338,9 +338,10 @@ Rules:
 - standalone Nightfire consumers pin a validated Nightfire release directly,
   npm version for TypeScript and Git tag for Rust; they do not depend on
   Underlay merely to reach Nightfire
-- the historical `@inflatable-cookie/underlay/nightfire/*` exports are a
-  deprecation facade during `g12`; they resolve to the same released
-  Nightfire implementation and cannot become a fork
+- the 14 `@inflatable-cookie/underlay/nightfire/*` shims are retired and are no
+  longer an active `g12` facade; only `@inflatable-cookie/underlay/nightfire/editor`
+  and `@inflatable-cookie/underlay/nightfire/media` remain exported. They resolve to
+  the same released Nightfire implementation and cannot become a fork
 - the historical Rust `underlay-nightfire` facade is retired; consumers import
   `nightfire` directly
 
