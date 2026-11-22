@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { render } from "@testing-library/svelte";
 import { flushSync } from "svelte";
 import { describe, expect, it, vi } from "vitest";
 import {
@@ -7,6 +8,7 @@ import {
 	type AiRoutingOpsSource,
 } from "../../src/patterns/ai-routing-ops.svelte";
 import { createEffectRoot } from "./effect-root.svelte";
+import ImmediateUnmountHarness from "./ImmediateUnmountHarness.svelte";
 
 function deferred<T>() {
 	let resolve!: (value: T) => void;
@@ -154,5 +156,87 @@ describe("patterns/ai-routing-ops.svelte.ts (compiled)", () => {
 		await inFlight;
 
 		expect(controller.diagnostics).toBeNull();
+	});
+
+	it("does not mutate state when unmounted immediately before the initial effect flush", async () => {
+		const gate = deferred<AiRoutingDiagnostics>();
+		let controller!: ReturnType<typeof createAiRoutingOpsController>;
+
+		const { unmount } = render(ImmediateUnmountHarness, {
+			aiSource: {
+				fetchDiagnostics: vi.fn(() => gate.promise),
+				fetchMetrics: vi.fn(async () => []),
+				fetchCost: vi.fn(async () => []),
+				fetchCostAnomalies: vi.fn(async () => []),
+				fetchAlerts: vi.fn(async () => ({
+					deadLetterCount24h: 0,
+					runtimeFailureCount24h: 0,
+					circuitOpenCount24h: 0,
+					fallbackRunCount24h: 0,
+					exhaustedChainRunCount24h: 0,
+				})),
+				fetchParity: vi.fn(async () => []),
+			},
+			onAiReady: (c) => {
+				controller = c;
+			},
+		});
+
+		const inFlight = controller.refreshAll();
+		// Unmount immediately without flushing effects
+		unmount();
+
+		gate.resolve(makeDiagnostics(99));
+		await inFlight;
+
+		expect(controller.diagnostics).toBeNull();
+	});
+
+	it("settles loading and captures error when the newest refresh source throws synchronously", async () => {
+		const first = deferred<AiRoutingDiagnostics>();
+		let callCount = 0;
+
+		const source: AiRoutingOpsSource = {
+			fetchDiagnostics: vi.fn(() => {
+				callCount += 1;
+				if (callCount === 1) {
+					return first.promise;
+				}
+				throw new Error("sync diagnostics failure");
+			}),
+			fetchMetrics: vi.fn(async () => []),
+			fetchCost: vi.fn(async () => []),
+			fetchCostAnomalies: vi.fn(async () => []),
+			fetchAlerts: vi.fn(async () => ({
+				deadLetterCount24h: 0,
+				runtimeFailureCount24h: 0,
+				circuitOpenCount24h: 0,
+				fallbackRunCount24h: 0,
+				exhaustedChainRunCount24h: 0,
+			})),
+			fetchParity: vi.fn(async () => []),
+		};
+
+		let controller!: ReturnType<typeof createAiRoutingOpsController>;
+		const dispose = createEffectRoot(() => {
+			controller = createAiRoutingOpsController(source);
+		});
+		flushSync();
+
+		try {
+			const req1 = controller.refreshAll();
+			const req2 = controller.refreshAll();
+
+			await req2;
+			expect(controller.loading).toBe(false);
+			expect(controller.error).toBe("sync diagnostics failure");
+
+			first.resolve(makeDiagnostics(1));
+			await req1;
+			expect(controller.loading).toBe(false);
+			expect(controller.diagnostics).toBeNull();
+		} finally {
+			dispose();
+		}
 	});
 });

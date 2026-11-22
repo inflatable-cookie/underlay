@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import { untrack } from "svelte";
+  import { onDestroy, untrack } from "svelte";
   import { Callout } from "@inflatable-cookie/poodle-svelte";
   import type { BannerVariant } from "./banner";
   import type { SpaFormResult, SpaSubmitHandler, SpaNavigateFn } from "./spa-form-types";
@@ -86,7 +86,7 @@
 
   let disposed = false;
 
-  $effect(() => () => {
+  onDestroy(() => {
     disposed = true;
   });
 
@@ -100,12 +100,10 @@
    * and calls the onSubmit handler instead of posting to the server.
    */
   const spaEnhance = (node: HTMLFormElement) => {
-    let destroyed = false;
-
     async function handleSubmit(event: SubmitEvent) {
       event.preventDefault();
 
-      if (loading || disposed || destroyed) {
+      if (loading || disposed) {
         return;
       }
 
@@ -126,7 +124,7 @@
 
         // Call the submit handler
         const result = await onSubmit(formData);
-        if (disposed || destroyed) {
+        if (disposed) {
           return;
         }
 
@@ -143,19 +141,19 @@
         // Handle redirect if specified. Redirect targets can originate from
         // an untrusted redirectTo query param, so resolve to a safe
         // same-origin path before navigating.
-        if (!disposed && !destroyed && result.success && result.redirectTo) {
+        if (!disposed && result.success && result.redirectTo) {
           const nav = navigate ?? defaultNavigate;
           await nav(resolveRedirectTo(result.redirectTo));
         }
       } catch (e) {
-        if (disposed || destroyed) {
+        if (disposed) {
           return;
         }
         // Handle unexpected errors
         error = e instanceof Error ? e.message : "An unexpected error occurred";
         success = false;
       } finally {
-        if (!disposed && !destroyed) {
+        if (!disposed) {
           loading = false;
         }
       }
@@ -165,7 +163,6 @@
 
     return {
       destroy() {
-        destroyed = true;
         node.removeEventListener("submit", handleSubmit);
       }
     };

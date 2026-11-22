@@ -118,6 +118,7 @@ export function applyReorderConflict<T extends ReorderableItem>(
 		controller.removeItems(conflict.removedIds);
 	}
 
+	const remainingPendingIds = new Set(controller.pending.map((item) => item.id));
 	const unresolvedAddedIds: string[] = [];
 	const addedItems: T[] = [];
 	const addedIds: string[] = [];
@@ -125,6 +126,10 @@ export function applyReorderConflict<T extends ReorderableItem>(
 
 	for (const id of conflict.addedIds) {
 		if (seenAddedIds.has(id)) continue;
+		if (remainingPendingIds.has(id)) {
+			seenAddedIds.add(id);
+			continue;
+		}
 		const item = latestById.get(id);
 		if (item) {
 			seenAddedIds.add(id);

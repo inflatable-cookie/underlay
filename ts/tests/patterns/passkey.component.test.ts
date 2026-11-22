@@ -120,4 +120,94 @@ describe("patterns/passkey.svelte.ts (compiled)", () => {
 			dispose();
 		}
 	});
+
+	it("releases registration and authentication guards after a synchronous onStart throw so retry works", async () => {
+		const challenge = arrayBufferToBase64url(new Uint8Array([1, 2, 3]).buffer);
+		const userId = arrayBufferToBase64url(new Uint8Array([4, 5, 6]).buffer);
+
+		const create = vi.fn(
+			async () =>
+				({
+					id: "cred-reg",
+					rawId: new Uint8Array([7, 8, 9]).buffer,
+					type: "public-key",
+					response: {
+						clientDataJSON: new Uint8Array([10]).buffer,
+						attestationObject: new Uint8Array([11]).buffer,
+					},
+					getClientExtensionResults: () => ({}),
+				}) as unknown as PublicKeyCredential,
+		);
+		const get = vi.fn(
+			async () =>
+				({
+					id: "cred-auth",
+					rawId: new Uint8Array([7, 8, 9]).buffer,
+					type: "public-key",
+					response: {
+						clientDataJSON: new Uint8Array([10]).buffer,
+						authenticatorData: new Uint8Array([11]).buffer,
+						signature: new Uint8Array([12]).buffer,
+						userHandle: null,
+					},
+					getClientExtensionResults: () => ({}),
+				}) as unknown as PublicKeyCredential,
+		);
+		vi.stubGlobal("navigator", {
+			credentials: { create, get },
+		});
+		vi.stubGlobal("PublicKeyCredential", class {});
+
+		let regAttempts = 0;
+		const regOnStart = vi.fn(() => {
+			regAttempts += 1;
+			if (regAttempts === 1) {
+				throw new Error("sync reg start failure");
+			}
+			return Promise.resolve({
+				challenge,
+				user: { id: userId, name: "user@example.com", displayName: "User" },
+			});
+		});
+		const regOnFinish = vi.fn(async () => undefined);
+
+		let authAttempts = 0;
+		const authOnStart = vi.fn(() => {
+			authAttempts += 1;
+			if (authAttempts === 1) {
+				throw new Error("sync auth start failure");
+			}
+			return Promise.resolve({ challenge });
+		});
+		const authOnFinish = vi.fn(async () => undefined);
+
+		let registration!: ReturnType<typeof usePasskeyRegistration>;
+		let authentication!: ReturnType<typeof usePasskeyAuthentication>;
+		const dispose = createEffectRoot(() => {
+			registration = usePasskeyRegistration({ onStart: regOnStart, onFinish: regOnFinish });
+			authentication = usePasskeyAuthentication({ onStart: authOnStart, onFinish: authOnFinish });
+		});
+
+		try {
+			await expect(registration.start()).rejects.toMatchObject({
+				message: "sync reg start failure",
+			});
+			expect(registration.loading).toBe(false);
+			await registration.start();
+			expect(regOnStart).toHaveBeenCalledTimes(2);
+			expect(create).toHaveBeenCalledTimes(1);
+			expect(regOnFinish).toHaveBeenCalledTimes(1);
+
+			await expect(authentication.start()).rejects.toMatchObject({
+				message: "sync auth start failure",
+			});
+			expect(authentication.loading).toBe(false);
+			await authentication.start();
+			expect(authOnStart).toHaveBeenCalledTimes(2);
+			expect(get).toHaveBeenCalledTimes(1);
+			expect(authOnFinish).toHaveBeenCalledTimes(1);
+		} finally {
+			dispose();
+		}
+	});
 });

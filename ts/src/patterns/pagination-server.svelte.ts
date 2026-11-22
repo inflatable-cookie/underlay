@@ -1,3 +1,4 @@
+import { onDestroy } from "svelte";
 import {
 	runAuthenticatedFetch,
 	shouldSkipAuthReadyFetch,
@@ -33,17 +34,19 @@ export function createPaginationController<T>(
 	options: ServerPaginationOptions<T> = {},
 ): ServerPaginationResult<T> {
 	const getInitialPageSize = (): number => {
-		if (options.persistKey && typeof localStorage !== "undefined") {
+		if (options.persistKey) {
 			try {
-				const stored = localStorage.getItem(options.persistKey);
-				if (stored) {
-					const parsed = parseInt(stored, 10);
-					if (!isNaN(parsed) && parsed > 0 && parsed <= MAX_PAGE_SIZE) {
-						return parsed;
+				if (typeof localStorage !== "undefined") {
+					const stored = localStorage.getItem(options.persistKey);
+					if (stored) {
+						const parsed = parseInt(stored, 10);
+						if (!isNaN(parsed) && parsed > 0 && parsed <= MAX_PAGE_SIZE) {
+							return parsed;
+						}
 					}
 				}
 			} catch {
-				// Ignore storage read errors (e.g. private browsing or restricted storage).
+				// Ignore storage access/read errors (e.g. opaque origin, private browsing, or restricted storage).
 			}
 		}
 		return options.pageSize ?? DEFAULT_PAGE_SIZE;
@@ -68,10 +71,16 @@ export function createPaginationController<T>(
 	let _inFlight: Promise<boolean> | null = null;
 	let pendingFetch: { cursor: string | null; direction: "forward" | "backward" } | null = null;
 
-	$effect(() => () => {
+	const markDisposed = () => {
 		disposed = true;
 		pendingFetch = null;
-	});
+	};
+	try {
+		onDestroy(markDisposed);
+	} catch {
+		// Outside component initialization (e.g. $effect.root or unit tests); fall back to effect teardown.
+	}
+	$effect(() => markDisposed);
 
 	const hasNextPage = $derived(hasMore || nextCursor !== null);
 	const hasPrevPage = $derived(currentPage > 1);
@@ -201,10 +210,14 @@ export function createPaginationController<T>(
 		}
 
 		currentPage++;
-		const succeeded = await doFetch(targetCursor, "forward");
-		if (!succeeded && !disposed && resetSeq === navResetSeq) {
-			currentPage = prevPageNumber;
-			cursorHistory = prevHistory;
+		let succeeded = false;
+		try {
+			succeeded = await doFetch(targetCursor, "forward");
+		} finally {
+			if (!succeeded && !disposed && resetSeq === navResetSeq) {
+				currentPage = prevPageNumber;
+				cursorHistory = prevHistory;
+			}
 		}
 	};
 
@@ -218,19 +231,21 @@ export function createPaginationController<T>(
 		currentPage--;
 
 		const historyCursor = cursorHistory.pop();
-		let succeeded: boolean;
-		if (historyCursor !== undefined) {
-			succeeded = await doFetch(historyCursor || null, "forward");
-		} else if (prevCursor) {
-			succeeded = await doFetch(prevCursor, "backward");
-		} else {
-			cursorHistory = [];
-			succeeded = await doFetch(null, "forward");
-		}
-
-		if (!succeeded && !disposed && resetSeq === navResetSeq) {
-			currentPage = prevPageNumber;
-			cursorHistory = prevHistory;
+		let succeeded = false;
+		try {
+			if (historyCursor !== undefined) {
+				succeeded = await doFetch(historyCursor || null, "forward");
+			} else if (prevCursor) {
+				succeeded = await doFetch(prevCursor, "backward");
+			} else {
+				cursorHistory = [];
+				succeeded = await doFetch(null, "forward");
+			}
+		} finally {
+			if (!succeeded && !disposed && resetSeq === navResetSeq) {
+				currentPage = prevPageNumber;
+				cursorHistory = prevHistory;
+			}
 		}
 	};
 
@@ -244,11 +259,13 @@ export function createPaginationController<T>(
 		cursorHistory = [];
 		resetSeq++;
 
-		if (options.persistKey && typeof localStorage !== "undefined") {
+		if (options.persistKey) {
 			try {
-				localStorage.setItem(options.persistKey, String(newSize));
+				if (typeof localStorage !== "undefined") {
+					localStorage.setItem(options.persistKey, String(newSize));
+				}
 			} catch {
-				// Ignore storage write errors (e.g. quota exceeded or private browsing).
+				// Ignore storage access/write errors (e.g. opaque origin, quota exceeded, or private browsing).
 			}
 		}
 

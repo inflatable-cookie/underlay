@@ -109,6 +109,47 @@ describe("patterns/reorder-session.svelte.ts (compiled)", () => {
 		}
 	});
 
+	it("excludes IDs already present in controller.pending from addedIds and highlightedIds", async () => {
+		let localSession!: ReturnType<typeof createLocalReorderSession<{ id: string; label: string }>>;
+		let controller!: ReturnType<typeof createReorderController<{ id: string; label: string }>>;
+		const dispose = createEffectRoot(() => {
+			controller = createReorderController(
+				[{ id: "already", label: "Already" }],
+				vi.fn(async () => undefined),
+			);
+			localSession = createLocalReorderSession({
+				getController: () => controller,
+				getLatestItems: () => [
+					{ id: "already", label: "Already" },
+					{ id: "new-item", label: "New Item" },
+				],
+				entityLabel: "item",
+				pushInfo: vi.fn(),
+				pushSuccess: vi.fn(),
+				onRefresh: vi.fn(async () => undefined),
+			});
+		});
+
+		try {
+			localSession.enter();
+			await localSession.handleError({
+				status: 409,
+				raw: {
+					error: { message: "Items changed" },
+					context: {
+						added_ids: ["already", "new-item"],
+						removed_ids: [],
+					},
+				},
+			});
+
+			expect(localSession.highlightedIds).toEqual(["new-item"]);
+			expect(controller.pending.map((item) => item.id)).toEqual(["already", "new-item"]);
+		} finally {
+			dispose();
+		}
+	});
+
 	it("creates a working controller outside $derived in createLoadedReorderSession", async () => {
 		const submitReorder = vi.fn(async () => undefined);
 

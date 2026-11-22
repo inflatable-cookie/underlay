@@ -1,3 +1,5 @@
+import { onDestroy } from "svelte";
+
 export interface AiRoutingDiagnostics {
 	configVersion: number;
 	providerCount: number;
@@ -120,6 +122,14 @@ function normalizeError(error: unknown): string {
 	return "Failed to load AI routing data";
 }
 
+function invokeAsync<T>(fn: () => Promise<T>): Promise<T> {
+	try {
+		return Promise.resolve(fn());
+	} catch (cause) {
+		return Promise.reject(cause);
+	}
+}
+
 export function createAiRoutingOpsController(
 	source: AiRoutingOpsSource,
 	options: AiRoutingOpsOptions = {},
@@ -140,9 +150,15 @@ export function createAiRoutingOpsController(
 	let disposed = false;
 	let requestSeq = 0;
 
-	$effect(() => () => {
+	const markDisposed = () => {
 		disposed = true;
-	});
+	};
+	try {
+		onDestroy(markDisposed);
+	} catch {
+		// Outside component initialization (e.g. $effect.root or unit tests); fall back to effect teardown.
+	}
+	$effect(() => markDisposed);
 
 	const refreshAll = async () => {
 		if (disposed) return;
@@ -159,12 +175,12 @@ export function createAiRoutingOpsController(
 			alertsResult,
 			parityResult,
 		] = await Promise.allSettled([
-			source.fetchDiagnostics(),
-			source.fetchMetrics(metricHours),
-			source.fetchCost(costDays),
-			source.fetchCostAnomalies(anomalyDays),
-			source.fetchAlerts(),
-			source.fetchParity(parityHours),
+			invokeAsync(() => source.fetchDiagnostics()),
+			invokeAsync(() => source.fetchMetrics(metricHours)),
+			invokeAsync(() => source.fetchCost(costDays)),
+			invokeAsync(() => source.fetchCostAnomalies(anomalyDays)),
+			invokeAsync(() => source.fetchAlerts()),
+			invokeAsync(() => source.fetchParity(parityHours)),
 		]);
 
 		if (disposed || seq !== requestSeq) {
