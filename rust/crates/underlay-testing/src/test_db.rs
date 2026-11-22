@@ -40,15 +40,45 @@ use underlay_db::{
 };
 use uuid::Uuid;
 
+/// Joins the dedicated non-Tokio container worker thread on execution or drop.
+///
+/// Wrapping the `JoinHandle` in a drop guard guarantees teardown still runs
+/// during Tokio runtime shutdown even if Tokio discards a queued non-mandatory
+/// `spawn_blocking` task while draining the blocking pool.
+struct TeardownJoiner {
+    worker: Option<std::thread::JoinHandle<()>>,
+    done_tx: Option<tokio::sync::oneshot::Sender<()>>,
+}
+
+impl TeardownJoiner {
+    fn join_now(&mut self) {
+        if let Some(worker) = self.worker.take() {
+            let _ = worker.join();
+        }
+        if let Some(done_tx) = self.done_tx.take() {
+            let _ = done_tx.send(());
+        }
+    }
+}
+
+impl Drop for TeardownJoiner {
+    fn drop(&mut self) {
+        self.join_now();
+    }
+}
+
 /// Owns a blocking resource on a dedicated non-Tokio OS thread so neither its
 /// initialization nor its `Drop` (e.g. `testcontainers::Container::drop`'s
 /// internal `Runtime::block_on`) ever runs on a Tokio runtime thread.
 ///
-/// Dropping this handle signals shutdown without blocking the caller's thread.
-/// Callers that need to await teardown completion can use
+/// While live, this handle occupies zero Tokio blocking-pool threads. Dropping
+/// it signals shutdown without blocking the caller's executor thread and hands
+/// the worker join to the Tokio blocking pool only for teardown. Callers that
+/// need to await teardown completion can use
 /// [`BlockingHandle::wait_for_shutdown`].
 struct BlockingHandle {
     shutdown_tx: Option<std::sync::mpsc::Sender<()>>,
+    joiner: Option<TeardownJoiner>,
     done_rx: Option<tokio::sync::oneshot::Receiver<()>>,
 }
 
@@ -85,17 +115,12 @@ impl BlockingHandle {
             })
             .expect("failed to spawn test database container thread");
 
-        // Track the teardown thread inside a Tokio-managed blocking task so
-        // normal Tokio runtime shutdown waits for Docker container removal to
-        // finish, while `BlockingHandle::drop` stays non-blocking on the
-        // executor.
-        tokio::task::spawn_blocking(move || {
-            let _ = worker.join();
-            let _ = done_tx.send(());
-        });
-
         let handle = Self {
             shutdown_tx: Some(shutdown_tx),
+            joiner: Some(TeardownJoiner {
+                worker: Some(worker),
+                done_tx: Some(done_tx),
+            }),
             done_rx: Some(done_rx),
         };
 
@@ -109,9 +134,25 @@ impl BlockingHandle {
         }
     }
 
+    fn schedule_teardown(&mut self) {
+        self.shutdown_tx.take();
+        if let Some(mut joiner) = self.joiner.take() {
+            if let Ok(rt_handle) = tokio::runtime::Handle::try_current() {
+                // Occupy a blocking-pool thread only during teardown; if Tokio
+                // discards this queued task at shutdown, `TeardownJoiner::drop`
+                // still joins the worker before `Runtime::drop` returns.
+                rt_handle.spawn_blocking(move || {
+                    joiner.join_now();
+                });
+            } else {
+                joiner.join_now();
+            }
+        }
+    }
+
     #[cfg_attr(not(test), allow(dead_code))]
     async fn wait_for_shutdown(mut self) {
-        self.shutdown_tx.take();
+        self.schedule_teardown();
         if let Some(done_rx) = self.done_rx.take() {
             let _ = done_rx.await;
         }
@@ -120,9 +161,9 @@ impl BlockingHandle {
 
 impl Drop for BlockingHandle {
     fn drop(&mut self) {
-        // Signal the non-Tokio worker thread to drop the resource without
-        // blocking the caller or stalling the Tokio executor.
-        self.shutdown_tx.take();
+        // Signal the non-Tokio worker thread and schedule its join on the
+        // blocking pool without blocking the caller's executor thread.
+        self.schedule_teardown();
     }
 }
 
