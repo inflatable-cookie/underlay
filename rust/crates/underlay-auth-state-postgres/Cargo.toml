@@ -2,6 +2,7 @@
 name = "underlay-auth-state-postgres"
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 description = "Postgres-backed short-lived auth workflow state store (AuthStateStore) for Underlay"
 

@@ -196,7 +196,7 @@ my-project/
 ```
 
 `acowtancy` is the live proof of this shape. `underlay-reference` is the
-bootstrap fixture and converges on it in `g09.025`.
+bootstrap fixture carrying the Acme example stack.
 
 ## Research
 

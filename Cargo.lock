@@ -2952,8 +2952,8 @@ dependencies = [
 
 [[package]]
 name = "nightfire"
-version = "0.4.1"
-source = "git+https://github.com/inflatable-cookie/nightfire.git?tag=v0.4.1#ccce719c27387d0eae2456ae07d2c169b3244c3f"
+version = "0.6.0"
+source = "git+https://github.com/inflatable-cookie/nightfire.git?tag=v0.6.0#a0b20645f1919b33c160fa04602b488cb7d8c952"
 dependencies = [
  "blake3",
  "serde",

@@ -25,7 +25,7 @@ apps, and design for the general case rather than the caller in front of you.
   `docs/knowledge/contracts/023-release-and-compatibility-rollout.md` when a change is
   consumer-visible.
 - The workspace is pre-1.0 (version in `Cargo.toml` `[workspace.package]` and
-  `package.json`) with MSRV 1.95. Breaking changes take the minor version, not
+  `package.json`) with MSRV 1.97.1. Breaking changes take the minor version, not
   the major. Do not raise MSRV, change edition, or drop a supported toolchain
   without an explicit decision.
 - Treat the current consumer-app sweep family as:

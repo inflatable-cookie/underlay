@@ -2,6 +2,7 @@
 name = "underlay-validation-derive"
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 description = "Derive macro for underlay-validation"
 

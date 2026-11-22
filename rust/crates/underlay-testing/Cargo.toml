@@ -2,6 +2,7 @@
 name = "underlay-testing"
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 description = "Testing utilities for Underlay applications"
 
@@ -22,7 +23,7 @@ axum = { workspace = true, optional = true }
 tower = { workspace = true, optional = true }
 http = { workspace = true, optional = true }
 serde = { workspace = true, optional = true }
-serde_json = { version = "1", optional = true }
+serde_json = { workspace = true, optional = true }
 
 # Time utilities
 chrono = { workspace = true }

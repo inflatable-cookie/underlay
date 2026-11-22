@@ -10,6 +10,8 @@ const tsPath = path.join(repoRoot, "ts/src/client/envelopes.ts");
 const dtoPath = path.join(repoRoot, "rust/crates/underlay-core/src/dto.rs");
 const openapiRustPath = path.join(repoRoot, "rust/crates/underlay-http/src/openapi.rs");
 const pageListRustPath = path.join(repoRoot, "rust/crates/underlay-http/src/page_list.rs");
+const authErrorsRustPath = path.join(repoRoot, "rust/crates/underlay-auth/src/errors.rs");
+const tsErrorsPath = path.join(repoRoot, "ts/src/client/errors.ts");
 
 /**
  * Contract-sync drift guard. Response envelopes are declared across Rust, TS,
@@ -238,5 +240,49 @@ describe("envelope contract drift", () => {
 		expect(apiList).toContain("ToSchema");
 		expect(apiList).toContain('#[serde(rename_all = "snake_case")]');
 		expect(apiList).toContain("pub data: Vec<T>");
+	});
+
+	it("keeps TS client auth error codes aligned with underlay-auth AuthError::code()", () => {
+		const authErrorsRust = readFileSync(authErrorsRustPath, "utf8");
+		const tsErrorsSource = readFileSync(tsErrorsPath, "utf8");
+
+		const codeFnMatch = authErrorsRust.match(
+			/pub fn code\(&self\) -> &'static str \{[\s\S]*?\n    \}/,
+		);
+		expect(codeFnMatch).not.toBeNull();
+
+		const rustCodes: string[] = [];
+		const rustRe = /AuthError::\w+(?:\([^)]*\)|\s*\{[^}]*\})?\s*=>\s*"(auth\.[a-z0-9_]+)"/g;
+		let match: RegExpExecArray | null;
+		while ((match = rustRe.exec(codeFnMatch![0]))) {
+			rustCodes.push(match[1]);
+		}
+
+		expect(rustCodes.length).toBeGreaterThan(0);
+		const rustCodeSet = new Set(rustCodes);
+		expect(rustCodeSet.size).toBe(rustCodes.length);
+
+		const tsCodes = new Set<string>();
+		const tsRe = /"(auth\.[a-z0-9_]+)"/g;
+		while ((match = tsRe.exec(tsErrorsSource))) {
+			tsCodes.add(match[1]);
+		}
+
+		expect(tsCodes.size).toBeGreaterThan(0);
+		for (const code of tsCodes) {
+			expect(
+				rustCodeSet.has(code),
+				`TS auth error code "${code}" missing from AuthError::code()`,
+			).toBe(true);
+		}
+
+		expect(tsCodes).toEqual(
+			new Set([
+				"auth.session_expired",
+				"auth.session_revoked",
+				"auth.token_invalid",
+				"auth.token_fingerprint_mismatch",
+			]),
+		);
 	});
 });

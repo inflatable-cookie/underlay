@@ -25,9 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
+      - uses: dtolnay/rust-toolchain@master
       - name: Run tests
         run: |
           cd apps/api
@@ -39,8 +37,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.3.14
       - uses: inflatable-cookie/setup-effigy@987fd556617ea2c3e0ab5cef6b47b250817f50c8 # v1.0.0
         with:
           version: "0.11.0"
@@ -50,7 +46,11 @@ jobs:
           effigy validate
 ```
 
-See full template in `/code/150-ci-cd/`
+`dtolnay/rust-toolchain@master` reads the repository's `rust-toolchain.toml`
+automatically (including the `rustfmt` and `clippy` components). See Underlay's
+own workflows in [`.github/workflows/rust.yml`](../../.github/workflows/rust.yml)
+and [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) for complete
+examples.
 
 ## Next Steps
 

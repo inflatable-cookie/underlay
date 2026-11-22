@@ -2,6 +2,7 @@
 name = "underlay-ratelimit"
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 description = "Rate limiting with pluggable backends for Underlay"
 

@@ -18,7 +18,7 @@ tooling (`underlay-devtools`, `underlay-testing`).
   reverse, and no runtime crate depends on `underlay-devtools`.
 - Shared dependency versions live in `[workspace.dependencies]` in the root
   `Cargo.toml`. Add a version there, not in a member manifest.
-- MSRV is 1.95, declared once at `[workspace.package]`. Do not use a newer
+- MSRV is 1.97.1, declared once at `[workspace.package]`. Do not use a newer
   language or `std` API without an explicit version-policy decision.
 - The lint baseline is `[workspace.lints.clippy]`; crates opt in with
   `[lints] workspace = true`. `effigy rust:clippy` denies warnings.
