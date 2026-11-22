@@ -98,7 +98,7 @@ extraction from `NightfireValue`:
 ```toml
 [dependencies]
 underlay-media = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "vX.Y.Z", features = ["nightfire"] }
-nightfire = { git = "https://github.com/inflatable-cookie/nightfire.git", tag = "v0.4.1" }
+nightfire = { git = "https://github.com/inflatable-cookie/nightfire.git", tag = "v0.6.0" }
 ```
 
 Underlay supplies:
@@ -121,7 +121,7 @@ responses:
 ```toml
 [dependencies]
 underlay-validation = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "vX.Y.Z", features = ["nightfire"] }
-nightfire = { git = "https://github.com/inflatable-cookie/nightfire.git", tag = "v0.4.1" }
+nightfire = { git = "https://github.com/inflatable-cookie/nightfire.git", tag = "v0.6.0" }
 ```
 
 Nightfire remains the validation authority. Underlay only converts errors at
@@ -151,9 +151,12 @@ that stored payload.
 
 ## Compatibility Posture
 
-This is a deprecation rollout, not a breaking cutover. Existing Underlay paths
-still resolve to the released implementation. Facade retirement requires a
-fresh caller inventory and consumer proof under
+The legacy `underlay-nightfire` Rust crate and the 14 pass-through
+`@inflatable-cookie/underlay/nightfire/*` TypeScript shims are retired.
+Consumers depend on `nightfire` and `@inflatable-cookie/nightfire/*` directly
+(matching Underlay's pinned release) and use Underlay only for
+`@inflatable-cookie/underlay/nightfire/editor` and
+`@inflatable-cookie/underlay/nightfire/media`. Further surface changes follow
 [`023-release-and-compatibility-rollout.md`](../knowledge/contracts/023-release-and-compatibility-rollout.md).
 
 ## See Also
