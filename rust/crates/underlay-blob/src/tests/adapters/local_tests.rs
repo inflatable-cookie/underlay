@@ -295,10 +295,20 @@ async fn test_initiate_upload_validated_enforces_config() {
 }
 
 fn create_unique_test_dir(prefix: &str) -> std::path::PathBuf {
+    use std::sync::atomic::{AtomicU64, Ordering};
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    static COUNTER: AtomicU64 = AtomicU64::new(0);
+
     let base = std::env::temp_dir();
     let pid = std::process::id();
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_nanos())
+        .unwrap_or(0);
     for _ in 0..32 {
-        let candidate = base.join(format!("{prefix}-{pid}-{:016x}", rand::random::<u64>()));
+        let seq = COUNTER.fetch_add(1, Ordering::Relaxed);
+        let candidate = base.join(format!("{prefix}-{pid}-{nanos}-{seq}"));
         match std::fs::create_dir(&candidate) {
             Ok(()) => return candidate,
             Err(err) if err.kind() == std::io::ErrorKind::AlreadyExists => continue,
