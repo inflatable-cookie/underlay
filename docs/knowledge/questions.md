@@ -6,8 +6,9 @@ briefs. An answered question keeps only its pointer to where the answer lives.
 ## Q-001 — Where does each consumer stand on the Nightfire repoint?
 
 Status: open
-Context: Underlay consumes `nightfire` `v0.4.1` directly. The historical Rust
-`underlay-nightfire` facade and the 14 pass-through
+Context: Underlay consumes `nightfire` directly (current pin in `Cargo.toml`,
+`package.json`, and [076-nightfire.md](../guides/076-nightfire.md)). The
+historical Rust `underlay-nightfire` facade and the 14 pass-through
 `@inflatable-cookie/underlay/nightfire/*` shims are retired (only
 `./nightfire/editor` and `./nightfire/media` remain in Underlay). Froyo,
 Farmyard and Bovine Desktop repoint in their own repositories (acowtancy owns

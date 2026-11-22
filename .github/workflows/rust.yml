@@ -40,10 +40,22 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
+      - name: Read rust-toolchain.toml
+        id: toolchain
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import tomllib
+          with open("rust-toolchain.toml", "rb") as f:
+              tc = tomllib.load(f)["toolchain"]
+          print(f"channel={tc['channel']}")
+          print(f"components={','.join(tc.get('components', []))}")
+          PY
+
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable
+        uses: dtolnay/rust-toolchain@master
         with:
-          components: clippy, rustfmt
+          toolchain: ${{ steps.toolchain.outputs.channel }}
+          components: ${{ steps.toolchain.outputs.components }}
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
@@ -55,22 +67,23 @@ jobs:
         run: cargo clippy --workspace --all-targets -- -D warnings
 
       - name: Build
-        run: cargo build --workspace --locked
+        run: cargo build --workspace --all-features --locked
 
       # Unit tests (no database). Adapter integration tests are #[ignore]d here.
       - name: Test (unit)
-        run: cargo test --workspace --locked
+        run: cargo test --workspace --all-features --locked
 
       # The #[ignore]d Postgres adapter integration tests, run explicitly against
       # the service above.
       - name: Test (Postgres adapters)
-        run: >-
-          cargo test --locked --lib
-          -p underlay-auth-state-postgres
-          -p underlay-jobs-postgres
-          -p underlay-audit
-          -p underlay-security-alerts
-          -- --ignored
+        run: |
+          cargo test --locked --lib \
+            -p underlay-auth-state-postgres \
+            -p underlay-jobs-postgres \
+            -p underlay-audit \
+            -p underlay-security-alerts \
+            -- --ignored
+          cargo test --locked -p underlay-db --test postgres_integration -- --ignored
 
       # Feature-gated separately: the distributed rate-limit window test
       # (two backend instances sharing one Postgres).

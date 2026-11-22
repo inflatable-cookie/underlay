@@ -9,71 +9,48 @@ Underlay owns integration around that package:
 
 - Rust media traversal in `underlay-media`
 - Nightfire validation-to-HTTP adaptation in `underlay-validation`
-- the Svelte media-picker context and historical `media` block editor used by
-  Underlay-based apps
-- temporary compatibility facades for historical Underlay imports
+- the Svelte media-picker context (`@inflatable-cookie/underlay/nightfire/media`)
+  and historical `media` block editor (`@inflatable-cookie/underlay/nightfire/editor`)
+  used by Underlay-based apps
 
 Do not add generic Nightfire implementations here. Add them to Nightfire and
 consume a released tag.
 
 ## Install Nightfire
 
-Both language surfaces use the same Nightfire `0.4.1` release. Underlay
-declares Nightfire and Poodle as dependency ranges (`>=0.4.1 <0.5` and
+Both language surfaces use the same Nightfire `0.6.0` release. Underlay
+declares Nightfire and Poodle as dependency ranges (`>=0.6.0 <0.7` and
 `>=0.4.4 <0.5`), so a consumer resolving a Nightfire version inside that range
 shares Underlay's copy instead of carrying a second one. A consumer pinned
-below the range floor, such as Nightfire `0.4.0`, still carries two; see
+below the range floor still carries two; see
 [contract 023](../knowledge/contracts/023-release-and-compatibility-rollout.md).
 
 ```toml
 [dependencies]
-nightfire = { git = "https://github.com/inflatable-cookie/nightfire.git", tag = "v0.4.1" }
+nightfire = { git = "https://github.com/inflatable-cookie/nightfire.git", tag = "v0.6.0" }
 ```
 
 ```json
 {
   "dependencies": {
-    "@inflatable-cookie/nightfire": "0.4.1"
+    "@inflatable-cookie/nightfire": "0.6.0"
   }
 }
 ```
 
 Use Nightfire's repository documentation for generic setup and APIs. The Rust
-crate uses the immutable `v0.4.1` Git tag; the TypeScript package uses the
-released npm version `0.4.1`. New code imports `nightfire` in Rust and
+crate uses the immutable `v0.6.0` Git tag; the TypeScript package uses the
+released npm version `0.6.0`. New code imports `nightfire` in Rust and
 `@inflatable-cookie/nightfire/*` in TypeScript.
 
-## Compatibility Facades
-
-Existing consumers may keep these deprecated TypeScript paths during the g12
-migration:
-
-- `@inflatable-cookie/underlay/nightfire`
-- `@inflatable-cookie/underlay/nightfire/editor`
-- `@inflatable-cookie/underlay/nightfire/renderer`
-- `@inflatable-cookie/underlay/nightfire/block-editor`
-- `@inflatable-cookie/underlay/nightfire/block-registration`
-- `@inflatable-cookie/underlay/nightfire/markdown`
-- `@inflatable-cookie/underlay/nightfire/editor-registry`
-- `@inflatable-cookie/underlay/nightfire/render-registry`
-- `@inflatable-cookie/underlay/nightfire/validator-registry`
-- `@inflatable-cookie/underlay/nightfire/strategies`
-- `@inflatable-cookie/underlay/nightfire/media-locator`
-- `@inflatable-cookie/underlay/nightfire/block-ids`
-- `@inflatable-cookie/underlay/nightfire/block-versions`
-- `@inflatable-cookie/underlay/nightfire/utils`
-- `@inflatable-cookie/underlay/nightfire/validation`
-
-They re-export the corresponding Nightfire `v0.4.1` subpaths. They do not own a
-second implementation.
-
-Rust consumers may keep the `underlay-nightfire` dependency name until the
-facade retirement lane. That crate re-exports `nightfire` unchanged. New Rust
-code should depend on `nightfire` directly.
+The historical `underlay-nightfire` Rust facade and the 14 pass-through
+`@inflatable-cookie/underlay/nightfire/*` TypeScript shims are retired. Only
+`@inflatable-cookie/underlay/nightfire/editor` and
+`@inflatable-cookie/underlay/nightfire/media` remain exported by Underlay.
 
 ## Underlay Media Picker Context
 
-Nightfire `v0.4.1` has no `./media` subpath. Underlay retains
+Nightfire `v0.6.0` has no `./media` subpath. Underlay retains
 `@inflatable-cookie/underlay/nightfire/media` because it is an Underlay media
 library integration, not generic Nightfire runtime.
 
@@ -121,7 +98,7 @@ extraction from `NightfireValue`:
 ```toml
 [dependencies]
 underlay-media = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "vX.Y.Z", features = ["nightfire"] }
-nightfire = { git = "https://github.com/inflatable-cookie/nightfire.git", tag = "v0.4.1" }
+nightfire = { git = "https://github.com/inflatable-cookie/nightfire.git", tag = "v0.6.0" }
 ```
 
 Underlay supplies:
@@ -144,7 +121,7 @@ responses:
 ```toml
 [dependencies]
 underlay-validation = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "vX.Y.Z", features = ["nightfire"] }
-nightfire = { git = "https://github.com/inflatable-cookie/nightfire.git", tag = "v0.4.1" }
+nightfire = { git = "https://github.com/inflatable-cookie/nightfire.git", tag = "v0.6.0" }
 ```
 
 Nightfire remains the validation authority. Underlay only converts errors at
@@ -174,9 +151,12 @@ that stored payload.
 
 ## Compatibility Posture
 
-This is a deprecation rollout, not a breaking cutover. Existing Underlay paths
-still resolve to the released implementation. Facade retirement requires a
-fresh caller inventory and consumer proof under
+The legacy `underlay-nightfire` Rust crate and the 14 pass-through
+`@inflatable-cookie/underlay/nightfire/*` TypeScript shims are retired.
+Consumers depend on `nightfire` and `@inflatable-cookie/nightfire/*` directly
+(matching Underlay's pinned release) and use Underlay only for
+`@inflatable-cookie/underlay/nightfire/editor` and
+`@inflatable-cookie/underlay/nightfire/media`. Further surface changes follow
 [`023-release-and-compatibility-rollout.md`](../knowledge/contracts/023-release-and-compatibility-rollout.md).
 
 ## See Also

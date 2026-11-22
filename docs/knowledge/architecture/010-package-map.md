@@ -114,10 +114,11 @@ TypeScript/Svelte package `@inflatable-cookie/nightfire` in
 The standalone package owns its own focused subpaths for protocol types,
 registries, validation, rendering, editing, markdown, strategies, and media
 helpers. It must not depend on Underlay, SvelteKit, Vite, Underlay templates,
-or Underlay client/runtime surfaces. Underlay's Rust workspace depends on a
-released `nightfire` Git tag in `Cargo.toml`, while its TypeScript package
-consumes `@inflatable-cookie/nightfire` from npm (`>=0.4.1 <0.5` in
-`package.json`). Only `@inflatable-cookie/underlay/nightfire/editor` and
+or Underlay client/runtime surfaces. Underlay's Rust workspace depends on a released `nightfire` Git tag in
+`Cargo.toml`, while its TypeScript package consumes
+`@inflatable-cookie/nightfire` from npm in `package.json` (see
+[076-nightfire.md](../../guides/076-nightfire.md) for the current pinned
+release). Only `@inflatable-cookie/underlay/nightfire/editor` and
 `@inflatable-cookie/underlay/nightfire/media` remain exported by Underlay; the
 14 pass-through `./nightfire/*` shims are retired.
 

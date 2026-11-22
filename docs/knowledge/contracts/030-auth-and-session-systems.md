@@ -179,19 +179,27 @@ Rules:
 
 ### JWT and session contract
 
-Underlay owns a full JWT-backed session system, not just token helpers.
+Underlay owns both the JWT token primitives (`underlay-auth-jwt`) and the
+canonical session lifecycle state machine (`underlay-auth-session`).
 
 Core components:
 
-- `JwtConfig`
-- `JwtService`
-- `AccessTokenClaims`
-- `RefreshTokenClaims`
-- `SessionStore`
-- `SessionManager`
-- `SessionState`
-- `SessionTokens`
-- `token_fingerprint()`
+- `underlay-auth-jwt`:
+  - `JwtConfig`
+  - `JwtService`
+  - `KeyPair`
+  - `AccessTokenClaims`
+  - `RefreshTokenClaims`
+  - `token_fingerprint()`
+- `underlay-auth-session`:
+  - `SessionService`
+  - `SessionServiceConfig`
+  - `SessionRepository`
+  - `AccountProvider`
+  - `SessionRecord`
+  - `SessionFingerprint`
+  - `Tokens`
+  - `RefreshOutcome`
 
 Rules:
 
@@ -208,26 +216,26 @@ Rules:
 
 Refresh rotation is a compare-and-swap operation:
 
-- `SessionStore::rotate_session_if_current` must check the active retained
-  session, previous refresh-token fingerprint, previous refresh-token ID, and
-  previous refresh-token version before accepting a rotation
+- `SessionRepository::rotate_session_if_current` must check the active retained
+  session, previous refresh-token ID, and previous refresh-token version before
+  accepting a rotation
 - that check and the new retained session write are one atomic persistence
   operation
 - `Ok(true)` means the expected old refresh state still matched and the new
   session state has been persisted
-- `Ok(false)` means stale or replayed refresh state and maps to
-  `RefreshReplayDetected`
-- refresh paths must not use a blind `update_session` write because that can
-  accept concurrent or replayed refresh attempts
+- `Ok(false)` means a concurrent refresh rotated first (a benign double-submit
+  race, not reuse)
+- refresh paths must not use a blind update write because that can accept
+  concurrent or replayed refresh attempts
 - reuse of a superseded refresh token (stale fingerprint or mismatched
   token id/version) revokes the whole session family, so a stolen token and
   the legitimate current token both die (RFC 6819 / OAuth 2.0 Security BCP).
   A lost atomic CAS is the legitimate concurrent-refresh race and does NOT
   revoke - the loser retries with the freshly issued token
 
-`SessionStore` remains in `underlay-auth-jwt` for now. Moving the
-trait behind `underlay-auth` would be another public trait migration and needs a
-separate planned task with consumer implementation proof.
+The legacy `SessionStore` and `SessionManager` types in `underlay-auth-jwt`
+were retired in `0.11.0`; `underlay-auth-session` owns the canonical session
+service and repository boundary.
 
 The session system is shared. The app’s session endpoints and cookie strategy
 build on it but are not defined here.

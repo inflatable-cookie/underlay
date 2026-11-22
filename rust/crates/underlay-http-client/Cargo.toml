@@ -2,6 +2,7 @@
 name = "underlay-http-client"
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 description = "Shared HTTP client configuration for Underlay crates"
 

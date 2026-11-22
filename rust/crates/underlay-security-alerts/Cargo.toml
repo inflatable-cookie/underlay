@@ -2,6 +2,7 @@
 name = "underlay-security-alerts"
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 description = "Shared login security alerting helpers (thresholds, window queries, dedupe, persistence)"
 

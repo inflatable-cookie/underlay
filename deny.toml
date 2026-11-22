@@ -5,7 +5,10 @@ features = ["underlay-blob/s3", "underlay-email/ses"]
 [advisories]
 # jsonwebtoken uses the aws_lc_rs backend, so rsa (RUSTSEC-2023-0071) is no
 # longer in the graph and needs no ignore.
-ignore = []
+ignore = [
+    { id = "RUSTSEC-2026-0387", reason = "crypto-bigint 0.5.5 is transitively constrained by aws-sigv4 1.6.0 / elliptic-curve 0.13.8; revisit when upstream updates" },
+    { id = "RUSTSEC-2026-0543", reason = "chrono 0.4.45 is unmaintained with no safe upgrade and transitively pinned by sqlx, aws-smithy-runtime, oauth2, and cron" },
+]
 
 [licenses]
 allow = [
