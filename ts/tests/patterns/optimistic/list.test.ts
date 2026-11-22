@@ -423,7 +423,7 @@ describe("createOptimisticList", () => {
 			});
 
 			const added = list.add({ title: "Beta" });
-			expect(get(list)[1]).toEqual({ slug: "temp-slug", title: "Beta" });
+			expect(get(list)[1]).toMatchObject({ slug: "temp-slug", title: "Beta" });
 			expect(get(list.isPending)("temp-slug")).toBe(true);
 			added.confirm({ slug: "beta", title: "Beta" });
 			expect(get(list)[1]).toEqual({ slug: "beta", title: "Beta" });
@@ -516,6 +516,51 @@ describe("createOptimisticList", () => {
 			expect(typeof badNumericKey).toBe("function");
 			expect(typeof badMissingId).toBe("function");
 			expect(typeof badNarrowKey).toBe("function");
+
+			// String-indexed row with OptimisticListOptions<Row> and custom key also emits `id`
+			// even when the caller omits the selected key field.
+			interface IndexedRow {
+				id: string;
+				title: string;
+				[field: string]: string;
+			}
+			const indexedOpts: OptimisticListOptions<IndexedRow> = {
+				key: "slug",
+				tempId: () => "temp",
+			};
+			const indexedList = createOptimisticList<IndexedRow>([], indexedOpts);
+			indexedList.add({ title: "A" });
+			const emittedIndexed = get(indexedList)[0];
+			expect(emittedIndexed.id).toBe("temp");
+			expect(emittedIndexed.slug).toBe("temp");
+			expect(emittedIndexed.title).toBe("A");
+			expect(emittedIndexed.id.toUpperCase()).toBe("TEMP");
+		});
+
+		it("rolls back a custom-key rename without losing concurrent edits to the renamed row", () => {
+			interface SlugRow {
+				slug: string;
+				title: string;
+			}
+
+			const list = createOptimisticList([{ slug: "draft", title: "Before" }] as SlugRow[], {
+				key: "slug",
+			});
+
+			const rename = list.update("draft", { slug: "renamed" });
+			const editTitle = list.update("renamed", { title: "After" });
+
+			expect(get(list)).toEqual([{ slug: "renamed", title: "After" }]);
+			expect(get(list.isPending)("renamed")).toBe(true);
+
+			rename.rollback();
+			expect(get(list)).toEqual([{ slug: "draft", title: "After" }]);
+			expect(get(list.isPending)("draft")).toBe(true);
+			expect(get(list.isPending)("renamed")).toBe(false);
+
+			editTitle.confirm();
+			expect(get(list)).toEqual([{ slug: "draft", title: "After" }]);
+			expect(get(list.isPending)("draft")).toBe(false);
 		});
 	});
 
