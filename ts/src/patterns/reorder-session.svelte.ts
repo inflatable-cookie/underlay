@@ -102,14 +102,18 @@ export function createLoadedReorderSession<TLoadedItem, TReorderItem extends Reo
 	let controller = $state.raw<ReorderController<TReorderItem>>(createController([]));
 	let enterGeneration = 0;
 
-	$effect.pre(() => {
-		const currentItems = reorderItems;
-		untrack(() => {
-			if (reorderMode) {
-				syncReorderControllerItems(controller, currentItems);
-			}
+	try {
+		$effect.pre(() => {
+			const currentItems = reorderItems;
+			untrack(() => {
+				if (reorderMode) {
+					syncReorderControllerItems(controller, currentItems);
+				}
+			});
 		});
-	});
+	} catch {
+		// Outside a Svelte component or $effect.root; direct factory callers manage lifecycle manually.
+	}
 
 	async function enter() {
 		const generation = ++enterGeneration;

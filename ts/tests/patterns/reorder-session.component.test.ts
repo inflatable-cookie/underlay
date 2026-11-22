@@ -296,4 +296,135 @@ describe("patterns/reorder-session.svelte.ts (compiled)", () => {
 			dispose();
 		}
 	});
+
+	it("preserves accessor-backed IDs, class methods, and drops omitted mapped fields on sync", async () => {
+		class MappedRow {
+			readonly #id: string;
+			readonly label: string;
+
+			constructor(id: string, label: string) {
+				this.#id = id;
+				this.label = label;
+			}
+
+			get id(): string {
+				return this.#id;
+			}
+
+			format(): string {
+				return `${this.#id}:${this.label}`;
+			}
+		}
+
+		const labelBox = createReactiveBox("Old");
+
+		let classSession!: ReturnType<typeof createLoadedReorderSession<{ rowId: string }, MappedRow>>;
+		const disposeClass = createEffectRoot(() => {
+			classSession = createLoadedReorderSession({
+				loadItems: async () => ({
+					items: [{ rowId: "a" }, { rowId: "b" }],
+				}),
+				mapItems: (items) => items.map((item) => new MappedRow(item.rowId, labelBox.value)),
+				submitReorder: vi.fn(async () => undefined),
+				entityLabel: "item",
+				pushInfo: vi.fn(),
+				pushError: vi.fn(),
+				onRefresh: vi.fn(async () => undefined),
+			});
+		});
+
+		try {
+			await classSession.enter();
+			flushSync();
+
+			// First effect flush must preserve accessor-backed id, class prototype, and methods
+			expect(classSession.controller.pending[0]).toBeInstanceOf(MappedRow);
+			expect(classSession.controller.pending[0].id).toBe("a");
+			expect(classSession.controller.pending[0].format()).toBe("a:Old");
+
+			labelBox.value = "New";
+			flushSync();
+
+			expect(classSession.controller.pending[0]).toBeInstanceOf(MappedRow);
+			expect(classSession.controller.pending[0].id).toBe("a");
+			expect(classSession.controller.pending[0].format()).toBe("a:New");
+		} finally {
+			disposeClass();
+		}
+
+		type PlainRow = { id: string; label: string; subtitle?: string; isDndShadowItem?: boolean };
+		const includeSubtitle = createReactiveBox(true);
+		const plainLabel = createReactiveBox("Old");
+		let plainSession!: ReturnType<typeof createLoadedReorderSession<{ rowId: string }, PlainRow>>;
+		const disposePlain = createEffectRoot(() => {
+			plainSession = createLoadedReorderSession<{ rowId: string }, PlainRow>({
+				loadItems: async () => ({
+					items: [{ rowId: "a" }],
+				}),
+				mapItems: (items) =>
+					items.map((item) =>
+						includeSubtitle.value
+							? { id: item.rowId, label: plainLabel.value, subtitle: "Temp subtitle" }
+							: { id: item.rowId, label: plainLabel.value },
+					),
+				submitReorder: vi.fn(async () => undefined),
+				entityLabel: "item",
+				pushInfo: vi.fn(),
+				pushError: vi.fn(),
+				onRefresh: vi.fn(async () => undefined),
+			});
+		});
+
+		try {
+			await plainSession.enter();
+			flushSync();
+			expect(plainSession.controller.pending[0].subtitle).toBe("Temp subtitle");
+
+			// Add a caller-supplied flag via updatePending
+			plainSession.controller.updatePending([
+				{ id: "a", label: "Old", subtitle: "Temp subtitle", isDndShadowItem: true },
+			]);
+
+			// Omitting subtitle on reactive update drops subtitle while retaining isDndShadowItem
+			includeSubtitle.value = false;
+			plainLabel.value = "New";
+			flushSync();
+
+			expect(plainSession.controller.pending[0]).toEqual({
+				id: "a",
+				label: "New",
+				isDndShadowItem: true,
+			});
+			expect("subtitle" in plainSession.controller.pending[0]).toBe(false);
+			expect("subtitle" in plainSession.controller.original[0]).toBe(false);
+		} finally {
+			disposePlain();
+		}
+	});
+
+	it("allows direct createLoadedReorderSession construction outside a component or effect root", async () => {
+		const submitReorder = vi.fn(async () => undefined);
+		const session = createLoadedReorderSession({
+			loadItems: async () => ({
+				items: [
+					{ rowId: "a", label: "A" },
+					{ rowId: "b", label: "B" },
+				],
+			}),
+			mapItems: (items) => items.map((item) => ({ id: item.rowId, label: item.label })),
+			submitReorder,
+			entityLabel: "item",
+			pushInfo: vi.fn(),
+			pushError: vi.fn(),
+			onRefresh: vi.fn(async () => undefined),
+		});
+
+		await session.enter();
+		expect(session.reorderMode).toBe(true);
+		expect(session.controller.pending.map((item) => item.id)).toEqual(["a", "b"]);
+
+		session.controller.move(0, 1);
+		await session.controller.submit();
+		expect(submitReorder).toHaveBeenCalledWith(["b", "a"]);
+	});
 });
