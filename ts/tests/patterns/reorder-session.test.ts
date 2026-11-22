@@ -6,6 +6,7 @@ async function loadModule() {
 		raw: <T>(initial: T) => initial,
 	});
 	(globalThis as any).$derived = ((value: unknown) => value) as typeof $derived;
+	(globalThis as any).$effect = Object.assign(() => {}, { pre: () => {} });
 	return await import("../../src/patterns/reorder-session.svelte");
 }
 

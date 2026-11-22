@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { flushSync } from "svelte";
 import { describe, expect, it, vi } from "vitest";
 import { createReorderController } from "../../src/patterns/reorder-controller.svelte";
 import {
@@ -226,6 +227,7 @@ describe("patterns/reorder-session.svelte.ts (compiled)", () => {
 			]);
 
 			labelBox.value = "New";
+			flushSync();
 			expect(session.reorderItems).toEqual([
 				{ id: "a", label: "a:New" },
 				{ id: "b", label: "b:New" },
@@ -240,6 +242,56 @@ describe("patterns/reorder-session.svelte.ts (compiled)", () => {
 				{ id: "b", label: "b:New" },
 			]);
 			expect(session.controller.isDirty).toBe(true);
+		} finally {
+			dispose();
+		}
+	});
+
+	it("preserves in-place pending mutations and caller-supplied row flags in createLoadedReorderSession", async () => {
+		const submitReorder = vi.fn(async () => undefined);
+		const labelBox = createReactiveBox("Old");
+
+		type Row = { id: string; label: string; isDndShadowItem?: boolean };
+		let session!: ReturnType<typeof createLoadedReorderSession<{ rowId: string }, Row>>;
+		const dispose = createEffectRoot(() => {
+			session = createLoadedReorderSession<{ rowId: string }, Row>({
+				loadItems: async () => ({
+					items: [{ rowId: "a" }, { rowId: "b" }],
+				}),
+				mapItems: (items) =>
+					items.map((item) => ({ id: item.rowId, label: `${item.rowId}:${labelBox.value}` })),
+				submitReorder,
+				entityLabel: "item",
+				pushInfo: vi.fn(),
+				pushError: vi.fn(),
+				onRefresh: vi.fn(async () => undefined),
+			});
+		});
+
+		try {
+			await session.enter();
+
+			// Caller-supplied row flags via updatePending must remain visible
+			session.controller.updatePending([
+				{ id: "a", label: "a:Old", isDndShadowItem: true },
+				{ id: "b", label: "b:Old" },
+			]);
+			expect(session.controller.pending[0].isDndShadowItem).toBe(true);
+
+			// Reactive mapper update preserves the caller-supplied flag while updating label
+			labelBox.value = "New";
+			flushSync();
+			expect(session.controller.pending[0]).toEqual({
+				id: "a",
+				label: "a:New",
+				isDndShadowItem: true,
+			});
+
+			// In-place pending array mutations (e.g. reverse()) mark controller dirty and submit
+			session.controller.pending.reverse();
+			expect(session.controller.isDirty).toBe(true);
+			await session.controller.submit();
+			expect(submitReorder).toHaveBeenCalledWith(["b", "a"]);
 		} finally {
 			dispose();
 		}

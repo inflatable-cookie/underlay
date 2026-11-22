@@ -55,6 +55,22 @@ export interface ReorderController<T extends ReorderableItem> {
 	removeItems(idsToRemove: string[]): void;
 }
 
+const controllerSyncHandlers = new WeakMap<
+	object,
+	(latestItems: readonly ReorderableItem[]) => void
+>();
+
+/**
+ * Reconcile mapped row data in an active reorder controller while retaining
+ * its pending/original ID order and any caller-supplied extra row fields.
+ */
+export function syncReorderControllerItems<T extends ReorderableItem>(
+	controller: ReorderController<T>,
+	latestItems: readonly T[],
+): void {
+	controllerSyncHandlers.get(controller)?.(latestItems);
+}
+
 /**
  * Creates a reactive reorder controller for managing drag-and-drop state.
  *
@@ -78,7 +94,7 @@ export function createReorderController<T extends ReorderableItem>(
 		pending.length !== original.length || pending.some((item, i) => item.id !== original[i].id),
 	);
 
-	return {
+	const controller: ReorderController<T> = {
 		get pending() {
 			return pending;
 		},
@@ -169,4 +185,16 @@ export function createReorderController<T extends ReorderableItem>(
 			pending = pending.filter((item) => !removeSet.has(item.id));
 		},
 	};
+
+	controllerSyncHandlers.set(controller, (latestItems) => {
+		const byId = new Map((latestItems as readonly T[]).map((item) => [item.id, item]));
+		const mergeRow = (item: T): T => {
+			const next = byId.get(item.id);
+			return next ? { ...item, ...next } : item;
+		};
+		original = original.map(mergeRow);
+		pending = pending.map(mergeRow);
+	});
+
+	return controller;
 }

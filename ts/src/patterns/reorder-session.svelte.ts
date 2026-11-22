@@ -1,5 +1,7 @@
+import { untrack } from "svelte";
 import {
 	createReorderController,
+	syncReorderControllerItems,
 	type ReorderController,
 	type ReorderableItem,
 } from "./reorder-controller.svelte";
@@ -97,51 +99,17 @@ export function createLoadedReorderSession<TLoadedItem, TReorderItem extends Reo
 	let highlightedIds = $state<string[]>([]);
 	let loadedItems = $state<TLoadedItem[]>([]);
 	const reorderItems = $derived(params.mapItems(loadedItems));
-	const mappedById = $derived(new Map(reorderItems.map((item) => [item.id, item])));
-	let baseController = $state.raw<ReorderController<TReorderItem>>(createController([]));
+	let controller = $state.raw<ReorderController<TReorderItem>>(createController([]));
 	let enterGeneration = 0;
 
-	const reconcile = (items: readonly TReorderItem[]): TReorderItem[] =>
-		items.map((item) => mappedById.get(item.id) ?? item);
-
-	const controller: ReorderController<TReorderItem> = {
-		get pending() {
-			return reconcile(baseController.pending);
-		},
-		set pending(value: TReorderItem[]) {
-			baseController.pending = value;
-		},
-		get original() {
-			return reconcile(baseController.original);
-		},
-		get isDirty() {
-			return baseController.isDirty;
-		},
-		get isPending() {
-			return baseController.isPending;
-		},
-		get error() {
-			return baseController.error;
-		},
-		move(fromIndex: number, toIndex: number) {
-			baseController.move(fromIndex, toIndex);
-		},
-		reset() {
-			baseController.reset();
-		},
-		submit() {
-			return baseController.submit();
-		},
-		updatePending(items: TReorderItem[]) {
-			baseController.updatePending(items);
-		},
-		mergeNewItems(newItems: TReorderItem[]) {
-			baseController.mergeNewItems(newItems);
-		},
-		removeItems(idsToRemove: string[]) {
-			baseController.removeItems(idsToRemove);
-		},
-	};
+	$effect.pre(() => {
+		const currentItems = reorderItems;
+		untrack(() => {
+			if (reorderMode) {
+				syncReorderControllerItems(controller, currentItems);
+			}
+		});
+	});
 
 	async function enter() {
 		const generation = ++enterGeneration;
@@ -158,7 +126,7 @@ export function createLoadedReorderSession<TLoadedItem, TReorderItem extends Reo
 		}
 
 		loadedItems = items;
-		baseController = createController(params.mapItems(items));
+		controller = createController(params.mapItems(items));
 		highlightedIds = [];
 		reorderMode = true;
 	}
@@ -168,7 +136,7 @@ export function createLoadedReorderSession<TLoadedItem, TReorderItem extends Reo
 		reorderMode = false;
 		highlightedIds = [];
 		loadedItems = [];
-		baseController = createController([]);
+		controller = createController([]);
 	}
 
 	async function handleSuccess(message?: string) {
