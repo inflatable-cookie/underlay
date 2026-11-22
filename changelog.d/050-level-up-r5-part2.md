@@ -2,17 +2,21 @@
 
 - `underlay-http-client`: `HttpClient::external()` now returns a dedicated
   `ExternalHttpClient` that does not implement `Deref<Target = reqwest::Client>`
-  or expose `inner()` / `into_inner()`. Its request helpers (`request`, `get`,
-  `post`, `put`, `patch`, `delete`, `head`, `execute`) validate `http`/`https`
-  schemes and reject non-public IP literals before any network I/O, closing the
-  IP-literal SSRF bypass where `reqwest` skips custom DNS resolvers.
+  or expose `inner()` / `into_inner()`, and its request helpers (`request`,
+  `get`, `post`, `put`, `patch`, `delete`, `head`) return an opaque
+  `ExternalRequestBuilder` that does not expose `build_split` or the raw
+  `reqwest::Client`. Every request helper and `send`/`execute` path validates
+  `http`/`https` schemes and rejects non-public IP literals before any network
+  I/O, closing the IP-literal SSRF bypass where `reqwest` skips custom DNS
+  resolvers.
 - `underlay-ratelimit`: `PostgresBackend::check` now returns `allowed: false`
   when `max_requests == 0`, matching `InMemoryBackend::check` and
   `PostgresBackend::check_and_increment`.
-- `underlay-ratelimit`: `InMemoryBackend::evict_if_full` now uses bounded
-  sampled eviction (32 entries per pass) instead of an O(N) full-map `retain`
-  scan on every insertion at capacity, and `InMemoryBackend::with_cleanup`
-  clamps its interval to at least `MIN_CLEANUP_INTERVAL` (10ms) to prevent
+- `underlay-ratelimit`: `InMemoryBackend` now coordinates new-key capacity
+  admission with bounded sampled eviction (up to 4 passes of 32 entries) and
+  rechecks expiry / `window_start` under the shard write lock via `remove_if`
+  so concurrently refreshed counters are never erased. `with_cleanup` clamps
+  its interval to at least `MIN_CLEANUP_INTERVAL` (10ms) to prevent
   busy-spinning on `Duration::ZERO`.
 - `underlay-http`: `CoalescedErrorResponse` now preserves `ErrorDetail`
   response extensions across single-flight error coalescing and bounds buffered
@@ -29,9 +33,11 @@
 - `underlay-security-alerts`: `evaluate_alerts`, `evaluate_account_alerts`, and
   `evaluate_global_alerts` now ignore non-positive thresholds (`<= 0`) instead
   of triggering `0 >= 0` false positives.
-- `underlay-testing`: `TestDb::new` runs Docker availability checks and
-  `testcontainers` blocking startup on `tokio::task::spawn_blocking`, and stale
-  `.await` doc examples in `lib.rs` and `test_server.rs` are fixed.
+- `underlay-testing`: `TestDb::new` keeps Docker availability checks,
+  `testcontainers` container startup, and container `Drop` teardown on a
+  dedicated non-Tokio OS thread so `Container::drop`'s internal `block_on`
+  never panics on async runtime threads, and stale `.await` doc examples in
+  `lib.rs` and `test_server.rs` are fixed.
 
 ### Consumer Upgrade Impact (breaking; target `0.11.0`)
 

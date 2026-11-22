@@ -33,14 +33,77 @@
 //! ```
 
 use sqlx::PgPool;
-use std::sync::Arc;
 use testcontainers::runners::SyncRunner;
-use testcontainers::Container;
 use testcontainers_modules::postgres::Postgres;
 use underlay_db::{
     create_pool, drop_schema_identifiers, DbConfig, DestructiveGuard, SqlIdentifier,
 };
 use uuid::Uuid;
+
+/// Owns a blocking resource on a dedicated non-Tokio OS thread so neither its
+/// initialization nor its `Drop` (e.g. `testcontainers::Container::drop`'s
+/// internal `Runtime::block_on`) ever runs on a Tokio runtime thread.
+struct BlockingHandle {
+    shutdown_tx: Option<std::sync::mpsc::Sender<()>>,
+    worker: Option<std::thread::JoinHandle<()>>,
+}
+
+impl BlockingHandle {
+    async fn spawn<R, T, F>(init: F) -> (R, Self)
+    where
+        R: Send + 'static,
+        T: 'static,
+        F: FnOnce() -> (R, T) + Send + 'static,
+    {
+        let (ready_tx, ready_rx) = tokio::sync::oneshot::channel::<std::thread::Result<R>>();
+        let (shutdown_tx, shutdown_rx) = std::sync::mpsc::channel::<()>();
+
+        let worker = std::thread::Builder::new()
+            .name("underlay-test-db-container".to_string())
+            .spawn(move || {
+                let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(init));
+                match result {
+                    Ok((value, resource)) => {
+                        if ready_tx.send(Ok(value)).is_ok() {
+                            // Keep `resource` alive on this non-Tokio OS thread
+                            // until `BlockingHandle` is dropped.
+                            let _ = shutdown_rx.recv();
+                        }
+                        // Drop on the non-Tokio thread so internal `block_on`
+                        // teardown never runs inside a Tokio runtime context.
+                        drop(resource);
+                    }
+                    Err(panic_payload) => {
+                        let _ = ready_tx.send(Err(panic_payload));
+                    }
+                }
+            })
+            .expect("failed to spawn test database container thread");
+
+        let handle = Self {
+            shutdown_tx: Some(shutdown_tx),
+            worker: Some(worker),
+        };
+
+        match ready_rx.await {
+            Ok(Ok(value)) => (value, handle),
+            Ok(Err(panic_payload)) => {
+                drop(handle);
+                std::panic::resume_unwind(panic_payload);
+            }
+            Err(_) => panic!("postgres test container thread terminated unexpectedly"),
+        }
+    }
+}
+
+impl Drop for BlockingHandle {
+    fn drop(&mut self) {
+        self.shutdown_tx.take();
+        if let Some(worker) = self.worker.take() {
+            let _ = worker.join();
+        }
+    }
+}
 
 /// An isolated test database backed by a Docker container or an external URL.
 ///
@@ -65,9 +128,10 @@ pub const TEST_DATABASE_URL_ENV: &str = "UNDERLAY_TEST_DATABASE_URL";
 pub struct TestDb {
     pool: PgPool,
     schema: SqlIdentifier,
-    // Keep the testcontainer alive for the lifetime of the test. `None` when
-    // connected to an external database via `UNDERLAY_TEST_DATABASE_URL`.
-    _container: Option<Arc<Container<Postgres>>>,
+    // Keep the testcontainer owned and dropped on a dedicated non-Tokio thread
+    // for the lifetime of the test. `None` when connected to an external
+    // database via `UNDERLAY_TEST_DATABASE_URL`.
+    _container: Option<BlockingHandle>,
 }
 
 impl TestDb {
@@ -86,13 +150,11 @@ impl TestDb {
         let (database_url, container) = match std::env::var(TEST_DATABASE_URL_ENV) {
             Ok(url) if !url.trim().is_empty() => (url, None),
             _ => {
-                let (url, container) = tokio::task::spawn_blocking(|| {
+                let (url, handle) = BlockingHandle::spawn(|| {
                     assert_docker_available();
-                    let container = Arc::new(
-                        Postgres::default()
-                            .start()
-                            .expect("failed to start postgres test container"),
-                    );
+                    let container = Postgres::default()
+                        .start()
+                        .expect("failed to start postgres test container");
                     let url = format!(
                         "postgres://postgres:postgres@127.0.0.1:{}/postgres",
                         container
@@ -101,9 +163,8 @@ impl TestDb {
                     );
                     (url, container)
                 })
-                .await
-                .expect("postgres test container setup task panicked");
-                (url, Some(container))
+                .await;
+                (url, Some(handle))
             }
         };
 

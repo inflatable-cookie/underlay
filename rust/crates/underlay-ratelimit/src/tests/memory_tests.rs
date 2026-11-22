@@ -172,3 +172,69 @@ async fn test_with_cleanup_zero_duration_does_not_busy_spin() {
         .expect("backend should remain responsive");
     assert!(res.is_allowed());
 }
+
+#[tokio::test]
+async fn test_concurrent_churn_stays_bounded_under_max_keys() {
+    let backend = InMemoryBackend::new().with_max_keys(16);
+    let config = RateLimitConfig::new(5, Duration::from_secs(60));
+
+    let mut tasks = Vec::new();
+    for worker in 0..8 {
+        let backend = backend.clone();
+        let config = config.clone();
+        tasks.push(tokio::spawn(async move {
+            for i in 0..40 {
+                let key = format!("w{worker}:k{i}");
+                let res = backend
+                    .check_and_increment(&key, &config)
+                    .await
+                    .expect("check_and_increment should succeed");
+                assert!(res.is_allowed());
+                assert!(
+                    backend.len() <= 16,
+                    "tracked key count {} exceeded cap 16 under concurrency",
+                    backend.len()
+                );
+            }
+        }));
+    }
+
+    for task in tasks {
+        task.await.expect("worker task should complete");
+    }
+    assert!(backend.len() <= 16);
+}
+
+#[tokio::test]
+async fn test_eviction_preserves_refreshed_entry() {
+    let backend = InMemoryBackend::new().with_max_keys(2);
+    let short_window = RateLimitConfig::new(5, Duration::from_millis(30));
+
+    backend
+        .check_and_increment("k1", &short_window)
+        .await
+        .unwrap();
+    backend
+        .check_and_increment("k2", &short_window)
+        .await
+        .unwrap();
+
+    tokio::time::sleep(Duration::from_millis(40)).await;
+
+    // Refresh k1 with a fresh window before admitting k3 (k2 remains expired).
+    let refreshed = backend
+        .check_and_increment("k1", &short_window)
+        .await
+        .unwrap();
+    assert!(refreshed.is_allowed());
+    assert_eq!(refreshed.count, 1);
+
+    // Admitting k3 should evict expired k2 while keeping refreshed k1 intact.
+    backend
+        .check_and_increment("k3", &short_window)
+        .await
+        .unwrap();
+    assert_eq!(backend.len(), 2);
+    let check_k1 = backend.check("k1", &short_window).await.unwrap();
+    assert_eq!(check_k1.count, 1, "refreshed counter must not be evicted");
+}

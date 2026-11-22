@@ -121,9 +121,26 @@ impl HttpClient {
 ///
 /// Unlike [`HttpClient`], this type intentionally does **not** implement
 /// `Deref<Target = reqwest::Client>` and does not expose the inner
-/// `reqwest::Client`. `reqwest` skips custom DNS resolvers for IP-literal URLs,
+/// `reqwest::Client` (nor does [`ExternalRequestBuilder`] expose
+/// `build_split`). `reqwest` skips custom DNS resolvers for IP-literal URLs,
 /// so every request helper validates the target scheme and IP literal before
 /// constructing or executing a request.
+///
+/// ```compile_fail
+/// use underlay_http_client::HttpClient;
+///
+/// let client = HttpClient::external().unwrap();
+/// // Must not deref to reqwest::Client:
+/// let _raw: &underlay_http_client::reqwest::Client = &*client;
+/// ```
+///
+/// ```compile_fail
+/// use underlay_http_client::HttpClient;
+///
+/// let client = HttpClient::external().unwrap();
+/// // Must not expose reqwest::RequestBuilder::build_split:
+/// let (_raw_client, _req) = client.get("https://example.com").unwrap().build_split();
+/// ```
 #[derive(Debug, Clone)]
 pub struct ExternalHttpClient {
     inner: reqwest::Client,
@@ -149,19 +166,21 @@ impl ExternalHttpClient {
         &self,
         method: reqwest::Method,
         url: impl reqwest::IntoUrl,
-    ) -> Result<reqwest::RequestBuilder, HttpClientError> {
+    ) -> Result<ExternalRequestBuilder, HttpClientError> {
         let parsed = url
             .into_url()
             .map_err(|err| HttpClientError::InvalidUrl(err.to_string()))?;
         validate_external_target(&parsed)?;
-        Ok(self.inner.request(method, parsed))
+        Ok(ExternalRequestBuilder {
+            inner: self.inner.request(method, parsed),
+        })
     }
 
     /// Start building a `GET` request to a validated external target.
     pub fn get(
         &self,
         url: impl reqwest::IntoUrl,
-    ) -> Result<reqwest::RequestBuilder, HttpClientError> {
+    ) -> Result<ExternalRequestBuilder, HttpClientError> {
         self.request(reqwest::Method::GET, url)
     }
 
@@ -169,7 +188,7 @@ impl ExternalHttpClient {
     pub fn post(
         &self,
         url: impl reqwest::IntoUrl,
-    ) -> Result<reqwest::RequestBuilder, HttpClientError> {
+    ) -> Result<ExternalRequestBuilder, HttpClientError> {
         self.request(reqwest::Method::POST, url)
     }
 
@@ -177,7 +196,7 @@ impl ExternalHttpClient {
     pub fn put(
         &self,
         url: impl reqwest::IntoUrl,
-    ) -> Result<reqwest::RequestBuilder, HttpClientError> {
+    ) -> Result<ExternalRequestBuilder, HttpClientError> {
         self.request(reqwest::Method::PUT, url)
     }
 
@@ -185,7 +204,7 @@ impl ExternalHttpClient {
     pub fn patch(
         &self,
         url: impl reqwest::IntoUrl,
-    ) -> Result<reqwest::RequestBuilder, HttpClientError> {
+    ) -> Result<ExternalRequestBuilder, HttpClientError> {
         self.request(reqwest::Method::PATCH, url)
     }
 
@@ -193,7 +212,7 @@ impl ExternalHttpClient {
     pub fn delete(
         &self,
         url: impl reqwest::IntoUrl,
-    ) -> Result<reqwest::RequestBuilder, HttpClientError> {
+    ) -> Result<ExternalRequestBuilder, HttpClientError> {
         self.request(reqwest::Method::DELETE, url)
     }
 
@@ -201,7 +220,7 @@ impl ExternalHttpClient {
     pub fn head(
         &self,
         url: impl reqwest::IntoUrl,
-    ) -> Result<reqwest::RequestBuilder, HttpClientError> {
+    ) -> Result<ExternalRequestBuilder, HttpClientError> {
         self.request(reqwest::Method::HEAD, url)
     }
 
@@ -215,6 +234,80 @@ impl ExternalHttpClient {
             .execute(request)
             .await
             .map_err(HttpClientError::from)
+    }
+}
+
+/// Opaque request builder for [`ExternalHttpClient`].
+///
+/// Wraps [`reqwest::RequestBuilder`] without exposing `build_split` or the
+/// underlying [`reqwest::Client`], so callers cannot extract a raw client to
+/// bypass IP-literal SSRF validation.
+#[derive(Debug)]
+pub struct ExternalRequestBuilder {
+    inner: reqwest::RequestBuilder,
+}
+
+impl ExternalRequestBuilder {
+    /// Add a single header to the request.
+    pub fn header(self, key: impl AsRef<str>, value: impl AsRef<str>) -> Self {
+        Self {
+            inner: self.inner.header(key.as_ref(), value.as_ref()),
+        }
+    }
+
+    /// Add a set of headers to the request.
+    pub fn headers(self, headers: reqwest::header::HeaderMap) -> Self {
+        Self {
+            inner: self.inner.headers(headers),
+        }
+    }
+
+    /// Enable HTTP bearer authentication.
+    pub fn bearer_auth(self, token: impl std::fmt::Display) -> Self {
+        Self {
+            inner: self.inner.bearer_auth(token),
+        }
+    }
+
+    /// Enable HTTP basic authentication.
+    pub fn basic_auth<U, P>(self, username: U, password: Option<P>) -> Self
+    where
+        U: std::fmt::Display,
+        P: std::fmt::Display,
+    {
+        Self {
+            inner: self.inner.basic_auth(username, password),
+        }
+    }
+
+    /// Set the request body.
+    pub fn body(self, body: impl Into<reqwest::Body>) -> Self {
+        Self {
+            inner: self.inner.body(body),
+        }
+    }
+
+    /// Override the per-request timeout.
+    pub fn timeout(self, timeout: Duration) -> Self {
+        Self {
+            inner: self.inner.timeout(timeout),
+        }
+    }
+
+    /// Build the validated [`reqwest::Request`] without exposing the underlying
+    /// [`reqwest::Client`].
+    pub fn build(self) -> Result<reqwest::Request, HttpClientError> {
+        let request = self.inner.build()?;
+        validate_external_target(request.url())?;
+        Ok(request)
+    }
+
+    /// Re-validate the target URL and send the request.
+    pub async fn send(self) -> Result<reqwest::Response, HttpClientError> {
+        let (client, request) = self.inner.build_split();
+        let request = request?;
+        validate_external_target(request.url())?;
+        client.execute(request).await.map_err(HttpClientError::from)
     }
 }
 

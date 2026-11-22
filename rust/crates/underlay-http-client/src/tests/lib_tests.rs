@@ -385,6 +385,8 @@ async fn external_client_returns_error_on_blocked_redirect_hostname() {
 
 #[tokio::test]
 async fn external_client_blocks_loopback_hostname_at_connect_time() {
+    use super::HttpClientError;
+
     let client = HttpClient::external().expect("external client should build");
 
     let err = client
@@ -393,7 +395,40 @@ async fn external_client_blocks_loopback_hostname_at_connect_time() {
         .send()
         .await
         .expect_err("connect-time DNS resolver must reject loopback hostname");
-    assert!(err.is_connect(), "expected connect error, got: {err}");
+    match err {
+        HttpClientError::Build(reqwest_err) => {
+            assert!(
+                reqwest_err.is_connect(),
+                "expected connect error, got: {reqwest_err}"
+            );
+        }
+        other => panic!("expected HttpClientError::Build(connect), got: {other:?}"),
+    }
+}
+
+#[test]
+fn external_request_builder_is_opaque_and_preserves_request_options() {
+    use super::ExternalRequestBuilder;
+
+    let client = HttpClient::external().expect("external client should build");
+    let builder: ExternalRequestBuilder = client
+        .post("https://1.1.1.1/webhook")
+        .expect("public IP literal should be accepted")
+        .header("x-test", "1")
+        .timeout(Duration::from_secs(5))
+        .body("payload");
+
+    let request = builder.build().expect("request should build");
+    assert_eq!(request.method(), reqwest::Method::POST);
+    assert_eq!(request.url().as_str(), "https://1.1.1.1/webhook");
+    assert_eq!(
+        request
+            .headers()
+            .get("x-test")
+            .and_then(|v| v.to_str().ok()),
+        Some("1")
+    );
+    assert_eq!(request.timeout(), Some(&Duration::from_secs(5)));
 }
 
 #[tokio::test]

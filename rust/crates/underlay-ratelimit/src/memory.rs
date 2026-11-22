@@ -1,6 +1,6 @@
 //! In-memory rate limiting backend using DashMap.
 
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 use async_trait::async_trait;
@@ -20,6 +20,9 @@ pub const MIN_CLEANUP_INTERVAL: Duration = Duration::from_millis(10);
 /// Maximum number of entries inspected per eviction pass so hitting `max_keys`
 /// stays O(1) instead of scanning the entire map on every insertion.
 const EVICTION_SAMPLE_SIZE: usize = 32;
+
+/// Maximum number of bounded eviction passes per new-key admission.
+const MAX_EVICTION_PASSES: usize = 4;
 
 /// Entry in the rate limit store.
 #[derive(Debug, Clone)]
@@ -109,6 +112,7 @@ impl Drop for CleanupGuard {
 pub struct InMemoryBackend {
     entries: Arc<DashMap<String, RateLimitEntry>>,
     max_keys: usize,
+    admission_lock: Arc<Mutex<()>>,
     _cleanup_guard: Arc<CleanupGuard>,
 }
 
@@ -124,6 +128,7 @@ impl InMemoryBackend {
         Self {
             entries: Arc::new(DashMap::new()),
             max_keys: DEFAULT_MAX_KEYS,
+            admission_lock: Arc::new(Mutex::new(())),
             _cleanup_guard: Arc::new(CleanupGuard(None)),
         }
     }
@@ -179,19 +184,26 @@ impl InMemoryBackend {
         Self {
             entries,
             max_keys: DEFAULT_MAX_KEYS,
+            admission_lock: Arc::new(Mutex::new(())),
             _cleanup_guard: Arc::new(CleanupGuard(Some(handle))),
         }
     }
 
     /// Evict expired (and, if still full, oldest-sampled) entries before
-    /// inserting a new key so tracked keys remain bounded under key churn
-    /// without performing an O(N) full-map scan on every insertion.
-    fn evict_if_full(&self, incoming_key: &str) {
-        if self.entries.len() < self.max_keys || self.entries.contains_key(incoming_key) {
-            return;
-        }
+    /// admitting a new key.
+    ///
+    /// Must be called while holding `self.admission_lock` so capacity
+    /// admission is coordinated across concurrent new-key insertions. Each
+    /// removal rechecks expiry (or the sampled `window_start`) under the
+    /// shard write lock via [`DashMap::remove_if`] so a concurrently refreshed
+    /// counter is never erased, and the total work is bounded to at most
+    /// `MAX_EVICTION_PASSES * EVICTION_SAMPLE_SIZE` entries.
+    fn evict_for_admission(&self) {
+        for _ in 0..MAX_EVICTION_PASSES {
+            if self.entries.len() < self.max_keys {
+                return;
+            }
 
-        while self.entries.len() >= self.max_keys {
             let mut expired = Vec::new();
             let mut oldest: Option<(String, Instant)> = None;
 
@@ -209,15 +221,25 @@ impl InMemoryBackend {
 
             if !expired.is_empty() {
                 for key in expired {
-                    self.entries.remove(&key);
+                    // Recheck expiry under the shard write lock so a key
+                    // refreshed by another task after sampling is preserved.
+                    self.entries.remove_if(&key, |_, entry| {
+                        entry.window_start.elapsed() >= entry.window_duration
+                    });
                 }
-                continue;
+                if self.entries.len() < self.max_keys {
+                    return;
+                }
             }
 
-            let Some((victim, _)) = oldest else {
+            if let Some((victim, sampled_start)) = oldest {
+                // Only evict the sampled victim if its window has not been
+                // reset by a concurrent request since sampling.
+                self.entries
+                    .remove_if(&victim, |_, entry| entry.window_start == sampled_start);
+            } else {
                 break;
-            };
-            self.entries.remove(&victim);
+            }
         }
     }
 
@@ -266,7 +288,20 @@ impl RateLimitBackend for InMemoryBackend {
     }
 
     async fn increment(&self, key: &str, config: &RateLimitConfig) -> Result<u64> {
-        self.evict_if_full(key);
+        if let Some(mut entry) = self.entries.get_mut(key) {
+            entry.maybe_reset(config.window());
+            entry.count += 1;
+            return Ok(entry.count);
+        }
+
+        let _admission = self
+            .admission_lock
+            .lock()
+            .expect("rate limit admission lock poisoned");
+
+        if !self.entries.contains_key(key) && self.entries.len() >= self.max_keys {
+            self.evict_for_admission();
+        }
 
         let mut entry = self
             .entries
@@ -293,7 +328,24 @@ impl RateLimitBackend for InMemoryBackend {
             return Ok(RateLimitResult::denied(0, config.window()));
         }
 
-        self.evict_if_full(key);
+        if let Some(mut entry) = self.entries.get_mut(key) {
+            entry.maybe_reset(config.window());
+            if entry.count >= config.max_requests() {
+                return Ok(RateLimitResult::denied(entry.count, entry.time_remaining()));
+            }
+            entry.count += 1;
+            let remaining = config.max_requests().saturating_sub(entry.count);
+            return Ok(RateLimitResult::allowed(remaining, entry.count));
+        }
+
+        let _admission = self
+            .admission_lock
+            .lock()
+            .expect("rate limit admission lock poisoned");
+
+        if !self.entries.contains_key(key) && self.entries.len() >= self.max_keys {
+            self.evict_for_admission();
+        }
 
         let mut entry = self
             .entries
