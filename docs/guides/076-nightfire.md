@@ -27,7 +27,7 @@ below the range floor still carries two; see
 
 ```toml
 [dependencies]
-nightfire = { git = "https://github.com/inflatable-cookie/nightfire.git", tag = "v0.6.0" }
+nightfire = { git = "ssh://git@github.com/inflatable-cookie/nightfire.git", tag = "v0.6.0" }
 ```
 
 ```json
@@ -98,7 +98,7 @@ extraction from `NightfireValue`:
 ```toml
 [dependencies]
 underlay-media = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "vX.Y.Z", features = ["nightfire"] }
-nightfire = { git = "https://github.com/inflatable-cookie/nightfire.git", tag = "v0.6.0" }
+nightfire = { git = "ssh://git@github.com/inflatable-cookie/nightfire.git", tag = "v0.6.0" }
 ```
 
 Underlay supplies:
@@ -121,7 +121,7 @@ responses:
 ```toml
 [dependencies]
 underlay-validation = { git = "ssh://git@github.com/inflatable-cookie/underlay.git", tag = "vX.Y.Z", features = ["nightfire"] }
-nightfire = { git = "https://github.com/inflatable-cookie/nightfire.git", tag = "v0.6.0" }
+nightfire = { git = "ssh://git@github.com/inflatable-cookie/nightfire.git", tag = "v0.6.0" }
 ```
 
 Nightfire remains the validation authority. Underlay only converts errors at

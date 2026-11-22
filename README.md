@@ -1,6 +1,6 @@
 # Underlay
 
-![Rust CI](https://github.com/inflatable-cookie/underlay/actions/workflows/rust.yml/badge.svg)
+![Rust CI](https://github.com/inflatable-cookie/underlay/actions/workflows/rust.yml/badge.svg) ![CI](https://github.com/inflatable-cookie/underlay/actions/workflows/ci.yml/badge.svg)
 
 Underlay is a reusable foundation for building full-stack apps with stable cross-project patterns.
 

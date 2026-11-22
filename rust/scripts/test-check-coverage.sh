@@ -9,12 +9,24 @@ set -euo pipefail
 
 REPO_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
 WRAPPER="$REPO_ROOT/rust/scripts/check-coverage.sh"
-SCRATCH_BASE="/Volumes/Builds/scratch/underlay"
 
-if [[ ! -d "$SCRATCH_BASE" ]]; then
-	printf 'error: agent/proof scratch volume is unavailable: %s\n' "$SCRATCH_BASE" >&2
-	printf 'Mount the Builds volume; do not fall back to $TMPDIR, $HOME or the checkout.\n' >&2
-	exit 1
+# Local runs use the Builds volume. Hosted GitHub Actions runners have none, so
+# inside Actions the check uses the runner's temp directory (contract 123,
+# CI-only exception). Outside Actions the Builds rule is unchanged.
+if [[ "${GITHUB_ACTIONS:-}" == true ]]; then
+	if [[ -z "${RUNNER_TEMP:-}" ]]; then
+		printf 'error: GITHUB_ACTIONS=true but RUNNER_TEMP is unset or empty; refusing to choose a scratch base\n' >&2
+		exit 1
+	fi
+	SCRATCH_BASE="${RUNNER_TEMP}/underlay-scratch"
+	mkdir -p -- "$SCRATCH_BASE"
+else
+	SCRATCH_BASE="/Volumes/Builds/scratch/underlay"
+	if [[ ! -d "$SCRATCH_BASE" ]]; then
+		printf 'error: agent/proof scratch volume is unavailable: %s\n' "$SCRATCH_BASE" >&2
+		printf 'Mount the Builds volume; do not fall back to $TMPDIR, $HOME or the checkout.\n' >&2
+		exit 1
+	fi
 fi
 
 WORK="$(mktemp -d "$SCRATCH_BASE/coverage-route.XXXXXXXX")"

@@ -68,6 +68,7 @@ These crates remain part of the Rust surface, but they are not the first
 | `underlay-validation*`, `underlay-config`, `underlay-testing` | stable | Support-layer contracts. Keep validation/test APIs generic. `underlay-validation::validators` is the stable validator front door; implementation modules are private as of `g06.188`. |
 | `underlay-ai-runtime`, `underlay-suggestions` | stable | Covered by `080`. `RetryConfig`, `CircuitBreakerConfig`, and `RouteChainConfig` fields are private as of `g06.211`; consumers must use defaults, builders, and accessors. |
 | `underlay-nightfire` | *(retired in `0.11.0`)* | removed | Thin re-export facade retired; consumers import `nightfire` directly. |
+| `underlay-query` | `FilterField`, `FilterOperator`, `ParseFilterOperatorError`, `SortField`, `SortDirection`, `ParseSortDirectionError`, `parse_sort_string`, `WhereBuilder`, `FieldMapping`, `field_mapping!` | stable | Shared filter/sort vocabulary and SQL `WHERE`/field-mapping builders, split out of `underlay-http` so db-layer SQL construction no longer depends on the HTTP crate. `underlay_http::query::*` and the crate-root `underlay_http::field_mapping!` re-export it. Preserve operator and sort wire semantics and the `field_mapping!` syntax. |
 | `underlay-aws`, `underlay-http-client`, `underlay-soft-delete` | stable + adapter | Small focused helper crates. Review if typed safety gates touch storage or HTTP boundaries. `AwsConfig` fields are private as of `g06.209`; consumers must use constructors, builders, and accessors. |
 
 ## First Migration Gates
