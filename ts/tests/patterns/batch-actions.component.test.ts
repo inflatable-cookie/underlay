@@ -188,4 +188,50 @@ describe("patterns/batch-actions.svelte.ts", () => {
 		await batch.requestAction("silent");
 		expect(batch.error).toBe("Archive failed");
 	});
+
+	it("clears pendingAction on clear() and unregisterAction(), and re-checks isAvailable on confirm", async () => {
+		vi.resetModules();
+		const { useBatchActions } = await import("../../src/patterns/batch-actions.svelte");
+		const batch = useBatchActions<string>();
+
+		const execute = vi.fn(async (ids: string[]) => ({ success: true, affected: ids.length }));
+		batch.registerAction({
+			id: "delete",
+			label: "Delete",
+			isAvailable: (ids) => ids.includes("a"),
+			confirm: { title: "Delete", description: "Delete selected?" },
+			execute,
+		});
+
+		batch.selectAll(["a", "b"]);
+		await batch.requestAction("delete");
+		expect(batch.pendingAction?.id).toBe("delete");
+
+		batch.clear();
+		expect(batch.pendingAction).toBeNull();
+
+		batch.selectAll(["a", "b"]);
+		await batch.requestAction("delete");
+		expect(batch.pendingAction?.id).toBe("delete");
+
+		batch.unregisterAction("delete");
+		expect(batch.pendingAction).toBeNull();
+
+		batch.registerAction({
+			id: "delete",
+			label: "Delete",
+			isAvailable: (ids) => ids.includes("a"),
+			confirm: { title: "Delete", description: "Delete selected?" },
+			execute,
+		});
+		batch.selectAll(["a", "b"]);
+		await batch.requestAction("delete");
+		expect(batch.pendingAction?.id).toBe("delete");
+
+		// Deselect "a" so isAvailable becomes false before confirming.
+		batch.deselect("a");
+		expect(await batch.confirmPendingAction()).toBeNull();
+		expect(batch.pendingAction).toBeNull();
+		expect(execute).not.toHaveBeenCalled();
+	});
 });

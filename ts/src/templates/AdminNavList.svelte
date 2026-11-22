@@ -18,6 +18,7 @@
     variant = "desktop"
   }: Props = $props();
 
+  const uid = $props.id();
   let expandedSection = $state<string | null>(null);
 
   $effect(() => {
@@ -33,6 +34,10 @@
   const toggleSection = (section: string) => {
     expandedSection = expandedSection === section ? null : section;
   };
+
+  function sectionListId(sectionId: string): string {
+    return `${uid}-section-${sectionId}`;
+  }
 
   function isActive(href: string): boolean {
     if (!currentPath) return false;
@@ -56,10 +61,12 @@
   {#each items as item}
     <li>
       {#if item.type === "link"}
+        {@const active = isActive(item.href)}
         <a
           href={item.href}
           class="{linkClass} admin-nav__root"
-          class:admin-nav__link--active={isActive(item.href)}
+          class:admin-nav__link--active={active}
+          aria-current={active ? "page" : undefined}
           onclick={handleChildClick}
         >
           <span
@@ -72,10 +79,13 @@
           <span class={variant === "desktop" ? "admin-nav__label" : ""}>{item.label}</span>
         </a>
       {:else}
+        {@const controlsId = sectionListId(item.id)}
+        {@const isExpanded = expandedSection === item.id}
         <button
           type="button"
           class="{linkClass} {sectionClass} admin-nav__section-toggle"
-          aria-expanded={expandedSection === item.id}
+          aria-expanded={isExpanded}
+          aria-controls={isExpanded ? controlsId : undefined}
           onclick={() => toggleSection(item.id)}
         >
           <span
@@ -86,20 +96,22 @@
             <item.icon class="admin-nav__badge-icon" />
           </span>
           <span class={variant === "desktop" ? "admin-nav__label" : ""}>{item.label}</span>
-          <ChevronDown class="admin-nav__chevron" />
+          <ChevronDown class="admin-nav__chevron" aria-hidden="true" />
         </button>
         {#if expandedSection === item.id}
-          <ul class={childrenClass}>
+          <ul id={controlsId} class={childrenClass}>
             {#each item.children as child}
+              {@const childActive = isChildActive(child)}
               <li>
                 <a
                   href={child.href}
                   class={child.danger ? "admin-nav__child-link--danger" : undefined}
-                  class:admin-nav__link--active={isChildActive(child)}
+                  class:admin-nav__link--active={childActive}
+                  aria-current={childActive ? "page" : undefined}
                   onclick={handleChildClick}
                 >
                   {#if child.icon}
-                    <child.icon class="admin-nav__child-icon" />
+                    <child.icon class="admin-nav__child-icon" aria-hidden="true" />
                   {/if}
                   {child.label}
                 </a>
@@ -119,7 +131,7 @@
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: var(--underlay-space-1, 0.25rem);
     flex: 1;
     overflow-y: auto;
     min-height: 0;
@@ -131,10 +143,10 @@
     align-items: center;
     box-sizing: border-box;
     padding: 0.4rem 0.7rem;
-    border-radius: 0.4rem;
+    border-radius: var(--underlay-radius-sm, 0.4rem);
     color: inherit;
     text-decoration: none;
-    font-size: 0.9rem;
+    font-size: var(--underlay-font-size-md, 0.9rem);
     border: none;
     background: transparent;
     width: 100%;
@@ -144,7 +156,17 @@
 
   :global(.admin-nav__root:hover),
   :global(.admin-nav__section-toggle:hover) {
-    background-color: rgba(148, 163, 184, 0.16);
+    background-color: var(--underlay-color-hover-bg);
+  }
+
+  :global(.admin-nav__root:focus-visible),
+  :global(.admin-nav__section-toggle:focus-visible),
+  :global(.admin-nav__children a:focus-visible),
+  :global(.admin-mobile-overlay__link:focus-visible),
+  :global(.admin-mobile-overlay__children a:focus-visible) {
+    outline: var(--underlay-focus-ring-width, 2px) solid var(--underlay-color-accent);
+    outline-offset: var(--underlay-focus-ring-offset, 2px);
+    opacity: 1;
   }
 
   :global(.admin-nav__section-toggle) {
@@ -173,7 +195,7 @@
 
   :global(.admin-nav__children) {
     list-style: none;
-    padding-left: 1.25rem;
+    padding-left: var(--underlay-space-5, 1.25rem);
     margin: 0.25rem 0 0.4rem;
     display: flex;
     flex-direction: column;
@@ -183,11 +205,11 @@
   :global(.admin-nav__children a) {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--underlay-space-2, 0.5rem);
     font-size: 0.85rem;
     padding: 0.45rem 0.75rem;
-    border-radius: 0.4rem;
-    opacity: 0.7;
+    border-radius: var(--underlay-radius-sm, 0.4rem);
+    opacity: 0.75;
     transition: opacity 0.15s ease;
     color: inherit;
     text-decoration: none;
@@ -196,7 +218,7 @@
   :global(.admin-nav__children a:hover),
   :global(.admin-nav__children a.admin-nav__link--active) {
     opacity: 1;
-    background-color: rgba(148, 163, 184, 0.16);
+    background-color: var(--underlay-color-hover-bg);
   }
 
   :global(.admin-nav__child-icon) {
@@ -206,19 +228,20 @@
   }
 
   :global(.admin-nav__children a.admin-nav__child-link--danger) {
-    color: #f87171;
-    opacity: 0.7;
+    color: var(--underlay-color-danger-strong);
+    opacity: 1;
   }
 
   :global(.admin-nav__children a.admin-nav__child-link--danger:hover),
+  :global(.admin-nav__children a.admin-nav__child-link--danger:focus-visible),
   :global(.admin-nav__children a.admin-nav__child-link--danger.admin-nav__link--active) {
-    color: #ef4444;
+    color: var(--underlay-color-danger-strong);
     opacity: 1;
-    background-color: rgba(239, 68, 68, 0.12);
+    background-color: var(--underlay-color-danger-bg);
   }
 
   :global(.admin-nav__link--active) {
-    background-color: rgba(148, 163, 184, 0.12);
+    background-color: var(--underlay-color-accent-tint-bg);
     font-weight: 550;
   }
 
@@ -237,23 +260,23 @@
   :global(.admin-nav__badge-icon) {
     width: 0.95rem;
     height: 0.95rem;
-    color: #f9fafb;
+    color: var(--underlay-admin-nav-badge-fg);
   }
 
   :global(.admin-nav__badge--overview) {
-    background: linear-gradient(135deg, #22c55e, #14b8a6);
+    background: var(--underlay-admin-nav-badge-overview);
   }
 
   :global(.admin-nav__badge--users) {
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    background: var(--underlay-admin-nav-badge-users);
   }
 
   :global(.admin-nav__badge--media) {
-    background: linear-gradient(135deg, #f59e0b, #f97316);
+    background: var(--underlay-admin-nav-badge-media);
   }
 
   :global(.admin-nav__badge--system) {
-    background: linear-gradient(135deg, #94a3b8, #64748b);
+    background: var(--underlay-admin-nav-badge-system);
   }
 
   :global(.admin-mobile-overlay__list) {
@@ -262,7 +285,7 @@
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: var(--underlay-space-1, 0.25rem);
     flex: 1;
   }
 
@@ -272,7 +295,7 @@
     justify-content: flex-start;
     gap: 0.55rem;
     padding: 0.6rem 0.75rem;
-    border-radius: 0.5rem;
+    border-radius: var(--underlay-radius-control, 0.5rem);
     color: inherit;
     text-decoration: none;
     font-size: 1rem;
@@ -292,7 +315,7 @@
   }
 
   :global(.admin-mobile-overlay__link:hover) {
-    background: rgba(148, 163, 184, 0.16);
+    background: var(--underlay-color-hover-bg);
   }
 
   :global(.admin-mobile-overlay__children) {
@@ -307,32 +330,33 @@
   :global(.admin-mobile-overlay__children a) {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--underlay-space-2, 0.5rem);
     padding: 0.5rem 0.75rem;
-    border-radius: 0.4rem;
+    border-radius: var(--underlay-radius-sm, 0.4rem);
     color: inherit;
     text-decoration: none;
     font-size: 0.95rem;
-    opacity: 0.7;
+    opacity: 0.75;
     transition: opacity 0.15s ease;
   }
 
   :global(.admin-mobile-overlay__children a:hover),
   :global(.admin-mobile-overlay__children a.admin-nav__link--active) {
-    background: rgba(148, 163, 184, 0.16);
+    background: var(--underlay-color-hover-bg);
     opacity: 1;
   }
 
   :global(.admin-mobile-overlay__children a.admin-nav__child-link--danger) {
-    color: #f87171;
-    opacity: 0.7;
+    color: var(--underlay-color-danger-strong);
+    opacity: 1;
   }
 
   :global(.admin-mobile-overlay__children a.admin-nav__child-link--danger:hover),
+  :global(.admin-mobile-overlay__children a.admin-nav__child-link--danger:focus-visible),
   :global(.admin-mobile-overlay__children a.admin-nav__child-link--danger.admin-nav__link--active) {
-    color: #ef4444;
+    color: var(--underlay-color-danger-strong);
     opacity: 1;
-    background: rgba(239, 68, 68, 0.12);
+    background: var(--underlay-color-danger-bg);
   }
 
   :global(.admin-mobile-overlay__link .admin-nav__chevron) {

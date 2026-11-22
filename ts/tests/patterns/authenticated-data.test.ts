@@ -15,10 +15,9 @@ async function loadAuthDataModule(options?: {
 	};
 
 	(globalThis as any).$state = <T>(initial: T) => initial;
-	(globalThis as any).$derived = Object.assign(
-		<T>(value: T) => value,
-		{ by: <T>(fn: () => T) => fn() }
-	);
+	(globalThis as any).$derived = Object.assign(<T>(value: T) => value, {
+		by: <T>(fn: () => T) => fn(),
+	});
 	(globalThis as any).$effect = (fn: (typeof effects)[number]) => {
 		effects.push(fn);
 		runEffect(fn);
@@ -26,6 +25,7 @@ async function loadAuthDataModule(options?: {
 
 	vi.doMock("../../src/patterns/auth", () => ({
 		getAuthConfig: () => options?.globalConfig ?? null,
+		subscribeAuthConfig: () => () => {},
 	}));
 
 	const mod = await import("../../src/patterns/authenticated-data.svelte");
@@ -51,10 +51,7 @@ async function flush(): Promise<void> {
 describe("patterns/authenticated-data.svelte.ts", () => {
 	it("defers missing getToken to the fetch path so setup stays SSR-safe", async () => {
 		const { mod } = await loadAuthDataModule();
-		const data = mod.useAuthenticatedData(
-			async () => ({ ok: true }),
-			{}
-		);
+		const data = mod.useAuthenticatedData(async () => ({ ok: true }), {});
 		expect(data.error).toBeNull();
 
 		await data.tryFetch(false, { id: "u1" });
@@ -190,7 +187,8 @@ describe("patterns/authenticated-data.svelte.ts", () => {
 		const refetchResult = new Promise<string>((resolve) => {
 			finishRefetch = resolve;
 		});
-		const fetcher = vi.fn<() => Promise<string>>()
+		const fetcher = vi
+			.fn<() => Promise<string>>()
 			.mockResolvedValueOnce("initial")
 			.mockReturnValueOnce(refetchResult);
 		const data = mod.useAuthenticatedData(fetcher, { getToken: () => "token" });
@@ -230,9 +228,12 @@ describe("patterns/authenticated-data.svelte.ts", () => {
 	it("settles queued work on disposal and ignores late fetch results", async () => {
 		const { mod, dispose } = await loadAuthDataModule();
 		let finishFetch: (value: string) => void = () => {};
-		const fetcher = vi.fn(() => new Promise<string>((resolve) => {
-			finishFetch = resolve;
-		}));
+		const fetcher = vi.fn(
+			() =>
+				new Promise<string>((resolve) => {
+					finishFetch = resolve;
+				}),
+		);
 		const onSuccess = vi.fn();
 		const data = mod.useAuthenticatedData(fetcher, { getToken: () => "token", onSuccess });
 

@@ -1,315 +1,608 @@
 import { describe, expect, it } from "vitest";
 import { get } from "svelte/store";
-import { createOptimisticList } from "../../../src/patterns/optimistic";
+import {
+	createOptimisticList,
+	type OptimisticList,
+	type OptimisticListOptions,
+} from "../../../src/patterns/optimistic";
 
 interface Item {
-  id: string;
-  name: string;
+	id: string;
+	name: string;
 }
 
 describe("createOptimisticList", () => {
-  describe("initialization", () => {
-    it("starts with empty array by default", () => {
-      const list = createOptimisticList<Item>();
-      expect(get(list)).toEqual([]);
-    });
-
-    it("starts with initial items", () => {
-      const list = createOptimisticList<Item>([
-        { id: "1", name: "First" },
-        { id: "2", name: "Second" },
-      ]);
-      expect(get(list)).toHaveLength(2);
-      expect(get(list)[0].name).toBe("First");
-    });
-  });
-
-  describe("add", () => {
-    it("adds item optimistically with temp ID", () => {
-      const list = createOptimisticList<Item>([]);
-      list.add({ name: "New Item" });
-
-      expect(get(list)).toHaveLength(1);
-      expect(get(list)[0].name).toBe("New Item");
-      expect(get(list)[0].id).toMatch(/^temp-/);
-    });
-
-    it("marks item as pending", () => {
-      const list = createOptimisticList<Item>([]);
-      list.add({ name: "New Item" });
-
-      const isPending = get(list.isPending);
-      expect(isPending(get(list)[0].id)).toBe(true);
-    });
-
-    it("confirm replaces temp item with real data", () => {
-      const list = createOptimisticList<Item>([]);
-      const { confirm } = list.add({ name: "New Item" });
+	describe("initialization", () => {
+		it("starts with empty array by default", () => {
+			const list = createOptimisticList<Item>();
+			expect(get(list)).toEqual([]);
+		});
+
+		it("starts with initial items", () => {
+			const list = createOptimisticList<Item>([
+				{ id: "1", name: "First" },
+				{ id: "2", name: "Second" },
+			]);
+			expect(get(list)).toHaveLength(2);
+			expect(get(list)[0].name).toBe("First");
+		});
+	});
+
+	describe("add", () => {
+		it("adds item optimistically with temp ID", () => {
+			const list = createOptimisticList<Item>([]);
+			list.add({ name: "New Item" });
+
+			expect(get(list)).toHaveLength(1);
+			expect(get(list)[0].name).toBe("New Item");
+			expect(get(list)[0].id).toMatch(/^temp-/);
+		});
+
+		it("marks item as pending", () => {
+			const list = createOptimisticList<Item>([]);
+			list.add({ name: "New Item" });
+
+			const isPending = get(list.isPending);
+			expect(isPending(get(list)[0].id)).toBe(true);
+		});
+
+		it("confirm replaces temp item with real data", () => {
+			const list = createOptimisticList<Item>([]);
+			const { confirm } = list.add({ name: "New Item" });
 
-      confirm({ id: "real-123", name: "Real Item" });
+			confirm({ id: "real-123", name: "Real Item" });
 
-      expect(get(list)).toHaveLength(1);
-      expect(get(list)[0].id).toBe("real-123");
-      expect(get(list)[0].name).toBe("Real Item");
-    });
+			expect(get(list)).toHaveLength(1);
+			expect(get(list)[0].id).toBe("real-123");
+			expect(get(list)[0].name).toBe("Real Item");
+		});
 
-    it("confirm clears pending state", () => {
-      const list = createOptimisticList<Item>([]);
-      const { confirm } = list.add({ name: "New Item" });
-      const tempId = get(list)[0].id;
-
-      confirm({ id: "real-123", name: "Real Item" });
+		it("confirm clears pending state", () => {
+			const list = createOptimisticList<Item>([]);
+			const { confirm } = list.add({ name: "New Item" });
+			const tempId = get(list)[0].id;
+
+			confirm({ id: "real-123", name: "Real Item" });
 
-      const isPending = get(list.isPending);
-      expect(isPending(tempId)).toBe(false);
-      expect(isPending("real-123")).toBe(false);
-    });
+			const isPending = get(list.isPending);
+			expect(isPending(tempId)).toBe(false);
+			expect(isPending("real-123")).toBe(false);
+		});
 
-    it("rollback removes the optimistic item", () => {
-      const list = createOptimisticList<Item>([]);
-      const { rollback } = list.add({ name: "New Item" });
+		it("rollback removes the optimistic item", () => {
+			const list = createOptimisticList<Item>([]);
+			const { rollback } = list.add({ name: "New Item" });
 
-      expect(get(list)).toHaveLength(1);
+			expect(get(list)).toHaveLength(1);
 
-      rollback();
+			rollback();
 
-      expect(get(list)).toHaveLength(0);
-    });
+			expect(get(list)).toHaveLength(0);
+		});
 
-    it("rollback clears pending state", () => {
-      const list = createOptimisticList<Item>([]);
-      const { rollback } = list.add({ name: "New Item" });
-      const tempId = get(list)[0].id;
+		it("rollback clears pending state", () => {
+			const list = createOptimisticList<Item>([]);
+			const { rollback } = list.add({ name: "New Item" });
+			const tempId = get(list)[0].id;
 
-      rollback();
+			rollback();
 
-      const isPending = get(list.isPending);
-      expect(isPending(tempId)).toBe(false);
-    });
+			const isPending = get(list.isPending);
+			expect(isPending(tempId)).toBe(false);
+		});
 
-    it("supports custom tempId generator", () => {
-      let counter = 0;
-      const list = createOptimisticList<Item>([], {
-        tempId: () => `custom-${++counter}`,
-      });
+		it("supports custom tempId generator", () => {
+			let counter = 0;
+			const list = createOptimisticList<Item>([], {
+				tempId: () => `custom-${++counter}`,
+			});
 
-      list.add({ name: "First" });
-      list.add({ name: "Second" });
+			list.add({ name: "First" });
+			list.add({ name: "Second" });
 
-      expect(get(list)[0].id).toBe("custom-1");
-      expect(get(list)[1].id).toBe("custom-2");
-    });
-  });
+			expect(get(list)[0].id).toBe("custom-1");
+			expect(get(list)[1].id).toBe("custom-2");
+		});
+	});
 
-  describe("remove", () => {
-    it("removes item optimistically", () => {
-      const list = createOptimisticList<Item>([
-        { id: "1", name: "First" },
-        { id: "2", name: "Second" },
-      ]);
+	describe("remove", () => {
+		it("removes item optimistically", () => {
+			const list = createOptimisticList<Item>([
+				{ id: "1", name: "First" },
+				{ id: "2", name: "Second" },
+			]);
 
-      list.remove("1");
+			list.remove("1");
 
-      expect(get(list)).toHaveLength(1);
-      expect(get(list)[0].id).toBe("2");
-    });
+			expect(get(list)).toHaveLength(1);
+			expect(get(list)[0].id).toBe("2");
+		});
 
-    it("marks removed item as pending", () => {
-      const list = createOptimisticList<Item>([{ id: "1", name: "First" }]);
+		it("marks removed item as pending", () => {
+			const list = createOptimisticList<Item>([{ id: "1", name: "First" }]);
 
-      list.remove("1");
+			list.remove("1");
 
-      const isPending = get(list.isPending);
-      expect(isPending("1")).toBe(true);
-    });
+			const isPending = get(list.isPending);
+			expect(isPending("1")).toBe(true);
+		});
 
-    it("confirm clears pending state", () => {
-      const list = createOptimisticList<Item>([{ id: "1", name: "First" }]);
+		it("confirm clears pending state", () => {
+			const list = createOptimisticList<Item>([{ id: "1", name: "First" }]);
 
-      const { confirm } = list.remove("1");
-      confirm();
+			const { confirm } = list.remove("1");
+			confirm();
 
-      const isPending = get(list.isPending);
-      expect(isPending("1")).toBe(false);
-    });
+			const isPending = get(list.isPending);
+			expect(isPending("1")).toBe(false);
+		});
 
-    it("rollback restores the removed item", () => {
-      const list = createOptimisticList<Item>([
-        { id: "1", name: "First" },
-        { id: "2", name: "Second" },
-      ]);
+		it("rollback restores the removed item", () => {
+			const list = createOptimisticList<Item>([
+				{ id: "1", name: "First" },
+				{ id: "2", name: "Second" },
+			]);
 
-      const { rollback } = list.remove("1");
+			const { rollback } = list.remove("1");
 
-      expect(get(list)).toHaveLength(1);
+			expect(get(list)).toHaveLength(1);
 
-      rollback();
+			rollback();
 
-      expect(get(list)).toHaveLength(2);
-      expect(get(list).find((i) => i.id === "1")).toBeDefined();
-    });
+			expect(get(list)).toHaveLength(2);
+			expect(get(list).find((i) => i.id === "1")).toBeDefined();
+		});
 
-    it("rollback restores item at original position", () => {
-      const list = createOptimisticList<Item>([
-        { id: "1", name: "First" },
-        { id: "2", name: "Second" },
-        { id: "3", name: "Third" },
-      ]);
+		it("rollback restores item at original position", () => {
+			const list = createOptimisticList<Item>([
+				{ id: "1", name: "First" },
+				{ id: "2", name: "Second" },
+				{ id: "3", name: "Third" },
+			]);
 
-      const { rollback } = list.remove("2");
+			const { rollback } = list.remove("2");
 
-      expect(get(list)).toHaveLength(2);
+			expect(get(list)).toHaveLength(2);
 
-      rollback();
+			rollback();
 
-      expect(get(list)).toHaveLength(3);
-      expect(get(list)[1].id).toBe("2");
-    });
+			expect(get(list)).toHaveLength(3);
+			expect(get(list)[1].id).toBe("2");
+		});
 
-    it("handles removing non-existent item", () => {
-      const list = createOptimisticList<Item>([{ id: "1", name: "First" }]);
+		it("handles removing non-existent item", () => {
+			const list = createOptimisticList<Item>([{ id: "1", name: "First" }]);
 
-      const { rollback } = list.remove("non-existent");
+			const { rollback } = list.remove("non-existent");
 
-      expect(get(list)).toHaveLength(1);
+			expect(get(list)).toHaveLength(1);
 
-      rollback();
+			rollback();
 
-      expect(get(list)).toHaveLength(1);
-    });
+			expect(get(list)).toHaveLength(1);
+		});
 
-    it("rollback appends removed item when original index is out of bounds", () => {
-      const list = createOptimisticList<Item>([
-        { id: "1", name: "First" },
-        { id: "2", name: "Second" },
-      ]);
+		it("rollback appends removed item when original index is out of bounds", () => {
+			const list = createOptimisticList<Item>([
+				{ id: "1", name: "First" },
+				{ id: "2", name: "Second" },
+			]);
 
-      const { rollback } = list.remove("2");
-      list.set([]);
-      rollback();
+			const { rollback } = list.remove("2");
+			list.set([]);
+			rollback();
 
-      expect(get(list)).toEqual([{ id: "2", name: "Second" }]);
-    });
-  });
+			expect(get(list)).toEqual([{ id: "2", name: "Second" }]);
+		});
+	});
 
-  describe("update", () => {
-    it("updates item optimistically", () => {
-      const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
+	describe("update", () => {
+		it("updates item optimistically", () => {
+			const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
 
-      list.update("1", { name: "Updated" });
+			list.update("1", { name: "Updated" });
 
-      expect(get(list)[0].name).toBe("Updated");
-    });
+			expect(get(list)[0].name).toBe("Updated");
+		});
 
-    it("marks updated item as pending", () => {
-      const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
+		it("marks updated item as pending", () => {
+			const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
 
-      list.update("1", { name: "Updated" });
+			list.update("1", { name: "Updated" });
 
-      const isPending = get(list.isPending);
-      expect(isPending("1")).toBe(true);
-    });
+			const isPending = get(list.isPending);
+			expect(isPending("1")).toBe(true);
+		});
 
-    it("confirm with real data replaces item", () => {
-      const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
+		it("confirm with real data replaces item", () => {
+			const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
 
-      const { confirm } = list.update("1", { name: "Optimistic" });
-      confirm({ id: "1", name: "From Server" });
+			const { confirm } = list.update("1", { name: "Optimistic" });
+			confirm({ id: "1", name: "From Server" });
 
-      expect(get(list)[0].name).toBe("From Server");
-    });
+			expect(get(list)[0].name).toBe("From Server");
+		});
 
-    it("confirm without data keeps optimistic changes", () => {
-      const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
+		it("confirm without data keeps optimistic changes", () => {
+			const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
 
-      const { confirm } = list.update("1", { name: "Updated" });
-      confirm();
+			const { confirm } = list.update("1", { name: "Updated" });
+			confirm();
 
-      expect(get(list)[0].name).toBe("Updated");
-      const isPending = get(list.isPending);
-      expect(isPending("1")).toBe(false);
-    });
+			expect(get(list)[0].name).toBe("Updated");
+			const isPending = get(list.isPending);
+			expect(isPending("1")).toBe(false);
+		});
 
-    it("rollback restores original values", () => {
-      const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
+		it("rollback restores original values", () => {
+			const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
 
-      const { rollback } = list.update("1", { name: "Updated" });
+			const { rollback } = list.update("1", { name: "Updated" });
 
-      expect(get(list)[0].name).toBe("Updated");
+			expect(get(list)[0].name).toBe("Updated");
 
-      rollback();
+			rollback();
 
-      expect(get(list)[0].name).toBe("Original");
-    });
+			expect(get(list)[0].name).toBe("Original");
+		});
 
-    it("handles update operations for non-existent IDs", () => {
-      const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
-      const { confirm, rollback } = list.update("missing", { name: "Updated" });
+		it("handles update operations for non-existent IDs", () => {
+			const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
+			const { confirm, rollback } = list.update("missing", { name: "Updated" });
 
-      expect(get(list)).toEqual([{ id: "1", name: "Original" }]);
+			expect(get(list)).toEqual([{ id: "1", name: "Original" }]);
 
-      confirm({ id: "missing", name: "From Server" } as any);
-      expect(get(list)).toEqual([{ id: "1", name: "Original" }]);
+			confirm({ id: "missing", name: "From Server" } as any);
+			expect(get(list)).toEqual([{ id: "1", name: "Original" }]);
 
-      rollback();
-      expect(get(list)).toEqual([{ id: "1", name: "Original" }]);
-    });
+			rollback();
+			expect(get(list)).toEqual([{ id: "1", name: "Original" }]);
+		});
 
-    it("rollback preserves unrelated items while restoring updated item", () => {
-      const list = createOptimisticList<Item>([
-        { id: "1", name: "Original" },
-        { id: "2", name: "Other" },
-      ]);
+		it("rollback preserves unrelated items while restoring updated item", () => {
+			const list = createOptimisticList<Item>([
+				{ id: "1", name: "Original" },
+				{ id: "2", name: "Other" },
+			]);
 
-      const { rollback } = list.update("1", { name: "Updated" });
-      rollback();
+			const { rollback } = list.update("1", { name: "Updated" });
+			rollback();
 
-      expect(get(list)).toEqual([
-        { id: "1", name: "Original" },
-        { id: "2", name: "Other" },
-      ]);
-    });
-  });
+			expect(get(list)).toEqual([
+				{ id: "1", name: "Original" },
+				{ id: "2", name: "Other" },
+			]);
+		});
 
-  describe("set", () => {
-    it("replaces entire list", () => {
-      const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
+		it("does not clobber newer optimistic edits when an older concurrent update rolls back", () => {
+			interface DetailedItem {
+				id: string;
+				name: string;
+				count: number;
+			}
 
-      list.set([
-        { id: "a", name: "New A" },
-        { id: "b", name: "New B" },
-      ]);
+			const list = createOptimisticList<DetailedItem>([{ id: "1", name: "Original", count: 0 }]);
 
-      expect(get(list)).toHaveLength(2);
-      expect(get(list)[0].id).toBe("a");
-    });
+			const first = list.update("1", { name: "First" });
+			const second = list.update("1", { count: 5 });
 
-    it("clears pending state", () => {
-      const list = createOptimisticList<Item>([]);
-      list.add({ name: "Pending Item" });
-      const tempId = get(list)[0].id;
+			expect(get(list)[0]).toEqual({ id: "1", name: "First", count: 5 });
 
-      list.set([{ id: "fresh", name: "Fresh" }]);
+			first.rollback();
 
-      const isPending = get(list.isPending);
-      expect(isPending(tempId)).toBe(false);
-      expect(get(list.pendingIds).size).toBe(0);
-    });
-  });
+			expect(get(list)[0]).toEqual({ id: "1", name: "Original", count: 5 });
+			expect(get(list.isPending)("1")).toBe(true);
 
-  describe("pendingIds", () => {
-    it("tracks all pending IDs", () => {
-      const list = createOptimisticList<Item>([
-        { id: "1", name: "First" },
-        { id: "2", name: "Second" },
-      ]);
+			second.confirm();
+			expect(get(list)[0]).toEqual({ id: "1", name: "Original", count: 5 });
+			expect(get(list.isPending)("1")).toBe(false);
+		});
 
-      list.add({ name: "New" });
-      list.update("1", { name: "Updated" });
+		it("preserves newer same-field edit when older update rolls back", () => {
+			const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
 
-      const pending = get(list.pendingIds);
-      expect(pending.size).toBe(2);
-      expect(pending.has("1")).toBe(true);
-    });
-  });
+			const first = list.update("1", { name: "Edit 1" });
+			const second = list.update("1", { name: "Edit 2" });
+
+			first.rollback();
+			expect(get(list)[0].name).toBe("Edit 2");
+			expect(get(list.isPending)("1")).toBe(true);
+
+			second.confirm();
+			expect(get(list)[0].name).toBe("Edit 2");
+			expect(get(list.isPending)("1")).toBe(false);
+		});
+
+		it("preserves newer confirmed value when an older same-field update confirms afterwards", () => {
+			const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
+
+			const first = list.update("1", { name: "Edit 1" });
+			const second = list.update("1", { name: "Edit 2" });
+
+			second.confirm();
+			expect(get(list)[0].name).toBe("Edit 2");
+			expect(get(list.isPending)("1")).toBe(true);
+
+			first.confirm();
+			expect(get(list)[0].name).toBe("Edit 2");
+			expect(get(list.isPending)("1")).toBe(false);
+		});
+
+		it("ignores a stale server snapshot when an older update confirms after a newer snapshot confirm", () => {
+			const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
+
+			const first = list.update("1", { name: "Edit 1" });
+			const second = list.update("1", { name: "Edit 2" });
+
+			second.confirm({ id: "1", name: "Server 2" });
+			expect(get(list)[0].name).toBe("Server 2");
+			expect(get(list.isPending)("1")).toBe(true);
+
+			first.confirm({ id: "1", name: "Server 1" });
+			expect(get(list)[0].name).toBe("Server 2");
+			expect(get(list.isPending)("1")).toBe(false);
+		});
+
+		it("ignores a stale server snapshot when an older update confirms after a newer optimistic confirm", () => {
+			const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
+
+			const first = list.update("1", { name: "Edit 1" });
+			const second = list.update("1", { name: "Edit 2" });
+
+			second.confirm();
+			expect(get(list)[0].name).toBe("Edit 2");
+			expect(get(list.isPending)("1")).toBe(true);
+
+			first.confirm({ id: "1", name: "Server 1" });
+			expect(get(list)[0].name).toBe("Edit 2");
+			expect(get(list.isPending)("1")).toBe(false);
+		});
+
+		it("does not duplicate a refreshed row when a stale removal rolls back after set()", () => {
+			const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
+
+			const rem = list.remove("1");
+			list.set([{ id: "1", name: "Refreshed" }]);
+
+			rem.rollback();
+
+			expect(get(list)).toEqual([{ id: "1", name: "Refreshed" }]);
+			expect(get(list.isPending)("1")).toBe(false);
+		});
+
+		it("enforces required fields on add for default id lists", () => {
+			const list = createOptimisticList<Item>([]);
+			// @ts-expect-error required field `name` must be supplied when adding to default-key list
+			const invalidCall = () => list.add({});
+			expect(typeof invalidCall).toBe("function");
+		});
+
+		it("does not let a stale rollback after set() clear a newer update's pending flag", () => {
+			const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
+
+			const stale = list.update("1", { name: "Stale" });
+			list.set([{ id: "1", name: "Reset" }]);
+
+			const fresh = list.update("1", { name: "Fresh" });
+			expect(get(list.isPending)("1")).toBe(true);
+
+			stale.rollback();
+			expect(get(list)[0].name).toBe("Fresh");
+			expect(get(list.isPending)("1")).toBe(true);
+
+			fresh.confirm();
+			expect(get(list)[0].name).toBe("Fresh");
+			expect(get(list.isPending)("1")).toBe(false);
+		});
+
+		it("restores settled state when update rolls back before remove rolls back", () => {
+			const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
+
+			const upd = list.update("1", { name: "Rejected Edit" });
+			const rem = list.remove("1");
+			expect(get(list)).toEqual([]);
+
+			upd.rollback();
+			rem.rollback();
+
+			expect(get(list)).toEqual([{ id: "1", name: "Original" }]);
+			expect(get(list.isPending)("1")).toBe(false);
+		});
+	});
+
+	describe("custom key option", () => {
+		it("honors options.key across add, update, remove, and pending tracking", () => {
+			interface SlugItem {
+				slug: string;
+				title: string;
+			}
+
+			const list = createOptimisticList([{ slug: "alpha", title: "Alpha" }] as SlugItem[], {
+				key: "slug",
+				tempId: () => "temp-slug",
+			});
+
+			const added = list.add({ title: "Beta" });
+			expect(get(list)[1]).toMatchObject({ slug: "temp-slug", title: "Beta" });
+			expect(get(list.isPending)("temp-slug")).toBe(true);
+			added.confirm({ slug: "beta", title: "Beta" });
+			expect(get(list)[1]).toEqual({ slug: "beta", title: "Beta" });
+			expect(get(list.isPending)("temp-slug")).toBe(false);
+
+			const updated = list.update("alpha", { title: "Alpha Edited" });
+			expect(get(list)[0].title).toBe("Alpha Edited");
+			updated.rollback();
+			expect(get(list)[0].title).toBe("Alpha");
+
+			const removed = list.remove("beta");
+			expect(get(list)).toHaveLength(1);
+			removed.rollback();
+			expect(get(list)).toHaveLength(2);
+		});
+
+		it("supports one-type-argument calls, OptimisticListOptions<T>, and omitted initial list", () => {
+			interface ItemWithSlug {
+				id: string;
+				slug: string;
+				name: string;
+			}
+
+			const slugOpts: OptimisticListOptions<ItemWithSlug> = { key: "slug" };
+			const tempOnlyOpts: OptimisticListOptions<ItemWithSlug> = { tempId: () => "temp-1" };
+
+			const listFromOpts: OptimisticList<ItemWithSlug> = createOptimisticList<ItemWithSlug>(
+				[],
+				slugOpts,
+			);
+			const listFromTempOpts: OptimisticList<ItemWithSlug> = createOptimisticList<ItemWithSlug>(
+				[],
+				tempOnlyOpts,
+			);
+			const listFromUndefined = createOptimisticList<ItemWithSlug>(undefined, { key: "slug" });
+			const listDirect = createOptimisticList<ItemWithSlug>(
+				[{ id: "1", slug: "alpha", name: "Alpha" }],
+				{ key: "slug" },
+			);
+			const listTypedKey = createOptimisticList<ItemWithSlug, "slug">(undefined, { key: "slug" });
+
+			const upd = listDirect.update("alpha", { name: "Alpha 2" });
+			expect(get(listDirect)[0].name).toBe("Alpha 2");
+			upd.rollback();
+			expect(get(listDirect)[0].name).toBe("Alpha");
+
+			// Default-ID typed options preserve Omit<T, "id"> add and OptimisticList<T> assignment,
+			// and still populate `id` on the emitted row when `opts` carries a custom key.
+			listFromTempOpts.add({ slug: "gamma", name: "Gamma" });
+			expect(get(listFromTempOpts)[0]).toEqual({ id: "temp-1", slug: "gamma", name: "Gamma" });
+
+			listFromOpts.add({ slug: "beta", name: "Beta" });
+			const emittedFromOpts = get(listFromOpts)[0];
+			expect(emittedFromOpts.id).toMatch(/^temp-/);
+			expect(emittedFromOpts.slug).toBe(emittedFromOpts.id);
+			expect(emittedFromOpts.name).toBe("Beta");
+			expect(emittedFromOpts.id.toUpperCase()).toMatch(/^TEMP-/);
+
+			listFromUndefined.add({ id: "4", slug: "delta", name: "Delta" });
+			listTypedKey.add({ id: "5", name: "Epsilon" });
+
+			// Union key cannot omit multiple fields; must supply full item.
+			const unionKey = "slug" as "slug" | "name";
+			const listUnionKey = createOptimisticList<ItemWithSlug, "slug" | "name">([], {
+				key: unionKey,
+			});
+			listUnionKey.add({ id: "6", slug: "zeta", name: "Zeta" });
+
+			// Invalid calls must be rejected by TypeScript:
+			// @ts-expect-error missing required `name` field when key is unknown to TS
+			const badOneArg = () => listDirect.add({ id: "1", slug: "alpha" });
+			// @ts-expect-error missing required `name` field when key is `"slug"`
+			const badTypedKey = () => listTypedKey.add({ id: "1", slug: "alpha" });
+			// @ts-expect-error union key requires complete item
+			const badUnionKey = () => listUnionKey.add({ id: "1" });
+			// @ts-expect-error numeric key is not a string key
+			const badNumericKey = () => createOptimisticList([{ id: 1, name: "A" }], { key: "id" });
+			// @ts-expect-error rows without string `id` require an explicit key option
+			const badMissingId = () => createOptimisticList([{ slug: "one", name: "One" }]);
+			interface NarrowSlugPost {
+				slug: `post-${string}`;
+				title: string;
+			}
+			const badNarrowKey = () =>
+				// @ts-expect-error narrower template-literal string key cannot accept arbitrary tempId() strings
+				createOptimisticList<NarrowSlugPost, "slug">([], { key: "slug", tempId: () => "temp" });
+			expect(typeof badOneArg).toBe("function");
+			expect(typeof badTypedKey).toBe("function");
+			expect(typeof badUnionKey).toBe("function");
+			expect(typeof badNumericKey).toBe("function");
+			expect(typeof badMissingId).toBe("function");
+			expect(typeof badNarrowKey).toBe("function");
+
+			// String-indexed row with OptimisticListOptions<Row> and custom key also emits `id`
+			// even when the caller omits the selected key field.
+			interface IndexedRow {
+				id: string;
+				title: string;
+				[field: string]: string;
+			}
+			const indexedOpts: OptimisticListOptions<IndexedRow> = {
+				key: "slug",
+				tempId: () => "temp",
+			};
+			const indexedList = createOptimisticList<IndexedRow>([], indexedOpts);
+			indexedList.add({ title: "A" });
+			const emittedIndexed = get(indexedList)[0];
+			expect(emittedIndexed.id).toBe("temp");
+			expect(emittedIndexed.slug).toBe("temp");
+			expect(emittedIndexed.title).toBe("A");
+			expect(emittedIndexed.id.toUpperCase()).toBe("TEMP");
+		});
+
+		it("rolls back a custom-key rename without losing concurrent edits to the renamed row", () => {
+			interface SlugRow {
+				slug: string;
+				title: string;
+			}
+
+			const list = createOptimisticList([{ slug: "draft", title: "Before" }] as SlugRow[], {
+				key: "slug",
+			});
+
+			const rename = list.update("draft", { slug: "renamed" });
+			const editTitle = list.update("renamed", { title: "After" });
+
+			expect(get(list)).toEqual([{ slug: "renamed", title: "After" }]);
+			expect(get(list.isPending)("renamed")).toBe(true);
+
+			rename.rollback();
+			expect(get(list)).toEqual([{ slug: "draft", title: "After" }]);
+			expect(get(list.isPending)("draft")).toBe(true);
+			expect(get(list.isPending)("renamed")).toBe(false);
+
+			editTitle.confirm();
+			expect(get(list)).toEqual([{ slug: "draft", title: "After" }]);
+			expect(get(list.isPending)("draft")).toBe(false);
+		});
+	});
+
+	describe("set", () => {
+		it("replaces entire list", () => {
+			const list = createOptimisticList<Item>([{ id: "1", name: "Original" }]);
+
+			list.set([
+				{ id: "a", name: "New A" },
+				{ id: "b", name: "New B" },
+			]);
+
+			expect(get(list)).toHaveLength(2);
+			expect(get(list)[0].id).toBe("a");
+		});
+
+		it("clears pending state", () => {
+			const list = createOptimisticList<Item>([]);
+			list.add({ name: "Pending Item" });
+			const tempId = get(list)[0].id;
+
+			list.set([{ id: "fresh", name: "Fresh" }]);
+
+			const isPending = get(list.isPending);
+			expect(isPending(tempId)).toBe(false);
+			expect(get(list.pendingIds).size).toBe(0);
+		});
+	});
+
+	describe("pendingIds", () => {
+		it("tracks all pending IDs", () => {
+			const list = createOptimisticList<Item>([
+				{ id: "1", name: "First" },
+				{ id: "2", name: "Second" },
+			]);
+
+			list.add({ name: "New" });
+			list.update("1", { name: "Updated" });
+
+			const pending = get(list.pendingIds);
+			expect(pending.size).toBe(2);
+			expect(pending.has("1")).toBe(true);
+		});
+	});
 });

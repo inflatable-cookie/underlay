@@ -39,6 +39,7 @@
   --underlay-color-warning: #b45309;
   --underlay-color-error: #dc2626;
   --underlay-color-danger: var(--underlay-color-error);
+  --underlay-color-danger-strong: #b91c1c;
   --underlay-color-danger-bg: rgba(220, 38, 38, 0.1);
   --underlay-color-danger-border: rgba(220, 38, 38, 0.35);
   --underlay-color-on-danger: #ffffff;
@@ -143,6 +144,13 @@
   --underlay-summary-image-placeholder-min-height: 6rem;
   --underlay-summary-placeholder-opacity: 0.8;
   --underlay-summary-caption-opacity: 0.85;
+
+  /* Admin nav badges */
+  --underlay-admin-nav-badge-fg: #f9fafb;
+  --underlay-admin-nav-badge-overview: linear-gradient(135deg, #22c55e, #14b8a6);
+  --underlay-admin-nav-badge-users: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  --underlay-admin-nav-badge-media: linear-gradient(135deg, #f59e0b, #f97316);
+  --underlay-admin-nav-badge-system: linear-gradient(135deg, #94a3b8, #64748b);
 }
 
 [data-theme="dark"],
@@ -167,6 +175,7 @@
   --underlay-color-warning: #fcd34d;
   --underlay-color-error: #fca5a5;
   --underlay-color-danger: var(--underlay-color-error);
+  --underlay-color-danger-strong: #fecaca;
   --underlay-color-danger-bg: rgba(252, 165, 165, 0.14);
   --underlay-color-danger-border: rgba(252, 165, 165, 0.38);
   --underlay-color-on-danger: #1f1114;
