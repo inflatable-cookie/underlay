@@ -1,5 +1,3 @@
-import { onDestroy } from "svelte";
-
 export interface AiRoutingDiagnostics {
 	configVersion: number;
 	providerCount: number;
@@ -153,12 +151,7 @@ export function createAiRoutingOpsController(
 	const markDisposed = () => {
 		disposed = true;
 	};
-	try {
-		onDestroy(markDisposed);
-	} catch {
-		// Outside component initialization (e.g. $effect.root or unit tests); fall back to effect teardown.
-	}
-	$effect(() => markDisposed);
+	$effect.pre(() => markDisposed);
 
 	const refreshAll = async () => {
 		if (disposed) return;

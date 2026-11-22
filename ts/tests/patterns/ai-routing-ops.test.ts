@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 async function loadAiRoutingModule() {
 	vi.resetModules();
 	(globalThis as any).$state = <T>(initial: T) => initial;
-	(globalThis as any).$effect = () => {};
+	(globalThis as any).$effect = Object.assign(() => {}, { pre: () => {} });
 	return await import("../../src/patterns/ai-routing-ops.svelte");
 }
 

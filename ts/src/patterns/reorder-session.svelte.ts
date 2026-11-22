@@ -95,7 +95,8 @@ export function createLoadedReorderSession<TLoadedItem, TReorderItem extends Reo
 
 	let reorderMode = $state(false);
 	let highlightedIds = $state<string[]>([]);
-	let reorderItems = $state<TReorderItem[]>([]);
+	let loadedItems = $state<TLoadedItem[]>([]);
+	const reorderItems = $derived(params.mapItems(loadedItems));
 	let controller = $state.raw<ReorderController<TReorderItem>>(createController([]));
 	let enterGeneration = 0;
 
@@ -113,9 +114,8 @@ export function createLoadedReorderSession<TLoadedItem, TReorderItem extends Reo
 			return;
 		}
 
-		const mapped = params.mapItems(items);
-		reorderItems = mapped;
-		controller = createController(mapped);
+		loadedItems = items;
+		controller = createController(params.mapItems(items));
 		highlightedIds = [];
 		reorderMode = true;
 	}
@@ -124,7 +124,7 @@ export function createLoadedReorderSession<TLoadedItem, TReorderItem extends Reo
 		enterGeneration++;
 		reorderMode = false;
 		highlightedIds = [];
-		reorderItems = [];
+		loadedItems = [];
 		controller = createController([]);
 	}
 

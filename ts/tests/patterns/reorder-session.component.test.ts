@@ -5,7 +5,7 @@ import {
 	createLoadedReorderSession,
 	createLocalReorderSession,
 } from "../../src/patterns/reorder-session.svelte";
-import { createEffectRoot } from "./effect-root.svelte";
+import { createEffectRoot, createReactiveBox } from "./effect-root.svelte";
 
 function deferred<T>() {
 	let resolve!: (value: T) => void;
@@ -185,6 +185,37 @@ describe("patterns/reorder-session.svelte.ts (compiled)", () => {
 			expect(session.controller.isDirty).toBe(true);
 			await session.controller.submit();
 			expect(submitReorder).toHaveBeenCalledWith(["b", "a"]);
+		} finally {
+			dispose();
+		}
+	});
+
+	it("preserves reactive mapItems updates in createLoadedReorderSession after enter()", async () => {
+		const labelBox = createReactiveBox("Old");
+
+		let session!: ReturnType<
+			typeof createLoadedReorderSession<{ rowId: string }, { id: string; label: string }>
+		>;
+		const dispose = createEffectRoot(() => {
+			session = createLoadedReorderSession({
+				loadItems: async () => ({
+					items: [{ rowId: "a" }],
+				}),
+				mapItems: (items) => items.map((item) => ({ id: item.rowId, label: labelBox.value })),
+				submitReorder: vi.fn(async () => undefined),
+				entityLabel: "item",
+				pushInfo: vi.fn(),
+				pushError: vi.fn(),
+				onRefresh: vi.fn(async () => undefined),
+			});
+		});
+
+		try {
+			await session.enter();
+			expect(session.reorderItems).toEqual([{ id: "a", label: "Old" }]);
+
+			labelBox.value = "New";
+			expect(session.reorderItems).toEqual([{ id: "a", label: "New" }]);
 		} finally {
 			dispose();
 		}

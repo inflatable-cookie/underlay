@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import { onDestroy, untrack } from "svelte";
+  import { untrack } from "svelte";
   import { Callout } from "@inflatable-cookie/poodle-svelte";
   import type { BannerVariant } from "./banner";
   import type { SpaFormResult, SpaSubmitHandler, SpaNavigateFn } from "./spa-form-types";
@@ -86,7 +86,7 @@
 
   let disposed = false;
 
-  onDestroy(() => {
+  $effect.pre(() => () => {
     disposed = true;
   });
 

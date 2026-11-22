@@ -1,6 +1,5 @@
 // @vitest-environment jsdom
-import { render } from "@testing-library/svelte";
-import { flushSync } from "svelte";
+import { flushSync, mount, unmount } from "svelte";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createPaginationController } from "../../src/patterns/pagination-server.svelte";
 import type {
@@ -313,22 +312,89 @@ describe("patterns/pagination-server.svelte.ts (compiled)", () => {
 	it("ignores responses when a component unmounts immediately before the initial effect flush", async () => {
 		const pending = deferred<CursorPaginatedResponse<Item>>();
 		let controller!: ReturnType<typeof createPaginationController<Item>>;
+		const target = document.createElement("div");
+		document.body.appendChild(target);
 
-		const { unmount } = render(ImmediateUnmountHarness, {
-			paginationFetcher: vi.fn(() => pending.promise),
-			onPaginationReady: (c) => {
-				controller = c;
+		try {
+			const instance = mount(ImmediateUnmountHarness, {
+				target,
+				props: {
+					paginationFetcher: vi.fn(() => pending.promise),
+					onPaginationReady: (c) => {
+						controller = c;
+					},
+				},
+			});
+
+			const inFlight = controller.tryFetch(false, { id: "u1" });
+			// Unmount immediately using raw Svelte unmount without flushing effects
+			void unmount(instance);
+
+			pending.resolve(pageResponse(["post-unmount"], { total: 1 }));
+			await inFlight;
+			await new Promise((r) => setTimeout(r, 0));
+
+			expect(controller.items).toEqual([]);
+		} finally {
+			target.remove();
+		}
+	});
+
+	it("fences an in-flight nextPage response and queues a first-page fetch on refresh()", async () => {
+		const page2Gate = deferred<CursorPaginatedResponse<Item>>();
+		const refreshGate = deferred<CursorPaginatedResponse<Item>>();
+		const cursors: Array<string | null> = [];
+
+		const fetcher = vi.fn(
+			async (_fetch: typeof fetch, _token: string, params: CursorPaginationParams) => {
+				cursors.push(params.cursor ?? null);
+				if (cursors.length === 1) {
+					return pageResponse(["p1-initial"], { nextCursor: "p2", hasMore: true, total: 2 });
+				}
+				if (cursors.length === 2) {
+					return page2Gate.promise;
+				}
+				return refreshGate.promise;
 			},
+		);
+
+		let controller!: ReturnType<typeof createPaginationController<Item>>;
+		const dispose = createEffectRoot(() => {
+			controller = createPaginationController<Item>(fetcher, {
+				getToken: () => "tok-1",
+				pageSize: 1,
+			});
 		});
 
-		const inFlight = controller.tryFetch(false, { id: "u1" });
-		// Unmount immediately without flushing effects
-		unmount();
+		try {
+			await controller.tryFetch(false, { id: "u1" });
+			expect(controller.currentPage).toBe(1);
+			expect(controller.items).toEqual([{ id: "p1-initial" }]);
 
-		pending.resolve(pageResponse(["post-unmount"], { total: 1 }));
-		await inFlight;
-		await new Promise((r) => setTimeout(r, 0));
+			const goingNext = controller.nextPage();
+			const refreshing = controller.refresh();
+			expect(controller.currentPage).toBe(1);
 
-		expect(controller.items).toEqual([]);
+			// Resolving stale page-2 response must NOT publish page-2 items
+			page2Gate.resolve(pageResponse(["p2-stale"], { prevCursor: "p1", hasMore: false, total: 2 }));
+			await goingNext;
+			await Promise.resolve();
+
+			expect(cursors).toEqual([null, "p2", null]);
+			expect(controller.items).toEqual([{ id: "p1-initial" }]);
+			expect(controller.loading).toBe(true);
+
+			// Resolving the queued first-page refresh publishes fresh page-1 items
+			refreshGate.resolve(
+				pageResponse(["p1-refreshed"], { nextCursor: "p2", hasMore: true, total: 2 }),
+			);
+			await refreshing;
+
+			expect(controller.currentPage).toBe(1);
+			expect(controller.items).toEqual([{ id: "p1-refreshed" }]);
+			expect(controller.loading).toBe(false);
+		} finally {
+			dispose();
+		}
 	});
 });

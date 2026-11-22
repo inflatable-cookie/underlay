@@ -1,6 +1,5 @@
 // @vitest-environment jsdom
-import { render } from "@testing-library/svelte";
-import { flushSync } from "svelte";
+import { flushSync, mount, unmount } from "svelte";
 import { describe, expect, it, vi } from "vitest";
 import {
 	createAiRoutingOpsController,
@@ -161,35 +160,44 @@ describe("patterns/ai-routing-ops.svelte.ts (compiled)", () => {
 	it("does not mutate state when unmounted immediately before the initial effect flush", async () => {
 		const gate = deferred<AiRoutingDiagnostics>();
 		let controller!: ReturnType<typeof createAiRoutingOpsController>;
+		const target = document.createElement("div");
+		document.body.appendChild(target);
 
-		const { unmount } = render(ImmediateUnmountHarness, {
-			aiSource: {
-				fetchDiagnostics: vi.fn(() => gate.promise),
-				fetchMetrics: vi.fn(async () => []),
-				fetchCost: vi.fn(async () => []),
-				fetchCostAnomalies: vi.fn(async () => []),
-				fetchAlerts: vi.fn(async () => ({
-					deadLetterCount24h: 0,
-					runtimeFailureCount24h: 0,
-					circuitOpenCount24h: 0,
-					fallbackRunCount24h: 0,
-					exhaustedChainRunCount24h: 0,
-				})),
-				fetchParity: vi.fn(async () => []),
-			},
-			onAiReady: (c) => {
-				controller = c;
-			},
-		});
+		try {
+			const instance = mount(ImmediateUnmountHarness, {
+				target,
+				props: {
+					aiSource: {
+						fetchDiagnostics: vi.fn(() => gate.promise),
+						fetchMetrics: vi.fn(async () => []),
+						fetchCost: vi.fn(async () => []),
+						fetchCostAnomalies: vi.fn(async () => []),
+						fetchAlerts: vi.fn(async () => ({
+							deadLetterCount24h: 0,
+							runtimeFailureCount24h: 0,
+							circuitOpenCount24h: 0,
+							fallbackRunCount24h: 0,
+							exhaustedChainRunCount24h: 0,
+						})),
+						fetchParity: vi.fn(async () => []),
+					},
+					onAiReady: (c) => {
+						controller = c;
+					},
+				},
+			});
 
-		const inFlight = controller.refreshAll();
-		// Unmount immediately without flushing effects
-		unmount();
+			const inFlight = controller.refreshAll();
+			// Unmount immediately using raw Svelte unmount without flushing effects
+			void unmount(instance);
 
-		gate.resolve(makeDiagnostics(99));
-		await inFlight;
+			gate.resolve(makeDiagnostics(99));
+			await inFlight;
 
-		expect(controller.diagnostics).toBeNull();
+			expect(controller.diagnostics).toBeNull();
+		} finally {
+			target.remove();
+		}
 	});
 
 	it("settles loading and captures error when the newest refresh source throws synchronously", async () => {

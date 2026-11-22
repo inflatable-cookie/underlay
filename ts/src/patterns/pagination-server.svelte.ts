@@ -1,4 +1,3 @@
-import { onDestroy } from "svelte";
 import {
 	runAuthenticatedFetch,
 	shouldSkipAuthReadyFetch,
@@ -69,18 +68,26 @@ export function createPaginationController<T>(
 	let requestSeq = 0;
 	let resetSeq = 0;
 	let _inFlight: Promise<boolean> | null = null;
-	let pendingFetch: { cursor: string | null; direction: "forward" | "backward" } | null = null;
+	let _inFlightParams: {
+		cursor: string | null;
+		direction: "forward" | "backward";
+		limit: number;
+	} | null = null;
+	let pendingFetch: {
+		cursor: string | null;
+		direction: "forward" | "backward";
+		promise: Promise<boolean>;
+		resolve: (value: boolean) => void;
+	} | null = null;
 
 	const markDisposed = () => {
 		disposed = true;
-		pendingFetch = null;
+		if (pendingFetch) {
+			pendingFetch.resolve(false);
+			pendingFetch = null;
+		}
 	};
-	try {
-		onDestroy(markDisposed);
-	} catch {
-		// Outside component initialization (e.g. $effect.root or unit tests); fall back to effect teardown.
-	}
-	$effect(() => markDisposed);
+	$effect.pre(() => markDisposed);
 
 	const hasNextPage = $derived(hasMore || nextCursor !== null);
 	const hasPrevPage = $derived(currentPage > 1);
@@ -99,9 +106,27 @@ export function createPaginationController<T>(
 
 		if (_inFlight) {
 			if (fetchOptions.supersede) {
+				if (
+					!pendingFetch &&
+					_inFlightParams &&
+					_inFlightParams.cursor === cursor &&
+					_inFlightParams.direction === direction &&
+					_inFlightParams.limit === pageSize
+				) {
+					return _inFlight;
+				}
 				requestSeq++;
-				pendingFetch = { cursor, direction };
-				return false;
+				if (pendingFetch) {
+					pendingFetch.cursor = cursor;
+					pendingFetch.direction = direction;
+				} else {
+					let resolve = (_value: boolean) => {};
+					const promise = new Promise<boolean>((settle) => {
+						resolve = settle;
+					});
+					pendingFetch = { cursor, direction, promise, resolve };
+				}
+				return pendingFetch.promise;
 			}
 			return _inFlight;
 		}
@@ -166,11 +191,13 @@ export function createPaginationController<T>(
 		})();
 
 		_inFlight = run;
+		_inFlightParams = { cursor, direction, limit: pageSize };
 		try {
 			return await run;
 		} finally {
 			if (_inFlight === run) {
 				_inFlight = null;
+				_inFlightParams = null;
 			}
 			if (!disposed) {
 				if (seq === requestSeq) {
@@ -184,7 +211,9 @@ export function createPaginationController<T>(
 				if (pendingFetch && !_inFlight) {
 					const next = pendingFetch;
 					pendingFetch = null;
-					void doFetch(next.cursor, next.direction).catch(() => {});
+					void doFetch(next.cursor, next.direction)
+						.then((result) => next.resolve(result))
+						.catch(() => next.resolve(false));
 				}
 			}
 		}
@@ -278,7 +307,7 @@ export function createPaginationController<T>(
 		cursorHistory = [];
 		resetSeq++;
 		_fetched = false;
-		await doFetch(null, "forward");
+		await doFetch(null, "forward", { supersede: true });
 	};
 
 	const reset = refresh;

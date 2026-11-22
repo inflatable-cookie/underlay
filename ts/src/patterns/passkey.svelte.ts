@@ -111,8 +111,7 @@ export function usePasskeyRegistration(
 		state.clearError();
 		state.setLoading(true);
 
-		let settled = false;
-		const run = (async () => {
+		const run = Promise.resolve().then(async () => {
 			try {
 				const creationOptions = toPublicKeyCreationOptions(await options.onStart());
 				const credential = resolveCredential(
@@ -126,15 +125,12 @@ export function usePasskeyRegistration(
 				options.onError?.(error);
 				throw error;
 			} finally {
-				settled = true;
 				inFlight = null;
 				state.setLoading(false);
 			}
-		})();
+		});
 
-		if (!settled) {
-			inFlight = run;
-		}
+		inFlight = run;
 		return run;
 	}
 
@@ -180,8 +176,7 @@ export function usePasskeyAuthentication(
 		state.clearError();
 		state.setLoading(true);
 
-		let settled = false;
-		const run = (async () => {
+		const run = Promise.resolve().then(async () => {
 			try {
 				const conditionalAllowed =
 					options.conditional && (conditionalSupported || (await refreshConditionalSupport()));
@@ -200,15 +195,12 @@ export function usePasskeyAuthentication(
 				options.onError?.(error);
 				throw error;
 			} finally {
-				settled = true;
 				inFlight = null;
 				state.setLoading(false);
 			}
-		})();
+		});
 
-		if (!settled) {
-			inFlight = run;
-		}
+		inFlight = run;
 		return run;
 	}
 

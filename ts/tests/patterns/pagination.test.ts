@@ -8,7 +8,7 @@ async function loadPaginationModule(options?: { globalConfig?: Record<string, un
 	(globalThis as any).$derived = Object.assign(<T>(value: T) => value, {
 		by: <T>(fn: () => T) => fn(),
 	});
-	(globalThis as any).$effect = () => {};
+	(globalThis as any).$effect = Object.assign(() => {}, { pre: () => {} });
 
 	vi.doMock("../../src/patterns/auth", () => ({
 		getAuthConfig: () => options?.globalConfig ?? null,
