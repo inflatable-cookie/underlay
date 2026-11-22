@@ -84,10 +84,14 @@ fn unique_test_schema_is_typed_and_stable_for_public_name() {
 /// `Runtime::block_on` and would panic if executed on a Tokio runtime thread.
 struct BlockOnResource {
     dropped: std::sync::Arc<std::sync::atomic::AtomicBool>,
+    dropped_tx: Option<tokio::sync::oneshot::Sender<()>>,
 }
 
 impl BlockOnResource {
-    fn start(dropped: std::sync::Arc<std::sync::atomic::AtomicBool>) -> Self {
+    fn start(
+        dropped: std::sync::Arc<std::sync::atomic::AtomicBool>,
+        dropped_tx: Option<tokio::sync::oneshot::Sender<()>>,
+    ) -> Self {
         assert!(
             tokio::runtime::Handle::try_current().is_err(),
             "startup must run outside any Tokio runtime context"
@@ -96,7 +100,10 @@ impl BlockOnResource {
             .build()
             .expect("build nested runtime");
         rt.block_on(async {});
-        Self { dropped }
+        Self {
+            dropped,
+            dropped_tx,
+        }
     }
 }
 
@@ -112,6 +119,9 @@ impl Drop for BlockOnResource {
         rt.block_on(async {});
         self.dropped
             .store(true, std::sync::atomic::Ordering::SeqCst);
+        if let Some(tx) = self.dropped_tx.take() {
+            let _ = tx.send(());
+        }
     }
 }
 
@@ -124,7 +134,7 @@ async fn blocking_handle_keeps_start_and_drop_off_tokio_runtime() {
     let dropped_ref = Arc::clone(&dropped);
 
     let (value, handle) = BlockingHandle::spawn(move || {
-        let resource = BlockOnResource::start(dropped_ref);
+        let resource = BlockOnResource::start(dropped_ref, None);
         ("postgres://127.0.0.1:5432/postgres".to_string(), resource)
     })
     .await;
@@ -132,9 +142,8 @@ async fn blocking_handle_keeps_start_and_drop_off_tokio_runtime() {
     assert_eq!(value, "postgres://127.0.0.1:5432/postgres");
     assert!(!dropped.load(Ordering::SeqCst));
 
-    // Dropping inside an active `#[tokio::test]` runtime must not panic and
-    // must wait for off-runtime teardown to complete.
-    drop(handle);
+    // Awaiting teardown completes asynchronously without blocking the executor.
+    handle.wait_for_shutdown().await;
     assert!(dropped.load(Ordering::SeqCst));
 }
 
@@ -145,10 +154,11 @@ async fn blocking_handle_tears_down_off_runtime_when_setup_fails() {
 
     let dropped = Arc::new(AtomicBool::new(false));
     let dropped_ref = Arc::clone(&dropped);
+    let (dropped_tx, dropped_rx) = tokio::sync::oneshot::channel();
 
     let task = tokio::spawn(async move {
         let (_url, _handle) = BlockingHandle::spawn(move || {
-            let resource = BlockOnResource::start(dropped_ref);
+            let resource = BlockOnResource::start(dropped_ref, Some(dropped_tx));
             ("postgres://127.0.0.1:5432/postgres".to_string(), resource)
         })
         .await;
@@ -157,8 +167,46 @@ async fn blocking_handle_tears_down_off_runtime_when_setup_fails() {
 
     let err = task.await.expect_err("task should propagate setup panic");
     assert!(err.is_panic());
-    assert!(
-        dropped.load(Ordering::SeqCst),
-        "container resource must still tear down off-runtime on setup unwind"
-    );
+    dropped_rx
+        .await
+        .expect("container resource must tear down off-runtime on setup unwind");
+    assert!(dropped.load(Ordering::SeqCst));
+}
+
+#[tokio::test]
+async fn blocking_handle_cancellation_during_startup_does_not_block_executor() {
+    use std::future::Future;
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::Arc;
+
+    let (started_tx, started_rx) = tokio::sync::oneshot::channel();
+    let (release_tx, release_rx) = std::sync::mpsc::channel::<()>();
+    let (dropped_tx, dropped_rx) = tokio::sync::oneshot::channel();
+    let dropped = Arc::new(AtomicBool::new(false));
+    let dropped_ref = Arc::clone(&dropped);
+
+    let mut fut = Box::pin(BlockingHandle::spawn(move || {
+        let _ = started_tx.send(());
+        let _ = release_rx.recv();
+        let resource = BlockOnResource::start(dropped_ref, Some(dropped_tx));
+        ("postgres://127.0.0.1:5432/postgres".to_string(), resource)
+    }));
+
+    // Poll once so the background thread is spawned and enters startup.
+    let mut cx = std::task::Context::from_waker(std::task::Waker::noop());
+    assert!(fut.as_mut().poll(&mut cx).is_pending());
+    started_rx.await.expect("startup thread should start");
+
+    // Dropping the in-flight future must return immediately without joining
+    // the blocked startup thread.
+    drop(fut);
+    assert!(!dropped.load(Ordering::SeqCst));
+
+    // Unblocking startup should immediately drop the resource off-runtime
+    // because the caller already cancelled.
+    release_tx.send(()).expect("release startup");
+    dropped_rx
+        .await
+        .expect("cancelled startup must still drop resource off-runtime");
+    assert!(dropped.load(Ordering::SeqCst));
 }

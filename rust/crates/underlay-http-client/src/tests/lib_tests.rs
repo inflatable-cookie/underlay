@@ -431,6 +431,34 @@ fn external_request_builder_is_opaque_and_preserves_request_options() {
     assert_eq!(request.timeout(), Some(&Duration::from_secs(5)));
 }
 
+#[test]
+fn external_request_builder_debug_redacts_credentials_and_url() {
+    let client = HttpClient::external().expect("external client should build");
+    let builder = client
+        .get("https://1.1.1.1/resource?api_key=query-secret-value")
+        .expect("public IP literal should be accepted")
+        .bearer_auth("bearer-secret-token")
+        .header("x-api-key", "header-secret-value");
+
+    let formatted = format!("{builder:?}");
+    assert!(
+        !formatted.contains("query-secret-value"),
+        "Debug output leaked query secret: {formatted}"
+    );
+    assert!(
+        !formatted.contains("bearer-secret-token"),
+        "Debug output leaked bearer token: {formatted}"
+    );
+    assert!(
+        !formatted.contains("header-secret-value"),
+        "Debug output leaked header secret: {formatted}"
+    );
+    assert!(
+        !formatted.contains("1.1.1.1"),
+        "Debug output should not expose raw URL: {formatted}"
+    );
+}
+
 #[tokio::test]
 async fn external_client_rejects_ip_literal_ssrf_targets() {
     use super::HttpClientError;

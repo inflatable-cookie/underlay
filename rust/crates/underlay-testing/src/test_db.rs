@@ -43,9 +43,13 @@ use uuid::Uuid;
 /// Owns a blocking resource on a dedicated non-Tokio OS thread so neither its
 /// initialization nor its `Drop` (e.g. `testcontainers::Container::drop`'s
 /// internal `Runtime::block_on`) ever runs on a Tokio runtime thread.
+///
+/// Dropping this handle signals shutdown without blocking the caller's thread.
+/// Callers that need to await teardown completion can use
+/// [`BlockingHandle::wait_for_shutdown`].
 struct BlockingHandle {
     shutdown_tx: Option<std::sync::mpsc::Sender<()>>,
-    worker: Option<std::thread::JoinHandle<()>>,
+    done_rx: Option<tokio::sync::oneshot::Receiver<()>>,
 }
 
 impl BlockingHandle {
@@ -57,8 +61,9 @@ impl BlockingHandle {
     {
         let (ready_tx, ready_rx) = tokio::sync::oneshot::channel::<std::thread::Result<R>>();
         let (shutdown_tx, shutdown_rx) = std::sync::mpsc::channel::<()>();
+        let (done_tx, done_rx) = tokio::sync::oneshot::channel::<()>();
 
-        let worker = std::thread::Builder::new()
+        std::thread::Builder::new()
             .name("underlay-test-db-container".to_string())
             .spawn(move || {
                 let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(init));
@@ -77,12 +82,13 @@ impl BlockingHandle {
                         let _ = ready_tx.send(Err(panic_payload));
                     }
                 }
+                let _ = done_tx.send(());
             })
             .expect("failed to spawn test database container thread");
 
         let handle = Self {
             shutdown_tx: Some(shutdown_tx),
-            worker: Some(worker),
+            done_rx: Some(done_rx),
         };
 
         match ready_rx.await {
@@ -94,14 +100,21 @@ impl BlockingHandle {
             Err(_) => panic!("postgres test container thread terminated unexpectedly"),
         }
     }
+
+    #[cfg_attr(not(test), allow(dead_code))]
+    async fn wait_for_shutdown(mut self) {
+        self.shutdown_tx.take();
+        if let Some(done_rx) = self.done_rx.take() {
+            let _ = done_rx.await;
+        }
+    }
 }
 
 impl Drop for BlockingHandle {
     fn drop(&mut self) {
+        // Signal the non-Tokio worker thread to drop the resource without
+        // blocking the caller or stalling the Tokio executor.
         self.shutdown_tx.take();
-        if let Some(worker) = self.worker.take() {
-            let _ = worker.join();
-        }
     }
 }
 

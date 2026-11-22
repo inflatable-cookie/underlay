@@ -8,7 +8,7 @@ use dashmap::DashMap;
 
 use crate::backend::RateLimitBackend;
 use crate::config::{RateLimitConfig, RateLimitResult};
-use crate::error::Result;
+use crate::error::{RateLimitError, Result};
 
 /// Default maximum number of keys tracked in memory before expired or existing
 /// entries are evicted to bound memory growth under key churn.
@@ -198,10 +198,10 @@ impl InMemoryBackend {
     /// shard write lock via [`DashMap::remove_if`] so a concurrently refreshed
     /// counter is never erased, and the total work is bounded to at most
     /// `MAX_EVICTION_PASSES * EVICTION_SAMPLE_SIZE` entries.
-    fn evict_for_admission(&self) {
+    fn evict_for_admission_with_hook(&self, mut after_sample: impl FnMut()) -> bool {
         for _ in 0..MAX_EVICTION_PASSES {
             if self.entries.len() < self.max_keys {
-                return;
+                return true;
             }
 
             let mut expired = Vec::new();
@@ -219,6 +219,8 @@ impl InMemoryBackend {
                 }
             }
 
+            after_sample();
+
             if !expired.is_empty() {
                 for key in expired {
                     // Recheck expiry under the shard write lock so a key
@@ -228,7 +230,7 @@ impl InMemoryBackend {
                     });
                 }
                 if self.entries.len() < self.max_keys {
-                    return;
+                    return true;
                 }
             }
 
@@ -237,10 +239,30 @@ impl InMemoryBackend {
                 // reset by a concurrent request since sampling.
                 self.entries
                     .remove_if(&victim, |_, entry| entry.window_start == sampled_start);
-            } else {
-                break;
+                if self.entries.len() < self.max_keys {
+                    return true;
+                }
             }
         }
+
+        self.entries.len() < self.max_keys
+    }
+
+    /// Coordinate capacity admission for a new key while holding
+    /// `self.admission_lock`, returning an error rather than overfilling the
+    /// map if bounded eviction cannot free a slot.
+    fn ensure_capacity_for_new_key(&self, key: &str, after_sample: impl FnMut()) -> Result<()> {
+        if self.entries.contains_key(key) || self.entries.len() < self.max_keys {
+            return Ok(());
+        }
+
+        if self.evict_for_admission_with_hook(after_sample) || self.entries.contains_key(key) {
+            return Ok(());
+        }
+
+        Err(RateLimitError::Backend(
+            "rate limit store capacity saturated; unable to evict a slot".to_string(),
+        ))
     }
 
     /// Get the current number of tracked keys.
@@ -299,9 +321,7 @@ impl RateLimitBackend for InMemoryBackend {
             .lock()
             .expect("rate limit admission lock poisoned");
 
-        if !self.entries.contains_key(key) && self.entries.len() >= self.max_keys {
-            self.evict_for_admission();
-        }
+        self.ensure_capacity_for_new_key(key, || {})?;
 
         let mut entry = self
             .entries
@@ -343,9 +363,7 @@ impl RateLimitBackend for InMemoryBackend {
             .lock()
             .expect("rate limit admission lock poisoned");
 
-        if !self.entries.contains_key(key) && self.entries.len() >= self.max_keys {
-            self.evict_for_admission();
-        }
+        self.ensure_capacity_for_new_key(key, || {})?;
 
         let mut entry = self
             .entries

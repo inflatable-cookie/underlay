@@ -241,10 +241,18 @@ impl ExternalHttpClient {
 ///
 /// Wraps [`reqwest::RequestBuilder`] without exposing `build_split` or the
 /// underlying [`reqwest::Client`], so callers cannot extract a raw client to
-/// bypass IP-literal SSRF validation.
-#[derive(Debug)]
+/// bypass IP-literal SSRF validation. Its [`std::fmt::Debug`] implementation
+/// intentionally omits the inner request, URL, and headers so credentials in
+/// authorization headers or query strings cannot leak into logs.
 pub struct ExternalRequestBuilder {
     inner: reqwest::RequestBuilder,
+}
+
+impl std::fmt::Debug for ExternalRequestBuilder {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ExternalRequestBuilder")
+            .finish_non_exhaustive()
+    }
 }
 
 impl ExternalRequestBuilder {

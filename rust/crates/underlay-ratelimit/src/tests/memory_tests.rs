@@ -173,7 +173,7 @@ async fn test_with_cleanup_zero_duration_does_not_busy_spin() {
     assert!(res.is_allowed());
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn test_concurrent_churn_stays_bounded_under_max_keys() {
     let backend = InMemoryBackend::new().with_max_keys(16);
     let config = RateLimitConfig::new(5, Duration::from_secs(60));
@@ -185,11 +185,7 @@ async fn test_concurrent_churn_stays_bounded_under_max_keys() {
         tasks.push(tokio::spawn(async move {
             for i in 0..40 {
                 let key = format!("w{worker}:k{i}");
-                let res = backend
-                    .check_and_increment(&key, &config)
-                    .await
-                    .expect("check_and_increment should succeed");
-                assert!(res.is_allowed());
+                let _ = backend.check_and_increment(&key, &config).await;
                 assert!(
                     backend.len() <= 16,
                     "tracked key count {} exceeded cap 16 under concurrency",
@@ -203,6 +199,54 @@ async fn test_concurrent_churn_stays_bounded_under_max_keys() {
         task.await.expect("worker task should complete");
     }
     assert!(backend.len() <= 16);
+}
+
+#[tokio::test]
+async fn test_admission_rejects_rather_than_overfilling_when_all_sampled_entries_refresh() {
+    let backend = InMemoryBackend::new().with_max_keys(2);
+    let short_window = RateLimitConfig::new(5, Duration::from_millis(20));
+
+    backend
+        .check_and_increment("k1", &short_window)
+        .await
+        .unwrap();
+    backend
+        .check_and_increment("k2", &short_window)
+        .await
+        .unwrap();
+
+    tokio::time::sleep(Duration::from_millis(30)).await;
+
+    // Simulate concurrent refreshes occurring right after sampling on every pass:
+    // `remove_if` must preserve every refreshed entry, and capacity admission
+    // must reject rather than overfilling `max_keys`.
+    let _admission = backend
+        .admission_lock
+        .lock()
+        .expect("admission lock should not be poisoned");
+    let result = backend.ensure_capacity_for_new_key("k3", || {
+        for mut entry in backend.entries.iter_mut() {
+            entry.window_start = Instant::now();
+            entry.window_duration = Duration::from_secs(60);
+            entry.count = 1;
+        }
+    });
+
+    assert!(
+        matches!(result, Err(RateLimitError::Backend(_))),
+        "admission must fail when bounded eviction frees no slot, got: {result:?}"
+    );
+    assert_eq!(backend.len(), 2, "map must not overfill past max_keys");
+    assert_eq!(
+        backend.entries.get("k1").map(|e| e.count),
+        Some(1),
+        "refreshed k1 must be preserved"
+    );
+    assert_eq!(
+        backend.entries.get("k2").map(|e| e.count),
+        Some(1),
+        "refreshed k2 must be preserved"
+    );
 }
 
 #[tokio::test]
