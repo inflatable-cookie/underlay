@@ -147,3 +147,20 @@ fn test_wrap_i64() {
     let response = params.wrap_i64(data, 0i64);
     assert_eq!(response.pagination.total, 0u64);
 }
+
+#[test]
+fn test_wrap_uses_exact_integer_div_ceil() {
+    // 20 * u32::MAX fits in u64 and produces exactly u32::MAX pages.
+    let params = PagePaginationParams { page: 1, limit: 20 };
+    let exact_max_pages: Paginated<()> = params.clone().wrap(vec![], u64::from(u32::MAX) * 20);
+    assert_eq!(exact_max_pages.pagination.total_pages, u32::MAX);
+
+    // Values beyond u32::MAX pages saturate cleanly without overflow or float rounding.
+    let saturated: Paginated<()> = params.clone().wrap(vec![], u64::MAX);
+    assert_eq!(saturated.pagination.total_pages, u32::MAX);
+
+    // Zero limit yields zero pages without division by zero.
+    let zero_limit = PagePaginationParams { page: 1, limit: 0 };
+    let response: Paginated<()> = zero_limit.wrap(vec![], 100);
+    assert_eq!(response.pagination.total_pages, 0);
+}

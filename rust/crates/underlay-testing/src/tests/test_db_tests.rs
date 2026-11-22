@@ -79,3 +79,323 @@ fn unique_test_schema_is_typed_and_stable_for_public_name() {
     assert!(schema.as_str().starts_with("test_"));
     assert_eq!(schema.quoted(), format!("\"{}\"", schema.as_str()));
 }
+
+/// Simulates `testcontainers::Container`, whose `start()` and `Drop` both run
+/// `Runtime::block_on` and would panic if executed on a Tokio runtime thread.
+struct BlockOnResource {
+    dropped: std::sync::Arc<std::sync::atomic::AtomicBool>,
+    dropped_tx: Option<tokio::sync::oneshot::Sender<()>>,
+}
+
+impl BlockOnResource {
+    fn start(
+        dropped: std::sync::Arc<std::sync::atomic::AtomicBool>,
+        dropped_tx: Option<tokio::sync::oneshot::Sender<()>>,
+    ) -> Self {
+        assert!(
+            tokio::runtime::Handle::try_current().is_err(),
+            "startup must run outside any Tokio runtime context"
+        );
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .build()
+            .expect("build nested runtime");
+        rt.block_on(async {});
+        Self {
+            dropped,
+            dropped_tx,
+        }
+    }
+}
+
+impl Drop for BlockOnResource {
+    fn drop(&mut self) {
+        assert!(
+            tokio::runtime::Handle::try_current().is_err(),
+            "drop must run outside any Tokio runtime context"
+        );
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .build()
+            .expect("build nested runtime in Drop");
+        rt.block_on(async {});
+        self.dropped
+            .store(true, std::sync::atomic::Ordering::SeqCst);
+        if let Some(tx) = self.dropped_tx.take() {
+            let _ = tx.send(());
+        }
+    }
+}
+
+#[tokio::test]
+async fn blocking_handle_keeps_start_and_drop_off_tokio_runtime() {
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::Arc;
+
+    let dropped = Arc::new(AtomicBool::new(false));
+    let dropped_ref = Arc::clone(&dropped);
+
+    let (value, handle) = BlockingHandle::spawn(move || {
+        let resource = BlockOnResource::start(dropped_ref, None);
+        ("postgres://127.0.0.1:5432/postgres".to_string(), resource)
+    })
+    .await;
+
+    assert_eq!(value, "postgres://127.0.0.1:5432/postgres");
+    assert!(!dropped.load(Ordering::SeqCst));
+
+    // Awaiting teardown completes asynchronously without blocking the executor.
+    handle.wait_for_shutdown().await;
+    assert!(dropped.load(Ordering::SeqCst));
+}
+
+#[tokio::test]
+async fn blocking_handle_tears_down_off_runtime_when_setup_fails() {
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::Arc;
+
+    let dropped = Arc::new(AtomicBool::new(false));
+    let dropped_ref = Arc::clone(&dropped);
+    let (dropped_tx, dropped_rx) = tokio::sync::oneshot::channel();
+
+    let task = tokio::spawn(async move {
+        let (_url, _handle) = BlockingHandle::spawn(move || {
+            let resource = BlockOnResource::start(dropped_ref, Some(dropped_tx));
+            ("postgres://127.0.0.1:5432/postgres".to_string(), resource)
+        })
+        .await;
+        panic!("simulated database setup failure after container start");
+    });
+
+    let err = task.await.expect_err("task should propagate setup panic");
+    assert!(err.is_panic());
+    dropped_rx
+        .await
+        .expect("container resource must tear down off-runtime on setup unwind");
+    assert!(dropped.load(Ordering::SeqCst));
+}
+
+#[tokio::test]
+async fn blocking_handle_cancellation_during_startup_does_not_block_executor() {
+    use std::future::Future;
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::Arc;
+
+    let (started_tx, started_rx) = tokio::sync::oneshot::channel();
+    let (release_tx, release_rx) = std::sync::mpsc::channel::<()>();
+    let (dropped_tx, dropped_rx) = tokio::sync::oneshot::channel();
+    let dropped = Arc::new(AtomicBool::new(false));
+    let dropped_ref = Arc::clone(&dropped);
+
+    let mut fut = Box::pin(BlockingHandle::spawn(move || {
+        let _ = started_tx.send(());
+        let _ = release_rx.recv();
+        let resource = BlockOnResource::start(dropped_ref, Some(dropped_tx));
+        ("postgres://127.0.0.1:5432/postgres".to_string(), resource)
+    }));
+
+    // Poll once so the background thread is spawned and enters startup.
+    let mut cx = std::task::Context::from_waker(std::task::Waker::noop());
+    assert!(fut.as_mut().poll(&mut cx).is_pending());
+    started_rx.await.expect("startup thread should start");
+
+    // Dropping the in-flight future must return immediately without joining
+    // the blocked startup thread.
+    drop(fut);
+    assert!(!dropped.load(Ordering::SeqCst));
+
+    // Unblocking startup should immediately drop the resource off-runtime
+    // because the caller already cancelled.
+    release_tx.send(()).expect("release startup");
+    dropped_rx
+        .await
+        .expect("cancelled startup must still drop resource off-runtime");
+    assert!(dropped.load(Ordering::SeqCst));
+}
+
+#[test]
+fn blocking_handle_ordinary_drop_completes_before_tokio_runtime_shutdown() {
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::Arc;
+    use std::time::Duration;
+
+    struct DelayedBlockOnResource {
+        dropped: Arc<AtomicBool>,
+        delay: Duration,
+    }
+
+    impl Drop for DelayedBlockOnResource {
+        fn drop(&mut self) {
+            assert!(
+                tokio::runtime::Handle::try_current().is_err(),
+                "drop must run outside any Tokio runtime context"
+            );
+            std::thread::sleep(self.delay);
+            let rt = tokio::runtime::Builder::new_current_thread()
+                .build()
+                .expect("build nested runtime in Drop");
+            rt.block_on(async {});
+            self.dropped.store(true, Ordering::SeqCst);
+        }
+    }
+
+    let dropped = Arc::new(AtomicBool::new(false));
+    let dropped_ref = Arc::clone(&dropped);
+    let dropped_check = Arc::clone(&dropped);
+
+    let rt = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .expect("build test runtime");
+
+    rt.block_on(async move {
+        let (_url, handle) = BlockingHandle::spawn(move || {
+            let resource = DelayedBlockOnResource {
+                dropped: dropped_ref,
+                delay: Duration::from_millis(50),
+            };
+            ("postgres://127.0.0.1:5432/postgres".to_string(), resource)
+        })
+        .await;
+
+        // Ordinary fixture drop (without calling `wait_for_shutdown`) must not
+        // block the Tokio executor.
+        drop(handle);
+        assert!(
+            !dropped_check.load(Ordering::SeqCst),
+            "ordinary drop should return without waiting for slow teardown"
+        );
+    });
+
+    // Normal Tokio runtime shutdown must wait for the tracked blocking task to
+    // finish joining the teardown thread before returning.
+    drop(rt);
+    assert!(
+        dropped.load(Ordering::SeqCst),
+        "container teardown must complete before Tokio runtime shutdown finishes"
+    );
+}
+
+#[test]
+fn blocking_handle_leaves_single_blocking_thread_free_for_fixture_file_work() {
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::Arc;
+    use std::time::Duration;
+
+    let dropped = Arc::new(AtomicBool::new(false));
+    let dropped_ref = Arc::clone(&dropped);
+
+    let rt = tokio::runtime::Builder::new_current_thread()
+        .max_blocking_threads(1)
+        .enable_all()
+        .build()
+        .expect("build single-blocking-thread runtime");
+
+    rt.block_on(async move {
+        let (_url, handle) = BlockingHandle::spawn(move || {
+            let resource = BlockOnResource::start(dropped_ref, None);
+            ("postgres://127.0.0.1:5432/postgres".to_string(), resource)
+        })
+        .await;
+
+        // While the fixture handle is live, the single Tokio blocking thread
+        // must remain free for `tokio::fs` / fixture-file operations.
+        let exists = tokio::time::timeout(
+            Duration::from_secs(2),
+            tokio::fs::try_exists(env!("CARGO_MANIFEST_DIR")),
+        )
+        .await
+        .expect("fixture-file work must not deadlock on a max_blocking_threads(1) runtime")
+        .expect("try_exists should succeed");
+        assert!(exists);
+
+        drop(handle);
+    });
+
+    drop(rt);
+    assert!(
+        dropped.load(Ordering::SeqCst),
+        "container teardown must complete before runtime shutdown finishes"
+    );
+}
+
+#[test]
+fn blocking_handle_completes_teardown_when_blocking_pool_is_occupied_at_shutdown() {
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::Arc;
+    use std::time::Duration;
+
+    struct DelayedBlockOnResource {
+        dropped: Arc<AtomicBool>,
+        delay: Duration,
+    }
+
+    impl Drop for DelayedBlockOnResource {
+        fn drop(&mut self) {
+            assert!(
+                tokio::runtime::Handle::try_current().is_err(),
+                "drop must run outside any Tokio runtime context"
+            );
+            std::thread::sleep(self.delay);
+            let rt = tokio::runtime::Builder::new_current_thread()
+                .build()
+                .expect("build nested runtime in Drop");
+            rt.block_on(async {});
+            self.dropped.store(true, Ordering::SeqCst);
+        }
+    }
+
+    let dropped = Arc::new(AtomicBool::new(false));
+    let dropped_ref = Arc::clone(&dropped);
+    let dropped_check = Arc::clone(&dropped);
+
+    let rt = tokio::runtime::Builder::new_current_thread()
+        .max_blocking_threads(1)
+        .enable_all()
+        .build()
+        .expect("build single-blocking-thread runtime");
+
+    let (occupier_started_tx, occupier_started_rx) = tokio::sync::oneshot::channel();
+    let (occupier_release_tx, occupier_release_rx) = std::sync::mpsc::channel::<()>();
+
+    rt.block_on(async move {
+        let (_url, handle) = BlockingHandle::spawn(move || {
+            let resource = DelayedBlockOnResource {
+                dropped: dropped_ref,
+                delay: Duration::from_millis(50),
+            };
+            ("postgres://127.0.0.1:5432/postgres".to_string(), resource)
+        })
+        .await;
+
+        // Occupy the single blocking thread so the teardown join task is queued
+        // when `handle` drops.
+        tokio::task::spawn_blocking(move || {
+            let _ = occupier_started_tx.send(());
+            let _ = occupier_release_rx.recv();
+        });
+        occupier_started_rx
+            .await
+            .expect("occupier blocking task should start");
+
+        drop(handle);
+        assert!(
+            !dropped_check.load(Ordering::SeqCst),
+            "ordinary drop must remain non-blocking while pool is occupied"
+        );
+    });
+
+    // Release the occupying task on a helper thread so `Runtime::drop` drains
+    // the pool (whether the queued join task executes or is discarded and
+    // dropped via `TeardownJoiner::drop`, teardown must complete before
+    // `drop(rt)` returns).
+    let releaser = std::thread::spawn(move || {
+        std::thread::sleep(Duration::from_millis(20));
+        let _ = occupier_release_tx.send(());
+    });
+
+    drop(rt);
+    let _ = releaser.join();
+    assert!(
+        dropped.load(Ordering::SeqCst),
+        "container teardown must complete even when its join task was queued at shutdown"
+    );
+}

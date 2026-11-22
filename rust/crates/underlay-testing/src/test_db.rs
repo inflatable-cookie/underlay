@@ -33,14 +33,139 @@
 //! ```
 
 use sqlx::PgPool;
-use std::sync::Arc;
 use testcontainers::runners::SyncRunner;
-use testcontainers::Container;
 use testcontainers_modules::postgres::Postgres;
 use underlay_db::{
     create_pool, drop_schema_identifiers, DbConfig, DestructiveGuard, SqlIdentifier,
 };
 use uuid::Uuid;
+
+/// Joins the dedicated non-Tokio container worker thread on execution or drop.
+///
+/// Wrapping the `JoinHandle` in a drop guard guarantees teardown still runs
+/// during Tokio runtime shutdown even if Tokio discards a queued non-mandatory
+/// `spawn_blocking` task while draining the blocking pool.
+struct TeardownJoiner {
+    worker: Option<std::thread::JoinHandle<()>>,
+    done_tx: Option<tokio::sync::oneshot::Sender<()>>,
+}
+
+impl TeardownJoiner {
+    fn join_now(&mut self) {
+        if let Some(worker) = self.worker.take() {
+            let _ = worker.join();
+        }
+        if let Some(done_tx) = self.done_tx.take() {
+            let _ = done_tx.send(());
+        }
+    }
+}
+
+impl Drop for TeardownJoiner {
+    fn drop(&mut self) {
+        self.join_now();
+    }
+}
+
+/// Owns a blocking resource on a dedicated non-Tokio OS thread so neither its
+/// initialization nor its `Drop` (e.g. `testcontainers::Container::drop`'s
+/// internal `Runtime::block_on`) ever runs on a Tokio runtime thread.
+///
+/// While live, this handle occupies zero Tokio blocking-pool threads. Dropping
+/// it signals shutdown without blocking the caller's executor thread and hands
+/// the worker join to the Tokio blocking pool only for teardown. Callers that
+/// need to await teardown completion can use
+/// [`BlockingHandle::wait_for_shutdown`].
+struct BlockingHandle {
+    shutdown_tx: Option<std::sync::mpsc::Sender<()>>,
+    joiner: Option<TeardownJoiner>,
+    done_rx: Option<tokio::sync::oneshot::Receiver<()>>,
+}
+
+impl BlockingHandle {
+    async fn spawn<R, T, F>(init: F) -> (R, Self)
+    where
+        R: Send + 'static,
+        T: 'static,
+        F: FnOnce() -> (R, T) + Send + 'static,
+    {
+        let (ready_tx, ready_rx) = tokio::sync::oneshot::channel::<std::thread::Result<R>>();
+        let (shutdown_tx, shutdown_rx) = std::sync::mpsc::channel::<()>();
+        let (done_tx, done_rx) = tokio::sync::oneshot::channel::<()>();
+
+        let worker = std::thread::Builder::new()
+            .name("underlay-test-db-container".to_string())
+            .spawn(move || {
+                let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(init));
+                match result {
+                    Ok((value, resource)) => {
+                        if ready_tx.send(Ok(value)).is_ok() {
+                            // Keep `resource` alive on this non-Tokio OS thread
+                            // until `BlockingHandle` is dropped.
+                            let _ = shutdown_rx.recv();
+                        }
+                        // Drop on the non-Tokio thread so internal `block_on`
+                        // teardown never runs inside a Tokio runtime context.
+                        drop(resource);
+                    }
+                    Err(panic_payload) => {
+                        let _ = ready_tx.send(Err(panic_payload));
+                    }
+                }
+            })
+            .expect("failed to spawn test database container thread");
+
+        let handle = Self {
+            shutdown_tx: Some(shutdown_tx),
+            joiner: Some(TeardownJoiner {
+                worker: Some(worker),
+                done_tx: Some(done_tx),
+            }),
+            done_rx: Some(done_rx),
+        };
+
+        match ready_rx.await {
+            Ok(Ok(value)) => (value, handle),
+            Ok(Err(panic_payload)) => {
+                drop(handle);
+                std::panic::resume_unwind(panic_payload);
+            }
+            Err(_) => panic!("postgres test container thread terminated unexpectedly"),
+        }
+    }
+
+    fn schedule_teardown(&mut self) {
+        self.shutdown_tx.take();
+        if let Some(mut joiner) = self.joiner.take() {
+            if let Ok(rt_handle) = tokio::runtime::Handle::try_current() {
+                // Occupy a blocking-pool thread only during teardown; if Tokio
+                // discards this queued task at shutdown, `TeardownJoiner::drop`
+                // still joins the worker before `Runtime::drop` returns.
+                rt_handle.spawn_blocking(move || {
+                    joiner.join_now();
+                });
+            } else {
+                joiner.join_now();
+            }
+        }
+    }
+
+    #[cfg_attr(not(test), allow(dead_code))]
+    async fn wait_for_shutdown(mut self) {
+        self.schedule_teardown();
+        if let Some(done_rx) = self.done_rx.take() {
+            let _ = done_rx.await;
+        }
+    }
+}
+
+impl Drop for BlockingHandle {
+    fn drop(&mut self) {
+        // Signal the non-Tokio worker thread and schedule its join on the
+        // blocking pool without blocking the caller's executor thread.
+        self.schedule_teardown();
+    }
+}
 
 /// An isolated test database backed by a Docker container or an external URL.
 ///
@@ -65,9 +190,10 @@ pub const TEST_DATABASE_URL_ENV: &str = "UNDERLAY_TEST_DATABASE_URL";
 pub struct TestDb {
     pool: PgPool,
     schema: SqlIdentifier,
-    // Keep the testcontainer alive for the lifetime of the test. `None` when
-    // connected to an external database via `UNDERLAY_TEST_DATABASE_URL`.
-    _container: Option<Arc<Container<Postgres>>>,
+    // Keep the testcontainer owned and dropped on a dedicated non-Tokio thread
+    // for the lifetime of the test. `None` when connected to an external
+    // database via `UNDERLAY_TEST_DATABASE_URL`.
+    _container: Option<BlockingHandle>,
 }
 
 impl TestDb {
@@ -86,19 +212,21 @@ impl TestDb {
         let (database_url, container) = match std::env::var(TEST_DATABASE_URL_ENV) {
             Ok(url) if !url.trim().is_empty() => (url, None),
             _ => {
-                assert_docker_available();
-                let container = Arc::new(
-                    Postgres::default()
+                let (url, handle) = BlockingHandle::spawn(|| {
+                    assert_docker_available();
+                    let container = Postgres::default()
                         .start()
-                        .expect("failed to start postgres test container"),
-                );
-                let url = format!(
-                    "postgres://postgres:postgres@127.0.0.1:{}/postgres",
-                    container
-                        .get_host_port_ipv4(5432)
-                        .expect("postgres port 5432 should be mapped")
-                );
-                (url, Some(container))
+                        .expect("failed to start postgres test container");
+                    let url = format!(
+                        "postgres://postgres:postgres@127.0.0.1:{}/postgres",
+                        container
+                            .get_host_port_ipv4(5432)
+                            .expect("postgres port 5432 should be mapped")
+                    );
+                    (url, container)
+                })
+                .await;
+                (url, Some(handle))
             }
         };
 

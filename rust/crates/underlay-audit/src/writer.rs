@@ -4,7 +4,14 @@ use crate::entry::{AuditEntry, AuditLogRow};
 use crate::error::AuditResult;
 use crate::tables::AuditTable;
 use crate::DbPool;
+use tokio::sync::Semaphore;
 use tracing::{info, instrument};
+
+/// Maximum number of concurrent fire-and-forget audit log writes spawned by
+/// [`append_audit_log_to_table_async`].
+pub const MAX_CONCURRENT_ASYNC_AUDIT_WRITES: usize = 64;
+
+static AUDIT_WRITE_SEMAPHORE: Semaphore = Semaphore::const_new(MAX_CONCURRENT_ASYNC_AUDIT_WRITES);
 
 /// Append an audit log entry to a typed table location.
 ///
@@ -95,8 +102,23 @@ where
 }
 
 /// Append an audit log entry to a typed table location without waiting.
+///
+/// Concurrency is bounded by [`MAX_CONCURRENT_ASYNC_AUDIT_WRITES`]; when all
+/// slots are busy, excess entries are dropped with a warning rather than
+/// spawning unbounded background tasks.
 pub fn append_audit_log_to_table_async(pool: DbPool, table: AuditTable, entry: AuditEntry) {
+    let Ok(permit) = AUDIT_WRITE_SEMAPHORE.try_acquire() else {
+        tracing::warn!(
+            action = %entry.action,
+            resource_type = %entry.resource_type,
+            resource_id = %entry.resource_id,
+            "audit log writer saturated; dropping audit log entry"
+        );
+        return;
+    };
+
     tokio::spawn(async move {
+        let _permit = permit;
         if let Err(e) = append_audit_log_to_table(&pool, &table, entry).await {
             tracing::error!(error = %e, "Failed to write audit log entry");
         }

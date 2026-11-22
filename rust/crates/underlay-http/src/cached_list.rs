@@ -10,10 +10,15 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 
 use axum::body::{Body, Bytes};
+use axum::http::header::CONTENT_LENGTH;
 use axum::http::{HeaderMap, StatusCode};
 use axum::response::Response;
 
 use crate::caching::{if_none_match_matches, MicroCache, SingleFlight};
+use crate::errors::ErrorDetail;
+
+/// Maximum error response body size buffered when coalescing single-flight errors.
+const MAX_COALESCED_ERROR_BODY_BYTES: usize = 64 * 1024;
 
 /// Serialized list response held in the microcache.
 #[derive(Debug, Clone)]
@@ -29,18 +34,26 @@ struct CoalescedErrorResponse {
     status: StatusCode,
     headers: HeaderMap,
     body: Bytes,
+    error_detail: Option<ErrorDetail>,
 }
 
 impl CoalescedErrorResponse {
     async fn from_response(response: Response) -> Self {
-        let (parts, body) = response.into_parts();
-        let body = axum::body::to_bytes(body, usize::MAX)
-            .await
-            .unwrap_or_default();
+        let (mut parts, body) = response.into_parts();
+        let error_detail = parts.extensions.get::<ErrorDetail>().cloned();
+        let body = match axum::body::to_bytes(body, MAX_COALESCED_ERROR_BODY_BYTES).await {
+            Ok(bytes) => bytes,
+            Err(_) => {
+                // Drop stale Content-Length so downstream HTTP framing stays valid.
+                parts.headers.remove(CONTENT_LENGTH);
+                Bytes::new()
+            }
+        };
         Self {
             status: parts.status,
             headers: parts.headers,
             body,
+            error_detail,
         }
     }
 
@@ -48,6 +61,9 @@ impl CoalescedErrorResponse {
         let mut response = Response::new(Body::from(self.body));
         *response.status_mut() = self.status;
         *response.headers_mut() = self.headers;
+        if let Some(detail) = self.error_detail {
+            response.extensions_mut().insert(detail);
+        }
         response
     }
 }
@@ -321,5 +337,73 @@ mod tests {
             0,
             "error responses must never fire on_hit()"
         );
+    }
+
+    #[tokio::test]
+    async fn coalesced_error_preserves_error_detail_and_bounds_body_size() {
+        use axum::response::IntoResponse;
+
+        use crate::errors::{ApiError, ErrorDetail};
+
+        let endpoint = Arc::new(CachedListEndpoint::new(Duration::from_secs(5), 16));
+        let mut tasks = Vec::new();
+        for _ in 0..4 {
+            let endpoint = Arc::clone(&endpoint);
+            tasks.push(tokio::spawn(async move {
+                let headers = HeaderMap::new();
+                endpoint
+                    .serve(
+                        "list:detail",
+                        &headers,
+                        || async {
+                            tokio::time::sleep(Duration::from_millis(15)).await;
+                            Err::<CachedListResponse, _>("db timeout")
+                        },
+                        || {},
+                        render_json,
+                        render_not_modified,
+                        |err| {
+                            ApiError::internal("db.timeout", err)
+                                .with_context(serde_json::json!({"table": "items"}))
+                                .into_response()
+                        },
+                    )
+                    .await
+            }));
+        }
+
+        for task in tasks {
+            let resp = task.await.expect("task should join");
+            assert_eq!(resp.status(), StatusCode::INTERNAL_SERVER_ERROR);
+            let detail = resp
+                .extensions()
+                .get::<ErrorDetail>()
+                .expect("coalesced error response must preserve ErrorDetail extension");
+            assert_eq!(detail.message, "db timeout");
+            assert_eq!(detail.context, serde_json::json!({"table": "items"}));
+        }
+
+        // Oversized error body should be bounded rather than buffered unboundedly.
+        let oversized = vec![b'x'; super::MAX_COALESCED_ERROR_BODY_BYTES + 1];
+        let mut resp = Response::new(Body::from(oversized));
+        *resp.status_mut() = StatusCode::BAD_GATEWAY;
+        resp.headers_mut().insert(
+            axum::http::header::CONTENT_LENGTH,
+            HeaderValue::from(super::MAX_COALESCED_ERROR_BODY_BYTES + 1),
+        );
+        let coalesced = super::CoalescedErrorResponse::from_response(resp)
+            .await
+            .into_response();
+        assert_eq!(coalesced.status(), StatusCode::BAD_GATEWAY);
+        assert!(
+            !coalesced
+                .headers()
+                .contains_key(axum::http::header::CONTENT_LENGTH),
+            "oversized coalesced error should clear stale Content-Length"
+        );
+        let body = axum::body::to_bytes(coalesced.into_body(), 1024)
+            .await
+            .expect("read bounded body");
+        assert!(body.is_empty());
     }
 }

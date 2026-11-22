@@ -21,7 +21,7 @@
 //!     let response = server.get("/hello").send().await;
 //!     
 //!     assert_eq!(response.status(), 200);
-//!     assert_eq!(response.text().await, "Hello, World!");
+//!     assert_eq!(response.text(), "Hello, World!");
 //! }
 //! ```
 
