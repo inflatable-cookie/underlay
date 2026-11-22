@@ -12,7 +12,8 @@ import {
 import { BlobUploadError } from "../../src/patterns/blob-types";
 
 class MockXHR {
-	static nextBehavior: "success" | "successNoLength" | "httpError" | "networkError" | "pending" = "success";
+	static nextBehavior: "success" | "successNoLength" | "httpError" | "networkError" | "pending" =
+		"success";
 	status = 200;
 	statusText = "OK";
 	headers: Record<string, string> = {};
@@ -78,10 +79,21 @@ describe("patterns/blob-upload", () => {
 			objectKey: "obj",
 		};
 
-		await expect(uploadToBlob(basePlan as any, file)).rejects.toMatchObject({ code: "FILE_TOO_LARGE" });
-		await expect(uploadToBlob({ ...basePlan, maxBytes: 100, allowedContentTypes: ["image/png"] } as any, file)).rejects.toMatchObject({ code: "INVALID_CONTENT_TYPE" });
-		await expect(uploadToBlob({ ...basePlan, maxBytes: 100, expiresAt: "2000-01-01T00:00:00.000Z" } as any, file)).rejects.toMatchObject({ code: "UPLOAD_EXPIRED" });
-		await expect(uploadToBlob({ ...basePlan, maxBytes: 100, expiresAt: "not-a-date" } as any, file)).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
+		await expect(uploadToBlob(basePlan as any, file)).rejects.toMatchObject({
+			code: "FILE_TOO_LARGE",
+		});
+		await expect(
+			uploadToBlob({ ...basePlan, maxBytes: 100, allowedContentTypes: ["image/png"] } as any, file),
+		).rejects.toMatchObject({ code: "INVALID_CONTENT_TYPE" });
+		await expect(
+			uploadToBlob(
+				{ ...basePlan, maxBytes: 100, expiresAt: "2000-01-01T00:00:00.000Z" } as any,
+				file,
+			),
+		).rejects.toMatchObject({ code: "UPLOAD_EXPIRED" });
+		await expect(
+			uploadToBlob({ ...basePlan, maxBytes: 100, expiresAt: "not-a-date" } as any, file),
+		).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
 	});
 
 	it("does not start a request when the signal is already aborted", async () => {
@@ -106,7 +118,9 @@ describe("patterns/blob-upload", () => {
 			objectKey: "obj-abort",
 		};
 
-		await expect(uploadToBlob(plan as any, file, { signal: controller.signal })).rejects.toMatchObject({ code: "UPLOAD_ABORTED" });
+		await expect(
+			uploadToBlob(plan as any, file, { signal: controller.signal }),
+		).rejects.toMatchObject({ code: "UPLOAD_ABORTED" });
 		expect(sent).not.toHaveBeenCalled();
 	});
 
@@ -184,7 +198,10 @@ describe("patterns/blob-upload", () => {
 		};
 
 		MockXHR.nextBehavior = "httpError";
-		await expect(uploadToBlob(plan as any, file)).rejects.toMatchObject({ code: "UPLOAD_FAILED", statusCode: 403 });
+		await expect(uploadToBlob(plan as any, file)).rejects.toMatchObject({
+			code: "UPLOAD_FAILED",
+			statusCode: 403,
+		});
 
 		MockXHR.nextBehavior = "networkError";
 		await expect(uploadToBlob(plan as any, file)).rejects.toMatchObject({ code: "NETWORK_ERROR" });
@@ -197,7 +214,9 @@ describe("patterns/blob-upload", () => {
 	});
 
 	it("computes file hash for small and large files", async () => {
-		const small = new File([new Uint8Array([1, 2, 3])], "a.bin", { type: "application/octet-stream" });
+		const small = new File([new Uint8Array([1, 2, 3])], "a.bin", {
+			type: "application/octet-stream",
+		});
 		const large = {
 			size: 70 * 1024 * 1024,
 			arrayBuffer: async () => new Uint8Array([1, 2, 3]).buffer,
@@ -215,7 +234,9 @@ describe("patterns/blob-upload", () => {
 		const unknown = new File(["x"], "a.bin", { type: "application/octet-stream" });
 
 		expect(validateFileType(image)).toBe(true);
-		expect(validateFileType({ type: "text/plain;charset=utf-8" } as File, ["text/plain"])).toBe(true);
+		expect(validateFileType({ type: "text/plain;charset=utf-8" } as File, ["text/plain"])).toBe(
+			true,
+		);
 		expect(validateFileType(unknown)).toBe(false);
 		expect(isVideoFile(video)).toBe(true);
 		expect(isVideoFile(image)).toBe(false);
@@ -236,15 +257,27 @@ describe("patterns/blob-upload", () => {
 			valid: false,
 			error: "Video files are not supported.",
 		});
-			expect(validateFile(unknown, 100)).toEqual(
-				expect.objectContaining({ valid: false, error: expect.stringContaining("not supported") })
-			);
-			expect(validateFile(new File(["x"], "unknown.bin", { type: "" }), 100)).toEqual(
-				expect.objectContaining({ valid: false, error: expect.stringContaining('"unknown"') })
-			);
-			expect(validateFile(new File([new Uint8Array(5)], "a.png", { type: "image/png" }), 2)).toEqual(
-				expect.objectContaining({ valid: false, error: expect.stringContaining("too large") })
-			);
+		expect(validateFile(video, 100, ["video/mp4"])).toEqual({ valid: true });
+		expect(
+			validateFile(new File(["x"], "clip.mp4", { type: "video/mp4;codecs=avc1" }), 100, [
+				"video/mp4",
+			]),
+		).toEqual({ valid: true });
+		expect(
+			validateFile(new File(["x"], "clip.webm", { type: "video/webm" }), 100, ["video/mp4"]),
+		).toEqual({
+			valid: false,
+			error: 'File type "video/webm" is not supported. Allowed types: video/mp4',
+		});
+		expect(validateFile(unknown, 100)).toEqual(
+			expect.objectContaining({ valid: false, error: expect.stringContaining("not supported") }),
+		);
+		expect(validateFile(new File(["x"], "unknown.bin", { type: "" }), 100)).toEqual(
+			expect.objectContaining({ valid: false, error: expect.stringContaining('"unknown"') }),
+		);
+		expect(validateFile(new File([new Uint8Array(5)], "a.png", { type: "image/png" }), 2)).toEqual(
+			expect.objectContaining({ valid: false, error: expect.stringContaining("too large") }),
+		);
 		expect(validateFile(image, 100)).toEqual({ valid: true });
 	});
 

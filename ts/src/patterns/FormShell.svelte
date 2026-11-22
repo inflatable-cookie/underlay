@@ -114,11 +114,13 @@
     node: HTMLFormElement,
     params: { enhance: EnhanceHook; prepare: PrepareHook }
   ) => {
+    let current = params;
     let teardown: (() => void) | null = null;
 
     function apply(next: { enhance: EnhanceHook; prepare: PrepareHook }) {
       teardown?.();
       teardown = null;
+      current = next;
 
       if (!next.enhance) {
         return;
@@ -137,6 +139,9 @@
 
     return {
       update(next: { enhance: EnhanceHook; prepare: PrepareHook }) {
+        if (next.enhance === current.enhance && next.prepare === current.prepare) {
+          return;
+        }
         apply(next);
       },
       destroy() {
