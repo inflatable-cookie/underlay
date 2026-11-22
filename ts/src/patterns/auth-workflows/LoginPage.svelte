@@ -7,7 +7,7 @@
    * 2FA flows and optional post-login setup prompts.
   */
 
-  import { untrack } from "svelte";
+  import { onDestroy, untrack } from "svelte";
   import { resolveRedirectTo } from "../../client/route-protection";
   import type { LoginMethod, LoginPageProps, LoginStep } from "./login-page.types";
   import {
@@ -71,9 +71,14 @@
 
   const showTabs = $derived(methods.length > 1);
 
+  let disposed = false;
+  onDestroy(() => {
+    disposed = true;
+  });
+
   async function handlePasswordLogin(event: SubmitEvent) {
     event.preventDefault();
-    if (loading || passkeyLoading) return;
+    if (loading || passkeyLoading || disposed) return;
     error = null;
     loading = true;
 
@@ -84,6 +89,7 @@
       }
 
       const result = await onPasswordLogin?.(email.trim(), password);
+      if (disposed) return;
       const outcome = resolvePasswordLoginOutcome(result, email);
 
       if (outcome.kind === "2fa") {
@@ -97,14 +103,17 @@
         onComplete?.();
       }
     } catch (e) {
+      if (disposed) return;
       error = e instanceof Error ? e.message : "Login failed";
     } finally {
-      loading = false;
+      if (!disposed) {
+        loading = false;
+      }
     }
   }
 
   async function handleTwoFactorVerify(inputCode: string) {
-    if (loading) return;
+    if (loading || disposed) return;
     error = null;
     loading = true;
 
@@ -115,6 +124,7 @@
       }
 
       await onTwoFactorVerify?.(loginStateId, inputCode);
+      if (disposed) return;
       const outcome = getPostTwoFactorOutcome(showSetupPrompt, isEmailVerification, usedEmailFallback);
 
       if (outcome === "setup-prompt") {
@@ -123,40 +133,51 @@
         onComplete?.();
       }
     } catch (e) {
+      if (disposed) return;
       error = e instanceof Error ? e.message : "Verification failed";
     } finally {
-      loading = false;
+      if (!disposed) {
+        loading = false;
+      }
     }
   }
 
   async function handlePasskeyLogin() {
-    if (loading || passkeyLoading) return;
+    if (loading || passkeyLoading || disposed) return;
     passkeyError = null;
     passkeyLoading = true;
 
     try {
       const emailValue = passkeyEmail.trim() || undefined;
       await onPasskeyLogin?.(emailValue);
+      if (disposed) return;
       onComplete?.();
     } catch (e) {
+      if (disposed) return;
       passkeyError = e instanceof Error ? e.message : "Passkey login failed";
     } finally {
-      passkeyLoading = false;
+      if (!disposed) {
+        passkeyLoading = false;
+      }
     }
   }
 
   async function handleGoogleLogin() {
-    if (loading || passkeyLoading) return;
+    if (loading || passkeyLoading || disposed) return;
     error = null;
     loading = true;
 
     try {
       await onGoogleLogin?.();
+      if (disposed) return;
       onComplete?.();
     } catch (e) {
+      if (disposed) return;
       error = e instanceof Error ? e.message : "Google login failed";
     } finally {
-      loading = false;
+      if (!disposed) {
+        loading = false;
+      }
     }
   }
 
@@ -172,13 +193,14 @@
   }
 
   async function handleRequestEmailCode(): Promise<boolean> {
-    if (loading || !loginStateId || !onRequestEmailCode) return false;
+    if (loading || disposed || !loginStateId || !onRequestEmailCode) return false;
 
     error = null;
     loading = true;
 
     try {
       const result = await onRequestEmailCode(loginStateId);
+      if (disposed) return false;
       const outcome = resolveEmailFallbackOutcome(result);
       loginStateId = outcome.loginStateId;
       twoFactorEmail = outcome.twoFactorEmail;
@@ -186,15 +208,18 @@
       usedEmailFallback = outcome.usedEmailFallback;
       return true;
     } catch (e) {
+      if (disposed) return false;
       error = e instanceof Error ? e.message : "Failed to send verification code";
       return false;
     } finally {
-      loading = false;
+      if (!disposed) {
+        loading = false;
+      }
     }
   }
 
   async function handleResendEmailCode() {
-    if (loading || !loginStateId || !onResendEmailCode) return;
+    if (loading || disposed || !loginStateId || !onResendEmailCode) return;
 
     error = null;
     loading = true;
@@ -204,7 +229,9 @@
     } catch {
       // Silently fail - don't reveal if email exists
     } finally {
-      loading = false;
+      if (!disposed) {
+        loading = false;
+      }
     }
   }
 
@@ -218,7 +245,9 @@
 
   function handleSkipSetup() {
     onSkipSetup?.();
-    onComplete?.();
+    if (!disposed) {
+      onComplete?.();
+    }
   }
 </script>
 

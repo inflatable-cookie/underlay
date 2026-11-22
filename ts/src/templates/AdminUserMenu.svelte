@@ -52,6 +52,7 @@
   };
 
   const confirmLogout = async () => {
+    if (loggingOut) return;
     loggingOut = true;
     try {
       await onLogout();
@@ -76,7 +77,7 @@
 <div class={variant === "mobile" ? "admin-mobile-overlay__user" : "admin-nav__user-section"}>
   <PoodlePopover bind:open={userMenuOpen} placement="top-start" ariaLabel="User menu" block>
     {#snippet trigger()}
-      <div class="admin-nav__user-trigger">
+      <div class="admin-nav__user-trigger" data-state={userMenuOpen ? "open" : "closed"}>
         <div class="admin-nav__user-avatar" style="background: {avatarGradient}" aria-hidden="true">
           {initialsFromName(displayName ?? "Admin")}
         </div>
@@ -89,7 +90,7 @@
 
     <nav class="admin-nav__user-menu" aria-label="User menu">
       <a href={accountHref} class="admin-nav__user-menu-item" onclick={handleNavigate}>
-        <User class="admin-nav__user-menu-icon" />
+        <User class="admin-nav__user-menu-icon" aria-hidden="true" />
         <span>Account</span>
       </a>
       <button
@@ -98,7 +99,7 @@
         onclick={handleLogoutClick}
         disabled={loggingOut}
       >
-        <LogOut class="admin-nav__user-menu-icon" />
+        <LogOut class="admin-nav__user-menu-icon" aria-hidden="true" />
         <span>Log out</span>
       </button>
     </nav>
@@ -117,48 +118,48 @@
 </div>
 
 <style>
-  :global(.admin-nav__user-section) {
+  .admin-nav__user-section {
     margin-top: 1rem;
     padding: 1rem 0.9rem 0 0;
-    border-top: 1px solid var(--admin-color-border-subtle);
+    border-top: 1px solid var(--underlay-color-border-subtle);
     flex-shrink: 0;
   }
 
-  :global(.admin-nav__user-trigger) {
+  .admin-nav__user-trigger {
     display: flex;
     align-items: center;
     width: 100%;
     padding: 0.5rem;
-    border-radius: 0.5rem;
+    border-radius: var(--underlay-radius-control, 0.5rem);
     background: transparent;
     border: 1px solid transparent;
     justify-content: flex-start;
     gap: 0.6rem;
   }
 
-  :global(.admin-nav__user-trigger:hover) {
-    background: rgba(148, 163, 184, 0.16);
+  .admin-nav__user-trigger:hover {
+    background: var(--underlay-color-hover-bg);
   }
 
-  :global(.admin-nav__user-trigger[data-state="open"]) {
-    background: rgba(148, 163, 184, 0.12);
-    border-color: var(--admin-color-border-subtle);
+  .admin-nav__user-trigger[data-state="open"] {
+    background: var(--underlay-color-accent-tint-bg);
+    border-color: var(--underlay-color-border-subtle);
   }
 
-  :global(.admin-nav__user-avatar) {
+  .admin-nav__user-avatar {
     width: 2rem;
     height: 2rem;
-    border-radius: 999px;
+    border-radius: var(--underlay-radius-pill, 9999px);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.75rem;
+    font-size: var(--underlay-font-size-xs, 0.75rem);
     font-weight: 700;
-    color: #020617;
+    color: var(--underlay-admin-nav-badge-fg);
     flex-shrink: 0;
   }
 
-  :global(.admin-nav__user-meta) {
+  .admin-nav__user-meta {
     display: flex;
     flex-direction: column;
     gap: 0.1rem;
@@ -166,7 +167,7 @@
     min-width: 0;
   }
 
-  :global(.admin-nav__user-name) {
+  .admin-nav__user-name {
     font-size: 0.85rem;
     font-weight: 600;
     white-space: nowrap;
@@ -174,37 +175,37 @@
     text-overflow: ellipsis;
   }
 
-  :global(.admin-nav__user-role) {
+  .admin-nav__user-role {
     font-size: 0.7rem;
-    color: var(--admin-color-text-muted);
+    color: var(--underlay-color-text-muted);
   }
 
-  :global(.admin-nav__user-menu) {
+  .admin-nav__user-menu {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: var(--underlay-space-1, 0.25rem);
     width: 100%;
     min-width: 0;
   }
 
-  :global(.admin-nav__user-section .poodle-popover),
-  :global(.admin-mobile-overlay__user .poodle-popover) {
+  .admin-nav__user-section :global(.poodle-popover),
+  .admin-mobile-overlay__user :global(.poodle-popover) {
     width: 100%;
   }
 
-  :global(.admin-nav__user-section .poodle-popover__surface),
-  :global(.admin-mobile-overlay__user .poodle-popover__surface) {
+  .admin-nav__user-section :global(.poodle-popover__surface),
+  .admin-mobile-overlay__user :global(.poodle-popover__surface) {
     width: 100%;
     min-width: 100%;
     box-sizing: border-box;
   }
 
-  :global(.admin-nav__user-menu-item) {
+  .admin-nav__user-menu-item {
     display: flex;
     align-items: center;
     gap: 0.6rem;
     padding: 0.5rem 0.65rem;
-    border-radius: 0.4rem;
+    border-radius: var(--underlay-radius-sm, 0.4rem);
     background: transparent;
     border: none;
     color: inherit;
@@ -216,27 +217,33 @@
     text-align: left;
   }
 
-  :global(.admin-nav__user-menu-item:hover) {
-    background: rgba(148, 163, 184, 0.16);
+  .admin-nav__user-menu-item:hover {
+    background: var(--underlay-color-hover-bg);
   }
 
-  :global(.admin-nav__user-menu-item--danger) {
-    color: #f87171;
+  .admin-nav__user-menu-item:focus-visible {
+    outline: var(--underlay-focus-ring-width, 2px) solid var(--underlay-color-accent);
+    outline-offset: var(--underlay-focus-ring-offset, 2px);
   }
 
-  :global(.admin-nav__user-menu-item--danger:hover) {
-    background: rgba(239, 68, 68, 0.15);
+  .admin-nav__user-menu-item--danger {
+    color: var(--underlay-color-danger-strong);
   }
 
-  :global(.admin-nav__user-menu-icon) {
+  .admin-nav__user-menu-item--danger:hover,
+  .admin-nav__user-menu-item--danger:focus-visible {
+    background: var(--underlay-color-danger-bg);
+  }
+
+  .admin-nav__user-menu-item :global(.admin-nav__user-menu-icon) {
     width: 1rem;
     height: 1rem;
     flex-shrink: 0;
   }
 
-  :global(.admin-mobile-overlay__user) {
+  .admin-mobile-overlay__user {
     margin-top: auto;
     padding-top: 1rem;
-    border-top: 1px solid var(--admin-color-border-subtle);
+    border-top: 1px solid var(--underlay-color-border-subtle);
   }
 </style>

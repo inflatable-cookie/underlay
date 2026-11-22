@@ -22,6 +22,7 @@
 
   import { Button, Callout, Field, FormActions, TextInput } from "@inflatable-cookie/poodle-svelte";
   import type { PasswordRequirementsPolicy } from "@inflatable-cookie/poodle-svelte";
+  import { resolveRedirectTo } from "../../client/route-protection";
 
   import { default as PasswordResetStep } from "./PasswordResetStep.svelte";
   import { default as SuccessStep } from "./SuccessStep.svelte";
@@ -67,6 +68,7 @@
   let loading = $state(false);
   const uid = $props.id();
   const emailFieldId = `${uid}-email`;
+  const safeLoginHref = $derived(resolveRedirectTo(loginHref, "/login"));
 
   // Step 1: Request password reset code
   async function handleRequestCode(event: SubmitEvent) {
@@ -172,7 +174,7 @@
       {/if}
 
       <FormActions align="between" showTopBorder>
-        <a href={loginHref} class="underlay-forgot-password-flow__link">Back to login</a>
+        <a href={safeLoginHref} class="underlay-forgot-password-flow__link">Back to login</a>
         <Button type="submit" variant="primary" loading={loading}>
           {loading ? "Sending..." : "Send reset code"}
         </Button>
@@ -205,7 +207,7 @@
       title="Password reset successfully"
       message={successMessage}
       actionLabel="Go to login"
-      actionHref={loginHref}
+      actionHref={safeLoginHref}
     />
   {/if}
 </div>

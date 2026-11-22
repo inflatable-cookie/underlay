@@ -116,6 +116,8 @@
   }
 
   const spaEnhance = (node: HTMLFormElement) => {
+    let disposed = false;
+
     async function handleSubmit(event: SubmitEvent) {
       const submit = onSubmit;
       if (!submit) {
@@ -123,7 +125,7 @@
       }
       event.preventDefault();
 
-      if (submitting) {
+      if (submitting || disposed) {
         return;
       }
 
@@ -137,20 +139,28 @@
         prepare?.(formData);
 
         const result = await submit(formData);
+        if (disposed) {
+          return;
+        }
 
         success = result.success;
         error = result.error ?? null;
         fieldErrors = result.fieldErrors ?? null;
         onResult?.(result);
 
-        if (result.success && result.redirectTo) {
+        if (!disposed && result.success && result.redirectTo) {
           await (navigate ?? defaultNavigate)(resolveRedirectTo(result.redirectTo));
         }
       } catch (e) {
+        if (disposed) {
+          return;
+        }
         error = e instanceof Error ? e.message : "An unexpected error occurred";
         success = false;
       } finally {
-        submitting = false;
+        if (!disposed) {
+          submitting = false;
+        }
       }
     }
 
@@ -158,6 +168,7 @@
 
     return {
       destroy() {
+        disposed = true;
         node.removeEventListener("submit", handleSubmit);
       }
     };

@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/svelte";
 
 import type { ToastStore } from "../../src/patterns/toasts";
+import AdminUserMenu from "../../src/templates/AdminUserMenu.svelte";
+import UserForm from "../../src/templates/UserForm.svelte";
 import AdminNavListHarness from "../fixtures/AdminNavListHarness.svelte";
 import EntityTrashPageHarness from "../fixtures/EntityTrashPageHarness.svelte";
 import EntityActionsMenuHarness from "../fixtures/EntityActionsMenuHarness.svelte";
@@ -182,5 +184,104 @@ describe("templates/EntityActionsMenu", () => {
 
 		await fireEvent.click(screen.getByTestId("action-edit"));
 		expect(onEdit).toHaveBeenCalledTimes(1);
+	});
+});
+
+describe("templates/AdminUserMenu", () => {
+	it("marks decorative menu icons with aria-hidden and guards confirmLogout against re-entrancy", async () => {
+		let resolveLogout: () => void = () => {};
+		const onLogout = vi.fn(
+			() =>
+				new Promise<void>((resolve) => {
+					resolveLogout = resolve;
+				}),
+		);
+
+		render(AdminUserMenu, {
+			displayName: "Ada Lovelace",
+			roles: ["admin"],
+			appName: "Underlay",
+			onLogout,
+		});
+
+		const trigger = screen.getByRole("button", { name: /Ada Lovelace/i });
+		await fireEvent.click(trigger);
+
+		const menu = await screen.findByRole("navigation", { name: "User menu" });
+		const icons = menu.querySelectorAll(".admin-nav__user-menu-icon");
+		expect(icons.length).toBe(2);
+		for (const icon of icons) {
+			expect(icon.getAttribute("aria-hidden")).toBe("true");
+		}
+
+		await fireEvent.click(within(menu).getByRole("button", { name: "Log out" }));
+		const dialog = await screen.findByRole("alertdialog");
+		const confirmButton = within(dialog).getByRole("button", { name: "Log out" });
+
+		await fireEvent.click(confirmButton);
+		await fireEvent.click(confirmButton);
+		expect(onLogout).toHaveBeenCalledTimes(1);
+
+		resolveLogout();
+		await waitFor(() => {
+			expect(screen.queryByRole("alertdialog")).toBeNull();
+		});
+	});
+});
+
+describe("templates/UserForm", () => {
+	it("scopes field ids per instance using $props.id() instead of hardcoded globals", () => {
+		const first = render(UserForm, { mode: "create" });
+		const second = render(UserForm, { mode: "create" });
+
+		const firstEmail = within(first.container).getByLabelText(/^Email/) as HTMLInputElement;
+		const firstDisplayName = within(first.container).getByLabelText(
+			/^Display Name/,
+		) as HTMLInputElement;
+		const secondEmail = within(second.container).getByLabelText(/^Email/) as HTMLInputElement;
+
+		expect(firstEmail.id).not.toBe("user-email");
+		expect(firstDisplayName.id).not.toBe("user-display-name");
+		expect(firstEmail.id).not.toBe(secondEmail.id);
+	});
+
+	it("syncs field values when async edit data arrives without clobbering user edits", async () => {
+		const { rerender } = render(UserForm, {
+			mode: "edit",
+			values: {},
+		});
+
+		const emailInput = screen.getByLabelText(/^Email/) as HTMLInputElement;
+		const displayNameInput = screen.getByLabelText(/^Display Name/) as HTMLInputElement;
+		expect(emailInput.value).toBe("");
+		expect(displayNameInput.value).toBe("");
+
+		await rerender({
+			mode: "edit",
+			values: {
+				email: "alice@example.com",
+				displayName: "Alice",
+				role: "admin",
+				status: "active",
+			},
+		});
+
+		expect(emailInput.value).toBe("alice@example.com");
+		expect(displayNameInput.value).toBe("Alice");
+
+		await fireEvent.input(displayNameInput, { target: { value: "Alice Edited" } });
+		expect(displayNameInput.value).toBe("Alice Edited");
+
+		// Unrelated re-render with a fresh values object carrying the same server values.
+		await rerender({
+			mode: "edit",
+			values: {
+				email: "alice@example.com",
+				displayName: "Alice",
+				role: "admin",
+				status: "active",
+			},
+		});
+		expect(displayNameInput.value).toBe("Alice Edited");
 	});
 });

@@ -277,11 +277,18 @@
   });
   const currentQuery = $derived(listQuery.current);
 
-  const capabilities = useAuthenticatedData<ListCapabilities | null>(
-    (fetch, token) => capabilitiesLoader?.(fetch, token) ?? Promise.resolve(null),
-    { defaultValue: null }
+  // Decided once at init (matching EntityDetailPage): skip instantiating
+  // authenticated-data machinery when no capabilitiesLoader is supplied.
+  const hasCapabilitiesLoader = untrack(
+    () => capabilitiesLoader !== undefined && capabilitiesLoader !== null
   );
-  const loadedCapabilities = $derived(capabilitiesLoader ? capabilities.data : null);
+  const capabilities = hasCapabilitiesLoader
+    ? useAuthenticatedData<ListCapabilities | null>(
+        (fetch, token) => capabilitiesLoader?.(fetch, token) ?? Promise.resolve(null),
+        { defaultValue: null }
+      )
+    : null;
+  const loadedCapabilities = $derived(capabilitiesLoader ? (capabilities?.data ?? null) : null);
   let effectiveFilterConfigs = $derived(loadedCapabilities?.filters ?? filterConfigs);
   let effectiveQueryVariants = $derived(loadedCapabilities?.variants ?? queryVariants);
   let effectiveDefaultVariantId = $derived(loadedCapabilities?.defaultVariantId ?? defaultVariantId);
@@ -332,9 +339,9 @@
   };
 
   setContext(UNDERLAY_ENTITY_LIST_CONTEXT_KEY, entityListContext);
-  let lastNotifiedVisibleCount = $state<number | null>(null);
-  let lastNotifiedTotalCount = $state<number | null>(null);
-  let lastNotifiedReorderAvailability = $state<boolean | null>(null);
+  let lastNotifiedVisibleCount: number | null = null;
+  let lastNotifiedTotalCount: number | null = null;
+  let lastNotifiedReorderAvailability: boolean | null = null;
 
   // Batch actions. Declared before any derived that reads it (selectedIdsKey)
   // so no reader can observe it before initialisation.
@@ -800,7 +807,7 @@
   </Callout>
 {/snippet}
 
-{#if capabilitiesLoader && capabilities.error}
+{#if capabilitiesLoader && capabilities?.error}
   {@render retryCallout(capabilities.error, () => capabilities.refetch(), "Unable to load list options")}
 {/if}
 
