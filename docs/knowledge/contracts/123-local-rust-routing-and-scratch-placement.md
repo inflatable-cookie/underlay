@@ -102,6 +102,13 @@ directory, a drive root, or the checkout.
   `$TMPDIR`, `$HOME`, a drive root or the checkout, and do not create a
   directory or link that pretends the volume is mounted.
 - Delete only scratch your own run created. Preserve unknown state.
+- CI-only exception: the proof scripts
+  `scripts/test-consumer-conformance-fixtures.sh` and
+  `rust/scripts/test-check-coverage.sh` use `${RUNNER_TEMP}/underlay-scratch`
+  when `GITHUB_ACTIONS` is `true`. If `RUNNER_TEMP` is unset or empty in that
+  case they refuse. Outside GitHub Actions (`GITHUB_ACTIONS` unset or not
+  `true`) the Builds-volume rule applies unchanged, and a local run never uses
+  `RUNNER_TEMP` as a substitute.
 - Evidence records key presence and outcomes, never raw secret values.
 - A generic `HOME` override is not a scratch strategy.
 - Product-managed temp files are not agent scratch. Runtime algorithms and guest
@@ -119,7 +126,8 @@ directory, a drive root, or the checkout.
   handling, and the missing-`cargo-tarpaulin` refusal, with fake executables and
   no real coverage run.
 - `effigy check:consumer-conformance-fixtures` exercises the scratch placement
-  end to end when the Builds volume is mounted.
+  end to end when the Builds volume is mounted. In hosted CI it runs on every
+  pull request through the CI-only exception above.
 
 ## Related
 

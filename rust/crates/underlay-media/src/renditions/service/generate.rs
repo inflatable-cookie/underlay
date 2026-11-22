@@ -3,7 +3,9 @@ use std::sync::Arc;
 use underlay_blob::{BlobAdapter, BlobObjectKey};
 
 use super::super::keys::parse_rendition_result_key;
-use super::super::processing::{generate_and_store, read_generate_and_store, RenditionCropMode};
+use super::super::processing::{
+    generate_and_store, read_generate_and_store, ReadGenerateRequest, RenditionCropMode,
+};
 use super::super::result::RenditionResult;
 use super::RenditionService;
 use crate::domain::RenditionType;
@@ -41,13 +43,15 @@ impl<B: BlobAdapter> RenditionService<B> {
     ) -> MediaResult<RenditionResult> {
         read_generate_and_store(
             self.blob_adapter.as_ref(),
-            source_key,
-            target_key,
-            self.config.thumbnail_max_dimension(),
-            self.config.jpeg_quality(),
-            self.config.max_source_bytes(),
-            self.thumbnail_crop_mode(),
-            "thumbnail",
+            ReadGenerateRequest {
+                source_key,
+                target_key,
+                max_dimension: self.config.thumbnail_max_dimension(),
+                jpeg_quality: self.config.jpeg_quality(),
+                max_source_bytes: self.config.max_source_bytes(),
+                crop_mode: self.thumbnail_crop_mode(),
+                store_label: "thumbnail",
+            },
         )
         .await
     }
@@ -74,13 +78,15 @@ impl<B: BlobAdapter> RenditionService<B> {
     ) -> MediaResult<RenditionResult> {
         read_generate_and_store(
             self.blob_adapter.as_ref(),
-            source_key,
-            target_key,
-            self.config.preview_max_dimension(),
-            self.config.jpeg_quality(),
-            self.config.max_source_bytes(),
-            RenditionCropMode::Fit,
-            "preview",
+            ReadGenerateRequest {
+                source_key,
+                target_key,
+                max_dimension: self.config.preview_max_dimension(),
+                jpeg_quality: self.config.jpeg_quality(),
+                max_source_bytes: self.config.max_source_bytes(),
+                crop_mode: RenditionCropMode::Fit,
+                store_label: "preview",
+            },
         )
         .await
     }

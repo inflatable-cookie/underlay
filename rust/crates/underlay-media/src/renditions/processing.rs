@@ -24,27 +24,33 @@ pub(crate) async fn read_source_bytes<B: BlobAdapter>(
         .map_err(|e| MediaError::storage(format!("Failed to read source: {}", e)))
 }
 
+/// Parameters for reading a source object, generating a rendition, and storing it.
+pub(crate) struct ReadGenerateRequest<'a> {
+    pub(crate) source_key: &'a BlobObjectKey,
+    pub(crate) target_key: &'a BlobObjectKey,
+    pub(crate) max_dimension: u32,
+    pub(crate) jpeg_quality: u8,
+    pub(crate) max_source_bytes: u64,
+    pub(crate) crop_mode: RenditionCropMode,
+    pub(crate) store_label: &'a str,
+}
+
 pub(crate) async fn read_generate_and_store<B: BlobAdapter>(
     blob_adapter: &B,
-    source_key: &BlobObjectKey,
-    target_key: &BlobObjectKey,
-    max_dimension: u32,
-    jpeg_quality: u8,
-    max_source_bytes: u64,
-    crop_mode: RenditionCropMode,
-    store_label: &str,
+    request: ReadGenerateRequest<'_>,
 ) -> MediaResult<RenditionResult> {
-    let source_bytes =
-        Arc::new(read_source_bytes(blob_adapter, source_key, max_source_bytes).await?);
+    let source_bytes = Arc::new(
+        read_source_bytes(blob_adapter, request.source_key, request.max_source_bytes).await?,
+    );
 
     generate_and_store(
         blob_adapter,
         source_bytes,
-        target_key,
-        max_dimension,
-        jpeg_quality,
-        crop_mode,
-        store_label,
+        request.target_key,
+        request.max_dimension,
+        request.jpeg_quality,
+        request.crop_mode,
+        request.store_label,
     )
     .await
 }

@@ -20,9 +20,9 @@ coverage, interface review, and later implementation assessment.
 
 Remaining pressure:
 
-- migration and testing drift is repaired across the six-consumer family;
+- migration and testing drift is repaired across the four-consumer family;
   fixed-schema whole-app suites remain app-owned
-- bootstrap/runtime/access drift was repaired and proved across the six exact
+- bootstrap/runtime/access drift was repaired and proved across the four exact
   roots
 - collection route and hybrid-shell convergence (`116`, `117`, sweeps `029`/`030`)
   is still open
@@ -38,7 +38,7 @@ Remaining pressure:
 | Data and storage | DB bootstrap, soft delete, blob storage, AWS integration, media orchestration | `rust/crates/underlay-db`, `underlay-soft-delete`, `underlay-blob`, `underlay-aws`, `underlay-media` | storage, media, and deletion contracts |
 | Async infrastructure | jobs, scheduled tasks, events, email, audit, security alerts, rate limiting | `rust/crates/underlay-jobs`, `underlay-jobs-postgres`, `underlay-events`, `underlay-email`, `underlay-audit`, `underlay-security-alerts`, `underlay-ratelimit` | operator and infrastructure contracts with typed table/config boundaries where SQL identifiers are dynamic |
 | AI and suggestion systems | provider-agnostic AI runtime, routing candidates, generic relation suggestions | `rust/crates/underlay-ai-runtime`, `underlay-suggestions`, `ts/src/client/suggestions.ts`, `ts/src/patterns/selection-history.ts`, `ts/src/runtime/ai.ts`, `ts/src/runtime/data.ts` | AI runtime and suggestion contracts |
-| Structured content | Nightfire document model, editor/runtime, markdown/media blocks, validation, migration pipeline | `rust/crates/underlay-nightfire`, `underlay-migration-core`, `ts/src/nightfire/**` | structured-content and migration contracts |
+| Structured content | Nightfire document model, editor/runtime, markdown/media blocks, validation, migration pipeline | standalone `nightfire` (Rust and npm), `underlay-media` `nightfire` feature, `underlay-migration-core`, `ts/src/nightfire/**` (retained `editor` and `media` entry points only) | structured-content and migration contracts |
 | TS client transport | HTTP client, query building, pagination, route protection, media, soft delete, SvelteKit hooks | `ts/src/client/**` | TS transport and client-surface contracts |
 | TS runtime controllers | auth, feedback, forms, navigation, relations, media, browser, data helpers | `ts/src/runtime/**` | browser/runtime orchestration contracts |
 | Shared workflow patterns | auth pages, form shells, relation selector, optimistic helpers, list/reorder/batch state, navigation state, upload flows, i18n helpers | `ts/src/patterns/**` | shared workflow and retained-pattern contracts |
@@ -59,10 +59,13 @@ The live Rust crate surface in the repo today is:
 - `underlay-auth-jwt`
 - `underlay-auth-oauth`
 - `underlay-auth-password`
+- `underlay-auth-session`
+- `underlay-auth-state-postgres`
 - `underlay-auth-totp`
 - `underlay-auth-webauthn`
 - `underlay-aws`
 - `underlay-blob`
+- `underlay-config`
 - `underlay-core`
 - `underlay-db`
 - `underlay-devtools`
@@ -73,11 +76,10 @@ The live Rust crate surface in the repo today is:
 - `underlay-jobs`
 - `underlay-jobs-postgres`
 - `underlay-media`
-- `underlay-media-postgres`
 - `underlay-metrics`
 - `underlay-migration-core`
-- `underlay-nightfire`
 - `underlay-observability`
+- `underlay-query`
 - `underlay-ratelimit`
 - `underlay-security-alerts`
 - `underlay-soft-delete`
@@ -95,6 +97,7 @@ The live TS/Svelte source domains in the repo today are:
 - `patterns`
 - `runtime`
 - `server`
+- `styles`
 - `templates`
 - `testing`
 - `tools`

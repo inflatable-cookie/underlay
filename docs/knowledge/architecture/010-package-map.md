@@ -86,7 +86,7 @@ Several crates use feature flags to keep optional dependencies out of the defaul
 | `underlay-observability` | `opentelemetry` | OpenTelemetry integration gate; adds no dependencies |
 | `underlay-ratelimit` | `postgres` | Postgres-backed rate-limit backend (`sqlx`, `underlay-db`) |
 | `underlay-testing` | `db`, `server`, `full` | Test infrastructure scope |
-| `underlay-validation` | `derive`, `axum` | Macro + framework integration |
+| `underlay-validation` | `derive`, `axum`, `validator-compat`, `nightfire`, `field-validation`, `slugify` | `derive` (default) re-exports `#[derive(Validate)]`; `axum` adds the `ValidatedJson` extractor; `validator-compat` maps `validator` errors to `AppError`; `nightfire` maps Nightfire validation results to `AppError`; `field-validation` adds UUID parse helpers; `slugify` adds the `slugify` function |
 | `underlay-auth-password` | `hibp` | Have I Been Pwned breach check |
 | `underlay-auth` | `hashing` | Optional password hashing support |
 | `underlay-auth-webauthn` | `attestation` | Attested passkey verification |
@@ -96,10 +96,11 @@ Several crates use feature flags to keep optional dependencies out of the defaul
 `ts/src/` is currently organized into these domains:
 
 - `client/`: HTTP, query, pagination, auth, navigation, media, and transport helpers
-- `nightfire/`: structured-content editor/runtime, markdown/media blocks, registries, validation
+- `nightfire/`: the two retained Underlay entry points, `editor` and `media`; the generic structured-content system lives in the standalone `nightfire` package (see below)
 - `patterns/`: retained workflow shells, auth flows, relation selector, optimistic/list/reorder/navigation helpers
 - `runtime/`: browser/runtime orchestration helpers and app-facing controllers
 - `server/`: CSP and security-header server helpers
+- `styles/`: shared CSS tokens, base, forms, and optimistic-state styles
 - `templates/`: higher-order admin template system (`EntityListPage`, `EntityDetailPage`, `EntityFormPage`, related modules/cards)
 - `testing/`: TS test helpers
 - `tools/`: repo guardrails and template-surface tooling
