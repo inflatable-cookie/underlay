@@ -89,6 +89,50 @@ describe("templates/EntityFormPage submit feedback", () => {
 		expect(onResult).not.toHaveBeenCalled();
 		expect(navigate).not.toHaveBeenCalled();
 	});
+
+	it("clears submitting and stays submittable after a loading transition during submit", async () => {
+		let resolveFirst: (value: { success: boolean }) => void = () => {};
+		const onSubmit = vi
+			.fn()
+			.mockImplementationOnce(
+				() =>
+					new Promise<{ success: boolean }>((resolve) => {
+						resolveFirst = resolve;
+					}),
+			)
+			.mockResolvedValueOnce({ success: true });
+		const children = createRawSnippet(() => ({
+			render: () => '<input name="name" type="text" />',
+		}));
+
+		const { container, rerender } = render(EntityFormPage, {
+			title: "Edit Thing",
+			loading: false,
+			onSubmit,
+			children,
+		});
+
+		container
+			.querySelector("form")!
+			.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+		await tick();
+		expect(onSubmit).toHaveBeenCalledTimes(1);
+
+		await rerender({ loading: true });
+		resolveFirst({ success: true });
+		await tick();
+		await rerender({ loading: false });
+		await tick();
+
+		expect(container.textContent).not.toContain("Your changes are being submitted.");
+
+		container
+			.querySelector("form")!
+			.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+		await vi.waitFor(() => {
+			expect(onSubmit).toHaveBeenCalledTimes(2);
+		});
+	});
 });
 
 describe("patterns/auth-workflows LoginGoogleTab", () => {

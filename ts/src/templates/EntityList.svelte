@@ -1,6 +1,6 @@
 <script lang="ts" generics="T extends object = Record<string, unknown>">
   import { onDestroy, setContext, untrack } from "svelte";
-  import { useAuthenticatedData } from "../runtime/auth";
+  import { useAuthenticatedData, type AuthenticatedDataResult } from "../runtime/auth";
   import { useBatchActions } from "../patterns/batch-actions.svelte";
   import { useToasts } from "../runtime/feedback";
   import {
@@ -277,17 +277,36 @@
   });
   const currentQuery = $derived(listQuery.current);
 
-  // Decided once at init (matching EntityDetailPage): skip instantiating
-  // authenticated-data machinery when no capabilitiesLoader is supplied.
-  const hasCapabilitiesLoader = untrack(
-    () => capabilitiesLoader !== undefined && capabilitiesLoader !== null
-  );
-  const capabilities = hasCapabilitiesLoader
-    ? useAuthenticatedData<ListCapabilities | null>(
+  // Skip instantiating authenticated-data machinery while capabilitiesLoader is
+  // absent, and lazily initialize it if a loader arrives later (e.g. before auth readiness).
+  let capabilities = $state<AuthenticatedDataResult<ListCapabilities | null> | null>(null);
+  let cleanupCapabilities: (() => void) | null = null;
+
+  function initCapabilities() {
+    if (capabilities) return;
+    cleanupCapabilities = $effect.root(() => {
+      capabilities = useAuthenticatedData<ListCapabilities | null>(
         (fetch, token) => capabilitiesLoader?.(fetch, token) ?? Promise.resolve(null),
         { defaultValue: null }
-      )
-    : null;
+      );
+    });
+  }
+
+  if (untrack(() => capabilitiesLoader !== undefined && capabilitiesLoader !== null)) {
+    initCapabilities();
+  }
+
+  $effect(() => {
+    if (capabilitiesLoader) {
+      untrack(() => initCapabilities());
+    }
+  });
+
+  onDestroy(() => {
+    cleanupCapabilities?.();
+    cleanupCapabilities = null;
+  });
+
   const loadedCapabilities = $derived(capabilitiesLoader ? (capabilities?.data ?? null) : null);
   let effectiveFilterConfigs = $derived(loadedCapabilities?.filters ?? filterConfigs);
   let effectiveQueryVariants = $derived(loadedCapabilities?.variants ?? queryVariants);
@@ -808,7 +827,7 @@
 {/snippet}
 
 {#if capabilitiesLoader && capabilities?.error}
-  {@render retryCallout(capabilities.error, () => capabilities.refetch(), "Unable to load list options")}
+  {@render retryCallout(capabilities.error, () => capabilities?.refetch() ?? Promise.resolve(), "Unable to load list options")}
 {/if}
 
 {#if title}

@@ -34,18 +34,17 @@
   let error = $state<string | null>(null);
 
   // Fetch requirements once on mount (or when reloadKey explicitly changes).
-  // Untrack fetchRequirements so inline arrow props recreated on parent keystrokes
-  // do not trigger refetch storms.
+  // Invoke fetchRequirements inside untrack so neither inline arrow identities
+  // nor reactive state read synchronously inside the callback trigger refetches.
   $effect(() => {
     void reloadKey;
     let cancelled = false;
-    const loader = untrack(() => fetchRequirements);
 
     void (async () => {
       try {
         loading = true;
         error = null;
-        const policy = await loader();
+        const policy = await untrack(() => fetchRequirements());
         if (cancelled) return;
         requirements = policy;
       } catch (e) {

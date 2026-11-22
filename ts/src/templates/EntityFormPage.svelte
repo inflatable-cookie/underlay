@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { HTMLFormAttributes } from "svelte/elements";
-  import { untrack } from "svelte";
+  import { onDestroy, untrack } from "svelte";
   import { setFormFieldErrors } from "./form-field-errors";
   import { useTemplateBackInfo } from "./template-back-info.svelte";
   import { resolveRedirectTo } from "../client/route-protection";
@@ -115,9 +115,12 @@
     prepare?.(event.formData);
   }
 
-  const spaEnhance = (node: HTMLFormElement) => {
-    let disposed = false;
+  let disposed = false;
+  onDestroy(() => {
+    disposed = true;
+  });
 
+  const spaEnhance = (node: HTMLFormElement) => {
     async function handleSubmit(event: SubmitEvent) {
       const submit = onSubmit;
       if (!submit) {
@@ -168,7 +171,6 @@
 
     return {
       destroy() {
-        disposed = true;
         node.removeEventListener("submit", handleSubmit);
       }
     };

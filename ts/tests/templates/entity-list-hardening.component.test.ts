@@ -137,3 +137,40 @@ it("shows a capabilities error without hiding results and retries the capabiliti
 	expect(await screen.findByRole("button", { name: "Active projects" })).toBeTruthy();
 	expect(capabilitiesLoader).toHaveBeenCalledTimes(2);
 });
+
+it("loads capabilities when capabilitiesLoader arrives after mount before auth becomes ready", async () => {
+	let authLoading = true;
+	let currentUser: { id: string } | null = null;
+	configureAuth({
+		getToken: () => "old-token",
+		onRefresh,
+		getAuthLoading: () => authLoading,
+		getCurrentUser: () => currentUser,
+	});
+
+	const capabilitiesLoader = vi.fn(async () => ({
+		filters: [],
+		variants: [{ id: "active", label: "Active projects" }],
+	}));
+
+	const { rerender } = render(EntityList<typeof project>, {
+		columns,
+		presentation: "table",
+		dataLoader: loadProjects,
+	});
+
+	await rerender({ capabilitiesLoader });
+
+	authLoading = false;
+	currentUser = { id: "user" };
+	configureAuth({
+		getToken: () => "old-token",
+		onRefresh,
+		getAuthLoading: () => authLoading,
+		getCurrentUser: () => currentUser,
+	});
+
+	expect(await screen.findByText(project.name)).toBeTruthy();
+	expect(await screen.findByRole("button", { name: "Active projects" })).toBeTruthy();
+	expect(capabilitiesLoader).toHaveBeenCalledTimes(1);
+});
