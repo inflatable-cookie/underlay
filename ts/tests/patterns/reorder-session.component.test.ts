@@ -342,12 +342,26 @@ describe("patterns/reorder-session.svelte.ts (compiled)", () => {
 			expect(classSession.controller.pending[0].id).toBe("a");
 			expect(classSession.controller.pending[0].format()).toBe("a:Old");
 
+			// Mutate extra caller metadata in-place onto the class-backed row
+			(
+				classSession.controller.pending[0] as MappedRow & { isDndShadowItem?: boolean }
+			).isDndShadowItem = true;
+
 			labelBox.value = "New";
 			flushSync();
 
+			// Class instance with private #id + in-place caller metadata survives sync and submits
 			expect(classSession.controller.pending[0]).toBeInstanceOf(MappedRow);
 			expect(classSession.controller.pending[0].id).toBe("a");
 			expect(classSession.controller.pending[0].format()).toBe("a:New");
+			expect(
+				(classSession.controller.pending[0] as MappedRow & { isDndShadowItem?: boolean })
+					.isDndShadowItem,
+			).toBe(true);
+			expect("isDndShadowItem" in classSession.controller.original[0]).toBe(false);
+
+			classSession.controller.move(0, 1);
+			await expect(classSession.controller.submit()).resolves.toBeUndefined();
 		} finally {
 			disposeClass();
 		}
@@ -402,16 +416,15 @@ describe("patterns/reorder-session.svelte.ts (compiled)", () => {
 		}
 	});
 
-	it("allows direct createLoadedReorderSession construction outside a component or effect root", async () => {
+	it("allows direct createLoadedReorderSession construction outside a component or effect root with reactive mapping", async () => {
 		const submitReorder = vi.fn(async () => undefined);
+		const labelBox = createReactiveBox("Old");
 		const session = createLoadedReorderSession({
 			loadItems: async () => ({
-				items: [
-					{ rowId: "a", label: "A" },
-					{ rowId: "b", label: "B" },
-				],
+				items: [{ rowId: "a" }, { rowId: "b" }],
 			}),
-			mapItems: (items) => items.map((item) => ({ id: item.rowId, label: item.label })),
+			mapItems: (items) =>
+				items.map((item) => ({ id: item.rowId, label: `${item.rowId}:${labelBox.value}` })),
 			submitReorder,
 			entityLabel: "item",
 			pushInfo: vi.fn(),
@@ -421,7 +434,25 @@ describe("patterns/reorder-session.svelte.ts (compiled)", () => {
 
 		await session.enter();
 		expect(session.reorderMode).toBe(true);
-		expect(session.controller.pending.map((item) => item.id)).toEqual(["a", "b"]);
+		expect(session.controller.pending).toEqual([
+			{ id: "a", label: "a:Old" },
+			{ id: "b", label: "b:Old" },
+		]);
+
+		labelBox.value = "New";
+		flushSync();
+		expect(session.reorderItems).toEqual([
+			{ id: "a", label: "a:New" },
+			{ id: "b", label: "b:New" },
+		]);
+		expect(session.controller.pending).toEqual([
+			{ id: "a", label: "a:New" },
+			{ id: "b", label: "b:New" },
+		]);
+		expect(session.controller.original).toEqual([
+			{ id: "a", label: "a:New" },
+			{ id: "b", label: "b:New" },
+		]);
 
 		session.controller.move(0, 1);
 		await session.controller.submit();

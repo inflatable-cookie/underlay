@@ -55,6 +55,44 @@ export interface ReorderController<T extends ReorderableItem> {
 	removeItems(idsToRemove: string[]): void;
 }
 
+function wrapInstanceWithExtras<T extends object>(
+	target: T,
+	extraDescriptors: PropertyDescriptorMap,
+): T {
+	const extraStore: Record<PropertyKey, unknown> = Object.defineProperties(
+		Object.create(null),
+		extraDescriptors,
+	);
+	return new Proxy(target, {
+		get(t, prop) {
+			if (Object.prototype.hasOwnProperty.call(extraStore, prop)) {
+				return extraStore[prop];
+			}
+			const value = Reflect.get(t, prop, t);
+			return typeof value === "function" ? value.bind(t) : value;
+		},
+		set(t, prop, value) {
+			if (Object.prototype.hasOwnProperty.call(extraStore, prop) || !(prop in t)) {
+				extraStore[prop] = value;
+				return true;
+			}
+			return Reflect.set(t, prop, value, t);
+		},
+		has(t, prop) {
+			return Object.prototype.hasOwnProperty.call(extraStore, prop) || prop in t;
+		},
+		ownKeys(t) {
+			return [...new Set([...Reflect.ownKeys(t), ...Reflect.ownKeys(extraStore)])];
+		},
+		getOwnPropertyDescriptor(t, prop) {
+			if (Object.prototype.hasOwnProperty.call(extraStore, prop)) {
+				return Object.getOwnPropertyDescriptor(extraStore, prop);
+			}
+			return Reflect.getOwnPropertyDescriptor(t, prop);
+		},
+	});
+}
+
 const controllerSyncHandlers = new WeakMap<
 	object,
 	(latestItems: readonly ReorderableItem[]) => void
@@ -186,23 +224,22 @@ export function createReorderController<T extends ReorderableItem>(
 		},
 	};
 
-	let prevMappedById = new Map<string, T>(initialItems.map((item) => [item.id, item]));
+	let prevMappedKeysById = new Map<string, Set<string>>(
+		initialItems.map((item) => [item.id, new Set(Object.keys(item))]),
+	);
 
 	controllerSyncHandlers.set(controller, (latestItems) => {
-		const byId = new Map((latestItems as readonly T[]).map((item) => [item.id, item]));
+		const latest = latestItems as readonly T[];
+		const byId = new Map(latest.map((item) => [item.id, item]));
 		const mergePendingRow = (item: T): T => {
 			const next = byId.get(item.id);
 			if (!next) return item;
 
-			const prevMapped = prevMappedById.get(item.id);
-			if (prevMapped === item) {
-				return next;
-			}
-
+			const prevKeys = prevMappedKeysById.get(item.id);
 			const extraDescriptors: PropertyDescriptorMap = {};
 			let hasExtra = false;
 			for (const key of Object.keys(item)) {
-				if (prevMapped && Object.prototype.hasOwnProperty.call(prevMapped, key)) {
+				if (prevKeys?.has(key)) {
 					continue;
 				}
 				if (Object.prototype.hasOwnProperty.call(next, key)) {
@@ -219,15 +256,19 @@ export function createReorderController<T extends ReorderableItem>(
 				return next;
 			}
 
-			return Object.defineProperties(Object.create(Object.getPrototypeOf(next)), {
-				...Object.getOwnPropertyDescriptors(next),
-				...extraDescriptors,
-			}) as T;
+			const proto = Object.getPrototypeOf(next);
+			if (proto === Object.prototype || proto === null) {
+				return Object.defineProperties(Object.create(proto), {
+					...Object.getOwnPropertyDescriptors(next),
+					...extraDescriptors,
+				}) as T;
+			}
+			return wrapInstanceWithExtras(next, extraDescriptors);
 		};
 
 		original = original.map((item) => byId.get(item.id) ?? item);
 		pending = pending.map(mergePendingRow);
-		prevMappedById = byId;
+		prevMappedKeysById = new Map(latest.map((item) => [item.id, new Set(Object.keys(item))]));
 	});
 
 	return controller;
