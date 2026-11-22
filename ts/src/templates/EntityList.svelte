@@ -1,6 +1,6 @@
 <script lang="ts" generics="T extends object = Record<string, unknown>">
   import { onDestroy, setContext, untrack } from "svelte";
-  import { useAuthenticatedData } from "../runtime/auth";
+  import { useAuthenticatedData, type AuthenticatedDataResult } from "../runtime/auth";
   import { useBatchActions } from "../patterns/batch-actions.svelte";
   import { useToasts } from "../runtime/feedback";
   import {
@@ -277,11 +277,37 @@
   });
   const currentQuery = $derived(listQuery.current);
 
-  const capabilities = useAuthenticatedData<ListCapabilities | null>(
-    (fetch, token) => capabilitiesLoader?.(fetch, token) ?? Promise.resolve(null),
-    { defaultValue: null }
-  );
-  const loadedCapabilities = $derived(capabilitiesLoader ? capabilities.data : null);
+  // Skip instantiating authenticated-data machinery while capabilitiesLoader is
+  // absent, and lazily initialize it if a loader arrives later (e.g. before auth readiness).
+  let capabilities = $state<AuthenticatedDataResult<ListCapabilities | null> | null>(null);
+  let cleanupCapabilities: (() => void) | null = null;
+
+  function initCapabilities() {
+    if (capabilities) return;
+    cleanupCapabilities = $effect.root(() => {
+      capabilities = useAuthenticatedData<ListCapabilities | null>(
+        (fetch, token) => capabilitiesLoader?.(fetch, token) ?? Promise.resolve(null),
+        { defaultValue: null }
+      );
+    });
+  }
+
+  if (untrack(() => capabilitiesLoader !== undefined && capabilitiesLoader !== null)) {
+    initCapabilities();
+  }
+
+  $effect(() => {
+    if (capabilitiesLoader) {
+      untrack(() => initCapabilities());
+    }
+  });
+
+  onDestroy(() => {
+    cleanupCapabilities?.();
+    cleanupCapabilities = null;
+  });
+
+  const loadedCapabilities = $derived(capabilitiesLoader ? (capabilities?.data ?? null) : null);
   let effectiveFilterConfigs = $derived(loadedCapabilities?.filters ?? filterConfigs);
   let effectiveQueryVariants = $derived(loadedCapabilities?.variants ?? queryVariants);
   let effectiveDefaultVariantId = $derived(loadedCapabilities?.defaultVariantId ?? defaultVariantId);
@@ -332,9 +358,9 @@
   };
 
   setContext(UNDERLAY_ENTITY_LIST_CONTEXT_KEY, entityListContext);
-  let lastNotifiedVisibleCount = $state<number | null>(null);
-  let lastNotifiedTotalCount = $state<number | null>(null);
-  let lastNotifiedReorderAvailability = $state<boolean | null>(null);
+  let lastNotifiedVisibleCount: number | null = null;
+  let lastNotifiedTotalCount: number | null = null;
+  let lastNotifiedReorderAvailability: boolean | null = null;
 
   // Batch actions. Declared before any derived that reads it (selectedIdsKey)
   // so no reader can observe it before initialisation.
@@ -800,8 +826,8 @@
   </Callout>
 {/snippet}
 
-{#if capabilitiesLoader && capabilities.error}
-  {@render retryCallout(capabilities.error, () => capabilities.refetch(), "Unable to load list options")}
+{#if capabilitiesLoader && capabilities?.error}
+  {@render retryCallout(capabilities.error, () => capabilities?.refetch() ?? Promise.resolve(), "Unable to load list options")}
 {/if}
 
 {#if title}

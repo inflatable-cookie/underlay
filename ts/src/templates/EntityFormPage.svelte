@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
   import type { HTMLFormAttributes } from "svelte/elements";
-  import { untrack } from "svelte";
+  import { onDestroy, untrack } from "svelte";
   import { setFormFieldErrors } from "./form-field-errors";
   import { useTemplateBackInfo } from "./template-back-info.svelte";
   import { resolveRedirectTo } from "../client/route-protection";
@@ -115,6 +115,11 @@
     prepare?.(event.formData);
   }
 
+  let disposed = false;
+  onDestroy(() => {
+    disposed = true;
+  });
+
   const spaEnhance = (node: HTMLFormElement) => {
     async function handleSubmit(event: SubmitEvent) {
       const submit = onSubmit;
@@ -123,7 +128,7 @@
       }
       event.preventDefault();
 
-      if (submitting) {
+      if (submitting || disposed) {
         return;
       }
 
@@ -137,20 +142,28 @@
         prepare?.(formData);
 
         const result = await submit(formData);
+        if (disposed) {
+          return;
+        }
 
         success = result.success;
         error = result.error ?? null;
         fieldErrors = result.fieldErrors ?? null;
         onResult?.(result);
 
-        if (result.success && result.redirectTo) {
+        if (!disposed && result.success && result.redirectTo) {
           await (navigate ?? defaultNavigate)(resolveRedirectTo(result.redirectTo));
         }
       } catch (e) {
+        if (disposed) {
+          return;
+        }
         error = e instanceof Error ? e.message : "An unexpected error occurred";
         success = false;
       } finally {
-        submitting = false;
+        if (!disposed) {
+          submitting = false;
+        }
       }
     }
 

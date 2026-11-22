@@ -50,21 +50,18 @@
     return !(child.excludeHrefs ?? []).some((excluded) => isActive(excluded));
   }
 
-  let linkClass = $derived(variant === "mobile" ? "admin-mobile-overlay__link" : "admin-nav__root");
-  let childrenClass = $derived(
-    variant === "mobile" ? "admin-mobile-overlay__children" : "admin-nav__children"
-  );
-  let sectionClass = $derived(variant === "desktop" ? "admin-nav__section" : "");
+  const isMobile = $derived(variant === "mobile");
 </script>
 
-<ul class={variant === "mobile" ? "admin-mobile-overlay__list" : "admin-nav__list"}>
+<ul class={isMobile ? "admin-mobile-overlay__list" : "admin-nav__list"}>
   {#each items as item}
     <li>
       {#if item.type === "link"}
         {@const active = isActive(item.href)}
         <a
           href={item.href}
-          class="{linkClass} admin-nav__root"
+          class="admin-nav__root"
+          class:admin-mobile-overlay__link={isMobile}
           class:admin-nav__link--active={active}
           aria-current={active ? "page" : undefined}
           onclick={handleChildClick}
@@ -76,14 +73,17 @@
           >
             <item.icon class="admin-nav__badge-icon" />
           </span>
-          <span class={variant === "desktop" ? "admin-nav__label" : ""}>{item.label}</span>
+          <span class:admin-nav__label={!isMobile}>{item.label}</span>
         </a>
       {:else}
         {@const controlsId = sectionListId(item.id)}
         {@const isExpanded = expandedSection === item.id}
         <button
           type="button"
-          class="{linkClass} {sectionClass} admin-nav__section-toggle"
+          class="admin-nav__section-toggle"
+          class:admin-nav__root={!isMobile}
+          class:admin-nav__section={!isMobile}
+          class:admin-mobile-overlay__link={isMobile}
           aria-expanded={isExpanded}
           aria-controls={isExpanded ? controlsId : undefined}
           onclick={() => toggleSection(item.id)}
@@ -95,11 +95,14 @@
           >
             <item.icon class="admin-nav__badge-icon" />
           </span>
-          <span class={variant === "desktop" ? "admin-nav__label" : ""}>{item.label}</span>
+          <span class:admin-nav__label={!isMobile}>{item.label}</span>
           <ChevronDown class="admin-nav__chevron" aria-hidden="true" />
         </button>
         {#if expandedSection === item.id}
-          <ul id={controlsId} class={childrenClass}>
+          <ul
+            id={controlsId}
+            class={isMobile ? "admin-mobile-overlay__children" : "admin-nav__children"}
+          >
             {#each item.children as child}
               {@const childActive = isChildActive(child)}
               <li>
@@ -125,7 +128,7 @@
 </ul>
 
 <style>
-  :global(.admin-nav__list) {
+  .admin-nav__list {
     list-style: none;
     padding: 0 0.9rem 0 0;
     margin: 0;
@@ -137,8 +140,8 @@
     min-height: 0;
   }
 
-  :global(.admin-nav__root),
-  :global(.admin-nav__section) {
+  .admin-nav__root,
+  .admin-nav__section {
     display: flex;
     align-items: center;
     box-sizing: border-box;
@@ -154,33 +157,33 @@
     text-align: left;
   }
 
-  :global(.admin-nav__root:hover),
-  :global(.admin-nav__section-toggle:hover) {
+  .admin-nav__root:hover,
+  .admin-nav__section-toggle:hover {
     background-color: var(--underlay-color-hover-bg);
   }
 
-  :global(.admin-nav__root:focus-visible),
-  :global(.admin-nav__section-toggle:focus-visible),
-  :global(.admin-nav__children a:focus-visible),
-  :global(.admin-mobile-overlay__link:focus-visible),
-  :global(.admin-mobile-overlay__children a:focus-visible) {
+  .admin-nav__root:focus-visible,
+  .admin-nav__section-toggle:focus-visible,
+  .admin-nav__children a:focus-visible,
+  .admin-mobile-overlay__link:focus-visible,
+  .admin-mobile-overlay__children a:focus-visible {
     outline: var(--underlay-focus-ring-width, 2px) solid var(--underlay-color-accent);
     outline-offset: var(--underlay-focus-ring-offset, 2px);
     opacity: 1;
   }
 
-  :global(.admin-nav__section-toggle) {
+  .admin-nav__section-toggle {
     justify-content: flex-start;
     opacity: 0.7;
     transition: opacity 0.15s ease;
   }
 
-  :global(.admin-nav__section-toggle:hover),
-  :global(.admin-nav__section-toggle[aria-expanded="true"]) {
+  .admin-nav__section-toggle:hover,
+  .admin-nav__section-toggle[aria-expanded="true"] {
     opacity: 1;
   }
 
-  :global(.admin-nav__chevron) {
+  .admin-nav__section-toggle :global(.admin-nav__chevron) {
     width: 1rem;
     height: 1rem;
     margin-left: auto;
@@ -189,11 +192,11 @@
     flex-shrink: 0;
   }
 
-  :global(.admin-nav__section-toggle[aria-expanded="true"] .admin-nav__chevron) {
+  .admin-nav__section-toggle[aria-expanded="true"] :global(.admin-nav__chevron) {
     transform: rotate(180deg);
   }
 
-  :global(.admin-nav__children) {
+  .admin-nav__children {
     list-style: none;
     padding-left: var(--underlay-space-5, 1.25rem);
     margin: 0.25rem 0 0.4rem;
@@ -202,7 +205,7 @@
     gap: 0.2rem;
   }
 
-  :global(.admin-nav__children a) {
+  .admin-nav__children a {
     display: flex;
     align-items: center;
     gap: var(--underlay-space-2, 0.5rem);
@@ -215,37 +218,38 @@
     text-decoration: none;
   }
 
-  :global(.admin-nav__children a:hover),
-  :global(.admin-nav__children a.admin-nav__link--active) {
+  .admin-nav__children a:hover,
+  .admin-nav__children a.admin-nav__link--active {
     opacity: 1;
     background-color: var(--underlay-color-hover-bg);
   }
 
-  :global(.admin-nav__child-icon) {
+  .admin-nav__children a :global(.admin-nav__child-icon),
+  .admin-mobile-overlay__children a :global(.admin-nav__child-icon) {
     width: 0.9rem;
     height: 0.9rem;
     flex-shrink: 0;
   }
 
-  :global(.admin-nav__children a.admin-nav__child-link--danger) {
+  .admin-nav__children a.admin-nav__child-link--danger {
     color: var(--underlay-color-danger-strong);
     opacity: 1;
   }
 
-  :global(.admin-nav__children a.admin-nav__child-link--danger:hover),
-  :global(.admin-nav__children a.admin-nav__child-link--danger:focus-visible),
-  :global(.admin-nav__children a.admin-nav__child-link--danger.admin-nav__link--active) {
+  .admin-nav__children a.admin-nav__child-link--danger:hover,
+  .admin-nav__children a.admin-nav__child-link--danger:focus-visible,
+  .admin-nav__children a.admin-nav__child-link--danger.admin-nav__link--active {
     color: var(--underlay-color-danger-strong);
     opacity: 1;
     background-color: var(--underlay-color-danger-bg);
   }
 
-  :global(.admin-nav__link--active) {
+  .admin-nav__link--active {
     background-color: var(--underlay-color-accent-tint-bg);
     font-weight: 550;
   }
 
-  :global(.admin-nav__badge) {
+  .admin-nav__badge {
     min-width: 1.5rem;
     min-height: 1.5rem;
     padding: 0.05rem;
@@ -257,29 +261,29 @@
     margin-right: 0.55rem;
   }
 
-  :global(.admin-nav__badge-icon) {
+  .admin-nav__badge :global(.admin-nav__badge-icon) {
     width: 0.95rem;
     height: 0.95rem;
     color: var(--underlay-admin-nav-badge-fg);
   }
 
-  :global(.admin-nav__badge--overview) {
+  .admin-nav__badge:global(.admin-nav__badge--overview) {
     background: var(--underlay-admin-nav-badge-overview);
   }
 
-  :global(.admin-nav__badge--users) {
+  .admin-nav__badge:global(.admin-nav__badge--users) {
     background: var(--underlay-admin-nav-badge-users);
   }
 
-  :global(.admin-nav__badge--media) {
+  .admin-nav__badge:global(.admin-nav__badge--media) {
     background: var(--underlay-admin-nav-badge-media);
   }
 
-  :global(.admin-nav__badge--system) {
+  .admin-nav__badge:global(.admin-nav__badge--system) {
     background: var(--underlay-admin-nav-badge-system);
   }
 
-  :global(.admin-mobile-overlay__list) {
+  .admin-mobile-overlay__list {
     list-style: none;
     padding: 0;
     margin: 0;
@@ -289,7 +293,7 @@
     flex: 1;
   }
 
-  :global(.admin-mobile-overlay__link) {
+  .admin-mobile-overlay__link {
     display: flex;
     align-items: center;
     justify-content: flex-start;
@@ -308,17 +312,17 @@
     transition: opacity 0.15s ease;
   }
 
-  :global(.admin-mobile-overlay__link:hover),
-  :global(.admin-mobile-overlay__link.admin-nav__link--active),
-  :global(.admin-mobile-overlay__link[aria-expanded="true"]) {
+  .admin-mobile-overlay__link:hover,
+  .admin-mobile-overlay__link.admin-nav__link--active,
+  .admin-mobile-overlay__link[aria-expanded="true"] {
     opacity: 1;
   }
 
-  :global(.admin-mobile-overlay__link:hover) {
+  .admin-mobile-overlay__link:hover {
     background: var(--underlay-color-hover-bg);
   }
 
-  :global(.admin-mobile-overlay__children) {
+  .admin-mobile-overlay__children {
     list-style: none;
     padding: 0.25rem 0 0.5rem 2.5rem;
     margin: 0;
@@ -327,7 +331,7 @@
     gap: 0.2rem;
   }
 
-  :global(.admin-mobile-overlay__children a) {
+  .admin-mobile-overlay__children a {
     display: flex;
     align-items: center;
     gap: var(--underlay-space-2, 0.5rem);
@@ -340,31 +344,31 @@
     transition: opacity 0.15s ease;
   }
 
-  :global(.admin-mobile-overlay__children a:hover),
-  :global(.admin-mobile-overlay__children a.admin-nav__link--active) {
+  .admin-mobile-overlay__children a:hover,
+  .admin-mobile-overlay__children a.admin-nav__link--active {
     background: var(--underlay-color-hover-bg);
     opacity: 1;
   }
 
-  :global(.admin-mobile-overlay__children a.admin-nav__child-link--danger) {
+  .admin-mobile-overlay__children a.admin-nav__child-link--danger {
     color: var(--underlay-color-danger-strong);
     opacity: 1;
   }
 
-  :global(.admin-mobile-overlay__children a.admin-nav__child-link--danger:hover),
-  :global(.admin-mobile-overlay__children a.admin-nav__child-link--danger:focus-visible),
-  :global(.admin-mobile-overlay__children a.admin-nav__child-link--danger.admin-nav__link--active) {
+  .admin-mobile-overlay__children a.admin-nav__child-link--danger:hover,
+  .admin-mobile-overlay__children a.admin-nav__child-link--danger:focus-visible,
+  .admin-mobile-overlay__children a.admin-nav__child-link--danger.admin-nav__link--active {
     color: var(--underlay-color-danger-strong);
     opacity: 1;
     background: var(--underlay-color-danger-bg);
   }
 
-  :global(.admin-mobile-overlay__link .admin-nav__chevron) {
+  .admin-mobile-overlay__link :global(.admin-nav__chevron) {
     width: 1.25rem;
     height: 1.25rem;
   }
 
-  :global(.admin-nav__label) {
+  .admin-nav__label {
     line-height: 1.2;
   }
 </style>

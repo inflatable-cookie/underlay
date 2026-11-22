@@ -44,4 +44,17 @@ describe("patterns/auth-workflows/ForgotPasswordFlow", () => {
 		expect(email.id).not.toBe("");
 		expect(email.id).not.toBe("forgot-password-email");
 	});
+
+	it("sanitizes unsafe loginHref values to /login", () => {
+		render(ForgotPasswordFlow, {
+			onRequestCode: vi.fn(async () => undefined),
+			onVerifyCode: vi.fn(async () => ({ resetToken: "token" })),
+			onResetPassword: vi.fn(async () => undefined),
+			fetchRequirements: vi.fn(async () => ({}) as any),
+			loginHref: "javascript:alert(1)",
+		});
+
+		const link = screen.getByRole("link", { name: "Back to login" });
+		expect(link.getAttribute("href")).toBe("/login");
+	});
 });

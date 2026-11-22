@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onDestroy } from "svelte";
-  import { Button, MediaThumbnail } from "@inflatable-cookie/poodle-svelte";
-  import { Select, TextInput } from "@inflatable-cookie/poodle-svelte";
+  import { Button, MediaThumbnail, Select, TextInput } from "@inflatable-cookie/poodle-svelte";
   import { useNightfireMedia, type NightfireMediaPickResult } from "./context";
 
   type MediaBlock = {
@@ -99,7 +98,7 @@
 
   function applySelection(result: NightfireMediaPickResult) {
     selectedMediaId = result.id;
-    selectedTitle = result.title;
+    selectedTitle = result.title || result.originalFilename || null;
     selectedThumbnailUrl = result.thumbnailUrl;
     selectedKind = result.kind;
     emit({ media_id: result.id });

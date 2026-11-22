@@ -50,11 +50,55 @@
     emailDisabledInEdit = false
   }: Props = $props();
 
+  const uid = $props.id();
+  const emailFieldId = `${uid}-user-email`;
+  const displayNameFieldId = `${uid}-user-display-name`;
+  const roleFieldId = `${uid}-user-role`;
+  const statusFieldId = `${uid}-user-status`;
+  const sendPasswordResetFieldId = `${uid}-user-send-password-reset`;
+
   let emailValue = $state(untrack(() => values.email ?? ""));
   let displayNameValue = $state(untrack(() => values.displayName ?? ""));
   let roleValue = $state(untrack(() => values.role ?? "user"));
   let statusValue = $state(untrack(() => values.status ?? "active"));
   let sendPasswordResetValue = $state(untrack(() => values.sendPasswordReset ?? true));
+
+  // Track last synced prop values in plain variables so async edit data updates
+  // populate the fields without clobbering user edits on unrelated parent re-renders.
+  let lastPropEmail = untrack(() => values.email ?? "");
+  let lastPropDisplayName = untrack(() => values.displayName ?? "");
+  let lastPropRole = untrack(() => values.role ?? "user");
+  let lastPropStatus = untrack(() => values.status ?? "active");
+  let lastPropSendPasswordReset = untrack(() => values.sendPasswordReset ?? true);
+
+  $effect(() => {
+    const nextEmail = values.email ?? "";
+    const nextDisplayName = values.displayName ?? "";
+    const nextRole = values.role ?? "user";
+    const nextStatus = values.status ?? "active";
+    const nextSendPasswordReset = values.sendPasswordReset ?? true;
+
+    if (nextEmail !== lastPropEmail) {
+      lastPropEmail = nextEmail;
+      emailValue = nextEmail;
+    }
+    if (nextDisplayName !== lastPropDisplayName) {
+      lastPropDisplayName = nextDisplayName;
+      displayNameValue = nextDisplayName;
+    }
+    if (nextRole !== lastPropRole) {
+      lastPropRole = nextRole;
+      roleValue = nextRole;
+    }
+    if (nextStatus !== lastPropStatus) {
+      lastPropStatus = nextStatus;
+      statusValue = nextStatus;
+    }
+    if (nextSendPasswordReset !== lastPropSendPasswordReset) {
+      lastPropSendPasswordReset = nextSendPasswordReset;
+      sendPasswordResetValue = nextSendPasswordReset;
+    }
+  });
 
   const editIntentItems = [
     { value: "save", label: "Save changes" },
@@ -90,7 +134,7 @@
 
 <FieldSet legend="User" columns={2}>
   <Field
-    id="user-email"
+    id={emailFieldId}
     label="Email"
     error={errors?.email ?? null}
     validationState={validationState(errors?.email)}
@@ -98,7 +142,7 @@
   >
     {#snippet control({ describedBy, validationState })}
       <TextInput
-        id="user-email"
+        id={emailFieldId}
         name="email"
         type="email"
         inputMode="email"
@@ -114,14 +158,14 @@
   </Field>
 
   <Field
-    id="user-display-name"
+    id={displayNameFieldId}
     label="Display Name"
     error={errors?.displayName ?? null}
     validationState={validationState(errors?.displayName)}
   >
     {#snippet control({ describedBy, validationState })}
       <TextInput
-        id="user-display-name"
+        id={displayNameFieldId}
         name="displayName"
         value={displayNameValue}
         describedBy={describedBy}
@@ -136,7 +180,7 @@
 
 <FieldSet legend="Access" columns={2}>
   <Field
-    id="user-role"
+    id={roleFieldId}
     label="Role"
     error={errors?.role ?? null}
     validationState={validationState(errors?.role)}
@@ -144,7 +188,7 @@
   >
     {#snippet control({ describedBy })}
       <Select
-        id="user-role"
+        id={roleFieldId}
         name="role"
         value={roleValue}
         describedBy={describedBy}
@@ -156,7 +200,7 @@
   </Field>
 
   <Field
-    id="user-status"
+    id={statusFieldId}
     label="Status"
     error={errors?.status ?? null}
     validationState={validationState(errors?.status)}
@@ -164,7 +208,7 @@
   >
     {#snippet control({ describedBy })}
       <Select
-        id="user-status"
+        id={statusFieldId}
         name="status"
         value={statusValue}
         describedBy={describedBy}
@@ -179,7 +223,7 @@
 {#if mode === "create"}
   <FieldSet legend="Onboarding">
     <Field
-      id="user-send-password-reset"
+      id={sendPasswordResetFieldId}
       label="Send password reset email"
       hint="Sends a password reset email so the user can set an initial password."
       error={errors?.sendPasswordReset ?? null}
@@ -194,7 +238,7 @@
         <div class="underlay-user-form__switch-row">
           <span class="underlay-user-form__switch-label">No</span>
           <Switch
-            id="user-send-password-reset"
+            id={sendPasswordResetFieldId}
             name="sendPasswordReset-switch"
             checked={sendPasswordResetValue}
             describedBy={describedBy}
