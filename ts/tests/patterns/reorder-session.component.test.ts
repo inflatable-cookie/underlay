@@ -190,7 +190,7 @@ describe("patterns/reorder-session.svelte.ts (compiled)", () => {
 		}
 	});
 
-	it("preserves reactive mapItems updates in createLoadedReorderSession after enter()", async () => {
+	it("preserves reactive mapItems updates in createLoadedReorderSession and active controller after enter()", async () => {
 		const labelBox = createReactiveBox("Old");
 
 		let session!: ReturnType<
@@ -199,9 +199,10 @@ describe("patterns/reorder-session.svelte.ts (compiled)", () => {
 		const dispose = createEffectRoot(() => {
 			session = createLoadedReorderSession({
 				loadItems: async () => ({
-					items: [{ rowId: "a" }],
+					items: [{ rowId: "a" }, { rowId: "b" }],
 				}),
-				mapItems: (items) => items.map((item) => ({ id: item.rowId, label: labelBox.value })),
+				mapItems: (items) =>
+					items.map((item) => ({ id: item.rowId, label: `${item.rowId}:${labelBox.value}` })),
 				submitReorder: vi.fn(async () => undefined),
 				entityLabel: "item",
 				pushInfo: vi.fn(),
@@ -212,10 +213,33 @@ describe("patterns/reorder-session.svelte.ts (compiled)", () => {
 
 		try {
 			await session.enter();
-			expect(session.reorderItems).toEqual([{ id: "a", label: "Old" }]);
+			expect(session.reorderItems).toEqual([
+				{ id: "a", label: "a:Old" },
+				{ id: "b", label: "b:Old" },
+			]);
+
+			// Reorder pending items before updating the reactive label
+			session.controller.move(0, 1);
+			expect(session.controller.pending).toEqual([
+				{ id: "b", label: "b:Old" },
+				{ id: "a", label: "a:Old" },
+			]);
 
 			labelBox.value = "New";
-			expect(session.reorderItems).toEqual([{ id: "a", label: "New" }]);
+			expect(session.reorderItems).toEqual([
+				{ id: "a", label: "a:New" },
+				{ id: "b", label: "b:New" },
+			]);
+			// Active controller retains pending ID order [b, a] while reflecting updated labels
+			expect(session.controller.pending).toEqual([
+				{ id: "b", label: "b:New" },
+				{ id: "a", label: "a:New" },
+			]);
+			expect(session.controller.original).toEqual([
+				{ id: "a", label: "a:New" },
+				{ id: "b", label: "b:New" },
+			]);
+			expect(session.controller.isDirty).toBe(true);
 		} finally {
 			dispose();
 		}

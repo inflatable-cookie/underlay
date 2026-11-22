@@ -68,16 +68,12 @@ export function createPaginationController<T>(
 	let requestSeq = 0;
 	let resetSeq = 0;
 	let _inFlight: Promise<boolean> | null = null;
-	let _inFlightParams: {
-		cursor: string | null;
-		direction: "forward" | "backward";
-		limit: number;
-	} | null = null;
 	let pendingFetch: {
 		cursor: string | null;
 		direction: "forward" | "backward";
 		promise: Promise<boolean>;
 		resolve: (value: boolean) => void;
+		reject: (reason?: unknown) => void;
 	} | null = null;
 
 	const markDisposed = () => {
@@ -106,25 +102,18 @@ export function createPaginationController<T>(
 
 		if (_inFlight) {
 			if (fetchOptions.supersede) {
-				if (
-					!pendingFetch &&
-					_inFlightParams &&
-					_inFlightParams.cursor === cursor &&
-					_inFlightParams.direction === direction &&
-					_inFlightParams.limit === pageSize
-				) {
-					return _inFlight;
-				}
 				requestSeq++;
 				if (pendingFetch) {
 					pendingFetch.cursor = cursor;
 					pendingFetch.direction = direction;
 				} else {
 					let resolve = (_value: boolean) => {};
-					const promise = new Promise<boolean>((settle) => {
-						resolve = settle;
+					let reject = (_reason?: unknown) => {};
+					const promise = new Promise<boolean>((res, rej) => {
+						resolve = res;
+						reject = rej;
 					});
-					pendingFetch = { cursor, direction, promise, resolve };
+					pendingFetch = { cursor, direction, promise, resolve, reject };
 				}
 				return pendingFetch.promise;
 			}
@@ -191,13 +180,11 @@ export function createPaginationController<T>(
 		})();
 
 		_inFlight = run;
-		_inFlightParams = { cursor, direction, limit: pageSize };
 		try {
 			return await run;
 		} finally {
 			if (_inFlight === run) {
 				_inFlight = null;
-				_inFlightParams = null;
 			}
 			if (!disposed) {
 				if (seq === requestSeq) {
@@ -211,9 +198,10 @@ export function createPaginationController<T>(
 				if (pendingFetch && !_inFlight) {
 					const next = pendingFetch;
 					pendingFetch = null;
-					void doFetch(next.cursor, next.direction)
-						.then((result) => next.resolve(result))
-						.catch(() => next.resolve(false));
+					void doFetch(next.cursor, next.direction).then(
+						(result) => next.resolve(result),
+						(cause) => next.reject(cause),
+					);
 				}
 			}
 		}

@@ -76,6 +76,13 @@ describe("patterns/pagination.svelte.ts", () => {
 				prevCursor: null,
 				hasMore: false,
 				total: 1,
+			})
+			.mockResolvedValueOnce({
+				data: [{ id: "d" }],
+				nextCursor: null,
+				prevCursor: null,
+				hasMore: false,
+				total: 1,
 			});
 
 		const controller = mod.createPaginationController(fetcher as any, {
@@ -108,7 +115,7 @@ describe("patterns/pagination.svelte.ts", () => {
 		expect(fetcher).toHaveBeenCalledTimes(3);
 
 		await controller.reset();
-		expect(fetcher).toHaveBeenCalledTimes(3);
+		expect(fetcher).toHaveBeenCalledTimes(4);
 
 		delete (globalThis as any).localStorage;
 	});

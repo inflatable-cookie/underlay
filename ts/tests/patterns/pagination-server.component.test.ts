@@ -397,4 +397,90 @@ describe("patterns/pagination-server.svelte.ts (compiled)", () => {
 			dispose();
 		}
 	});
+
+	it("fences a matching first-page load and refetches when reset() is called after a filter change", async () => {
+		const oldFilterGate = deferred<CursorPaginatedResponse<Item>>();
+		const newFilterGate = deferred<CursorPaginatedResponse<Item>>();
+		let activeFilter = "old";
+		const seenFilters: string[] = [];
+
+		const fetcher = vi.fn(async () => {
+			seenFilters.push(activeFilter);
+			return seenFilters.length === 1 ? oldFilterGate.promise : newFilterGate.promise;
+		});
+
+		let controller!: ReturnType<typeof createPaginationController<Item>>;
+		const dispose = createEffectRoot(() => {
+			controller = createPaginationController<Item>(fetcher, {
+				getToken: () => "tok-1",
+				pageSize: 10,
+			});
+		});
+
+		try {
+			const initialLoad = controller.tryFetch(false, { id: "u1" });
+			activeFilter = "new";
+			const resetting = controller.reset();
+
+			// Old-filter response resolves: must be fenced and NOT published
+			oldFilterGate.resolve(pageResponse(["old-row"], { total: 1 }));
+			await initialLoad;
+			await Promise.resolve();
+
+			expect(seenFilters).toEqual(["old", "new"]);
+			expect(controller.items).toEqual([]);
+
+			// New-filter response resolves: published cleanly
+			newFilterGate.resolve(pageResponse(["new-row"], { total: 1 }));
+			await resetting;
+
+			expect(controller.items).toEqual([{ id: "new-row" }]);
+			expect(controller.loading).toBe(false);
+		} finally {
+			dispose();
+		}
+	});
+
+	it("propagates a rejection from a queued refresh() when getToken() throws", async () => {
+		const page2Gate = deferred<CursorPaginatedResponse<Item>>();
+		let shouldThrow = false;
+		let callCount = 0;
+
+		const fetcher = vi.fn(async () => {
+			callCount += 1;
+			if (callCount === 1) {
+				return pageResponse(["p1"], { nextCursor: "p2", hasMore: true, total: 2 });
+			}
+			return page2Gate.promise;
+		});
+
+		let controller!: ReturnType<typeof createPaginationController<Item>>;
+		const dispose = createEffectRoot(() => {
+			controller = createPaginationController<Item>(fetcher, {
+				getToken: () => {
+					if (shouldThrow) {
+						throw new Error("queued token failure");
+					}
+					return "tok-1";
+				},
+				pageSize: 1,
+			});
+		});
+
+		try {
+			await controller.tryFetch(false, { id: "u1" });
+
+			const goingNext = controller.nextPage();
+			const queuedRefresh = controller.refresh();
+
+			shouldThrow = true;
+			page2Gate.resolve(pageResponse(["p2"], { prevCursor: "p1", hasMore: false, total: 2 }));
+			await goingNext;
+
+			await expect(queuedRefresh).rejects.toThrow("queued token failure");
+			expect(controller.loading).toBe(false);
+		} finally {
+			dispose();
+		}
+	});
 });
