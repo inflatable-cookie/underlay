@@ -54,7 +54,7 @@
 </script>
 
 <ul class={isMobile ? "admin-mobile-overlay__list" : "admin-nav__list"}>
-  {#each items as item}
+  {#each items as item (item.type === "section" ? `section:${item.id}` : `link:${item.href}`)}
     <li>
       {#if item.type === "link"}
         {@const active = isActive(item.href)}
@@ -103,7 +103,7 @@
             id={controlsId}
             class={isMobile ? "admin-mobile-overlay__children" : "admin-nav__children"}
           >
-            {#each item.children as child}
+            {#each item.children as child (`${child.href}:${child.label}`)}
               {@const childActive = isChildActive(child)}
               <li>
                 <a

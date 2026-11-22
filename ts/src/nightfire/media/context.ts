@@ -25,6 +25,14 @@ export interface NightfireMediaContext {
 	 * Resolves with the selected media item, or `null` if the user cancels.
 	 */
 	pickMedia: (options?: { filterKind?: string }) => Promise<NightfireMediaPickResult | null>;
+	/**
+	 * Resolve stored media metadata (title, thumbnail, kind) by id.
+	 *
+	 * Used to hydrate blocks that are reopened with an existing `media_id` so the
+	 * editor shows real metadata instead of a raw UUID. Resolves with the same
+	 * shape as `pickMedia`, or `null` when the media no longer exists.
+	 */
+	resolveMedia?: (id: string) => Promise<NightfireMediaPickResult | null>;
 }
 
 const CONTEXT_KEY = Symbol("underlay-nightfire-media");

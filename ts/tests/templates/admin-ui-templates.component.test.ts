@@ -1,13 +1,28 @@
 // @vitest-environment jsdom
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/svelte";
+import { createRawSnippet } from "svelte";
 
 import type { ToastStore } from "../../src/patterns/toasts";
+import { clearNavigationContext, pushNavigationContext } from "../../src/patterns/navigation";
+import AdminDashboardPage from "../../src/templates/AdminDashboardPage.svelte";
 import AdminUserMenu from "../../src/templates/AdminUserMenu.svelte";
 import UserForm from "../../src/templates/UserForm.svelte";
 import AdminNavListHarness from "../fixtures/AdminNavListHarness.svelte";
 import EntityTrashPageHarness from "../fixtures/EntityTrashPageHarness.svelte";
 import EntityActionsMenuHarness from "../fixtures/EntityActionsMenuHarness.svelte";
+
+const navigateBackMock = vi.hoisted(() => vi.fn(() => "/"));
+
+vi.mock("../../src/client/navigation", async (importOriginal) => ({
+	...(await importOriginal<typeof import("../../src/client/navigation")>()),
+	navigateBack: navigateBackMock,
+}));
+
+beforeEach(() => {
+	clearNavigationContext();
+	navigateBackMock.mockClear();
+});
 
 function createToastStoreSpy(): ToastStore & { push: ReturnType<typeof vi.fn> } {
 	return {
@@ -85,6 +100,48 @@ describe("templates/AdminNavList", () => {
 		pagesLink.addEventListener("click", (event) => event.preventDefault(), { once: true });
 		await fireEvent.click(pagesLink);
 		expect(onNavigate).toHaveBeenCalledTimes(1);
+	});
+});
+
+describe("templates/AdminDashboardPage", () => {
+	it("renders the caller's backHref when no navigation context exists", async () => {
+		render(AdminDashboardPage, { backHref: "/overview", backLabel: "Back to overview" });
+
+		const backLink = await screen.findByRole("link", { name: /back to overview/i });
+		expect(backLink.getAttribute("href")).toBe("/overview");
+	});
+
+	it("adopts contextual back info once navigation context is available", async () => {
+		pushNavigationContext({ label: "Users", href: "/users?page=2", type: "list" });
+
+		render(AdminDashboardPage, { backHref: "/fallback", backLabel: "Back" });
+
+		const backLink = await screen.findByRole("link", { name: /back to users/i });
+		expect(backLink.getAttribute("href")).toBe("/users?page=2");
+	});
+
+	it("renders nothing back-related when no backHref is supplied", () => {
+		render(AdminDashboardPage, { title: "Dashboard" });
+		expect(screen.queryByRole("link")).toBeNull();
+	});
+
+	it("keys and renders each configured section", () => {
+		const content = (text: string) => createRawSnippet(() => ({ render: () => `<p>${text}</p>` }));
+
+		render(AdminDashboardPage, {
+			title: "Dashboard",
+			sections: [
+				{ id: "stats", title: "Stats", content: content("stats section") },
+				{ id: "activity", title: "Activity", content: content("activity section") },
+			],
+		});
+
+		expect(screen.getByText("Stats")).toBeTruthy();
+		expect(screen.getByText("Activity")).toBeTruthy();
+		expect(screen.getByText("stats section")).toBeTruthy();
+		expect(screen.getByText("activity section")).toBeTruthy();
+		expect(document.querySelector('[data-section="stats"]')).toBeTruthy();
+		expect(document.querySelector('[data-section="activity"]')).toBeTruthy();
 	});
 });
 
@@ -230,6 +287,39 @@ describe("templates/AdminUserMenu", () => {
 });
 
 describe("templates/UserForm", () => {
+	it("rejects malformed email addresses instead of only checking for an @", async () => {
+		render(UserForm, { mode: "create" });
+
+		const emailInput = screen.getByLabelText(/^Email/) as HTMLInputElement;
+		const createButton = screen.getByRole("button", { name: "Create user" }) as HTMLButtonElement;
+		expect(createButton.disabled).toBe(true);
+
+		for (const invalid of ["@", "a@", "@b", "a b@example.com", "a@example", "a@@example.com"]) {
+			await fireEvent.input(emailInput, { target: { value: invalid } });
+			expect(createButton.disabled, `expected ${invalid} to be rejected`).toBe(true);
+		}
+
+		await fireEvent.input(emailInput, { target: { value: "person@example.com" } });
+		expect(createButton.disabled).toBe(false);
+	});
+
+	it("navigates back through a sanitized cancel target", async () => {
+		render(UserForm, { mode: "edit", cancelHref: "/users" });
+		await fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+		expect(navigateBackMock).toHaveBeenCalledWith("/users");
+	});
+
+	it("never forwards an unsafe cancelHref to navigation", async () => {
+		render(UserForm, { mode: "edit", cancelHref: "javascript:alert(1)" });
+		await fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+		expect(navigateBackMock).toHaveBeenCalledWith(undefined);
+	});
+
+	it("falls back to context navigation when no cancelHref is given", async () => {
+		render(UserForm, { mode: "edit" });
+		await fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+		expect(navigateBackMock).toHaveBeenCalledWith(undefined);
+	});
 	it("scopes field ids per instance using $props.id() instead of hardcoded globals", () => {
 		const first = render(UserForm, { mode: "create" });
 		const second = render(UserForm, { mode: "create" });

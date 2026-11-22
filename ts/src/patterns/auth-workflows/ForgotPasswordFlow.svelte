@@ -20,6 +20,7 @@
    * ```
    */
 
+  import { onDestroy } from "svelte";
   import { Button, Callout, Field, FormActions, TextInput } from "@inflatable-cookie/poodle-svelte";
   import type { PasswordRequirementsPolicy } from "@inflatable-cookie/poodle-svelte";
   import { resolveRedirectTo } from "../../client/route-protection";
@@ -70,6 +71,27 @@
   const emailFieldId = `${uid}-email`;
   const safeLoginHref = $derived(resolveRedirectTo(loginHref, "/login"));
 
+  let disposed = false;
+
+  onDestroy(() => {
+    disposed = true;
+  });
+
+  /**
+   * Decide whether a request failure is a real outage the user must be told
+   * about, rather than an expected response that must stay indistinguishable
+   * from a successful send (account enumeration).
+   *
+   * `UnderlayHttpError` reports network failures as `status: 0`; anything
+   * without a numeric status is an unexpected failure and is treated as an
+   * outage rather than as a successful send.
+   */
+  function isTransportFailure(e: unknown): boolean {
+    const status = (e as { status?: unknown } | null)?.status;
+    if (typeof status !== "number") return true;
+    return status === 0 || status === 429 || status >= 500;
+  }
+
   // Step 1: Request password reset code
   async function handleRequestCode(event: SubmitEvent) {
     event.preventDefault();
@@ -78,18 +100,28 @@
     loading = true;
 
     try {
-      if (!email.trim()) {
+      const requestedEmail = email.trim();
+      if (!requestedEmail) {
         error = "Email is required";
         return;
       }
 
-      await onRequestCode(email.trim());
+      await onRequestCode(requestedEmail);
+      if (disposed) return;
       step = "verify";
     } catch (e) {
-      // Always move to verify step - don't reveal if email exists
+      if (disposed) return;
+      if (isTransportFailure(e)) {
+        // Real outage: say so instead of pretending the code was sent.
+        // The message is fixed text so it cannot leak whether the address exists.
+        error = "We couldn't send a reset code right now. Check your connection and try again.";
+        return;
+      }
+      // Expected 4xx (including 404 for unknown accounts): advance to the
+      // verify step so the flow never reveals whether the email exists.
       step = "verify";
     } finally {
-      loading = false;
+      if (!disposed) loading = false;
     }
   }
 
@@ -101,12 +133,14 @@
 
     try {
       const result = await onVerifyCode(email.trim(), inputCode);
+      if (disposed) return;
       resetToken = result.resetToken;
       step = "reset";
     } catch (e) {
+      if (disposed) return;
       error = e instanceof Error ? e.message : "Invalid or expired code";
     } finally {
-      loading = false;
+      if (!disposed) loading = false;
     }
   }
 
@@ -118,11 +152,13 @@
 
     try {
       await onResetPassword(resetToken, newPassword);
+      if (disposed) return;
       step = "success";
     } catch (e) {
+      if (disposed) return;
       error = e instanceof Error ? e.message : "Failed to reset password";
     } finally {
-      loading = false;
+      if (!disposed) loading = false;
     }
   }
 
@@ -134,11 +170,12 @@
 
     try {
       await onRequestCode(email.trim());
+      if (disposed) return;
       code = "";
     } catch (e) {
       // Silently handle - don't reveal if email exists
     } finally {
-      loading = false;
+      if (!disposed) loading = false;
     }
   }
 

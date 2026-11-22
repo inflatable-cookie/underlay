@@ -61,22 +61,51 @@
 
   const resolvedSearch = $derived(search ?? localFns?.search);
   const resolvedSuggestions = $derived(suggestions ?? localFns?.suggest);
+
+  // Field only publishes an error id through `describedBy` when it is told the
+  // control is invalid, so mirror the error into the validation state.
+  const validationState = $derived(error ? "invalid" : "none");
 </script>
 
-<PoodleField {id} {label} {error} {required}>
-  <input type="hidden" {name} value={value ?? ""} {required} />
-  {#if resolvedSearch}
-    <RelationSelector
-      label={placeholder}
-      {value}
-      {initialSelection}
-      onChange={(val) => onChange?.(val ?? "")}
-      search={resolvedSearch}
-      suggestions={resolvedSuggestions}
-      {selectionHistory}
-      {placeholder}
-      {disabled}
-      {required}
-    />
-  {/if}
+<PoodleField {id} {label} {error} {required} {validationState}>
+  {#snippet control({ describedBy, validationState })}
+    <input type="hidden" {name} value={value ?? ""} />
+    {#if resolvedSearch}
+      <!--
+        RelationSelector renders its own composite trigger, so the field id and
+        the error/hint wiring from Field are attached to the control group
+        instead of the hidden input, which HTML constraint validation and
+        assistive technology ignore.
+      -->
+      <div
+        {id}
+        class="underlay-entity-relation-field__control"
+        role="group"
+        aria-label={label}
+        aria-describedby={describedBy ?? undefined}
+        data-validation-state={validationState}
+      >
+        <RelationSelector
+          label={placeholder}
+          {value}
+          {initialSelection}
+          onChange={(val) => onChange?.(val ?? "")}
+          search={resolvedSearch}
+          suggestions={resolvedSuggestions}
+          {selectionHistory}
+          {placeholder}
+          {disabled}
+          {required}
+        />
+      </div>
+    {/if}
+  {/snippet}
 </PoodleField>
+
+<style>
+  .underlay-entity-relation-field__control {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+</style>
