@@ -74,3 +74,9 @@ fn test_allowlist_override() {
     assert!(config.is_content_type_allowed("image/svg+xml"));
     assert!(!config.is_content_type_allowed("image/png"));
 }
+
+#[test]
+fn test_max_file_size_mb_saturates_on_overflow() {
+    let config = BlobUploadConfig::default().max_file_size_mb(u64::MAX);
+    assert_eq!(config.max_file_size_bytes_limit(), u64::MAX);
+}

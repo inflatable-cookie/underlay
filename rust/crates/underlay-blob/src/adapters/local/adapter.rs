@@ -2,7 +2,9 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 use async_trait::async_trait;
-use chrono::{DateTime, Utc};
+#[cfg(not(unix))]
+use chrono::DateTime;
+use chrono::Utc;
 use tokio::fs;
 use tokio::io::AsyncWriteExt;
 
@@ -184,11 +186,7 @@ impl BlobAdapter for LocalAdapter {
             .upload_url_base_ref()
             .unwrap_or(self.config.serve_url_base());
 
-        let upload_url = format!(
-            "{}/{}",
-            upload_base.trim_end_matches('/'),
-            request.key.as_str()
-        );
+        let upload_url = crate::adapter::join_public_url(upload_base, request.key.as_str());
 
         let expires_at = Utc::now()
             + chrono::Duration::from_std(request.expires_in)
@@ -246,37 +244,43 @@ impl BlobAdapter for LocalAdapter {
     }
 
     async fn head(&self, key: &str) -> BlobResult<ObjectInfo> {
-        let path = self.path_for_key(key)?;
+        #[cfg(unix)]
+        {
+            validate_local_object_key(key)?;
+            let stat = super::bounded::head_pinned(&self.base_dir, key).await?;
+            Ok(ObjectInfo {
+                key: key.to_string(),
+                size: stat.size,
+                content_type: guess_content_type(key),
+                etag: None,
+                last_modified: stat.last_modified,
+                metadata: stat.metadata,
+            })
+        }
+        #[cfg(not(unix))]
+        {
+            let path = self.path_for_key(key)?;
 
-        let metadata = fs::metadata(&path).await.map_err(|e| {
-            if e.kind() == std::io::ErrorKind::NotFound {
-                BlobError::NotFound(key.to_string())
-            } else {
-                BlobError::IoError(e.to_string())
-            }
-        })?;
+            let metadata = fs::metadata(&path).await.map_err(|e| {
+                if e.kind() == std::io::ErrorKind::NotFound {
+                    BlobError::NotFound(key.to_string())
+                } else {
+                    BlobError::IoError(e.to_string())
+                }
+            })?;
 
-        let last_modified = metadata.modified().ok().map(DateTime::<Utc>::from);
-        let content_type = guess_content_type(key);
-        let object_metadata = {
-            #[cfg(unix)]
-            {
-                super::xattr::read_owned_metadata(&path)
-            }
-            #[cfg(not(unix))]
-            {
-                HashMap::new()
-            }
-        };
+            let last_modified = metadata.modified().ok().map(DateTime::<Utc>::from);
+            let content_type = guess_content_type(key);
 
-        Ok(ObjectInfo {
-            key: key.to_string(),
-            size: metadata.len(),
-            content_type,
-            etag: None,
-            last_modified,
-            metadata: object_metadata,
-        })
+            Ok(ObjectInfo {
+                key: key.to_string(),
+                size: metadata.len(),
+                content_type,
+                etag: None,
+                last_modified,
+                metadata: HashMap::new(),
+            })
+        }
     }
 
     async fn get_bytes(&self, key: &str) -> BlobResult<Vec<u8>> {

@@ -71,25 +71,19 @@ impl OutboxBackend for MemOutbox {
         let event_id = event.id;
         let event_type = event.event_type.clone();
         let occurred_at = event.occurred_at;
-        match tokio::time::timeout(timeout, async { handler(event).await }).await {
-            Ok(Ok(())) => {
+        match invoke_handler_guarded(timeout, handler, event).await {
+            Ok(()) => {
                 let mut guard = self.events.lock().unwrap();
                 if let Some((_, processed)) = guard.iter_mut().find(|(e, _)| e.id == event_id) {
                     *processed = true;
                 }
                 Ok(ProcessOneOutcome::Succeeded(event_id))
             }
-            Ok(Err(error)) => Ok(ProcessOneOutcome::Failed {
+            Err(error) => Ok(ProcessOneOutcome::Failed {
                 event_id,
                 event_type,
                 occurred_at,
-                error: error.to_string(),
-            }),
-            Err(_) => Ok(ProcessOneOutcome::Failed {
-                event_id,
-                event_type,
-                occurred_at,
-                error: format!("handler timed out after {timeout:?}"),
+                error,
             }),
         }
     }
@@ -463,4 +457,159 @@ async fn notifier_until_shutdown_interrupts_idle_wait() {
         .unwrap();
 
     assert_eq!(start.elapsed(), Duration::from_secs(1));
+}
+
+#[tokio::test(start_paused = true)]
+async fn panicking_outbox_handler_is_isolated_backed_off_and_does_not_kill_processor() {
+    let outbox = MemOutbox::default();
+    let sync_panic_id = outbox.push("panic.sync");
+    let async_panic_id = outbox.push("panic.async");
+    let healthy_id = outbox.push("healthy.event");
+
+    let processor = OutboxProcessor::new(
+        OutboxConfig::default()
+            .with_failure_backoff(Duration::from_secs(10))
+            .with_max_failure_backoff(Duration::from_secs(60)),
+    );
+
+    let should_panic = Arc::new(AtomicBool::new(true));
+    let panic_attempts = Arc::new(AtomicUsize::new(0));
+
+    let handler = {
+        let should_panic = Arc::clone(&should_panic);
+        let panic_attempts = Arc::clone(&panic_attempts);
+        move |event: OutboxEvent| {
+            let should_panic = Arc::clone(&should_panic);
+            let panic_attempts = Arc::clone(&panic_attempts);
+            if event.event_type == "panic.sync" && should_panic.load(Ordering::SeqCst) {
+                panic_attempts.fetch_add(1, Ordering::SeqCst);
+                panic!("sync outbox panic");
+            }
+            async move {
+                if event.event_type == "panic.async" && should_panic.load(Ordering::SeqCst) {
+                    panic_attempts.fetch_add(1, Ordering::SeqCst);
+                    tokio::task::yield_now().await;
+                    panic!("async outbox panic");
+                }
+                Ok(())
+            }
+        }
+    };
+
+    let mut drain_cursor = None;
+    let report = processor
+        .process_batch_with(
+            &outbox,
+            &handler,
+            pin!(future::pending::<()>()),
+            &mut drain_cursor,
+        )
+        .await
+        .expect("panicking handler must not crash outbox processor");
+
+    assert_eq!(report.processed, 1);
+    assert_eq!(panic_attempts.load(Ordering::SeqCst), 2);
+    assert_eq!(outbox.processed_ids(), vec![healthy_id]);
+
+    // While backed off, neither panicking event is re-run.
+    drain_cursor = None;
+    let report = processor
+        .process_batch_with(
+            &outbox,
+            &handler,
+            pin!(future::pending::<()>()),
+            &mut drain_cursor,
+        )
+        .await
+        .unwrap();
+    assert_eq!(report.processed, 0);
+    assert_eq!(panic_attempts.load(Ordering::SeqCst), 2);
+
+    // After backoff expires and handler stops panicking, both events succeed.
+    tokio::time::advance(Duration::from_secs(10)).await;
+    should_panic.store(false, Ordering::SeqCst);
+    drain_cursor = None;
+    let report = processor
+        .process_batch_with(
+            &outbox,
+            &handler,
+            pin!(future::pending::<()>()),
+            &mut drain_cursor,
+        )
+        .await
+        .unwrap();
+    assert_eq!(report.processed, 2);
+    assert_eq!(
+        outbox.processed_ids(),
+        vec![sync_panic_id, async_panic_id, healthy_id]
+    );
+}
+
+#[tokio::test(start_paused = true)]
+async fn panicking_drop_on_handler_timeout_is_isolated_and_enters_backoff() {
+    struct PanicOnDrop(bool);
+
+    impl Drop for PanicOnDrop {
+        fn drop(&mut self) {
+            if self.0 {
+                panic!("handler cleanup panicked on cancellation");
+            }
+        }
+    }
+
+    let outbox = MemOutbox::default();
+    let _timed_out_id = outbox.push("timeout.drop_panic");
+    let healthy_id = outbox.push("healthy.event");
+
+    let processor = OutboxProcessor::new(
+        OutboxConfig::default()
+            .with_handler_timeout(Duration::from_millis(50))
+            .with_failure_backoff(Duration::from_secs(10))
+            .with_max_failure_backoff(Duration::from_secs(60)),
+    );
+
+    let attempts = Arc::new(AtomicUsize::new(0));
+    let handler = {
+        let attempts = Arc::clone(&attempts);
+        move |event: OutboxEvent| {
+            let attempts = Arc::clone(&attempts);
+            async move {
+                if event.event_type == "timeout.drop_panic" {
+                    attempts.fetch_add(1, Ordering::SeqCst);
+                    let _guard = PanicOnDrop(true);
+                    tokio::time::sleep(Duration::from_secs(5)).await;
+                }
+                Ok(())
+            }
+        }
+    };
+
+    let mut drain_cursor = None;
+    let report = processor
+        .process_batch_with(
+            &outbox,
+            &handler,
+            pin!(future::pending::<()>()),
+            &mut drain_cursor,
+        )
+        .await
+        .expect("drop panic during timeout cancellation must not kill processor");
+
+    assert_eq!(report.processed, 1);
+    assert_eq!(attempts.load(Ordering::SeqCst), 1);
+    assert_eq!(outbox.processed_ids(), vec![healthy_id]);
+
+    // The timed-out event is backed off and skipped on the next batch.
+    drain_cursor = None;
+    let report = processor
+        .process_batch_with(
+            &outbox,
+            &handler,
+            pin!(future::pending::<()>()),
+            &mut drain_cursor,
+        )
+        .await
+        .unwrap();
+    assert_eq!(report.processed, 0);
+    assert_eq!(attempts.load(Ordering::SeqCst), 1);
 }

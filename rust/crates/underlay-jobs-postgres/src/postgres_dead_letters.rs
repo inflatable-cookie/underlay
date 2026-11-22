@@ -15,6 +15,20 @@ fn to_raw(id: Uuid) -> uuid::Uuid {
     id.0
 }
 
+fn escape_ilike_pattern(value: &str) -> String {
+    let mut escaped = String::with_capacity(value.len());
+    for ch in value.chars() {
+        match ch {
+            '\\' | '%' | '_' => {
+                escaped.push('\\');
+                escaped.push(ch);
+            }
+            _ => escaped.push(ch),
+        }
+    }
+    escaped
+}
+
 pub struct PgDeadLetterRepository {
     pool: sqlx::PgPool,
     events: JobEventHub,
@@ -61,7 +75,8 @@ impl PgDeadLetterRepository {
 
         if let Some(job_type) = &filters.job_type {
             qb.push(" AND job_type ILIKE ")
-                .push_bind(format!("%{}%", job_type));
+                .push_bind(format!("%{}%", escape_ilike_pattern(job_type)))
+                .push(" ESCAPE '\\'");
         }
         if !filters.include_archived {
             qb.push(" AND archived_at IS NULL");
@@ -236,5 +251,17 @@ impl DeadLetterStore for PgDeadLetterRepository {
         before: DateTime<Utc>,
     ) -> std::result::Result<u64, Self::Error> {
         self.archive_old(before).await
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::escape_ilike_pattern;
+
+    #[test]
+    fn escape_ilike_pattern_escapes_wildcards_and_backslashes() {
+        assert_eq!(escape_ilike_pattern("email.send"), "email.send");
+        assert_eq!(escape_ilike_pattern("100%_done\\now"), r"100\%\_done\\now");
+        assert_eq!(escape_ilike_pattern(r"\%_"), r"\\\%\_");
     }
 }

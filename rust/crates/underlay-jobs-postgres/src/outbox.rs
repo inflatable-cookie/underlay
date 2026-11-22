@@ -27,10 +27,13 @@
 //! }).await?;
 //! ```
 
+use std::any::Any;
 use std::collections::HashMap;
 use std::future::{self, Future};
+use std::panic::{self, AssertUnwindSafe};
 use std::pin::{pin, Pin};
 use std::sync::{Arc, Mutex};
+use std::task::{Context, Poll};
 use std::time::Duration;
 
 use async_trait::async_trait;
@@ -358,8 +361,8 @@ impl OutboxBackend for PgPool {
         let event_id = event.id;
         let event_type = event.event_type.clone();
         let occurred_at = event.occurred_at;
-        let failure = match tokio::time::timeout(timeout, async { handler(event).await }).await {
-            Ok(Ok(())) => {
+        let failure = match invoke_handler_guarded(timeout, handler, event).await {
+            Ok(()) => {
                 // Mark as processed
                 sqlx::query(
                     r#"
@@ -381,8 +384,7 @@ impl OutboxBackend for PgPool {
                 );
                 return Ok(ProcessOneOutcome::Succeeded(event_id));
             }
-            Ok(Err(error)) => error.to_string(),
-            Err(_) => format!("handler timed out after {timeout:?}"),
+            Err(error) => error,
         };
 
         tx.rollback().await?;
@@ -768,6 +770,92 @@ impl OutboxProcessor {
             }
             should_sleep = report.exhausted;
         }
+    }
+}
+
+struct CatchUnwindFuture<F>(Option<Pin<Box<F>>>);
+
+impl<F> CatchUnwindFuture<F> {
+    fn new(fut: F) -> Self {
+        Self(Some(Box::pin(fut)))
+    }
+
+    fn drop_guarded(&mut self) -> std::thread::Result<()> {
+        if let Some(fut) = self.0.take() {
+            panic::catch_unwind(AssertUnwindSafe(move || drop(fut)))
+        } else {
+            Ok(())
+        }
+    }
+}
+
+impl<F> Drop for CatchUnwindFuture<F> {
+    fn drop(&mut self) {
+        let _ = self.drop_guarded();
+    }
+}
+
+impl<F> Future for CatchUnwindFuture<F>
+where
+    F: Future,
+{
+    type Output = std::thread::Result<F::Output>;
+
+    fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        let Some(inner) = self.0.as_mut() else {
+            return Poll::Ready(Err(Box::new("outbox handler polled after completion")));
+        };
+        match panic::catch_unwind(AssertUnwindSafe(|| inner.as_mut().poll(cx))) {
+            Ok(Poll::Ready(output)) => match self.drop_guarded() {
+                Ok(()) => Poll::Ready(Ok(output)),
+                Err(payload) => Poll::Ready(Err(payload)),
+            },
+            Ok(Poll::Pending) => Poll::Pending,
+            Err(payload) => {
+                let _ = self.drop_guarded();
+                Poll::Ready(Err(payload))
+            }
+        }
+    }
+}
+
+fn panic_payload_to_string(payload: Box<dyn Any + Send>) -> String {
+    if let Some(msg) = payload.downcast_ref::<&str>() {
+        (*msg).to_string()
+    } else if let Some(msg) = payload.downcast_ref::<String>() {
+        msg.clone()
+    } else {
+        "unknown panic payload".to_string()
+    }
+}
+
+async fn invoke_handler_guarded<F, Fut>(
+    timeout: Duration,
+    handler: &F,
+    event: OutboxEvent,
+) -> Result<(), String>
+where
+    F: Fn(OutboxEvent) -> Fut + Send + Sync,
+    Fut: Future<Output = Result<(), Box<dyn std::error::Error + Send + Sync>>> + Send,
+{
+    let fut = match panic::catch_unwind(AssertUnwindSafe(|| handler(event))) {
+        Ok(fut) => fut,
+        Err(payload) => {
+            return Err(format!(
+                "outbox handler panicked: {}",
+                panic_payload_to_string(payload)
+            ));
+        }
+    };
+
+    match tokio::time::timeout(timeout, CatchUnwindFuture::new(fut)).await {
+        Ok(Ok(Ok(()))) => Ok(()),
+        Ok(Ok(Err(error))) => Err(error.to_string()),
+        Ok(Err(payload)) => Err(format!(
+            "outbox handler panicked: {}",
+            panic_payload_to_string(payload)
+        )),
+        Err(_) => Err(format!("handler timed out after {timeout:?}")),
     }
 }
 

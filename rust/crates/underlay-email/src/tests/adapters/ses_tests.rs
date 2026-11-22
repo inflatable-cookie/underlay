@@ -66,3 +66,21 @@ fn test_build_destination() {
     assert_eq!(destination.cc_addresses().len(), 1);
     assert_eq!(destination.bcc_addresses().len(), 1);
 }
+
+#[test]
+fn test_build_content_rejects_missing_text_and_html_bodies() {
+    let mut email = Email::builder()
+        .from(EmailAddress::new("sender@example.com").unwrap())
+        .to(EmailAddress::new("recipient@example.com").unwrap())
+        .subject("Test Subject")
+        .text_body("placeholder")
+        .build()
+        .unwrap();
+    email.text_body = None;
+    email.html_body = None;
+
+    assert!(matches!(
+        SesAdapter::build_content(&email),
+        Err(EmailError::MissingField("text_body or html_body"))
+    ));
+}

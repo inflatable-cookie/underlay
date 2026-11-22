@@ -27,7 +27,7 @@ use tracing::{debug, error, info, warn};
 
 use crate::events::{JobEvent, JobEventHub, JobEventSink};
 use crate::registry::JobRegistry;
-use crate::store::{JobCompletionOutcome, JobStore};
+use crate::store::{JobCompletionOutcome, JobFailureRecordOutcome, JobStore};
 use crate::types::{Job, JobConfig, JobHandlerError};
 
 /// Configuration for the job runner.
@@ -225,19 +225,20 @@ where
             }
             Err(err) => {
                 let is_permanent = err.is_permanent;
-                self.record_failure(&job, err, &handler_config).await?;
-                if is_permanent {
-                    error!(
-                        job_type = %job.job_type,
-                        job_id = %job.id,
-                        "Job failed permanently"
-                    );
-                } else {
-                    warn!(
-                        job_type = %job.job_type,
-                        job_id = %job.id,
-                        "Job failed (may retry)"
-                    );
+                if self.record_failure(&job, err, &handler_config).await? {
+                    if is_permanent {
+                        error!(
+                            job_type = %job.job_type,
+                            job_id = %job.id,
+                            "Job failed permanently"
+                        );
+                    } else {
+                        warn!(
+                            job_type = %job.job_type,
+                            job_id = %job.id,
+                            "Job failed (may retry)"
+                        );
+                    }
                 }
                 Ok(true)
             }
@@ -249,9 +250,20 @@ where
         job: &Job,
         error: JobHandlerError,
         config: &JobConfig,
-    ) -> Result<(), S::Error> {
+    ) -> Result<bool, S::Error> {
         let message = error.message.clone();
-        let outcome = self.store.mark_failure(job, error, config).await?;
+        let outcome = match self.store.mark_failure_fenced(job, error, config).await? {
+            JobFailureRecordOutcome::Recorded(outcome) => outcome,
+            JobFailureRecordOutcome::LostOwnership => {
+                warn!(
+                    job_type = %job.job_type,
+                    job_id = %job.id,
+                    attempt = job.attempts,
+                    "Job failure ignored because attempt no longer owns the running claim"
+                );
+                return Ok(false);
+            }
+        };
         self.events.emit(JobEvent::Failed {
             job_id: job.id,
             job_type: job.job_type.clone(),
@@ -267,7 +279,7 @@ where
                 dead_letter_id,
             });
         }
-        Ok(())
+        Ok(true)
     }
 
     /// Run the job processing loop forever using polling.

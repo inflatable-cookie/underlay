@@ -1,6 +1,9 @@
+use std::sync::Arc;
+
 use underlay_blob::BlobAdapter;
 
 use super::super::keys::parse_rendition_result_key;
+use super::super::processing::{generate_and_store, read_source_bytes, RenditionCropMode};
 use super::RenditionService;
 use crate::domain::{CreateRenditionInput, MediaId, MediaRendition, MediaVersionId, RenditionType};
 use crate::error::{MediaError, MediaResult};
@@ -23,16 +26,61 @@ impl<B: BlobAdapter> RenditionService<B> {
     ) -> MediaResult<Vec<MediaRendition>> {
         let source_key = parse_rendition_result_key(source_key)?;
         let mut renditions = Vec::new();
+        let generate_thumbnails = self.config.generate_thumbnails();
+        let generate_previews = self.config.generate_previews();
 
-        if self.config.generate_thumbnails() {
-            let thumb_key = parse_rendition_result_key(format!(
+        if !generate_thumbnails && !generate_previews {
+            return Ok(renditions);
+        }
+
+        let thumb_key = if generate_thumbnails {
+            Some(parse_rendition_result_key(format!(
                 "{}/{}.jpg",
                 key_prefix,
                 self.config.thumbnail_name_ref()
-            ))?;
-            match self
-                .generate_thumbnail_object_key(&source_key, &thumb_key)
-                .await
+            ))?)
+        } else {
+            None
+        };
+        let preview_key = if generate_previews {
+            Some(parse_rendition_result_key(format!(
+                "{}/{}.jpg",
+                key_prefix,
+                self.config.preview_name_ref()
+            ))?)
+        } else {
+            None
+        };
+
+        let source_bytes = match read_source_bytes(
+            self.blob_adapter.as_ref(),
+            &source_key,
+            self.config.max_source_bytes(),
+        )
+        .await
+        {
+            Ok(bytes) => Arc::new(bytes),
+            Err(e) => {
+                tracing::warn!(
+                    version_id = %version_id,
+                    error = %e,
+                    "Failed to read source image for rendition generation"
+                );
+                return Ok(renditions);
+            }
+        };
+
+        if let Some(thumb_key) = thumb_key {
+            match generate_and_store(
+                self.blob_adapter.as_ref(),
+                Arc::clone(&source_bytes),
+                &thumb_key,
+                self.config.thumbnail_max_dimension(),
+                self.config.jpeg_quality(),
+                self.thumbnail_crop_mode(),
+                "thumbnail",
+            )
+            .await
             {
                 Ok(result) => {
                     let input = CreateRenditionInput {
@@ -58,15 +106,17 @@ impl<B: BlobAdapter> RenditionService<B> {
             }
         }
 
-        if self.config.generate_previews() {
-            let preview_key = parse_rendition_result_key(format!(
-                "{}/{}.jpg",
-                key_prefix,
-                self.config.preview_name_ref()
-            ))?;
-            match self
-                .generate_preview_object_key(&source_key, &preview_key)
-                .await
+        if let Some(preview_key) = preview_key {
+            match generate_and_store(
+                self.blob_adapter.as_ref(),
+                source_bytes,
+                &preview_key,
+                self.config.preview_max_dimension(),
+                self.config.jpeg_quality(),
+                RenditionCropMode::Fit,
+                "preview",
+            )
+            .await
             {
                 Ok(result) => {
                     let input = CreateRenditionInput {
@@ -120,16 +170,65 @@ impl<B: BlobAdapter> RenditionService<B> {
     ) -> MediaResult<Vec<MediaRendition>> {
         let source_key = parse_rendition_result_key(source_key)?;
         let mut renditions = Vec::new();
+        let generate_thumbnails = self.config.generate_thumbnails();
+        let generate_previews = self.config.generate_previews();
 
-        if self.config.generate_thumbnails() {
-            let thumb_key = self
-                .key_generator
-                .rendition_object_key(media_id.0, version_id.0, self.config.thumbnail_name_ref())
-                .map_err(|err| MediaError::storage(format!("invalid thumbnail key: {err}")))?;
+        if !generate_thumbnails && !generate_previews {
+            return Ok(renditions);
+        }
 
-            match self
-                .generate_thumbnail_object_key(&source_key, &thumb_key)
-                .await
+        let thumb_key = if generate_thumbnails {
+            Some(
+                self.key_generator
+                    .rendition_object_key(
+                        media_id.0,
+                        version_id.0,
+                        self.config.thumbnail_name_ref(),
+                    )
+                    .map_err(|err| MediaError::storage(format!("invalid thumbnail key: {err}")))?,
+            )
+        } else {
+            None
+        };
+        let preview_key = if generate_previews {
+            Some(
+                self.key_generator
+                    .rendition_object_key(media_id.0, version_id.0, self.config.preview_name_ref())
+                    .map_err(|err| MediaError::storage(format!("invalid preview key: {err}")))?,
+            )
+        } else {
+            None
+        };
+
+        let source_bytes = match read_source_bytes(
+            self.blob_adapter.as_ref(),
+            &source_key,
+            self.config.max_source_bytes(),
+        )
+        .await
+        {
+            Ok(bytes) => Arc::new(bytes),
+            Err(e) => {
+                tracing::warn!(
+                    version_id = %version_id,
+                    error = %e,
+                    "Failed to read source image for rendition generation"
+                );
+                return Ok(renditions);
+            }
+        };
+
+        if let Some(thumb_key) = thumb_key {
+            match generate_and_store(
+                self.blob_adapter.as_ref(),
+                Arc::clone(&source_bytes),
+                &thumb_key,
+                self.config.thumbnail_max_dimension(),
+                self.config.jpeg_quality(),
+                self.thumbnail_crop_mode(),
+                "thumbnail",
+            )
+            .await
             {
                 Ok(result) => {
                     let input = CreateRenditionInput {
@@ -162,15 +261,17 @@ impl<B: BlobAdapter> RenditionService<B> {
             }
         }
 
-        if self.config.generate_previews() {
-            let preview_key = self
-                .key_generator
-                .rendition_object_key(media_id.0, version_id.0, self.config.preview_name_ref())
-                .map_err(|err| MediaError::storage(format!("invalid preview key: {err}")))?;
-
-            match self
-                .generate_preview_object_key(&source_key, &preview_key)
-                .await
+        if let Some(preview_key) = preview_key {
+            match generate_and_store(
+                self.blob_adapter.as_ref(),
+                source_bytes,
+                &preview_key,
+                self.config.preview_max_dimension(),
+                self.config.jpeg_quality(),
+                RenditionCropMode::Fit,
+                "preview",
+            )
+            .await
             {
                 Ok(result) => {
                     let input = CreateRenditionInput {

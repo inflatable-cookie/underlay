@@ -293,3 +293,89 @@ async fn test_initiate_upload_validated_enforces_config() {
 
     let _ = fs::remove_dir_all(&temp_dir).await;
 }
+
+fn create_unique_test_dir(prefix: &str) -> std::path::PathBuf {
+    use std::sync::atomic::{AtomicU64, Ordering};
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    static COUNTER: AtomicU64 = AtomicU64::new(0);
+
+    let base = std::env::temp_dir();
+    let pid = std::process::id();
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_nanos())
+        .unwrap_or(0);
+    for _ in 0..32 {
+        let seq = COUNTER.fetch_add(1, Ordering::Relaxed);
+        let candidate = base.join(format!("{prefix}-{pid}-{nanos}-{seq}"));
+        match std::fs::create_dir(&candidate) {
+            Ok(()) => return candidate,
+            Err(err) if err.kind() == std::io::ErrorKind::AlreadyExists => continue,
+            Err(err) => panic!("failed to create unique test directory {candidate:?}: {err}"),
+        }
+    }
+    panic!("failed to allocate unique test directory for {prefix}");
+}
+
+#[cfg(unix)]
+#[tokio::test]
+async fn test_local_adapter_head_refuses_symlinks() {
+    let root_dir = create_unique_test_dir("underlay-blob-head-symlink-test");
+    let temp_dir = root_dir.join("storage");
+    let outside_dir = root_dir.join("outside");
+    fs::create_dir(&temp_dir).await.unwrap();
+    fs::create_dir(&outside_dir).await.unwrap();
+
+    fs::write(temp_dir.join("real.txt"), b"real").await.unwrap();
+    fs::write(outside_dir.join("secret.txt"), b"secret")
+        .await
+        .unwrap();
+
+    // In-bounds leaf symlink and out-of-bounds parent symlink.
+    std::os::unix::fs::symlink(temp_dir.join("real.txt"), temp_dir.join("leaf-link.txt")).unwrap();
+    std::os::unix::fs::symlink(&outside_dir, temp_dir.join("escape")).unwrap();
+
+    let config = LocalConfig::new(&temp_dir, "http://localhost:8080/uploads");
+    let adapter = LocalAdapter::new(config).await.unwrap();
+
+    let leaf_err = adapter
+        .head("leaf-link.txt")
+        .await
+        .expect_err("head must refuse leaf symlinks");
+    assert!(
+        matches!(leaf_err, BlobError::Unsupported(_)),
+        "expected Unsupported for leaf symlink, got {leaf_err:?}"
+    );
+
+    let parent_err = adapter
+        .head("escape/secret.txt")
+        .await
+        .expect_err("head must refuse symlinked parent components");
+    assert!(
+        matches!(parent_err, BlobError::InvalidKey(_)),
+        "expected InvalidKey for symlinked parent, got {parent_err:?}"
+    );
+
+    let _ = fs::remove_dir_all(&root_dir).await;
+}
+
+#[tokio::test]
+async fn test_local_adapter_initiate_upload_uses_join_public_url() {
+    let root_dir = create_unique_test_dir("underlay-blob-upload-url-test");
+    let temp_dir = root_dir.join("storage");
+
+    let config = LocalConfig::new(&temp_dir, "http://localhost:8080/uploads/");
+    let adapter = LocalAdapter::new(config).await.unwrap();
+
+    let req =
+        crate::types::UploadRequest::parse_key("media/my photo.jpg", "image/jpeg", 42).unwrap();
+    let plan = adapter.initiate_upload(req).await.unwrap();
+    assert_eq!(
+        plan.upload_url,
+        adapter.public_url("media/my photo.jpg"),
+        "initiate_upload should join and encode URLs consistently with public_url"
+    );
+
+    let _ = fs::remove_dir_all(&root_dir).await;
+}

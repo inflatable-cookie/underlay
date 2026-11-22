@@ -49,6 +49,9 @@ impl SesAdapter {
     /// Build the SES email content from our Email type.
     fn build_content(email: &Email) -> EmailResult<EmailContent> {
         email.validate_headers()?;
+        if email.text_body.is_none() && email.html_body.is_none() {
+            return Err(EmailError::MissingField("text_body or html_body"));
+        }
         let subject = Content::builder()
             .data(&email.subject)
             .charset("UTF-8")

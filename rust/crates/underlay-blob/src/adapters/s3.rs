@@ -64,9 +64,15 @@ impl BlobAdapter for S3Adapter {
         let expires_at = Utc::now()
             + chrono::Duration::from_std(expires_in).unwrap_or_else(|_| chrono::Duration::hours(1));
 
-        // Build required headers from the presigned request
+        // Build required headers from the presigned request, including signed
+        // user metadata headers (`x-amz-meta-*`) when metadata is present.
         let mut required_headers = HashMap::new();
         required_headers.insert("Content-Type".to_string(), request.content_type.clone());
+        for (header_name, header_value) in presigned.headers() {
+            if header_name.to_ascii_lowercase().starts_with("x-amz-meta-") {
+                required_headers.insert(header_name.to_string(), header_value.to_string());
+            }
+        }
 
         Ok(UploadPlan {
             upload_url: presigned.uri().to_string(),

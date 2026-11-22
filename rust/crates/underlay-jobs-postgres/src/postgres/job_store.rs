@@ -4,7 +4,8 @@ use chrono::Utc;
 use crate::postgres_rows::JobRow;
 use underlay_core::Uuid;
 use underlay_jobs::{
-    Job, JobCompletionOutcome, JobConfig, JobFailureOutcome, JobHandlerError, JobStore,
+    Job, JobCompletionOutcome, JobConfig, JobFailureOutcome, JobFailureRecordOutcome,
+    JobHandlerError, JobStore,
 };
 
 use super::{JobRepository, RepoError, Result};
@@ -71,5 +72,21 @@ impl JobStore for JobRepository {
     ) -> Result<JobFailureOutcome> {
         self.mark_failed(job, &error.message, config, error.is_permanent)
             .await
+    }
+
+    async fn mark_failure_fenced(
+        &self,
+        job: &Job,
+        error: JobHandlerError,
+        config: &JobConfig,
+    ) -> Result<JobFailureRecordOutcome> {
+        match self
+            .mark_failed(job, &error.message, config, error.is_permanent)
+            .await
+        {
+            Ok(outcome) => Ok(JobFailureRecordOutcome::Recorded(outcome)),
+            Err(RepoError::Conflict(_)) => Ok(JobFailureRecordOutcome::LostOwnership),
+            Err(err) => Err(err),
+        }
     }
 }

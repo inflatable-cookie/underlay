@@ -16,6 +16,15 @@ pub enum JobCompletionOutcome {
     LostOwnership,
 }
 
+/// Result of attempting to record a claimed job's failure.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum JobFailureRecordOutcome {
+    /// The claimed attempt still owned the running job and recorded the failure.
+    Recorded(JobFailureOutcome),
+    /// Another worker reclaimed or finalized the job before this attempt failed.
+    LostOwnership,
+}
+
 /// Abstract storage backend for jobs.
 ///
 /// Implement this trait to provide custom storage for the job queue.
@@ -42,4 +51,25 @@ pub trait JobStore: Send + Sync {
         error: JobHandlerError,
         config: &JobConfig,
     ) -> Result<JobFailureOutcome, Self::Error>;
+
+    /// Mark a claimed job as failed with the given error, fencing on its attempt count.
+    ///
+    /// Returns [`JobFailureRecordOutcome::LostOwnership`] when the claimed attempt
+    /// no longer owns the running row (for example after stall recovery), so the
+    /// runner can log and continue without emitting a duplicate failure event
+    /// or terminating its loop.
+    ///
+    /// The default implementation delegates to [`JobStore::mark_failure`] and
+    /// wraps the result in [`JobFailureRecordOutcome::Recorded`] to preserve
+    /// backwards compatibility for existing store implementations.
+    async fn mark_failure_fenced(
+        &self,
+        job: &Job,
+        error: JobHandlerError,
+        config: &JobConfig,
+    ) -> Result<JobFailureRecordOutcome, Self::Error> {
+        self.mark_failure(job, error, config)
+            .await
+            .map(JobFailureRecordOutcome::Recorded)
+    }
 }

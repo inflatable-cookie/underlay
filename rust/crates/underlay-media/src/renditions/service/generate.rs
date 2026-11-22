@@ -1,13 +1,23 @@
+use std::sync::Arc;
+
 use underlay_blob::{BlobAdapter, BlobObjectKey};
 
 use super::super::keys::parse_rendition_result_key;
-use super::super::processing::{generate_and_store, read_generate_and_store};
+use super::super::processing::{generate_and_store, read_generate_and_store, RenditionCropMode};
 use super::super::result::RenditionResult;
 use super::RenditionService;
 use crate::domain::RenditionType;
 use crate::error::MediaResult;
 
 impl<B: BlobAdapter> RenditionService<B> {
+    pub(super) fn thumbnail_crop_mode(&self) -> RenditionCropMode {
+        if self.config.square_thumbnails() {
+            RenditionCropMode::Square
+        } else {
+            RenditionCropMode::Fit
+        }
+    }
+
     /// Generate a thumbnail from a source image.
     ///
     /// Reads the source image from blob storage, generates a thumbnail,
@@ -36,6 +46,7 @@ impl<B: BlobAdapter> RenditionService<B> {
             self.config.thumbnail_max_dimension(),
             self.config.jpeg_quality(),
             self.config.max_source_bytes(),
+            self.thumbnail_crop_mode(),
             "thumbnail",
         )
         .await
@@ -68,6 +79,7 @@ impl<B: BlobAdapter> RenditionService<B> {
             self.config.preview_max_dimension(),
             self.config.jpeg_quality(),
             self.config.max_source_bytes(),
+            RenditionCropMode::Fit,
             "preview",
         )
         .await
@@ -94,18 +106,25 @@ impl<B: BlobAdapter> RenditionService<B> {
         target_key: &BlobObjectKey,
         rendition_type: &RenditionType,
     ) -> MediaResult<RenditionResult> {
-        let max_dimension = match rendition_type {
-            RenditionType::Thumbnail => self.config.thumbnail_max_dimension(),
-            RenditionType::Preview => self.config.preview_max_dimension(),
-            RenditionType::Custom(_) => self.config.thumbnail_max_dimension(),
+        let (max_dimension, crop_mode) = match rendition_type {
+            RenditionType::Thumbnail => (
+                self.config.thumbnail_max_dimension(),
+                self.thumbnail_crop_mode(),
+            ),
+            RenditionType::Preview => (self.config.preview_max_dimension(), RenditionCropMode::Fit),
+            RenditionType::Custom(_) => (
+                self.config.thumbnail_max_dimension(),
+                self.thumbnail_crop_mode(),
+            ),
         };
 
         generate_and_store(
             self.blob_adapter.as_ref(),
-            source_bytes.to_vec(),
+            Arc::new(source_bytes.to_vec()),
             target_key,
             max_dimension,
             self.config.jpeg_quality(),
+            crop_mode,
             "rendition",
         )
         .await

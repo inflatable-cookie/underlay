@@ -49,7 +49,7 @@ impl BlobUploadConfig {
 
     /// Set the maximum file size for uploads in megabytes.
     pub fn max_file_size_mb(mut self, mb: u64) -> Self {
-        self.max_file_size_bytes = mb * 1024 * 1024;
+        self.max_file_size_bytes = mb.saturating_mul(1024 * 1024);
         self
     }
 

@@ -231,9 +231,10 @@ pub fn generate_thumbnail(
 
 /// Generate a square thumbnail by center-cropping the image.
 ///
-/// The image is first resized so the smaller dimension matches the target size,
-/// then center-cropped to produce a square. This is ideal for avatars, profile
-/// pictures, and other contexts where a consistent square aspect ratio is needed.
+/// The image is center-cropped to a square using its shorter dimension and then
+/// resized to the target size, avoiding large intermediate allocations on
+/// extreme aspect ratios. This is ideal for avatars, profile pictures, and
+/// other contexts where a consistent square aspect ratio is needed.
 ///
 /// # Arguments
 ///
@@ -339,29 +340,16 @@ fn decode_square_thumbnail_source(data: &[u8], size: u32) -> Result<DynamicImage
 
 fn square_crop_image(img: DynamicImage, size: u32) -> DynamicImage {
     let (orig_width, orig_height) = img.dimensions();
+    let side = orig_width.min(orig_height);
+    let x = (orig_width - side) / 2;
+    let y = (orig_height - side) / 2;
+    let cropped = img.crop_imm(x, y, side, side);
 
-    let scale = if orig_width < orig_height {
-        size as f32 / orig_width as f32
+    if side == size {
+        cropped
     } else {
-        size as f32 / orig_height as f32
-    };
-
-    let scaled_width = (orig_width as f32 * scale).ceil() as u32;
-    let scaled_height = (orig_height as f32 * scale).ceil() as u32;
-
-    let resized = if scaled_width <= orig_width && scaled_height <= orig_height {
-        img.resize_exact(scaled_width, scaled_height, FilterType::Lanczos3)
-    } else if orig_width >= size && orig_height >= size {
-        img
-    } else {
-        img.resize_exact(scaled_width, scaled_height, FilterType::Lanczos3)
-    };
-
-    let x = (resized.width().saturating_sub(size)) / 2;
-    let y = (resized.height().saturating_sub(size)) / 2;
-    let crop_size = size.min(resized.width()).min(resized.height());
-
-    resized.crop_imm(x, y, crop_size, crop_size)
+        cropped.resize_exact(size, size, FilterType::Lanczos3)
+    }
 }
 
 fn image_has_alpha(img: &DynamicImage) -> bool {

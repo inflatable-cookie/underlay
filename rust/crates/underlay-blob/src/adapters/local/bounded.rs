@@ -41,8 +41,37 @@
 //! [`BlobError::Unsupported`] rather than falling back to a weaker
 //! check-then-act resolution while still claiming no-follow behavior.
 
+#[cfg(unix)]
+use std::collections::HashMap;
+
+#[cfg(unix)]
+use chrono::{DateTime, Utc};
+
 use crate::error::BlobResult;
 use crate::owned::OwnedPublicationFacts;
+
+#[cfg(unix)]
+pub(super) struct PinnedHeadStat {
+    pub(super) size: u64,
+    pub(super) last_modified: Option<DateTime<Utc>>,
+    pub(super) metadata: HashMap<String, String>,
+}
+
+/// Stat `key` and read its reserved ownership xattrs from a pinned file
+/// descriptor resolved relative to a duplicate of the adapter's pinned
+/// base-directory descriptor.
+///
+/// Opens with `O_NOFOLLOW | O_NONBLOCK`, checks `fstat` for a regular file,
+/// and reads xattrs via `fgetxattr` on the same descriptor inside
+/// `spawn_blocking`.
+#[cfg(unix)]
+pub(super) async fn head_pinned(base_dir: &std::fs::File, key: &str) -> BlobResult<PinnedHeadStat> {
+    let base_dir = base_dir
+        .try_clone()
+        .map_err(|e| crate::error::BlobError::IoError(e.to_string()))?;
+    let key = key.to_string();
+    run_blocking(move || imp::head_pinned_sync(base_dir, &key)).await
+}
 
 /// Read at most `max_bytes + 1` bytes from `key`, resolved relative to a
 /// duplicate of the adapter's pinned base-directory descriptor.
@@ -326,6 +355,49 @@ mod imp {
 
         let last_name = to_cstring(last)?;
         Ok((current, last_name))
+    }
+
+    pub(super) fn head_pinned_sync(base_dir: File, key: &str) -> BlobResult<super::PinnedHeadStat> {
+        let (parent, name) = descend_to_parent(base_dir, key, false)?;
+
+        let flags = libc::O_RDONLY | libc::O_NOFOLLOW | libc::O_NONBLOCK | libc::O_CLOEXEC;
+        // SAFETY: `parent` is a live directory descriptor and `name` is a
+        // NUL-terminated CString for a single path component.
+        let fd = unsafe { libc::openat(parent.as_raw_fd(), name.as_ptr(), flags, 0) };
+        let file = if fd >= 0 {
+            // SAFETY: `fd` was just returned by `openat` and is uniquely owned here.
+            unsafe { File::from_raw_fd(fd) }
+        } else {
+            let err = io::Error::last_os_error();
+            return Err(match err.raw_os_error() {
+                Some(libc::ENOENT) => BlobError::NotFound(key.to_string()),
+                Some(libc::ELOOP) => {
+                    BlobError::Unsupported("source is not a regular file".to_string())
+                }
+                _ => BlobError::IoError(err.to_string()),
+            });
+        };
+
+        let metadata = file
+            .metadata()
+            .map_err(|e| BlobError::IoError(e.to_string()))?;
+        if !metadata.is_file() {
+            return Err(BlobError::Unsupported(
+                "source is not a regular file".to_string(),
+            ));
+        }
+
+        let last_modified = metadata
+            .modified()
+            .ok()
+            .map(chrono::DateTime::<chrono::Utc>::from);
+        let object_metadata = super::super::xattr::read_owned_metadata_fd(file.as_raw_fd());
+
+        Ok(super::PinnedHeadStat {
+            size: metadata.len(),
+            last_modified,
+            metadata: object_metadata,
+        })
     }
 
     pub(super) fn read_bounded_sync(
