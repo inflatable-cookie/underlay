@@ -255,3 +255,15 @@ async fn throttled_verify_caps_failed_attempts_and_resets_on_success() {
     assert_eq!(ok, TwoFactorVerified::BackupCode { index: 1 });
     assert!(limiter.check(key2, &config).await.unwrap().is_allowed());
 }
+
+#[test]
+fn totp_config_clamps_skew_steps_bounds() {
+    assert_eq!(TotpConfig::default().with_skew_steps(-5).skew_steps(), 0);
+    assert_eq!(
+        TotpConfig::default()
+            .with_skew_steps(1_000_000)
+            .skew_steps(),
+        10
+    );
+    assert_eq!(TotpConfig::default().with_skew_steps(3).skew_steps(), 3);
+}

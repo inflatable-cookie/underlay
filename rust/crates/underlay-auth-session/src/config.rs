@@ -5,11 +5,11 @@ use std::time::Duration;
 pub struct SessionServiceConfig {
     /// Maximum total lifetime of a session regardless of activity.
     /// Default: 30 days.
-    pub absolute_session_timeout: Duration,
+    absolute_session_timeout: Duration,
     /// When true, a client fingerprint (IP/User-Agent) mismatch rejects the
     /// refresh. When false (default), mismatches are logged but allowed,
     /// since they can be legitimate network/browser changes.
-    pub refresh_fingerprint_strict: bool,
+    refresh_fingerprint_strict: bool,
 }
 
 impl Default for SessionServiceConfig {
@@ -22,6 +22,19 @@ impl Default for SessionServiceConfig {
 }
 
 impl SessionServiceConfig {
+    /// Create a new configuration with default values.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn absolute_session_timeout(&self) -> Duration {
+        self.absolute_session_timeout
+    }
+
+    pub fn refresh_fingerprint_strict(&self) -> bool {
+        self.refresh_fingerprint_strict
+    }
+
     pub fn with_absolute_session_timeout(mut self, timeout: Duration) -> Self {
         self.absolute_session_timeout = timeout;
         self

@@ -11,6 +11,12 @@ use super::{PasswordAuthRepository, PasswordConfig};
 #[cfg(feature = "hibp")]
 use crate::hibp::HttpHibpRangeClient;
 
+/// Maximum accepted password length in bytes before cloning, hashing, or HIBP checks.
+///
+/// Caps CPU and memory spent in Argon2id and prevents oversized inputs from
+/// causing denial of service while remaining generous for passphrases.
+pub(super) const MAX_PASSWORD_BYTES: usize = 1024;
+
 /// Service for password-based authentication.
 #[derive(Debug, Clone)]
 pub struct PasswordAuthService<R, H, V, L>
@@ -38,6 +44,11 @@ where
     L: RateLimitBackend,
 {
     pub(super) async fn hash_password(&self, password: &str) -> PasswordAuthResult<String> {
+        if password.len() > MAX_PASSWORD_BYTES {
+            return Err(PasswordAuthError::PasswordTooWeak(format!(
+                "Password must be at most {MAX_PASSWORD_BYTES} bytes"
+            )));
+        }
         let hasher = Arc::clone(&self.hasher);
         let password = password.as_bytes().to_vec();
         tokio::task::spawn_blocking(move || hasher.hash_password(&password))
@@ -51,6 +62,9 @@ where
         password: &str,
         hash: &str,
     ) -> PasswordAuthResult<bool> {
+        if password.len() > MAX_PASSWORD_BYTES {
+            return Ok(false);
+        }
         let verifier = Arc::clone(&self.verifier);
         let password = password.as_bytes().to_vec();
         let hash = hash.to_owned();

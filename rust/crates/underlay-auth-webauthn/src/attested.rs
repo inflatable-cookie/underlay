@@ -111,7 +111,10 @@ impl WebAuthnService {
                 attestation_ca_list,
                 ui_hint_authenticator_attachment,
             )
-            .map_err(|_| WebAuthnError::RegistrationFailed.into())
+            .map_err(|err| {
+                tracing::warn!(error = ?err, "webauthn start attested passkey registration failed");
+                WebAuthnError::RegistrationFailed.into()
+            })
     }
 
     pub fn finish_attested_passkey_registration(
@@ -121,7 +124,10 @@ impl WebAuthnService {
     ) -> AuthResult<AttestedPasskey> {
         self.inner
             .finish_attested_passkey_registration(response, state)
-            .map_err(|_| WebAuthnError::RegistrationFailed.into())
+            .map_err(|err| {
+                tracing::warn!(error = ?err, "webauthn finish attested passkey registration failed");
+                WebAuthnError::RegistrationFailed.into()
+            })
     }
 
     pub fn start_attested_passkey_authentication(
@@ -130,7 +136,10 @@ impl WebAuthnService {
     ) -> AuthResult<(RequestChallengeResponse, AttestedPasskeyAuthentication)> {
         self.inner
             .start_attested_passkey_authentication(allowed_credentials.as_slice())
-            .map_err(|_| WebAuthnError::AuthenticationFailed.into())
+            .map_err(|err| {
+                tracing::warn!(error = ?err, "webauthn start attested passkey authentication failed");
+                WebAuthnError::AuthenticationFailed.into()
+            })
     }
 
     pub fn finish_attested_passkey_authentication(
@@ -140,11 +149,14 @@ impl WebAuthnService {
     ) -> AuthResult<AuthenticationResult> {
         self.inner
             .finish_attested_passkey_authentication(response, state)
-            .map_err(|e| match e {
-                WebauthnError::CredentialCounterUpdateFailure => {
-                    WebAuthnError::CounterRegression.into()
+            .map_err(|err| {
+                tracing::warn!(error = ?err, "webauthn finish attested passkey authentication failed");
+                match err {
+                    WebauthnError::CredentialCounterUpdateFailure => {
+                        WebAuthnError::CounterRegression.into()
+                    }
+                    _ => WebAuthnError::AuthenticationFailed.into(),
                 }
-                _ => WebAuthnError::AuthenticationFailed.into(),
             })
     }
 

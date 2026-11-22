@@ -8,8 +8,7 @@ use underlay_http_client::{reqwest::Url, HttpClient};
 fn http_host_is_local(url: &Url) -> bool {
     url.scheme() == "http"
         && url.host_str().is_some_and(|host| {
-            matches!(host, "localhost" | "127.0.0.1" | "0.0.0.0" | "[::1]")
-                || host.ends_with(".localhost")
+            matches!(host, "localhost" | "127.0.0.1" | "[::1]") || host.ends_with(".localhost")
         })
 }
 

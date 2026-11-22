@@ -118,7 +118,8 @@ impl RoleHierarchy {
 
     /// Can a caller with `caller_roles` manage a target whose current role is
     /// `target_role`? `is_self` must be true when caller and target are the
-    /// same account.
+    /// same account. Unknown caller or target roles and empty `caller_roles`
+    /// fail closed.
     pub fn can_manage(
         &self,
         caller_roles: &[&str],
@@ -127,6 +128,10 @@ impl RoleHierarchy {
     ) -> Result<(), RoleHierarchyError> {
         if is_self {
             return Err(RoleHierarchyError::CannotManageSelf);
+        }
+
+        if !self.is_known(target_role) || caller_roles.iter().any(|role| !self.is_known(role)) {
+            return Err(RoleHierarchyError::UnknownRole);
         }
 
         if self.is_super_role(target_role) {
@@ -139,7 +144,7 @@ impl RoleHierarchy {
 
         let caller_level = self.max_level(caller_roles);
         let target_level = self.level(target_role);
-        if caller_level <= target_level {
+        if caller_roles.is_empty() || caller_level <= target_level {
             return Err(RoleHierarchyError::InsufficientPrivileges {
                 caller_level,
                 target_level,
@@ -153,8 +158,7 @@ impl RoleHierarchy {
     /// assignment)? Super-role callers may assign any configured role. Other
     /// callers may only assign roles strictly below their own level.
     pub fn can_assign(&self, caller_roles: &[&str], role: &str) -> Result<(), RoleHierarchyError> {
-        let is_known = |role: &str| self.is_super_role(role) || self.levels.contains_key(role);
-        if !is_known(role) || caller_roles.iter().any(|role| !is_known(role)) {
+        if !self.is_known(role) || caller_roles.iter().any(|role| !self.is_known(role)) {
             return Err(RoleHierarchyError::UnknownRole);
         }
 
@@ -177,6 +181,10 @@ impl RoleHierarchy {
         }
 
         Ok(())
+    }
+
+    fn is_known(&self, role: &str) -> bool {
+        self.is_super_role(role) || self.levels.contains_key(role)
     }
 
     fn has_super_role(&self, caller_roles: &[&str]) -> bool {

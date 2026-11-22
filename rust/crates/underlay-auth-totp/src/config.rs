@@ -1,5 +1,8 @@
 use crate::TotpAlgorithm;
 
+/// Maximum accepted TOTP clock-skew tolerance in steps (±10 steps = ±5 minutes at 30s period).
+const MAX_SKEW_STEPS: i64 = 10;
+
 /// Configuration for TOTP generation and verification.
 ///
 /// # Example
@@ -84,13 +87,13 @@ impl TotpConfig {
         self
     }
 
-    /// Set the time skew tolerance in steps.
+    /// Set the time skew tolerance in steps (clamped to 0..=10).
     ///
     /// A value of 1 (default) accepts the previous, current, and next code.
     /// A value of 0 only accepts the current code (strict).
     /// A value of 2 provides more tolerance for clock drift.
     pub fn with_skew_steps(mut self, steps: i64) -> Self {
-        self.skew_steps = steps.max(0);
+        self.skew_steps = steps.clamp(0, MAX_SKEW_STEPS);
         self
     }
 

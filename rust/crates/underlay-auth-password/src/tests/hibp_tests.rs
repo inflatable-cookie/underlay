@@ -75,9 +75,11 @@ async fn hibp_k_anonymity_check_with_client_propagates_client_error() {
 
 #[test]
 fn hibp_client_rejects_non_local_http() {
-    let err = HttpHibpRangeClient::new("http://api.example.com", "underlay-test")
-        .expect_err("non-local http base url should fail");
-    assert!(format!("{err}").contains("https"));
+    for url in ["http://api.example.com", "http://0.0.0.0:8080"] {
+        let err = HttpHibpRangeClient::new(url, "underlay-test")
+            .expect_err("non-local http base url should fail");
+        assert!(format!("{err}").contains("https"), "url={url}");
+    }
 }
 
 #[tokio::test]

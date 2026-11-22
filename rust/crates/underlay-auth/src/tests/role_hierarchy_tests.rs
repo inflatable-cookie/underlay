@@ -94,10 +94,55 @@ fn support_cannot_manage_admins() {
 }
 
 #[test]
-fn unknown_roles_resolve_to_level_zero() {
+fn unknown_roles_resolve_to_level_zero_for_rank_lookups() {
     let h = standard();
     assert_eq!(h.level("nonexistent"), 0);
-    assert!(h.can_manage(&["admin"], "nonexistent", false).is_ok());
+}
+
+#[test]
+fn can_manage_fails_closed_on_unknown_and_empty_roles() {
+    let h = standard();
+    for caller in ["admin", "superadmin"] {
+        assert_eq!(
+            h.can_manage(&[caller], "nonexistent", false),
+            Err(RoleHierarchyError::UnknownRole)
+        );
+    }
+    assert_eq!(
+        h.can_manage(&["nonexistent"], "user", false),
+        Err(RoleHierarchyError::UnknownRole)
+    );
+    assert_eq!(
+        h.can_manage(&["admin", "nonexistent"], "user", false),
+        Err(RoleHierarchyError::UnknownRole)
+    );
+    assert!(matches!(
+        h.can_manage(&[], "user", false),
+        Err(RoleHierarchyError::InsufficientPrivileges { .. })
+    ));
+
+    let custom = RoleHierarchy::new(&[("guest", -1), ("member", 0)], "owner");
+    assert_eq!(
+        custom.can_manage(&["unknown"], "guest", false),
+        Err(RoleHierarchyError::UnknownRole)
+    );
+    assert_eq!(
+        custom.can_manage(&["owner"], "unknown", false),
+        Err(RoleHierarchyError::UnknownRole)
+    );
+    assert!(matches!(
+        custom.can_manage(&[], "guest", false),
+        Err(RoleHierarchyError::InsufficientPrivileges { .. })
+    ));
+    assert!(custom.can_manage(&["member"], "guest", false).is_ok());
+    assert!(matches!(
+        custom.can_manage(&["guest"], "member", false),
+        Err(RoleHierarchyError::InsufficientPrivileges {
+            caller_level: -1,
+            target_level: 0
+        })
+    ));
+    assert!(custom.can_manage(&["owner"], "member", false).is_ok());
 }
 
 #[test]

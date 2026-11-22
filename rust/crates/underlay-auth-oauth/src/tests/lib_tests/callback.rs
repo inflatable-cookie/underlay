@@ -66,6 +66,67 @@ async fn handle_google_callback_rejects_state_mismatch() {
 }
 
 #[tokio::test]
+async fn handle_google_callback_rejects_empty_state_code_pkce_and_subject() {
+    let repo = MemoryRepo::new();
+    let svc = GoogleOAuthAppService::new(StubProvider {
+        token_set: basic_token_set(),
+        userinfo: verified_userinfo(),
+    });
+
+    // Empty CSRF state must fail even when request and stored state both match as empty.
+    for empty in ["", "   "] {
+        let err = svc
+            .handle_google_callback(&repo, callback_request(empty), login_state(empty), |_| {
+                Ok("enc".to_string())
+            })
+            .await
+            .unwrap_err();
+        assert!(matches!(err, AuthError::BadRequest(_)));
+    }
+
+    // Empty authorization code must fail.
+    let mut empty_code_req = callback_request("state-1");
+    empty_code_req.code = "  ".to_string();
+    let err = svc
+        .handle_google_callback(&repo, empty_code_req, login_state("state-1"), |_| {
+            Ok("enc".to_string())
+        })
+        .await
+        .unwrap_err();
+    assert!(matches!(err, AuthError::BadRequest(_)));
+
+    // Empty PKCE verifier must fail.
+    let mut empty_pkce_state = login_state("state-1");
+    empty_pkce_state.pkce_verifier = String::new();
+    let err = svc
+        .handle_google_callback(&repo, callback_request("state-1"), empty_pkce_state, |_| {
+            Ok("enc".to_string())
+        })
+        .await
+        .unwrap_err();
+    assert!(matches!(err, AuthError::BadRequest(_)));
+
+    // Empty Google subject must fail.
+    let empty_sub_svc = GoogleOAuthAppService::new(StubProvider {
+        token_set: basic_token_set(),
+        userinfo: super::super::GoogleUserInfo {
+            sub: "   ".to_string(),
+            ..verified_userinfo()
+        },
+    });
+    let err = empty_sub_svc
+        .handle_google_callback(
+            &repo,
+            callback_request("state-1"),
+            login_state("state-1"),
+            |_| Ok("enc".to_string()),
+        )
+        .await
+        .unwrap_err();
+    assert!(matches!(err, AuthError::OAuthError(_)));
+}
+
+#[tokio::test]
 async fn handle_google_callback_requires_verified_email() {
     let repo = MemoryRepo::new();
 

@@ -48,3 +48,45 @@ async fn set_password_requires_good_strength() {
     assert!(analyzer.analyze(strong_password).strength >= PasswordStrength::Good);
     assert!(service.set_password(user.id, strong_password).await.is_ok());
 }
+
+#[tokio::test]
+async fn oversized_password_rejected_on_set_change_reset_and_login() {
+    let user = make_user("oversized@example.com");
+    let repo = Arc::new(MemoryRepo::new(10));
+    repo.insert_user(user.clone()).await;
+    let service = service(repo, None);
+
+    let oversized = format!("Z3bra!Lamp#{}", "a".repeat(1024));
+    assert!(oversized.len() > 1024);
+
+    assert!(matches!(
+        service.set_password(user.id, &oversized).await,
+        Err(PasswordAuthError::PasswordTooWeak(_))
+    ));
+
+    service
+        .set_password(user.id, "Z3bra!Lamp#Rain7")
+        .await
+        .unwrap();
+
+    assert!(matches!(
+        service.verify_login(&user.email, &oversized).await,
+        Err(PasswordAuthError::WrongPassword)
+    ));
+    assert!(matches!(
+        service
+            .change_password(user.id, &oversized, "NewValidPass#99")
+            .await,
+        Err(PasswordAuthError::WrongPassword)
+    ));
+    assert!(matches!(
+        service
+            .change_password(user.id, "Z3bra!Lamp#Rain7", &oversized)
+            .await,
+        Err(PasswordAuthError::PasswordTooWeak(_))
+    ));
+    assert!(matches!(
+        service.reset_password(user.id, &oversized).await,
+        Err(PasswordAuthError::PasswordTooWeak(_))
+    ));
+}

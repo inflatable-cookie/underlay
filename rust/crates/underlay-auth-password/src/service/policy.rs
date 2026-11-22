@@ -4,6 +4,7 @@ use underlay_ratelimit::RateLimitBackend;
 use crate::errors::{PasswordAuthError, PasswordAuthResult};
 use crate::strength::MIN_PASSWORD_STRENGTH;
 
+use super::core::MAX_PASSWORD_BYTES;
 use super::{PasswordAuthRepository, PasswordAuthService};
 
 impl<R, H, V, L> PasswordAuthService<R, H, V, L>
@@ -28,6 +29,12 @@ where
     }
 
     pub(super) async fn validate_new_password(&self, password: &str) -> PasswordAuthResult<()> {
+        if password.len() > MAX_PASSWORD_BYTES {
+            return Err(PasswordAuthError::PasswordTooWeak(format!(
+                "Password must be at most {MAX_PASSWORD_BYTES} bytes"
+            )));
+        }
+
         let analysis = self.analyzer.analyze(password);
 
         if self.is_compromised_password(password).await? {

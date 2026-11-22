@@ -4,6 +4,7 @@ use underlay_ratelimit::RateLimitBackend;
 
 use crate::errors::{PasswordAuthError, PasswordAuthResult};
 
+use super::core::MAX_PASSWORD_BYTES;
 use super::{PasswordAuthRepository, PasswordAuthService};
 
 impl<R, H, V, L> PasswordAuthService<R, H, V, L>
@@ -41,6 +42,10 @@ where
                 self.config.rate_limit_max_attempts(),
             )
             .await?;
+        }
+
+        if password.len() > MAX_PASSWORD_BYTES {
+            return Err(PasswordAuthError::WrongPassword);
         }
 
         let user = match self

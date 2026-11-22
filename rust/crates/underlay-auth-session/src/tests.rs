@@ -223,6 +223,64 @@ async fn refresh_revokes_deleted_accounts_session() {
     ));
 }
 
+struct MissingAccounts;
+
+#[async_trait]
+impl AccountProvider for MissingAccounts {
+    async fn account_state(&self, _user_id: Uuid) -> AuthResult<Option<AccountState>> {
+        Ok(None)
+    }
+}
+
+#[tokio::test]
+async fn refresh_revokes_session_when_account_is_missing() {
+    let (config, _) = JwtConfig::generate().unwrap();
+    let jwt = JwtService::new(config).unwrap();
+    let service = SessionService::new(jwt, InMemoryRepo::new(), MissingAccounts);
+    let user_id = Uuid::new_v7();
+    let (tokens, _) = service
+        .create_session(user_id, vec!["user".to_string()], None)
+        .await
+        .unwrap();
+
+    assert!(service
+        .verify_access_principal(&tokens.access_token)
+        .await
+        .is_ok());
+
+    let err = service
+        .refresh(&tokens.refresh_token, None)
+        .await
+        .unwrap_err();
+    assert!(matches!(err, AuthError::UserNotFound));
+    assert!(matches!(
+        service.verify_access_principal(&tokens.access_token).await,
+        Err(AuthError::SessionRevoked)
+    ));
+    assert!(service
+        .list_sessions_for_user(user_id)
+        .await
+        .unwrap()
+        .iter()
+        .all(|s| !s.is_active));
+}
+
+#[test]
+fn session_service_config_accessors_and_builders() {
+    let default_cfg = crate::SessionServiceConfig::new();
+    assert_eq!(
+        default_cfg.absolute_session_timeout(),
+        Duration::from_secs(30 * 24 * 60 * 60)
+    );
+    assert!(!default_cfg.refresh_fingerprint_strict());
+
+    let custom = default_cfg
+        .with_absolute_session_timeout(Duration::from_secs(600))
+        .with_refresh_fingerprint_strict(true);
+    assert_eq!(custom.absolute_session_timeout(), Duration::from_secs(600));
+    assert!(custom.refresh_fingerprint_strict());
+}
+
 #[tokio::test]
 async fn replayed_refresh_token_revokes_family() {
     let (service, _jwt) = service_with(AccountStatus::Active, &["user"]);

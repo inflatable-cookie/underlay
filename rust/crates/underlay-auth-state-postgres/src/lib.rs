@@ -2,7 +2,7 @@ use chrono::{Duration, Utc};
 use serde::{de::DeserializeOwned, Serialize};
 use sqlx::Row;
 
-use underlay_core::Uuid;
+use underlay_core::{RawUuid, Uuid};
 use underlay_db::QualifiedTableName;
 
 const DEFAULT_AUTH_STATE_TABLE: &str = "auth.auth_state";
@@ -42,7 +42,8 @@ impl AuthStateStore {
 
     /// Create a short-lived auth state row.
     ///
-    /// This stores state in `auth.auth_state` and returns the generated UUID.
+    /// This stores state in `auth.auth_state` with a PostgreSQL-generated random
+    /// UUIDv4 (`gen_random_uuid()`) and returns the generated handle.
     pub async fn create(
         &self,
         user_id: Option<Uuid>,
@@ -50,28 +51,31 @@ impl AuthStateStore {
         state: serde_json::Value,
         ttl: Duration,
     ) -> Result<Uuid, AuthStateError> {
-        let id = Uuid::new_v7();
         let now = Utc::now();
         let expires_at = now + ttl;
 
-        sqlx::query(sqlx::AssertSqlSafe(format!(
+        let row = sqlx::query(sqlx::AssertSqlSafe(format!(
             r#"
             INSERT INTO {} (id, user_id, state_type, state, created_at, expires_at)
-            VALUES ($1, $2, $3, $4, $5, $6)
+            VALUES (gen_random_uuid(), $1, $2, $3, $4, $5)
+            RETURNING id
             "#,
             self.table.quoted()
         )))
-        .bind(id.into_inner())
         .bind(user_id.map(|u| u.into_inner()))
         .bind(state_type)
         .bind(state)
         .bind(now)
         .bind(expires_at)
-        .execute(&self.pool)
+        .fetch_one(&self.pool)
         .await
         .map_err(AuthStateError::Db)?;
 
-        Ok(id)
+        let id = row
+            .try_get::<RawUuid, _>("id")
+            .map_err(AuthStateError::Db)?;
+
+        Ok(Uuid::from(id))
     }
 
     pub async fn create_user<T: Serialize>(

@@ -92,6 +92,7 @@ async fn user_state_create_load_consume_round_trip() {
         )
         .await
         .expect("create_user");
+    assert_eq!(id.into_inner().get_version_num(), 4);
 
     // Loads for the right user + type.
     let loaded = store
