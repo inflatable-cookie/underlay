@@ -108,7 +108,10 @@ impl ValidationError {
                         existing.message.push_str(&incoming.message);
                     }
                 }
-                if existing.code.is_none() {
+                // Keep the first non-empty code. `Some("")` counts as no code.
+                let existing_code_is_blank = existing.code.as_deref().is_none_or(str::is_empty);
+                let incoming_code_is_set = incoming.code.as_deref().is_some_and(|c| !c.is_empty());
+                if existing_code_is_blank && incoming_code_is_set {
                     existing.code = incoming.code;
                 }
             }

@@ -225,7 +225,12 @@ where
             checks: verification.checks,
             issues: verification.issues,
         };
-        persist_stage_output(run_store, ctx, StageName::Verify, &output).await?;
+        // Only a passing Verify is a completed checkpoint. A failed one must
+        // stay unpersisted so a resumed run re-runs verification rather than
+        // skipping past it with the failed snapshot.
+        if output.passed {
+            persist_stage_output(run_store, ctx, StageName::Verify, &output).await?;
+        }
         Ok(output)
     }
 }

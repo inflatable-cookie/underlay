@@ -15,9 +15,14 @@ use std::sync::LazyLock;
 /// assert!(validators::email("not-an-email").is_err());
 /// ```
 pub fn email(value: &str) -> Result<(), FieldError> {
+    // Each dot-separated domain label is non-empty and starts and ends with an
+    // alphanumeric character; hyphens are allowed only inside a label. The TLD
+    // is at least two ASCII letters.
     static EMAIL_REGEX: LazyLock<Regex> = LazyLock::new(|| {
-        Regex::new(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
-            .expect("email regex should compile")
+        Regex::new(
+            r"^[a-zA-Z0-9._%+-]+@(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$",
+        )
+        .expect("email regex should compile")
     });
 
     if EMAIL_REGEX.is_match(value) {

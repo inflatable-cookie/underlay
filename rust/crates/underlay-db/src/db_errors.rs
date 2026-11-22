@@ -90,21 +90,21 @@ pub fn describe_db_error(operation: &str, err: &sqlx::Error) -> String {
         sqlx::Error::PoolTimedOut => {
             tracing::error!(operation = %operation, "database connection pool timed out");
             format!(
-                "Database error while {}. Database connection pool timed out. Suggested fix: check pool sizing and long-running queries.",
+                "Database error while {}. Database connection pool timed out. Retry the operation or contact support if the problem persists.",
                 operation
             )
         }
         sqlx::Error::PoolClosed => {
             tracing::error!(operation = %operation, "database connection pool is closed");
             format!(
-                "Database error while {}. Database connection pool is closed. Suggested fix: verify service startup and pool lifecycle.",
+                "Database error while {}. Database connection pool is closed. Retry the operation or contact support if the problem persists.",
                 operation
             )
         }
         sqlx::Error::Io(io_err) => {
             tracing::error!(operation = %operation, error = %io_err, "database I/O error");
             format!(
-                "Database error while {}. Database I/O error. Suggested fix: check database network connectivity and host availability.",
+                "Database error while {}. Database connection failed. Retry the operation or contact support if the problem persists.",
                 operation
             )
         }

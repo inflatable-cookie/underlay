@@ -11,7 +11,11 @@ pub(crate) fn generate_field_validation(field: &Field) -> SynResult<Option<Token
         .ok_or_else(|| syn::Error::new_spanned(field, "Expected named field"))?;
 
     let field_name_str = field_name.to_string();
-    let is_option = is_option_type(&field.ty);
+    let option_inner = option_inner_type(&field.ty);
+    let is_option = option_inner.is_some();
+    // A blank-string check only makes sense for string payloads. Other `Option<T>`
+    // payloads get presence checking alone, which the `None` branch below enforces.
+    let option_payload_is_string = option_inner.is_some_and(is_string_like);
 
     let mut validations = Vec::new();
     let mut is_required = false;
@@ -21,7 +25,13 @@ pub(crate) fn generate_field_validation(field: &Field) -> SynResult<Option<Token
             continue;
         }
 
-        let parsed = parse_validate_attr(attr, field_name, &field_name_str, is_option)?;
+        let parsed = parse_validate_attr(
+            attr,
+            field_name,
+            &field_name_str,
+            is_option,
+            option_payload_is_string,
+        )?;
         if parsed.skip {
             return Ok(None);
         }
@@ -29,7 +39,9 @@ pub(crate) fn generate_field_validation(field: &Field) -> SynResult<Option<Token
         validations.extend(parsed.validations);
     }
 
-    if validations.is_empty() {
+    // `Option<T>` with `required` still needs the `None` branch, even when no
+    // value validator applies to the payload type.
+    if validations.is_empty() && !(is_option && is_required) {
         return Ok(None);
     }
 
@@ -64,17 +76,18 @@ pub(crate) fn generate_field_validation(field: &Field) -> SynResult<Option<Token
     Ok(Some(combined))
 }
 
-fn is_option_type(ty: &syn::Type) -> bool {
+/// Returns the payload type of `Option<T>`, or `None` for any other type.
+fn option_inner_type(ty: &syn::Type) -> Option<&syn::Type> {
     let mut current = ty;
     while let syn::Type::Group(group) = current {
         current = &group.elem;
     }
 
     let syn::Type::Path(type_path) = current else {
-        return false;
+        return None;
     };
     if type_path.qself.is_some() {
-        return false;
+        return None;
     }
 
     let segments = &type_path.path.segments;
@@ -87,10 +100,37 @@ fn is_option_type(ty: &syn::Type) -> bool {
         }
         _ => false,
     };
+    if !is_option_path {
+        return None;
+    }
 
-    is_option_path
-        && matches!(
-            segments.last().map(|seg| &seg.arguments),
-            Some(syn::PathArguments::AngleBracketed(args)) if args.args.len() == 1
-        )
+    let last = segments.last()?;
+    let syn::PathArguments::AngleBracketed(args) = &last.arguments else {
+        return None;
+    };
+    if args.args.len() != 1 {
+        return None;
+    }
+    match args.args.first()? {
+        syn::GenericArgument::Type(inner) => Some(inner),
+        _ => None,
+    }
+}
+
+/// Whether a type is `String` or `str`, optionally behind references.
+///
+/// Matching is syntactic: a newtype that only derefs to `str` is not detected and
+/// gets presence checking alone.
+fn is_string_like(ty: &syn::Type) -> bool {
+    match ty {
+        syn::Type::Group(group) => is_string_like(&group.elem),
+        syn::Type::Paren(paren) => is_string_like(&paren.elem),
+        syn::Type::Reference(reference) => is_string_like(&reference.elem),
+        syn::Type::Path(type_path) if type_path.qself.is_none() => type_path
+            .path
+            .segments
+            .last()
+            .is_some_and(|seg| seg.ident == "String" || seg.ident == "str"),
+        _ => false,
+    }
 }

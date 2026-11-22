@@ -12,5 +12,7 @@ mod collections;
 mod custom;
 #[path = "derive_tests/nested.rs"]
 mod nested;
+#[path = "derive_tests/required.rs"]
+mod required;
 #[path = "derive_tests/simple.rs"]
 mod simple;

@@ -37,6 +37,30 @@ fn describe_db_error_falls_back_for_empty_operation() {
     assert!(message.contains("pool timed out"));
 }
 
+#[test]
+fn describe_db_error_pool_and_io_messages_omit_operational_hints() {
+    let io_err = sqlx::Error::Io(std::io::Error::new(
+        std::io::ErrorKind::ConnectionRefused,
+        "db-primary.internal:5432 refused",
+    ));
+    let cases = [sqlx::Error::PoolTimedOut, sqlx::Error::PoolClosed, io_err];
+
+    for err in &cases {
+        let message = describe_db_error("loading profile", err);
+        assert!(message.starts_with("Database error while loading profile."));
+        assert!(message.contains("Retry the operation"));
+        assert!(!message.contains("Suggested fix"));
+        assert!(!message.contains("pool sizing"));
+        assert!(!message.contains("long-running queries"));
+        assert!(!message.contains("service startup"));
+        assert!(!message.contains("pool lifecycle"));
+        assert!(!message.contains("network connectivity"));
+        assert!(!message.contains("host availability"));
+        assert!(!message.contains("db-primary.internal"));
+        assert!(!message.contains("5432"));
+    }
+}
+
 #[derive(Debug)]
 struct FakeDbError {
     message: String,

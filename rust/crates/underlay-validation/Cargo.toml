@@ -42,6 +42,7 @@ slugify = ["dep:deunicode"]
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+uuid = { workspace = true }
 
 [lints]
 workspace = true

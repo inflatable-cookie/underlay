@@ -13,6 +13,7 @@ pub(crate) fn parse_validate_attr(
     field_name: &Ident,
     field_name_str: &str,
     is_option: bool,
+    option_payload_is_string: bool,
 ) -> SynResult<ParsedValidateAttr> {
     let mut validations = Vec::new();
     let mut skip = false;
@@ -67,11 +68,15 @@ pub(crate) fn parse_validate_attr(
 
         if path.is_ident("required") {
             required = true;
-            validations.push(quote! {
-                if let Err(e) = ::underlay_validation::validators::required(#ref_expr) {
-                    errors.add_field(#field_name_str, e);
-                }
-            });
+            // `Option<T>` presence is enforced by the `None` branch in `field.rs`.
+            // The blank-string check only applies to string payloads.
+            if !is_option || option_payload_is_string {
+                validations.push(quote! {
+                    if let Err(e) = ::underlay_validation::validators::required(#ref_expr) {
+                        errors.add_field(#field_name_str, e);
+                    }
+                });
+            }
             return Ok(());
         }
 
