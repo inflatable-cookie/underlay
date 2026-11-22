@@ -84,6 +84,12 @@
     fieldErrors = initialFieldErrors;
   });
 
+  let disposed = false;
+
+  $effect.pre(() => () => {
+    disposed = true;
+  });
+
   // Default navigation function uses window.location
   const defaultNavigate: SpaNavigateFn = (url: string) => {
     window.location.href = url;
@@ -97,7 +103,7 @@
     async function handleSubmit(event: SubmitEvent) {
       event.preventDefault();
 
-      if (loading) {
+      if (loading || disposed) {
         return;
       }
 
@@ -118,6 +124,9 @@
 
         // Call the submit handler
         const result = await onSubmit(formData);
+        if (disposed) {
+          return;
+        }
 
         // Update state based on result
         success = result.success;
@@ -132,16 +141,21 @@
         // Handle redirect if specified. Redirect targets can originate from
         // an untrusted redirectTo query param, so resolve to a safe
         // same-origin path before navigating.
-        if (result.success && result.redirectTo) {
+        if (!disposed && result.success && result.redirectTo) {
           const nav = navigate ?? defaultNavigate;
           await nav(resolveRedirectTo(result.redirectTo));
         }
       } catch (e) {
+        if (disposed) {
+          return;
+        }
         // Handle unexpected errors
         error = e instanceof Error ? e.message : "An unexpected error occurred";
         success = false;
       } finally {
-        loading = false;
+        if (!disposed) {
+          loading = false;
+        }
       }
     }
 

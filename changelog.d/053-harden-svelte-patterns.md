@@ -1,0 +1,6 @@
+### Fixed
+- Roll back `currentPage` and `cursorHistory` on failed or unauthenticated `nextPage()` / `prevPage()` calls in `ts/src/patterns/pagination-server.svelte.ts`, supersede and queue `setPageSize()` behind active in-flight requests, wrap `localStorage` access in `try/catch`, and guard state updates against unmount disposal.
+- Return the actually merged `addedIds` from `applyReorderConflict()` (`ts/src/patterns/reorder-conflict.ts`) and assign them directly to `highlightedIds` in `ts/src/patterns/reorder-session.svelte.ts`, add a generation guard to `createLoadedReorderSession.enter()` so `exit()` cancels pending loads, and manage `createReorderController` outside `$derived`.
+- Add a sequence counter and unmount disposal guard to `createAiRoutingOpsController().refreshAll()` and ignore non-finite (`NaN` / `Infinity`) inputs in range setters in `ts/src/patterns/ai-routing-ops.svelte.ts`.
+- Guard `usePasskeyRegistration().start()` and `usePasskeyAuthentication().start()` against concurrent re-entrant WebAuthn ceremonies in `ts/src/patterns/passkey.svelte.ts`.
+- Add an unmount disposal guard in `ts/src/patterns/SpaFormShell.svelte` before updating state or invoking `onResult` / `navigate`, and untrack `options.queryKey?.()` inside `doFetch` in `ts/src/patterns/authenticated-data.svelte.ts`.

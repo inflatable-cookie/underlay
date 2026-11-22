@@ -2,8 +2,14 @@ import { describe, expect, it, vi } from "vitest";
 
 async function loadModule() {
 	vi.resetModules();
-	(globalThis as any).$state = <T>(initial: T) => initial;
+	(globalThis as any).$state = Object.assign(<T>(initial: T) => initial, {
+		raw: <T>(initial: T) => initial,
+	});
 	(globalThis as any).$derived = ((value: unknown) => value) as typeof $derived;
+	(globalThis as any).$effect = Object.assign(() => {}, {
+		pre: () => {},
+		root: () => () => {},
+	});
 	return await import("../../src/patterns/reorder-session.svelte");
 }
 
@@ -20,7 +26,7 @@ describe("patterns/reorder-session.svelte.ts", () => {
 		const controller = {
 			pending: [
 				{ id: "a", label: "A" },
-				{ id: "b", label: "B" }
+				{ id: "b", label: "B" },
 			],
 			mergeNewItems(items: Array<{ id: string; label: string }>) {
 				const existing = new Set(this.pending.map((item) => item.id));
@@ -29,14 +35,14 @@ describe("patterns/reorder-session.svelte.ts", () => {
 			removeItems(idsToRemove: string[]) {
 				const removeSet = new Set(idsToRemove);
 				this.pending = this.pending.filter((item) => !removeSet.has(item.id));
-			}
+			},
 		};
 
 		const session = createLocalReorderSession({
 			getController: () => controller as any,
 			getLatestItems: () => [
 				{ id: "a", label: "A" },
-				{ id: "c", label: "C" }
+				{ id: "c", label: "C" },
 			],
 			entityLabel: "item",
 			pushInfo,
@@ -44,7 +50,7 @@ describe("patterns/reorder-session.svelte.ts", () => {
 			onRefresh,
 			onDataChange,
 			clearSelection,
-			clearSelectionMode
+			clearSelectionMode,
 		});
 
 		session.enter();
@@ -58,9 +64,9 @@ describe("patterns/reorder-session.svelte.ts", () => {
 				error: { message: "Items changed" },
 				context: {
 					added_ids: ["c"],
-					removed_ids: ["b"]
-				}
-			}
+					removed_ids: ["b"],
+				},
+			},
 		});
 
 		expect(message).toBe("Items changed");
@@ -99,7 +105,7 @@ describe("patterns/reorder-session.svelte.ts", () => {
 			onRefresh,
 			onDataChange,
 			clearSelection,
-			clearSelectionMode
+			clearSelectionMode,
 		});
 
 		await failure.enter();
@@ -110,8 +116,8 @@ describe("patterns/reorder-session.svelte.ts", () => {
 			loadItems: async () => ({
 				items: [
 					{ rowId: "a", label: "A" },
-					{ rowId: "b", label: "B" }
-				]
+					{ rowId: "b", label: "B" },
+				],
 			}),
 			mapItems: (items: Array<{ rowId: string; label: string }>) =>
 				items.map((item) => ({ ...item, id: item.rowId })),
@@ -123,7 +129,7 @@ describe("patterns/reorder-session.svelte.ts", () => {
 			onRefresh,
 			onDataChange,
 			clearSelection,
-			clearSelectionMode
+			clearSelectionMode,
 		});
 
 		await loaded.enter();
@@ -135,9 +141,9 @@ describe("patterns/reorder-session.svelte.ts", () => {
 				error: { message: "Items changed" },
 				context: {
 					added_ids: ["c"],
-					removed_ids: ["b"]
-				}
-			}
+					removed_ids: ["b"],
+				},
+			},
 		});
 
 		expect(message).toBe("Items changed");
