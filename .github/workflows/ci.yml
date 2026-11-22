@@ -32,6 +32,12 @@ jobs:
       - name: Validate and docs (effigy qa)
         run: effigy qa
 
+      # The conformance checker (ts/bin/underlay-consumer-security.sh) requires
+      # ripgrep on PATH and exits 2 without it. ubuntu-latest does not guarantee
+      # rg, so install it for this step.
+      - name: Install ripgrep
+        run: sudo apt-get update && sudo apt-get install -y ripgrep
+
       - name: Consumer conformance fixtures
         run: effigy check:consumer-conformance-fixtures
 

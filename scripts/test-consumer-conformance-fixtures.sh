@@ -193,11 +193,11 @@ pub async fn list_legacy_projects(pool: &PgPool) -> Result<Vec<Project>> {
 EOF
 }
 
-if ! rg -Uq '"files"\s*:\s*\[\s*"ts"\s*\]' "$REPO_ROOT/package.json"; then
+if ! tr '\n' ' ' < "$REPO_ROOT/package.json" | grep -Eq '"files"[[:space:]]*:[[:space:]]*\[[[:space:]]*"ts"[[:space:]]*\]'; then
 	echo "package.json must keep the checker under the published ts file set" >&2
 	exit 1
 fi
-if ! rg -q '"underlay-consumer-security"\s*:\s*"\./ts/bin/underlay-consumer-security\.sh"' "$REPO_ROOT/package.json"; then
+if ! grep -Eq '"underlay-consumer-security"[[:space:]]*:[[:space:]]*"\./ts/bin/underlay-consumer-security\.sh"' "$REPO_ROOT/package.json"; then
 	echo "package.json must expose the staged checker as underlay-consumer-security" >&2
 	exit 1
 fi
@@ -264,71 +264,71 @@ ALL_CHECKS="env-fail-closed,db-errors,openapi-gated,seeds-gated,html-sanitized,s
 
 for bash_path in "${BASH_BINARIES[@]}"; do
 	SAFE_OUTPUT="$(run_both_entry_points "$SAFE_ROOT" 0 "$bash_path")"
-	if ! rg -q 'All conformance checks passed\.' <<<"$SAFE_OUTPUT"; then
+	if ! grep -Eq 'All conformance checks passed\.' <<<"$SAFE_OUTPUT"; then
 		echo "safe fixture did not pass the consumer checker under $bash_path" >&2
 		printf '%s\n' "$SAFE_OUTPUT" >&2
 		exit 1
 	fi
 
 	UNSAFE_OUTPUT="$(run_both_entry_points "$UNSAFE_ROOT" 1 "$bash_path")"
-	if ! rg -q 'src/routes/unsafe\.rs:.*mount must be inside a development-only gate' <<<"$UNSAFE_OUTPUT"; then
+	if ! grep -Eq 'src/routes/unsafe\.rs:.*mount must be inside a development-only gate' <<<"$UNSAFE_OUTPUT"; then
 		echo "unguarded cross-file OpenAPI mount was not reported precisely under $bash_path" >&2
 		printf '%s\n' "$UNSAFE_OUTPUT" >&2
 		exit 1
 	fi
-	if ! rg -q 'src/queries\.rs:.*list_projects query uses fetch_all' <<<"$UNSAFE_OUTPUT"; then
+	if ! grep -Eq 'src/queries\.rs:.*list_projects query uses fetch_all' <<<"$UNSAFE_OUTPUT"; then
 		echo "unbounded list query was not reported beside unrelated LIMIT and allowance text" >&2
 		printf '%s\n' "$UNSAFE_OUTPUT" >&2
 		exit 1
 	fi
-	if ! rg -q 'src/queries\.rs:.*list_archived_projects query uses fetch_all' <<<"$UNSAFE_OUTPUT"; then
+	if ! grep -Eq 'src/queries\.rs:.*list_archived_projects query uses fetch_all' <<<"$UNSAFE_OUTPUT"; then
 		echo "unbounded nongeneric module-constant SQL was not reported at its list/search call site" >&2
 		printf '%s\n' "$UNSAFE_OUTPUT" >&2
 		exit 1
 	fi
-	if ! rg -q 'src/queries\.rs:.*list_generic_projects query uses fetch_all' <<<"$UNSAFE_OUTPUT"; then
+	if ! grep -Eq 'src/queries\.rs:.*list_generic_projects query uses fetch_all' <<<"$UNSAFE_OUTPUT"; then
 		echo "unbounded generic query_as const SQL was not reported" >&2
 		printf '%s\n' "$UNSAFE_OUTPUT" >&2
 		exit 1
 	fi
-	if ! rg -q 'src/queries\.rs:.*list_generic_scalar query uses fetch_all' <<<"$UNSAFE_OUTPUT"; then
+	if ! grep -Eq 'src/queries\.rs:.*list_generic_scalar query uses fetch_all' <<<"$UNSAFE_OUTPUT"; then
 		echo "unbounded nested-generic query_scalar const SQL was not reported" >&2
 		printf '%s\n' "$UNSAFE_OUTPUT" >&2
 		exit 1
 	fi
-	if rg -q 'src/queries\.rs:.*list_bounded_generic_scalar query uses fetch_all' <<<"$UNSAFE_OUTPUT"; then
+	if grep -Eq 'src/queries\.rs:.*list_bounded_generic_scalar query uses fetch_all' <<<"$UNSAFE_OUTPUT"; then
 		echo "query_scalar with a genuine top-level SQL LIMIT was reported" >&2
 		printf '%s\n' "$UNSAFE_OUTPUT" >&2
 		exit 1
 	fi
-	if [[ "$(rg -c 'mount must be inside a development-only gate' <<<"$UNSAFE_OUTPUT")" -ne 3 ]]; then
+	if [[ "$(grep -Ec 'mount must be inside a development-only gate' <<<"$UNSAFE_OUTPUT")" -ne 3 ]]; then
 		echo "safe and unsafe OpenAPI mounts were not distinguished by their own source paths" >&2
 		printf '%s\n' "$UNSAFE_OUTPUT" >&2
 		exit 1
 	fi
-	if [[ "$(rg -c 'list_projects query uses fetch_all' <<<"$UNSAFE_OUTPUT")" -ne 1 ]]; then
+	if [[ "$(grep -Ec 'list_projects query uses fetch_all' <<<"$UNSAFE_OUTPUT")" -ne 1 ]]; then
 		echo "query-local bounds or allowances were not scoped to their own query" >&2
 		printf '%s\n' "$UNSAFE_OUTPUT" >&2
 		exit 1
 	fi
-	if [[ "$(rg -c 'list_generic_projects query uses fetch_all' <<<"$UNSAFE_OUTPUT")" -ne 1 ]]; then
+	if [[ "$(grep -Ec 'list_generic_projects query uses fetch_all' <<<"$UNSAFE_OUTPUT")" -ne 1 ]]; then
 		echo "a neighboring bounded query or allowance hid generic query_as findings" >&2
 		printf '%s\n' "$UNSAFE_OUTPUT" >&2
 		exit 1
 	fi
 
 	SKIP_ONLY_OUTPUT="$(run_both_entry_points "$SKIP_ONLY_ROOT" 2 "$bash_path" "$ALL_CHECKS")"
-	if ! rg -q 'Checks executed: 0; skipped: 18' <<<"$SKIP_ONLY_OUTPUT" || \
-		! rg -q 'No conformance checks ran; coverage was not assessed\.' <<<"$SKIP_ONLY_OUTPUT"; then
+	if ! grep -Eq 'Checks executed: 0; skipped: 18' <<<"$SKIP_ONLY_OUTPUT" || \
+		! grep -Eq 'No conformance checks ran; coverage was not assessed\.' <<<"$SKIP_ONLY_OUTPUT"; then
 		echo "all-skipped execution did not report zero coverage under $bash_path" >&2
 		printf '%s\n' "$SKIP_ONLY_OUTPUT" >&2
 		exit 1
 	fi
 
 	PARTIAL_SKIP_OUTPUT="$(run_both_entry_points "$SAFE_ROOT" 0 "$bash_path" "openapi-gated,bounded-queries")"
-	if ! rg -q 'Checks executed: 16; skipped: 2' <<<"$PARTIAL_SKIP_OUTPUT" || \
-		! rg -q 'All executed conformance checks passed; 2 check\(s\) skipped\.' <<<"$PARTIAL_SKIP_OUTPUT" || \
-		rg -q 'All conformance checks passed\.' <<<"$PARTIAL_SKIP_OUTPUT"; then
+	if ! grep -Eq 'Checks executed: 16; skipped: 2' <<<"$PARTIAL_SKIP_OUTPUT" || \
+		! grep -Eq 'All executed conformance checks passed; 2 check\(s\) skipped\.' <<<"$PARTIAL_SKIP_OUTPUT" || \
+		grep -Eq 'All conformance checks passed\.' <<<"$PARTIAL_SKIP_OUTPUT"; then
 		echo "partial skips did not retain an honest passing report under $bash_path" >&2
 		printf '%s\n' "$PARTIAL_SKIP_OUTPUT" >&2
 		exit 1
