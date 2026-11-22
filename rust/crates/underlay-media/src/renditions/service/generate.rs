@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use underlay_blob::{BlobAdapter, BlobObjectKey};
 
 use super::super::keys::parse_rendition_result_key;
@@ -118,7 +120,7 @@ impl<B: BlobAdapter> RenditionService<B> {
 
         generate_and_store(
             self.blob_adapter.as_ref(),
-            source_bytes.to_vec(),
+            Arc::new(source_bytes.to_vec()),
             target_key,
             max_dimension,
             self.config.jpeg_quality(),

@@ -294,15 +294,28 @@ async fn test_initiate_upload_validated_enforces_config() {
     let _ = fs::remove_dir_all(&temp_dir).await;
 }
 
+fn create_unique_test_dir(prefix: &str) -> std::path::PathBuf {
+    let base = std::env::temp_dir();
+    let pid = std::process::id();
+    for _ in 0..32 {
+        let candidate = base.join(format!("{prefix}-{pid}-{:016x}", rand::random::<u64>()));
+        match std::fs::create_dir(&candidate) {
+            Ok(()) => return candidate,
+            Err(err) if err.kind() == std::io::ErrorKind::AlreadyExists => continue,
+            Err(err) => panic!("failed to create unique test directory {candidate:?}: {err}"),
+        }
+    }
+    panic!("failed to allocate unique test directory for {prefix}");
+}
+
 #[cfg(unix)]
 #[tokio::test]
 async fn test_local_adapter_head_refuses_symlinks() {
-    let temp_dir = std::env::temp_dir().join("underlay-blob-head-symlink-test");
-    let outside_dir = std::env::temp_dir().join("underlay-blob-head-symlink-outside");
-    let _ = fs::remove_dir_all(&temp_dir).await;
-    let _ = fs::remove_dir_all(&outside_dir).await;
-    fs::create_dir_all(&temp_dir).await.unwrap();
-    fs::create_dir_all(&outside_dir).await.unwrap();
+    let root_dir = create_unique_test_dir("underlay-blob-head-symlink-test");
+    let temp_dir = root_dir.join("storage");
+    let outside_dir = root_dir.join("outside");
+    fs::create_dir(&temp_dir).await.unwrap();
+    fs::create_dir(&outside_dir).await.unwrap();
 
     fs::write(temp_dir.join("real.txt"), b"real").await.unwrap();
     fs::write(outside_dir.join("secret.txt"), b"secret")
@@ -334,14 +347,13 @@ async fn test_local_adapter_head_refuses_symlinks() {
         "expected InvalidKey for symlinked parent, got {parent_err:?}"
     );
 
-    let _ = fs::remove_dir_all(&temp_dir).await;
-    let _ = fs::remove_dir_all(&outside_dir).await;
+    let _ = fs::remove_dir_all(&root_dir).await;
 }
 
 #[tokio::test]
 async fn test_local_adapter_initiate_upload_uses_join_public_url() {
-    let temp_dir = std::env::temp_dir().join("underlay-blob-upload-url-test");
-    let _ = fs::remove_dir_all(&temp_dir).await;
+    let root_dir = create_unique_test_dir("underlay-blob-upload-url-test");
+    let temp_dir = root_dir.join("storage");
 
     let config = LocalConfig::new(&temp_dir, "http://localhost:8080/uploads/");
     let adapter = LocalAdapter::new(config).await.unwrap();
@@ -355,5 +367,5 @@ async fn test_local_adapter_initiate_upload_uses_join_public_url() {
         "initiate_upload should join and encode URLs consistently with public_url"
     );
 
-    let _ = fs::remove_dir_all(&temp_dir).await;
+    let _ = fs::remove_dir_all(&root_dir).await;
 }

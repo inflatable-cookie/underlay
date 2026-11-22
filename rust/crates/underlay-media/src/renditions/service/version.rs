@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use underlay_blob::BlobAdapter;
 
 use super::super::keys::parse_rendition_result_key;
@@ -57,7 +59,7 @@ impl<B: BlobAdapter> RenditionService<B> {
         )
         .await
         {
-            Ok(bytes) => bytes,
+            Ok(bytes) => Arc::new(bytes),
             Err(e) => {
                 tracing::warn!(
                     version_id = %version_id,
@@ -69,10 +71,9 @@ impl<B: BlobAdapter> RenditionService<B> {
         };
 
         if let Some(thumb_key) = thumb_key {
-            let thumb_source = source_bytes.clone();
             match generate_and_store(
                 self.blob_adapter.as_ref(),
-                thumb_source,
+                Arc::clone(&source_bytes),
                 &thumb_key,
                 self.config.thumbnail_max_dimension(),
                 self.config.jpeg_quality(),
@@ -206,7 +207,7 @@ impl<B: BlobAdapter> RenditionService<B> {
         )
         .await
         {
-            Ok(bytes) => bytes,
+            Ok(bytes) => Arc::new(bytes),
             Err(e) => {
                 tracing::warn!(
                     version_id = %version_id,
@@ -218,10 +219,9 @@ impl<B: BlobAdapter> RenditionService<B> {
         };
 
         if let Some(thumb_key) = thumb_key {
-            let thumb_source = source_bytes.clone();
             match generate_and_store(
                 self.blob_adapter.as_ref(),
-                thumb_source,
+                Arc::clone(&source_bytes),
                 &thumb_key,
                 self.config.thumbnail_max_dimension(),
                 self.config.jpeg_quality(),

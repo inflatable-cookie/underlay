@@ -72,10 +72,7 @@ impl JobStore for Arc<MemStore> {
         job: &Job,
         error: JobHandlerError,
         config: &crate::types::JobConfig,
-    ) -> Result<JobFailureRecordOutcome, Self::Error> {
-        if self.stale_failure_ids.lock().unwrap().contains(&job.id) {
-            return Ok(JobFailureRecordOutcome::LostOwnership);
-        }
+    ) -> Result<JobFailureOutcome, Self::Error> {
         self.failures.lock().unwrap().push(job.id);
         let will_retry = !error.is_permanent && (job.attempts + 1) < config.max_attempts() as i32;
         let dead_letter_id = if will_retry {
@@ -91,11 +88,25 @@ impl JobStore for Arc<MemStore> {
             max_attempts: config.max_attempts(),
             retry_delay_secs: config.backoff().delay_for_attempt(0).as_secs(),
         });
-        Ok(JobFailureRecordOutcome::Recorded(JobFailureOutcome {
+        Ok(JobFailureOutcome {
             will_retry,
             retry_delay: will_retry.then(|| config.backoff().delay_for_attempt(0)),
             dead_letter_id,
-        }))
+        })
+    }
+
+    async fn mark_failure_fenced(
+        &self,
+        job: &Job,
+        error: JobHandlerError,
+        config: &crate::types::JobConfig,
+    ) -> Result<JobFailureRecordOutcome, Self::Error> {
+        if self.stale_failure_ids.lock().unwrap().contains(&job.id) {
+            return Ok(JobFailureRecordOutcome::LostOwnership);
+        }
+        self.mark_failure(job, error, config)
+            .await
+            .map(JobFailureRecordOutcome::Recorded)
     }
 }
 

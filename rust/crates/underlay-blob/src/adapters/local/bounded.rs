@@ -41,8 +41,10 @@
 //! [`BlobError::Unsupported`] rather than falling back to a weaker
 //! check-then-act resolution while still claiming no-follow behavior.
 
+#[cfg(unix)]
 use std::collections::HashMap;
 
+#[cfg(unix)]
 use chrono::{DateTime, Utc};
 
 use crate::error::BlobResult;

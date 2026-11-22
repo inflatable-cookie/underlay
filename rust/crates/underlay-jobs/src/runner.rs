@@ -252,7 +252,7 @@ where
         config: &JobConfig,
     ) -> Result<bool, S::Error> {
         let message = error.message.clone();
-        let outcome = match self.store.mark_failure(job, error, config).await? {
+        let outcome = match self.store.mark_failure_fenced(job, error, config).await? {
             JobFailureRecordOutcome::Recorded(outcome) => outcome,
             JobFailureRecordOutcome::LostOwnership => {
                 warn!(

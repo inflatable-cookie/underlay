@@ -44,16 +44,32 @@ pub trait JobStore: Send + Sync {
     /// or terminating its loop.
     async fn mark_success(&self, job: &Job) -> Result<JobCompletionOutcome, Self::Error>;
 
+    /// Mark a job as failed with the given error.
+    async fn mark_failure(
+        &self,
+        job: &Job,
+        error: JobHandlerError,
+        config: &JobConfig,
+    ) -> Result<JobFailureOutcome, Self::Error>;
+
     /// Mark a claimed job as failed with the given error, fencing on its attempt count.
     ///
     /// Returns [`JobFailureRecordOutcome::LostOwnership`] when the claimed attempt
     /// no longer owns the running row (for example after stall recovery), so the
     /// runner can log and continue without emitting a duplicate failure event
     /// or terminating its loop.
-    async fn mark_failure(
+    ///
+    /// The default implementation delegates to [`JobStore::mark_failure`] and
+    /// wraps the result in [`JobFailureRecordOutcome::Recorded`] to preserve
+    /// backwards compatibility for existing store implementations.
+    async fn mark_failure_fenced(
         &self,
         job: &Job,
         error: JobHandlerError,
         config: &JobConfig,
-    ) -> Result<JobFailureRecordOutcome, Self::Error>;
+    ) -> Result<JobFailureRecordOutcome, Self::Error> {
+        self.mark_failure(job, error, config)
+            .await
+            .map(JobFailureRecordOutcome::Recorded)
+    }
 }

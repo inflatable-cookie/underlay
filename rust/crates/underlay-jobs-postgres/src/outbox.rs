@@ -773,7 +773,27 @@ impl OutboxProcessor {
     }
 }
 
-struct CatchUnwindFuture<F>(Pin<Box<F>>);
+struct CatchUnwindFuture<F>(Option<Pin<Box<F>>>);
+
+impl<F> CatchUnwindFuture<F> {
+    fn new(fut: F) -> Self {
+        Self(Some(Box::pin(fut)))
+    }
+
+    fn drop_guarded(&mut self) -> std::thread::Result<()> {
+        if let Some(fut) = self.0.take() {
+            panic::catch_unwind(AssertUnwindSafe(move || drop(fut)))
+        } else {
+            Ok(())
+        }
+    }
+}
+
+impl<F> Drop for CatchUnwindFuture<F> {
+    fn drop(&mut self) {
+        let _ = self.drop_guarded();
+    }
+}
 
 impl<F> Future for CatchUnwindFuture<F>
 where
@@ -782,10 +802,19 @@ where
     type Output = std::thread::Result<F::Output>;
 
     fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
-        match panic::catch_unwind(AssertUnwindSafe(|| self.0.as_mut().poll(cx))) {
-            Ok(Poll::Ready(output)) => Poll::Ready(Ok(output)),
+        let Some(inner) = self.0.as_mut() else {
+            return Poll::Ready(Err(Box::new("outbox handler polled after completion")));
+        };
+        match panic::catch_unwind(AssertUnwindSafe(|| inner.as_mut().poll(cx))) {
+            Ok(Poll::Ready(output)) => match self.drop_guarded() {
+                Ok(()) => Poll::Ready(Ok(output)),
+                Err(payload) => Poll::Ready(Err(payload)),
+            },
             Ok(Poll::Pending) => Poll::Pending,
-            Err(payload) => Poll::Ready(Err(payload)),
+            Err(payload) => {
+                let _ = self.drop_guarded();
+                Poll::Ready(Err(payload))
+            }
         }
     }
 }
@@ -819,7 +848,7 @@ where
         }
     };
 
-    match tokio::time::timeout(timeout, CatchUnwindFuture(Box::pin(fut))).await {
+    match tokio::time::timeout(timeout, CatchUnwindFuture::new(fut)).await {
         Ok(Ok(Ok(()))) => Ok(()),
         Ok(Ok(Err(error))) => Err(error.to_string()),
         Ok(Err(payload)) => Err(format!(

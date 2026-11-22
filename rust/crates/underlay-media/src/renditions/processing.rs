@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use underlay_blob::{BlobAdapter, BlobAdapterObjectKeyExt, BlobObjectKey};
 
 use super::keys::parse_rendition_result_key;
@@ -32,7 +34,8 @@ pub(crate) async fn read_generate_and_store<B: BlobAdapter>(
     crop_mode: RenditionCropMode,
     store_label: &str,
 ) -> MediaResult<RenditionResult> {
-    let source_bytes = read_source_bytes(blob_adapter, source_key, max_source_bytes).await?;
+    let source_bytes =
+        Arc::new(read_source_bytes(blob_adapter, source_key, max_source_bytes).await?);
 
     generate_and_store(
         blob_adapter,
@@ -48,7 +51,7 @@ pub(crate) async fn read_generate_and_store<B: BlobAdapter>(
 
 pub(crate) async fn generate_and_store<B: BlobAdapter>(
     blob_adapter: &B,
-    source_bytes: Vec<u8>,
+    source_bytes: Arc<Vec<u8>>,
     target_key: &BlobObjectKey,
     max_dimension: u32,
     jpeg_quality: u8,
