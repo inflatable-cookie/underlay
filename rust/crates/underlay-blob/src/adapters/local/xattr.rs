@@ -10,9 +10,10 @@
 //! attributes are omitted so `head`/`exists` keep their v0.9.6 contract.
 
 use std::collections::HashMap;
-use std::ffi::{CStr, CString};
+use std::ffi::CStr;
 use std::io;
 use std::os::unix::io::RawFd;
+#[cfg(test)]
 use std::path::Path;
 
 use tracing::warn;
@@ -39,10 +40,10 @@ pub(super) fn set_owned_facts(fd: RawFd, facts: &OwnedPublicationFacts) -> io::R
     Ok(())
 }
 
-/// Read reserved ownership xattrs. Never fails for hostile or oversized
-/// reserved attributes: those keys are omitted so ordinary `head`/`exists`
-/// callers do not observe a new IoError.
-pub(super) fn read_owned_metadata(path: &Path) -> HashMap<String, String> {
+/// Read reserved ownership xattrs from a pinned file descriptor. Never fails
+/// for hostile or oversized reserved attributes: those keys are omitted so
+/// ordinary `head`/`exists` callers do not observe a new IoError.
+pub(super) fn read_owned_metadata_fd(fd: RawFd) -> HashMap<String, String> {
     let mut metadata = HashMap::new();
     for meta_key in [
         OWNED_META_VERIFIER,
@@ -50,7 +51,7 @@ pub(super) fn read_owned_metadata(path: &Path) -> HashMap<String, String> {
         OWNED_META_SIZE,
         OWNED_META_MIME,
     ] {
-        match read_reserved_xattr(path, xattr_name(meta_key)) {
+        match read_reserved_xattr_fd(fd, xattr_name(meta_key)) {
             ReservedXattr::Value(value) => {
                 let Ok(text) = String::from_utf8(value) else {
                     continue;
@@ -82,12 +83,9 @@ fn xattr_name(meta_key: &str) -> &'static CStr {
     }
 }
 
-fn read_reserved_xattr(path: &Path, name: &CStr) -> ReservedXattr {
-    let Ok(path) = path_c_string(path) else {
-        return ReservedXattr::Unproven;
-    };
+fn read_reserved_xattr_fd(fd: RawFd, name: &CStr) -> ReservedXattr {
     let mut buf = vec![0u8; MAX_RESERVED_XATTR_BYTES];
-    match sys::getxattr_nofollow(path.as_c_str(), name, buf.as_mut_ptr().cast(), buf.len()) {
+    match sys::fgetxattr(fd, name, buf.as_mut_ptr().cast(), buf.len()) {
         Ok(n) if n <= MAX_RESERVED_XATTR_BYTES => {
             buf.truncate(n);
             ReservedXattr::Value(buf)
@@ -104,12 +102,6 @@ fn read_reserved_xattr(path: &Path, name: &CStr) -> ReservedXattr {
             ReservedXattr::Unproven
         }
     }
-}
-
-fn path_c_string(path: &Path) -> io::Result<CString> {
-    use std::os::unix::ffi::OsStrExt;
-    CString::new(path.as_os_str().as_bytes())
-        .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "path contains a NUL byte"))
 }
 
 fn is_missing_xattr(err: &io::Error) -> bool {
@@ -190,25 +182,17 @@ mod sys {
     }
 
     #[cfg(any(target_os = "macos", target_os = "ios"))]
-    pub(super) fn getxattr_nofollow(
-        path: &CStr,
+    pub(super) fn fgetxattr(
+        fd: RawFd,
         name: &CStr,
         ptr: *mut libc::c_void,
         len: usize,
     ) -> io::Result<usize> {
-        // SAFETY: `path` and `name` are NUL-terminated CStrs. `ptr`
-        // addresses `len` writable bytes in the caller buffer for the
-        // call. XATTR_NOFOLLOW prevents following a symlink destination.
-        let n = unsafe {
-            libc::getxattr(
-                path.as_ptr(),
-                name.as_ptr(),
-                ptr,
-                len,
-                0,
-                libc::XATTR_NOFOLLOW,
-            )
-        };
+        // SAFETY: `fd` is a live file descriptor owned by the caller. `name` is
+        // a static NUL-terminated CStr. `ptr` addresses `len` writable bytes in
+        // the caller buffer for the duration of the call. position and options
+        // are 0.
+        let n = unsafe { libc::fgetxattr(fd, name.as_ptr(), ptr, len, 0, 0) };
         if n < 0 {
             Err(io::Error::last_os_error())
         } else {
@@ -217,16 +201,16 @@ mod sys {
     }
 
     #[cfg(any(target_os = "linux", target_os = "android"))]
-    pub(super) fn getxattr_nofollow(
-        path: &CStr,
+    pub(super) fn fgetxattr(
+        fd: RawFd,
         name: &CStr,
         ptr: *mut libc::c_void,
         len: usize,
     ) -> io::Result<usize> {
-        // SAFETY: `path` and `name` are NUL-terminated CStrs. `ptr`
-        // addresses `len` writable bytes in the caller buffer for the
-        // call. `lgetxattr` does not follow a symlink destination.
-        let n = unsafe { libc::lgetxattr(path.as_ptr(), name.as_ptr(), ptr, len) };
+        // SAFETY: `fd` is a live file descriptor owned by the caller. `name` is
+        // a static NUL-terminated CStr. `ptr` addresses `len` writable bytes in
+        // the caller buffer for the duration of the call.
+        let n = unsafe { libc::fgetxattr(fd, name.as_ptr(), ptr, len) };
         if n < 0 {
             Err(io::Error::last_os_error())
         } else {
@@ -240,13 +224,13 @@ mod sys {
         target_os = "linux",
         target_os = "android"
     )))]
-    pub(super) fn getxattr_nofollow(
-        path: &CStr,
+    pub(super) fn fgetxattr(
+        fd: RawFd,
         name: &CStr,
         ptr: *mut libc::c_void,
         len: usize,
     ) -> io::Result<usize> {
-        let _ = (path, name, ptr, len);
+        let _ = (fd, name, ptr, len);
         Err(io::Error::from(io::ErrorKind::Unsupported))
     }
 }
@@ -261,13 +245,13 @@ fn unsupported_unix_fsetxattr_fallback(fd: RawFd, name: &CStr, value: &[u8]) -> 
 }
 
 #[cfg(test)]
-fn unsupported_unix_getxattr_fallback(
-    path: &CStr,
+fn unsupported_unix_fgetxattr_fallback(
+    fd: RawFd,
     name: &CStr,
     ptr: *mut libc::c_void,
     len: usize,
 ) -> io::Result<usize> {
-    let _ = (path, name, ptr, len);
+    let _ = (fd, name, ptr, len);
     Err(io::Error::from(io::ErrorKind::Unsupported))
 }
 
@@ -323,12 +307,14 @@ mod tests {
         drop(file);
 
         assert!(!final_path.exists(), "final name must still be absent");
-        let unpublished = read_owned_metadata(&tmp);
+        let unpublished_file = std::fs::File::open(&tmp).unwrap();
+        let unpublished = read_owned_metadata_fd(unpublished_file.as_raw_fd());
         let parsed = OwnedPublicationFacts::from_object_metadata(&unpublished).unwrap();
         assert!(parsed.matches_token(&token, &authority));
 
         std::fs::hard_link(&tmp, &final_path).unwrap();
-        let published = read_owned_metadata(&final_path);
+        let published_file = std::fs::File::open(&final_path).unwrap();
+        let published = read_owned_metadata_fd(published_file.as_raw_fd());
         assert_eq!(unpublished, published);
         assert_eq!(std::fs::read(&final_path).unwrap(), b"payload-bytes");
 
@@ -347,7 +333,8 @@ mod tests {
         plant_raw_reserved_xattr(&path, OWNED_META_VERIFIER, &oversized)
             .expect("filesystem must accept an oversized xattr for this probe");
 
-        let metadata = read_owned_metadata(&path);
+        let file = std::fs::File::open(&path).unwrap();
+        let metadata = read_owned_metadata_fd(file.as_raw_fd());
         assert!(
             !metadata.contains_key(OWNED_META_VERIFIER),
             "oversized reserved xattr must be treated as unproven, not returned"
@@ -363,7 +350,7 @@ mod tests {
         let err = unsupported_unix_fsetxattr_fallback(-1, name, b"").unwrap_err();
         assert_eq!(err.kind(), io::ErrorKind::Unsupported);
         let err =
-            unsupported_unix_getxattr_fallback(name, name, std::ptr::null_mut(), 0).unwrap_err();
+            unsupported_unix_fgetxattr_fallback(-1, name, std::ptr::null_mut(), 0).unwrap_err();
         assert_eq!(err.kind(), io::ErrorKind::Unsupported);
     }
 }

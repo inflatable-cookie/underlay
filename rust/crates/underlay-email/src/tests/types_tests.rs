@@ -141,4 +141,9 @@ fn email_address_stores_trimmed_email() {
     // Control characters are still rejected prior to trimming.
     assert!(EmailAddress::new("user@example.com\r\n").is_err());
     assert!(EmailAddress::with_name("user@example.com\n", "Jane Doe").is_err());
+
+    // Internal whitespace is rejected.
+    assert!(EmailAddress::new("user name@example.com").is_err());
+    assert!(EmailAddress::new("user@exa mple.com").is_err());
+    assert!(EmailAddress::new("user\u{00a0}name@example.com").is_err());
 }

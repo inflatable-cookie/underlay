@@ -244,3 +244,26 @@ fn decode_rejects_images_exceeding_dimension_or_alloc_limits() {
         "generate_square_thumbnail alloc limit",
     );
 }
+
+#[test]
+fn square_crop_image_handles_extreme_1x16384_aspect_ratio_without_oom() {
+    use image::codecs::png::{CompressionType, FilterType as PngFilterType, PngEncoder};
+    use image::ImageEncoder;
+
+    let mut png_bytes = Vec::new();
+    let height = DEFAULT_MAX_IMAGE_HEIGHT;
+    let pixels = vec![128u8; (height as usize) * 3];
+    PngEncoder::new_with_quality(
+        &mut png_bytes,
+        CompressionType::Fast,
+        PngFilterType::NoFilter,
+    )
+    .write_image(&pixels, 1, height, image::ExtendedColorType::Rgb8)
+    .expect("encode 1x16384 png");
+
+    let result =
+        generate_square_thumbnail(&png_bytes, 128, 80).expect("1x16384 square thumbnail succeeds");
+    assert_eq!(result.width, 128);
+    assert_eq!(result.height, 128);
+    assert_eq!(result.mime_type, "image/jpeg");
+}

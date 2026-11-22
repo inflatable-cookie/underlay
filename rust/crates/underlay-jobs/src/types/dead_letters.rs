@@ -76,7 +76,7 @@ pub struct JobErrorRecord {
 }
 
 /// Storage outcome for a failed job attempt.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct JobFailureOutcome {
     pub will_retry: bool,
     pub retry_delay: Option<Duration>,

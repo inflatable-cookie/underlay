@@ -33,7 +33,18 @@ impl OpenAiCompatibleClient {
                 "base_url is required",
             ));
         }
-        if !base_url.starts_with("https://") && !http_host_is_local(&base_url) {
+        let parsed = url::Url::parse(&base_url).map_err(|e| {
+            AiRuntimeError::new(
+                AiErrorKind::Validation,
+                format!("base_url is not a valid URL: {e}"),
+            )
+        })?;
+        let scheme_allowed = match parsed.scheme() {
+            "https" => parsed.host().is_some(),
+            "http" => is_local_host(&parsed),
+            _ => false,
+        };
+        if !scheme_allowed {
             return Err(AiRuntimeError::new(
                 AiErrorKind::Validation,
                 "base_url must use https (http is only allowed for localhost)",
@@ -49,6 +60,7 @@ impl OpenAiCompatibleClient {
         }
 
         let http = reqwest::Client::builder()
+            .redirect(reqwest::redirect::Policy::none())
             .connect_timeout(std::time::Duration::from_secs(10))
             .timeout(std::time::Duration::from_secs(45))
             .build()
@@ -67,13 +79,7 @@ impl OpenAiCompatibleClient {
     }
 }
 
-fn http_host_is_local(base_url: &str) -> bool {
-    let Ok(parsed) = url::Url::parse(base_url) else {
-        return false;
-    };
-    if parsed.scheme() != "http" {
-        return false;
-    }
+fn is_local_host(parsed: &url::Url) -> bool {
     match parsed.host() {
         Some(url::Host::Domain(domain)) => {
             domain.eq_ignore_ascii_case("localhost")

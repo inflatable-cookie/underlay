@@ -79,6 +79,11 @@ impl EmailAddress {
         if email.is_empty() {
             return Err(EmailError::InvalidAddress("email cannot be empty".into()));
         }
+        if email.chars().any(char::is_whitespace) {
+            return Err(EmailError::InvalidAddress(
+                "email cannot contain whitespace".into(),
+            ));
+        }
 
         let parts: Vec<&str> = email.split('@').collect();
         if parts.len() != 2 {

@@ -8,7 +8,8 @@ use crate::types::{
     Job, JobConfig, JobFailureOutcome, JobHandler, JobHandlerError, JobId, JobStatus,
 };
 use crate::{
-    JobCompletionOutcome, JobEvent, JobEventSink, JobRegistry, JobRunner, JobRunnerConfig, JobStore,
+    JobCompletionOutcome, JobEvent, JobEventSink, JobFailureRecordOutcome, JobRegistry, JobRunner,
+    JobRunnerConfig, JobStore,
 };
 
 mod batch;
@@ -20,6 +21,7 @@ struct MemStore {
     queue: Mutex<Vec<Job>>,
     ignore_allowed_types: bool,
     stale_completion_ids: Mutex<Vec<JobId>>,
+    stale_failure_ids: Mutex<Vec<JobId>>,
     successes: Mutex<Vec<JobId>>,
     failures: Mutex<Vec<JobId>>,
     failure_calls: Mutex<Vec<FailureCall>>,
@@ -70,7 +72,10 @@ impl JobStore for Arc<MemStore> {
         job: &Job,
         error: JobHandlerError,
         config: &crate::types::JobConfig,
-    ) -> Result<JobFailureOutcome, Self::Error> {
+    ) -> Result<JobFailureRecordOutcome, Self::Error> {
+        if self.stale_failure_ids.lock().unwrap().contains(&job.id) {
+            return Ok(JobFailureRecordOutcome::LostOwnership);
+        }
         self.failures.lock().unwrap().push(job.id);
         let will_retry = !error.is_permanent && (job.attempts + 1) < config.max_attempts() as i32;
         let dead_letter_id = if will_retry {
@@ -86,11 +91,11 @@ impl JobStore for Arc<MemStore> {
             max_attempts: config.max_attempts(),
             retry_delay_secs: config.backoff().delay_for_attempt(0).as_secs(),
         });
-        Ok(JobFailureOutcome {
+        Ok(JobFailureRecordOutcome::Recorded(JobFailureOutcome {
             will_retry,
             retry_delay: will_retry.then(|| config.backoff().delay_for_attempt(0)),
             dead_letter_id,
-        })
+        }))
     }
 }
 

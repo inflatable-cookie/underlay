@@ -1,6 +1,10 @@
 //! Suggestion query builder.
 
+use std::collections::HashSet;
+
 use serde::{Deserialize, Serialize};
+
+use crate::params::MAX_RECENT_HINTS;
 
 /// Ordering strategy for suggestion results.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
@@ -66,12 +70,21 @@ impl SuggestionQuery {
     }
 
     /// Set the hint IDs (recently selected by user).
+    ///
+    /// Duplicates are removed while preserving first-seen order, and the
+    /// resulting list is capped at [`MAX_RECENT_HINTS`].
     pub fn with_hints<I, S>(mut self, hints: I) -> Self
     where
         I: IntoIterator<Item = S>,
         S: Into<String>,
     {
-        self.hints = hints.into_iter().map(Into::into).collect();
+        let mut seen = HashSet::new();
+        self.hints = hints
+            .into_iter()
+            .map(Into::into)
+            .filter(|hint| seen.insert(hint.clone()))
+            .take(MAX_RECENT_HINTS)
+            .collect();
         self
     }
 

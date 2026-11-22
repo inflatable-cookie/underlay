@@ -255,3 +255,60 @@ async fn runner_handles_lost_ownership_on_completion_and_continues() {
         "stale completion must not emit JobEvent::Completed"
     );
 }
+
+#[tokio::test]
+async fn runner_handles_lost_ownership_on_failure_and_continues() {
+    #[derive(Debug)]
+    struct StaleFailingHandler;
+
+    #[async_trait]
+    impl JobHandler for StaleFailingHandler {
+        fn job_type(&self) -> &'static str {
+            "stale_failing"
+        }
+
+        async fn handle(&self, _job: Job) -> Result<(), JobHandlerError> {
+            Err(JobHandlerError::new("stale worker failed"))
+        }
+    }
+
+    let store = Arc::new(MemStore::default());
+    let stale_job = make_test_job("stale_failing");
+    let stale_job_id = stale_job.id;
+    let healthy_job = make_test_job("test");
+    let healthy_job_id = healthy_job.id;
+
+    store.stale_failure_ids.lock().unwrap().push(stale_job_id);
+    store.queue.lock().unwrap().extend([stale_job, healthy_job]);
+
+    let events = Arc::new(RecordingEventSink::default());
+    let mut registry = JobRegistry::new();
+    registry.register(StaleFailingHandler);
+    registry.register(TestHandler);
+
+    let runner = JobRunner::new(store.clone(), registry).with_event_sink(events.clone());
+
+    let processed = runner
+        .run_batch(2)
+        .await
+        .expect("lost ownership on failure must not terminate runner loop");
+    assert_eq!(processed, 2);
+    assert!(store.failures.lock().unwrap().is_empty());
+    assert_eq!(
+        store.successes.lock().unwrap().as_slice(),
+        &[healthy_job_id]
+    );
+
+    let failed_events: Vec<JobId> = events
+        .events()
+        .into_iter()
+        .filter_map(|event| match event {
+            JobEvent::Failed { job_id, .. } | JobEvent::DeadLettered { job_id, .. } => Some(job_id),
+            _ => None,
+        })
+        .collect();
+    assert!(
+        failed_events.is_empty(),
+        "stale failure must not emit JobEvent::Failed or JobEvent::DeadLettered"
+    );
+}

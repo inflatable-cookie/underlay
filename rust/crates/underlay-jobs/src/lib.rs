@@ -77,4 +77,4 @@ pub use crate::types::{
 // Core exports
 pub use crate::registry::JobRegistry;
 pub use crate::runner::{JobRunner, JobRunnerConfig};
-pub use crate::store::{JobCompletionOutcome, JobStore};
+pub use crate::store::{JobCompletionOutcome, JobFailureRecordOutcome, JobStore};

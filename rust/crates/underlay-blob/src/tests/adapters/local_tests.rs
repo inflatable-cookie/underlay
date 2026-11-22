@@ -293,3 +293,67 @@ async fn test_initiate_upload_validated_enforces_config() {
 
     let _ = fs::remove_dir_all(&temp_dir).await;
 }
+
+#[cfg(unix)]
+#[tokio::test]
+async fn test_local_adapter_head_refuses_symlinks() {
+    let temp_dir = std::env::temp_dir().join("underlay-blob-head-symlink-test");
+    let outside_dir = std::env::temp_dir().join("underlay-blob-head-symlink-outside");
+    let _ = fs::remove_dir_all(&temp_dir).await;
+    let _ = fs::remove_dir_all(&outside_dir).await;
+    fs::create_dir_all(&temp_dir).await.unwrap();
+    fs::create_dir_all(&outside_dir).await.unwrap();
+
+    fs::write(temp_dir.join("real.txt"), b"real").await.unwrap();
+    fs::write(outside_dir.join("secret.txt"), b"secret")
+        .await
+        .unwrap();
+
+    // In-bounds leaf symlink and out-of-bounds parent symlink.
+    std::os::unix::fs::symlink(temp_dir.join("real.txt"), temp_dir.join("leaf-link.txt")).unwrap();
+    std::os::unix::fs::symlink(&outside_dir, temp_dir.join("escape")).unwrap();
+
+    let config = LocalConfig::new(&temp_dir, "http://localhost:8080/uploads");
+    let adapter = LocalAdapter::new(config).await.unwrap();
+
+    let leaf_err = adapter
+        .head("leaf-link.txt")
+        .await
+        .expect_err("head must refuse leaf symlinks");
+    assert!(
+        matches!(leaf_err, BlobError::Unsupported(_)),
+        "expected Unsupported for leaf symlink, got {leaf_err:?}"
+    );
+
+    let parent_err = adapter
+        .head("escape/secret.txt")
+        .await
+        .expect_err("head must refuse symlinked parent components");
+    assert!(
+        matches!(parent_err, BlobError::InvalidKey(_)),
+        "expected InvalidKey for symlinked parent, got {parent_err:?}"
+    );
+
+    let _ = fs::remove_dir_all(&temp_dir).await;
+    let _ = fs::remove_dir_all(&outside_dir).await;
+}
+
+#[tokio::test]
+async fn test_local_adapter_initiate_upload_uses_join_public_url() {
+    let temp_dir = std::env::temp_dir().join("underlay-blob-upload-url-test");
+    let _ = fs::remove_dir_all(&temp_dir).await;
+
+    let config = LocalConfig::new(&temp_dir, "http://localhost:8080/uploads/");
+    let adapter = LocalAdapter::new(config).await.unwrap();
+
+    let req =
+        crate::types::UploadRequest::parse_key("media/my photo.jpg", "image/jpeg", 42).unwrap();
+    let plan = adapter.initiate_upload(req).await.unwrap();
+    assert_eq!(
+        plan.upload_url,
+        adapter.public_url("media/my photo.jpg"),
+        "initiate_upload should join and encode URLs consistently with public_url"
+    );
+
+    let _ = fs::remove_dir_all(&temp_dir).await;
+}

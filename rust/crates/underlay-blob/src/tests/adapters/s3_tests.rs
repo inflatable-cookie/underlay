@@ -259,6 +259,47 @@ async fn get_bytes_bounded_accepts_a_source_within_the_cap() {
     assert_eq!(bytes, vec![9u8; 5]);
 }
 
+#[tokio::test]
+async fn initiate_upload_includes_signed_user_metadata_headers_in_required_headers() {
+    let (adapter, _replay) = s3_adapter_with_replay(vec![ReplayEvent::new(
+        http::Request::builder()
+            .method("HEAD")
+            .uri("https://fixture-bucket.s3.us-east-1.amazonaws.com/")
+            .body(SdkBody::empty())
+            .unwrap(),
+        json_response(200),
+    )]);
+
+    let request = UploadRequest::parse_key("media/photo.png", "image/png", 128)
+        .unwrap()
+        .metadata("tenant-id", "acme")
+        .metadata("uploader", "user-42");
+
+    let plan = adapter
+        .initiate_upload(request)
+        .await
+        .expect("presigned upload plan");
+
+    assert_eq!(
+        plan.required_headers
+            .get("Content-Type")
+            .map(String::as_str),
+        Some("image/png")
+    );
+    assert_eq!(
+        plan.required_headers
+            .get("x-amz-meta-tenant-id")
+            .map(String::as_str),
+        Some("acme")
+    );
+    assert_eq!(
+        plan.required_headers
+            .get("x-amz-meta-uploader")
+            .map(String::as_str),
+        Some("user-42")
+    );
+}
+
 #[test]
 fn minio_dev_config_uses_path_style_endpoint_and_bucket_public_base() {
     let config = S3Config::minio_dev("acme-media", "http://s3.acme.test:9000/");
