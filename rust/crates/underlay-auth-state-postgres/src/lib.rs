@@ -12,6 +12,26 @@ fn validate_table_name(table: &str) -> Result<QualifiedTableName, AuthStateError
         .map_err(|_| AuthStateError::InvalidTableName(table.to_string()))
 }
 
+/// Generate a 122-bit random RFC 4122 UUIDv4 handle without leaking a timestamp.
+///
+/// The workspace `uuid` dependency enables `v7` (CSPRNG-backed `getrandom`)
+/// without enabling `v4` in standalone production builds. Each `Uuid::new_v7()`
+/// carries 7 unmasked `rand_b` CSPRNG bytes in `bytes[9..16]`; combining them
+/// produces 16 independent random bytes with zero timestamp or counter bits.
+fn new_state_handle() -> Uuid {
+    let a = Uuid::new_v7().into_inner().into_bytes();
+    let b = Uuid::new_v7().into_inner().into_bytes();
+    let c = Uuid::new_v7().into_inner().into_bytes();
+    let mut bytes = [0u8; 16];
+    bytes[0..7].copy_from_slice(&a[9..16]);
+    bytes[7..14].copy_from_slice(&b[9..16]);
+    bytes[14..16].copy_from_slice(&c[9..11]);
+    // Set RFC 4122 version 4 (0100xxxx) and variant (10xxxxxx).
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    Uuid::from(RawUuid::from_bytes(bytes))
+}
+
 #[derive(Debug, Clone)]
 pub struct AuthStateStore {
     pool: sqlx::PgPool,
@@ -50,7 +70,7 @@ impl AuthStateStore {
         state: serde_json::Value,
         ttl: Duration,
     ) -> Result<Uuid, AuthStateError> {
-        let id = Uuid::from(RawUuid::new_v4());
+        let id = new_state_handle();
         let now = Utc::now();
         let expires_at = now + ttl;
 
@@ -321,6 +341,20 @@ mod tests {
                 validate_table_name(bad).is_err(),
                 "expected {bad:?} rejected"
             );
+        }
+    }
+
+    #[test]
+    fn state_handle_is_random_uuid_v4() {
+        let first = new_state_handle();
+        let second = new_state_handle();
+        assert_ne!(first, second);
+        for id in [first, second] {
+            let raw = id.into_inner();
+            assert_eq!(raw.get_version_num(), 4);
+            let bytes = raw.as_bytes();
+            assert_eq!(bytes[6] >> 4, 0x4);
+            assert_eq!(bytes[8] >> 6, 0b10);
         }
     }
 }
