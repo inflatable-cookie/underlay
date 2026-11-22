@@ -12,6 +12,101 @@ describe("createHttpClient retry and timeout", () => {
 
 	afterEach(() => {
 		vi.restoreAllMocks();
+		vi.useRealTimers();
+	});
+
+	it("rejects a pre-aborted request without fetching", async () => {
+		const client = createHttpClient({ baseUrl: "https://api.example.com", fetch: fetchMock });
+
+		await expect(
+			client.getWithMeta("/endpoint", undefined, { signal: AbortSignal.abort() }),
+		).rejects.toMatchObject({ status: 0, envelope: { error: { code: "aborted" } } });
+		expect(fetchMock).not.toHaveBeenCalled();
+	});
+
+	it.each(["caller", "timeout"])("propagates %s cancellation to fetch", async (source) => {
+		vi.useFakeTimers();
+		const caller = new AbortController();
+		let fetchSignal: AbortSignal | null | undefined;
+		fetchMock.mockImplementation((_url, init: RequestInit) => {
+			fetchSignal = init.signal;
+			return new Promise((_resolve, reject) => {
+				fetchSignal?.addEventListener("abort", () => reject(fetchSignal?.reason));
+			});
+		});
+		const client = createHttpClient({
+			baseUrl: "https://api.example.com",
+			fetch: fetchMock,
+			timeoutMs: 5000,
+		});
+		const pending = client.getWithMeta("/endpoint", undefined, { signal: caller.signal });
+		const rejection = expect(pending).rejects.toMatchObject({
+			status: 0,
+			envelope: { error: { code: source === "caller" ? "aborted" : "timeout" } },
+		});
+		await vi.advanceTimersByTimeAsync(0);
+		if (source === "caller") caller.abort(new Error("user cancelled"));
+		else await vi.advanceTimersByTimeAsync(5000);
+		await rejection;
+
+		expect(fetchSignal?.aborted).toBe(true);
+		expect(caller.signal.aborted).toBe(source === "caller");
+		expect(vi.getTimerCount()).toBe(0);
+	});
+
+	it("cancels a pending retry backoff", async () => {
+		vi.useFakeTimers();
+		fetchMock.mockImplementation(async () => new Response(null, { status: 503 }));
+		const caller = new AbortController();
+		const client = createHttpClient({ baseUrl: "https://api.example.com", fetch: fetchMock });
+		const pending = client.getWithMeta("/endpoint", undefined, { signal: caller.signal });
+		const rejection = expect(pending).rejects.toMatchObject({
+			status: 0,
+			envelope: { error: { code: "aborted" } },
+		});
+		await vi.advanceTimersByTimeAsync(0);
+		expect(vi.getTimerCount()).toBe(1);
+		caller.abort();
+		await rejection;
+
+		expect(vi.getTimerCount()).toBe(0);
+		expect(fetchMock).toHaveBeenCalledOnce();
+	});
+
+	it("cancels a caller waiting for refresh while keeping refresh available to other requests", async () => {
+		const caller = new AbortController();
+		const startedRefreshing = Promise.withResolvers<void>();
+		const finishRefreshing = Promise.withResolvers<void>();
+		const refresh = vi.fn(async () => {
+			startedRefreshing.resolve();
+			await finishRefreshing.promise;
+			return { success: true };
+		});
+		fetchMock
+			.mockResolvedValueOnce(new Response(null, { status: 401 }))
+			.mockResolvedValueOnce(new Response(null, { status: 401 }))
+			.mockResolvedValueOnce(new Response(null, { status: 204 }));
+		const client = createHttpClient({
+			baseUrl: "https://api.example.com",
+			fetch: fetchMock,
+			auth: { refresh },
+		});
+
+		const pending = client.getWithMeta("/endpoint", undefined, { signal: caller.signal });
+		const rejection = expect(pending).rejects.toMatchObject({
+			status: 0,
+			envelope: { error: { code: "aborted" } },
+		});
+		await startedRefreshing.promise;
+		caller.abort();
+		await rejection;
+
+		const second = client.getWithMeta("/endpoint");
+		await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+		finishRefreshing.resolve();
+		await expect(second).resolves.toMatchObject({ status: 204 });
+		expect(refresh).toHaveBeenCalledOnce();
+		expect(fetchMock).toHaveBeenCalledTimes(3);
 	});
 
 	it("should retry on 502/503/504 for GET requests", async () => {

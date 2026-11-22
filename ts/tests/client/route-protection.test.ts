@@ -100,6 +100,25 @@ describe("client/route-protection", () => {
 		expect(resolveRedirectTo("//evil.com", "/home")).toBe("/home");
 	});
 
+	it("preserves query and hash encoding through the login redirect round trip", () => {
+		expect(resolveRedirectTo("/search?q=a%26b%3D1")).toBe("/search?q=a%26b%3D1");
+		const target = "/search?q=a%26b%3D1&progress=50%25effort";
+		const response = createLoginRedirect(new URL(target, "https://example.com"));
+		const location = new URL(response.headers.get("location") ?? "");
+
+		expect(resolveRedirectTo(location.searchParams.get("redirectTo"))).toBe(target);
+		expect(resolveRedirectTo(`${target}#tag%23a%3Fb`)).toBe(`${target}#tag%23a%3Fb`);
+		expect(resolveRedirectTo(encodeURIComponent(target))).toBe(target);
+		expect(resolveRedirectTo("/docs/question%3Fmark?tab=2")).toBe("/docs/question%3Fmark?tab=2");
+	});
+
+	it.each(["?q=%", "?q=%250d%250a", "#tag%255c", "#tag\n"])(
+		"rejects unsafe suffix %j",
+		(suffix) => {
+			expect(resolveRedirectTo(`/search${suffix}`, "/fallback")).toBe("/fallback");
+		},
+	);
+
 	it("normalizePath decodes and collapses traversal", () => {
 		expect(normalizePath("/docs/../admin")).toBe("/admin");
 		expect(normalizePath("/docs/%2e%2e/admin")).toBe("/admin");

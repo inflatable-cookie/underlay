@@ -121,6 +121,30 @@ describe("tools/guardrails", () => {
 		expect(config.moduleScopeChecks.map((rule) => rule.name)).toContain("window.*");
 	});
 
+	it.each([".guardrailsrc.json", "package.json"])("rejects malformed %s", async (file) => {
+		const dir = await makeTempDir();
+		if (file === ".guardrailsrc.json") {
+			await writeFile(path.join(dir, "package.json"), '{"guardrails":{"srcDir":"./src"}}');
+		}
+		await writeFile(path.join(dir, file), "{ invalid");
+
+		// Change cwd after Bun starts so the config loader reads the malformed file.
+		const result = spawnSync(
+			"bun",
+			[
+				"-e",
+				`import { loadConfig } from "./ts/src/tools/guardrails-config.ts";
+				process.chdir(process.argv[1]);
+				await loadConfig();`,
+				dir,
+			],
+			{ encoding: "utf8" },
+		);
+
+		expect(result.status).toBe(1);
+		expect(result.stderr).toContain(`Could not load config from ${file}: invalid JSON`);
+	});
+
 	it("applies banned API template rules", async () => {
 		const dir = await makeTempDir();
 		await writeFile(path.join(dir, "sample.ts"), `${["window", "alert"].join(".")}('stop');`);
@@ -301,6 +325,53 @@ describe("tools/guardrails", () => {
 		);
 
 		expect(issues.map((issue) => issue.name)).toEqual(["window.*"]);
+	});
+
+	it("still scans a top-level control block after a function declaration", () => {
+		const source = [
+			"function helper(value = ')'): number { return window.innerWidth; }",
+			"if (enabled) { window.innerHeight; }",
+		].join("\n");
+
+		const issues = scanModuleScopeBrowserApis(source, 0, moduleScopeChecks);
+
+		expect(issues.map(({ index }) => index)).toEqual([source.indexOf("window.innerHeight")]);
+	});
+
+	it("skips regex literals while still scanning division and real browser API accesses", () => {
+		const source = [
+			String.raw`const pattern = /['"/\\]window.innerWidth\//gi;`,
+			String.raw`if (enabled) /'window.innerWidth/.test(text);`,
+			"const ratio = total / window.innerHeight / count;",
+			"const quotient = async function () {} / window.devicePixelRatio / divisor;",
+			"const width = window.outerWidth;",
+		].join("\n");
+
+		const issues = scanModuleScopeBrowserApis(source, 0, moduleScopeChecks);
+
+		expect(issues.map(({ index }) => index)).toEqual([
+			source.indexOf("window.innerHeight"),
+			source.indexOf("window.devicePixelRatio"),
+			source.indexOf("window.outerWidth"),
+		]);
+	});
+
+	it("tracks nested template interpolations across literals, comments, and function bodies", () => {
+		const source = [
+			'const result = `window.text ${`nested ${"}" + /* } */ window.first} window.text`} ${',
+			"  { fn() { return `local ${window.local}`; }, value: window.second }",
+			"} window.text`;",
+			"const after = window.third;",
+		].join("\n");
+		const baseIndex = 17;
+
+		const issues = scanModuleScopeBrowserApis(source, baseIndex, moduleScopeChecks);
+
+		expect(issues.map(({ index }) => index)).toEqual(
+			["window.first", "window.second", "window.third"].map(
+				(match) => baseIndex + source.indexOf(match),
+			),
+		);
 	});
 
 	it("scans directories with spaces/special chars and runs CLI via symlink, relative path, and spaces", async () => {

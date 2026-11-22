@@ -71,13 +71,30 @@ export function createAuthStore(options: CreateAuthStoreOptions): AuthStore {
 		});
 	}
 
-	async function setTokens(session: AuthSession) {
-		await options.tokenStore.setAccessToken(session.accessToken);
-		await options.tokenStore.setRefreshToken(session.refreshToken);
+	let authEpoch = 0;
+	let tokenMutation = Promise.resolve();
+
+	// Serialize writes and clears so a setter already running when logout starts
+	// must finish before logout clears the store.
+	function mutateTokens(epoch: number, mutate: () => Promise<void>): Promise<void> {
+		if (epoch !== authEpoch) return Promise.resolve();
+		const pending = tokenMutation.then(async () => {
+			if (epoch === authEpoch) await mutate();
+		});
+		tokenMutation = pending.catch(() => {});
+		return pending;
 	}
 
-	async function clearTokens() {
-		await options.tokenStore.clear();
+	async function acceptSession(epoch: number, session: AuthSession) {
+		await mutateTokens(epoch, async () => {
+			await options.tokenStore.setAccessToken(session.accessToken);
+			if (epoch === authEpoch) await options.tokenStore.setRefreshToken(session.refreshToken);
+		});
+		if (epoch === authEpoch) setAuthenticated(session);
+	}
+
+	async function clearTokens(epoch: number) {
+		await mutateTokens(epoch, async () => options.tokenStore.clear());
 	}
 
 	function setAnonymous(error: UnderlayHttpError | null = null) {
@@ -90,20 +107,22 @@ export function createAuthStore(options: CreateAuthStoreOptions): AuthStore {
 	// 401 may arrive after the refresh has already rotated the tokens.
 	let refreshDuringInit: Promise<AuthSession> | null = null;
 
-	async function runInit(): Promise<void> {
+	async function runInit(epoch: number): Promise<void> {
 		state.update((s) => ({ ...s, loading: true, error: null }));
 
 		try {
 			// Session GET carries no token material; tokens only move on
 			// login/refresh. Do not write to the token store here.
 			const session = await options.commands.session();
-			setAuthenticated(session);
+			if (epoch === authEpoch) setAuthenticated(session);
 		} catch (err) {
+			if (epoch !== authEpoch) return;
 			if (err instanceof UnderlayHttpError && err.status === 401) {
 				if (refreshOnUnauthorized) {
 					try {
 						await (refreshDuringInit ?? refresh());
 					} catch (refreshErr) {
+						if (epoch !== authEpoch) return;
 						// The shared refresh already clears tokens and state on a 401.
 						if (refreshErr instanceof UnderlayHttpError && refreshErr.status === 401) {
 							return;
@@ -111,15 +130,17 @@ export function createAuthStore(options: CreateAuthStoreOptions): AuthStore {
 						// Match the HTTP client: a 5xx or network failure may recover, so
 						// keep stored tokens instead of signing the user out.
 						if (!isTransientRefreshError(refreshErr)) {
-							await clearTokens();
+							await clearTokens(epoch);
 						}
-						setAnonymous(refreshErr instanceof UnderlayHttpError ? refreshErr : null);
+						if (epoch === authEpoch) {
+							setAnonymous(refreshErr instanceof UnderlayHttpError ? refreshErr : null);
+						}
 					}
 					return;
 				}
 
-				await clearTokens();
-				setAnonymous(err);
+				await clearTokens(epoch);
+				if (epoch === authEpoch) setAnonymous(err);
 				return;
 			}
 
@@ -128,116 +149,106 @@ export function createAuthStore(options: CreateAuthStoreOptions): AuthStore {
 	}
 
 	function init(): Promise<void> {
-		if (initInFlight === null) {
-			refreshDuringInit = refreshInFlight;
-			initInFlight = runInit().finally(() => {
-				refreshDuringInit = null;
-				initInFlight = null;
-			});
-		}
-		return initInFlight;
+		if (initInFlight !== null) return initInFlight;
+		const epoch = authEpoch;
+		refreshDuringInit = refreshInFlight;
+		const pending = runInit(epoch).finally(() => {
+			if (initInFlight !== pending) return;
+			refreshDuringInit = null;
+			initInFlight = null;
+		});
+		if (epoch === authEpoch) initInFlight = pending;
+		return pending;
 	}
 
-	async function register(params: RegisterParams): Promise<AuthSession> {
+	async function authenticate(command: () => Promise<AuthSession>): Promise<AuthSession> {
+		const epoch = authEpoch;
 		state.update((s) => ({ ...s, loading: true, error: null }));
 
 		try {
-			const session = await options.commands.register(params);
-			await setTokens(session);
-			setAuthenticated(session);
+			const session = await command();
+			await acceptSession(epoch, session);
 			return session;
 		} catch (err) {
-			const e = err instanceof UnderlayHttpError ? err : null;
-			state.update((s) => ({ ...s, loading: false, error: e }));
+			if (epoch === authEpoch) setError(err);
 			throw err;
 		}
 	}
 
-	async function loginWithPassword(
-		params: PasswordAuthParams & { code?: string },
-	): Promise<AuthSession> {
-		state.update((s) => ({ ...s, loading: true, error: null }));
+	function setError(err: unknown) {
+		const error = err instanceof UnderlayHttpError ? err : null;
+		state.update((s) => ({ ...s, loading: false, error }));
+	}
 
-		try {
-			const session = await options.commands.loginWithPassword({
+	function loginWithPassword(params: PasswordAuthParams & { code?: string }): Promise<AuthSession> {
+		return authenticate(() =>
+			options.commands.loginWithPassword({
 				email: params.email,
 				password: params.password,
 				...(params.code ? { code: params.code } : {}),
-			});
-			await setTokens(session);
-			setAuthenticated(session);
-			return session;
-		} catch (err) {
-			const e = err instanceof UnderlayHttpError ? err : null;
-			state.update((s) => ({ ...s, loading: false, error: e }));
-			throw err;
-		}
+			}),
+		);
 	}
 
-	async function loginWithPasskey(params: PassKeyAuthParams): Promise<AuthSession> {
-		state.update((s) => ({ ...s, loading: true, error: null }));
-
-		try {
-			const session = await options.commands.loginWithPasskey(params);
-			await setTokens(session);
-			setAuthenticated(session);
-			return session;
-		} catch (err) {
-			const e = err instanceof UnderlayHttpError ? err : null;
-			state.update((s) => ({ ...s, loading: false, error: e }));
-			throw err;
-		}
-	}
-
-	async function runRefresh(): Promise<AuthSession> {
+	async function runRefresh(epoch: number): Promise<AuthSession> {
 		state.update((s) => ({ ...s, loading: true, error: null }));
 
 		try {
 			const session = await options.commands.refresh();
-			await setTokens(session);
-			setAuthenticated(session);
+			await acceptSession(epoch, session);
 			return session;
 		} catch (err) {
+			if (epoch !== authEpoch) throw err;
 			if (err instanceof UnderlayHttpError && err.status === 401) {
-				await clearTokens();
-				setAnonymous(err);
+				await clearTokens(epoch);
+				if (epoch === authEpoch) setAnonymous(err);
 			} else {
-				const e = err instanceof UnderlayHttpError ? err : null;
-				state.update((s) => ({ ...s, loading: false, error: e }));
+				setError(err);
 			}
 			throw err;
 		}
 	}
 
 	function refresh(): Promise<AuthSession> {
-		if (refreshInFlight === null) {
-			refreshInFlight = runRefresh().finally(() => {
-				refreshInFlight = null;
-			});
+		if (refreshInFlight !== null) return refreshInFlight;
+		const epoch = authEpoch;
+		const pending = runRefresh(epoch).finally(() => {
+			if (refreshInFlight === pending) refreshInFlight = null;
+		});
+		if (epoch === authEpoch) {
+			refreshInFlight = pending;
 			if (initInFlight !== null) {
-				refreshDuringInit = refreshInFlight;
+				refreshDuringInit = pending;
 			}
 		}
-		return refreshInFlight;
+		return pending;
 	}
 
 	async function logout(): Promise<void> {
+		const epoch = ++authEpoch;
+		initInFlight = null;
+		refreshInFlight = null;
+		refreshDuringInit = null;
 		state.update((s) => ({ ...s, loading: true, error: null }));
 
 		try {
 			await options.commands.logout();
 		} finally {
-			await clearTokens();
-			setAnonymous(null);
+			try {
+				await clearTokens(epoch);
+			} finally {
+				if (epoch === authEpoch) setAnonymous(null);
+			}
 		}
 	}
 
 	return {
 		state,
 		init,
-		register,
+		register: (params: RegisterParams) => authenticate(() => options.commands.register(params)),
 		loginWithPassword,
-		loginWithPasskey,
+		loginWithPasskey: (params: PassKeyAuthParams) =>
+			authenticate(() => options.commands.loginWithPasskey(params)),
 		refresh,
 		logout,
 	};

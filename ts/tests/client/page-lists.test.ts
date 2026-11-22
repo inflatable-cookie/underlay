@@ -1,7 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { appendPageListParams, buildPageListQuery } from "../../src/client/page-lists";
+import {
+	appendPageListParams,
+	buildPageListQuery,
+	normalizePageListResponse,
+} from "@inflatable-cookie/underlay/client/page-lists";
 
 describe("client/page-lists", () => {
+	it.each([true, false])("normalizes the Rust page-list wire shape with has_more=%s", (hasMore) => {
+		const data = [{ id: "item-1" }];
+		const wire = { data, total: 4, has_more: hasMore };
+
+		expect(normalizePageListResponse(wire)).toEqual({ data, total: 4, hasMore });
+		expect(wire.has_more).toBe(hasMore);
+	});
 	it("builds page-shaped query params", () => {
 		expect(buildPageListQuery({ page: 3, limit: 25 })).toEqual({
 			page: "3",

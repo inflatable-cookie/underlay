@@ -1,10 +1,88 @@
 import { describe, expect, it } from "vitest";
 import { get } from "svelte/store";
 import { UnderlayHttpError } from "../../../src/client/errors";
+import { MemoryTokenStore } from "../../../src/client/http";
 import { createAuthStore } from "../../../src/client/useAuth";
 import { makeDeps, makeSession, makeSessionInfo } from "./fixtures";
 
 describe("client/useAuth actions", () => {
+	it.each(["refresh", "register", "loginWithPassword", "loginWithPasskey"] as const)(
+		"keeps logout in effect when an older %s resolves",
+		async (operation) => {
+			const { commands, tokenStore } = makeDeps();
+			const session = Promise.withResolvers<ReturnType<typeof makeSession>>();
+			commands[operation].mockReturnValueOnce(session.promise);
+			const auth = createAuthStore({ commands, tokenStore });
+
+			const stale = auth[operation]({
+				email: "u@example.com",
+				password: "pw",
+				displayName: "User",
+				credential: {},
+			});
+			await auth.logout();
+			session.resolve(makeSession("stale"));
+			await expect(stale).resolves.toEqual(makeSession("stale"));
+
+			expect(tokenStore.setAccessToken).not.toHaveBeenCalled();
+			expect(tokenStore.setRefreshToken).not.toHaveBeenCalled();
+			expect(get(auth.state)).toEqual({
+				status: "anonymous",
+				session: null,
+				loading: false,
+				error: null,
+			});
+		},
+	);
+
+	it("keeps a newer refresh in flight when a stale refresh fails after logout", async () => {
+		const { commands, tokenStore } = makeDeps();
+		const stale = Promise.withResolvers<ReturnType<typeof makeSession>>();
+		const current = Promise.withResolvers<ReturnType<typeof makeSession>>();
+		commands.refresh.mockReturnValueOnce(stale.promise).mockReturnValueOnce(current.promise);
+		const auth = createAuthStore({ commands, tokenStore });
+
+		const refreshing = auth.refresh();
+		await auth.logout();
+		const nextRefresh = auth.refresh();
+		const unauthorized = new UnderlayHttpError(401, "Unauthorized");
+		stale.reject(unauthorized);
+		await expect(refreshing).rejects.toBe(unauthorized);
+
+		expect(auth.refresh()).toBe(nextRefresh);
+		expect(tokenStore.clear).toHaveBeenCalledOnce();
+		expect(get(auth.state).error).toBeNull();
+		current.resolve(makeSession("current"));
+		await nextRefresh;
+		expect(get(auth.state).session).toEqual(makeSessionInfo("current"));
+	});
+
+	it("clears tokens after a write that was already running at logout", async () => {
+		const { commands } = makeDeps();
+		const startedWriting = Promise.withResolvers<void>();
+		const finishWriting = Promise.withResolvers<void>();
+		class DelayedTokenStore extends MemoryTokenStore {
+			override async setAccessToken(token: string | null) {
+				startedWriting.resolve();
+				await finishWriting.promise;
+				super.setAccessToken(token);
+			}
+		}
+		const tokenStore = new DelayedTokenStore();
+		commands.refresh.mockResolvedValueOnce(makeSession("stale"));
+		const auth = createAuthStore({ commands, tokenStore });
+
+		const refreshing = auth.refresh();
+		await startedWriting.promise;
+		const loggingOut = auth.logout();
+		finishWriting.resolve();
+		await Promise.all([refreshing, loggingOut]);
+
+		expect(tokenStore.getAccessToken()).toBeNull();
+		expect(tokenStore.getRefreshToken()).toBeNull();
+		expect(get(auth.state).status).toBe("anonymous");
+	});
+
 	it("register/login flows set authenticated state without leaking tokens into state.session", async () => {
 		const { commands, tokenStore } = makeDeps();
 		const auth = createAuthStore({ commands: commands as any, tokenStore: tokenStore as any });
