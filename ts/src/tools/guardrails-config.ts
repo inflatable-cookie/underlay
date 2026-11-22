@@ -60,6 +60,29 @@ async function importTemplateModule(templateRef: string): Promise<unknown> {
 	}
 }
 
+async function readConfigObject(file: string, optional: boolean): Promise<object | undefined> {
+	let content: string;
+	try {
+		content = await readFile(file, "utf8");
+	} catch (error) {
+		if (optional && error instanceof Error && "code" in error && error.code === "ENOENT") {
+			return undefined;
+		}
+		throw new Error(`Could not load config from ${file}`, { cause: error });
+	}
+
+	let parsed: unknown;
+	try {
+		parsed = JSON.parse(content);
+	} catch (error) {
+		throw new Error(`Could not load config from ${file}: invalid JSON`, { cause: error });
+	}
+	if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+		throw new Error(`Config file ${file} must contain a JSON object`);
+	}
+	return parsed;
+}
+
 /**
  * Load configuration from file system
  */
@@ -67,39 +90,11 @@ export async function loadConfig(
 	configPath?: string,
 	srcDirOverride?: string,
 ): Promise<GuardrailsConfig> {
-	let config: GuardrailsConfigFile = {};
-
-	// Try loading from config file
-	if (configPath) {
-		let parsed: unknown;
-		try {
-			const content = await readFile(configPath, "utf8");
-			parsed = JSON.parse(content);
-		} catch (error) {
-			throw new Error(`Could not load config from ${configPath}`, { cause: error });
-		}
-		if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-			throw new Error(`Config file ${configPath} must contain a JSON object`);
-		}
-		config = parsed as GuardrailsConfigFile;
-	} else {
-		// Try .guardrailsrc.json
-		try {
-			const content = await readFile(".guardrailsrc.json", "utf8");
-			config = JSON.parse(content);
-		} catch {
-			// Try package.json
-			try {
-				const pkgContent = await readFile("package.json", "utf8");
-				const pkg = JSON.parse(pkgContent);
-				if (pkg.guardrails) {
-					config = pkg.guardrails;
-				}
-			} catch {
-				// Use defaults
-			}
-		}
-	}
+	const fileConfig = await readConfigObject(configPath || ".guardrailsrc.json", !configPath);
+	const pkg = fileConfig ? undefined : await readConfigObject("package.json", true);
+	const config = (fileConfig ??
+		(pkg && "guardrails" in pkg ? pkg.guardrails : undefined) ??
+		{}) as GuardrailsConfigFile;
 
 	// Load banned patterns (can be template reference or inline array)
 	let bannedPatterns: BannedPattern[] = [];

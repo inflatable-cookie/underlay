@@ -10,6 +10,26 @@ describe("createHttpClient authentication failures", () => {
 		fetchMock = vi.fn();
 	});
 
+	it.each(["https://cdn.example.com/private", "//cdn.example.com/private"])(
+		"keeps base-origin credentials when %s returns 401",
+		async (path) => {
+			const tokenStore = new FakeTokenStore();
+			tokenStore.seedTokens("access-token", "refresh-token");
+			const refresh = vi.fn(async () => ({ success: false }));
+			fetchMock = vi.fn(async () => new Response(null, { status: 401 }));
+			const client = createHttpClient({
+				baseUrl: "https://api.example.com",
+				auth: { tokenStore, refresh },
+				fetch: fetchMock,
+			});
+
+			await expect(client.get(path)).rejects.toMatchObject({ status: 401 });
+			expect(refresh).not.toHaveBeenCalled();
+			expect(fetchMock).toHaveBeenCalledOnce();
+			tokenStore.expectTokens("access-token", "refresh-token");
+		},
+	);
+
 	afterEach(() => {
 		vi.restoreAllMocks();
 	});

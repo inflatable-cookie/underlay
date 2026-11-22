@@ -12,10 +12,12 @@ export interface LoginRedirectOptions {
 }
 
 const MAX_DECODE_ITERATIONS = 3;
+// eslint-disable-next-line no-control-regex
+const UNSAFE_REDIRECT_CHAR = /[\\\u0000-\u001f\u007f]/;
 
-function decodeToFixpoint(value: string): string | null {
+function decodeToFixpoint(value: string, maxIterations = MAX_DECODE_ITERATIONS): string | null {
 	let decoded = value;
-	for (let i = 0; i < MAX_DECODE_ITERATIONS; i++) {
+	for (let i = 0; i < maxIterations; i++) {
 		let next: string;
 		try {
 			next = decodeURIComponent(decoded);
@@ -36,6 +38,27 @@ function decodeToFixpoint(value: string): string | null {
 	}
 }
 
+function isSafeSuffix(suffix: string): boolean {
+	let decoded: string;
+	try {
+		decoded = decodeURIComponent(suffix);
+	} catch {
+		return false;
+	}
+
+	// Once the wire encoding is validated, unwrap nested ASCII escapes only
+	// for inspection. A literal percent in a query value is valid data.
+	for (let i = 1; i <= MAX_DECODE_ITERATIONS; i++) {
+		if (UNSAFE_REDIRECT_CHAR.test(decoded)) return false;
+		const next = decoded.replace(/%([0-7][0-9a-f])/gi, (_, hex: string) =>
+			String.fromCharCode(Number.parseInt(hex, 16)),
+		);
+		if (next === decoded) return true;
+		decoded = next;
+	}
+	return false;
+}
+
 /**
  * Percent-decode and collapse `.`/`..` segments so prefix matching cannot be
  * bypassed with encodings like `%2e%2e` or embedded traversal.
@@ -45,7 +68,10 @@ export function normalizePath(path: string): string {
 	if (decoded === null) {
 		return "";
 	}
+	return normalizeDecodedPath(decoded);
+}
 
+function normalizeDecodedPath(decoded: string): string {
 	const withForwardSlashes = decoded.replace(/\\/g, "/");
 	const segments = withForwardSlashes.split("/");
 	const out: string[] = [];
@@ -80,32 +106,35 @@ export function resolveRedirectTo(target: string | null | undefined, fallback = 
 		return fallback;
 	}
 
-	const decoded = decodeToFixpoint(target);
-	if (decoded === null) {
-		return fallback;
+	// Some callers pass an encoded redirect parameter. Unwrap it only until
+	// we can see the path or the suffix, leaving the suffix's own encoding intact.
+	let remainingDecodes = MAX_DECODE_ITERATIONS;
+	while (!target.startsWith("/") && !/[?#]/.test(target) && remainingDecodes > 0) {
+		try {
+			const unwrapped = decodeURIComponent(target);
+			if (unwrapped === target) return fallback;
+			target = unwrapped;
+			remainingDecodes--;
+		} catch {
+			return fallback;
+		}
 	}
 
-	// eslint-disable-next-line no-control-regex
-	if (/[\u0000-\u001f\u007f]/.test(decoded)) {
-		return fallback;
-	}
-	if (decoded.includes("\\")) {
+	const suffixIndex = target.search(/[?#]/);
+	const path = suffixIndex === -1 ? target : target.slice(0, suffixIndex);
+	const suffix = suffixIndex === -1 ? "" : target.slice(suffixIndex);
+	const decoded = decodeToFixpoint(path, remainingDecodes);
+	if (decoded === null || UNSAFE_REDIRECT_CHAR.test(decoded) || !isSafeSuffix(suffix)) {
 		return fallback;
 	}
 	if (!decoded.startsWith("/") || decoded.startsWith("//")) {
 		return fallback;
 	}
-	const pathOnly = decoded.split(/[?#]/, 1)[0] ?? "";
-	if (pathOnly.split("/").some((segment) => segment === "..")) {
+	if (decoded.split("/").some((segment) => segment === "..")) {
 		return fallback;
 	}
 
-	const normalizedPath = normalizePath(pathOnly);
-	if (!normalizedPath.startsWith("/") || normalizedPath.startsWith("//")) {
-		return fallback;
-	}
-
-	const suffix = decoded.slice(pathOnly.length);
+	const normalizedPath = normalizeDecodedPath(decoded).replace(/\?/g, "%3F").replace(/#/g, "%23");
 	return `${normalizedPath}${suffix}`;
 }
 

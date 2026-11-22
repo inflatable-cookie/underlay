@@ -70,49 +70,45 @@ function isGuardedContext(text: string, boundaryIndex: number, matchIndex: numbe
 	return /typeof\s+(window|document|navigator|location|history)\b/.test(context);
 }
 
-function isFunctionBodyStart(text: string, braceIndex: number): boolean {
-	let j = braceIndex - 1;
-	while (j >= 0 && /\s/.test(text[j])) j--;
+const CONTROL_KEYWORDS = new Set(["if", "for", "while", "switch", "catch", "with"]);
+const REGEX_PREFIX_KEYWORDS = new Set([
+	"await",
+	"case",
+	"delete",
+	"do",
+	"else",
+	"in",
+	"instanceof",
+	"new",
+	"return",
+	"throw",
+	"typeof",
+	"void",
+	"yield",
+]);
 
-	// Arrow function body: `(...) => {`
-	if (text[j] === ">") {
-		let k = j - 1;
-		while (k >= 0 && /\s/.test(text[k])) k--;
-		if (text[k] === "=") return true;
-	}
+type Parenthesis =
+	"control" | "for" | "function" | "function-declaration" | "method" | "expression";
+type Brace = "block" | "function" | "function-declaration" | "object" | "interpolation";
 
-	// Function declaration/expression: `function ... {`
-	const prefixStart = Math.max(0, braceIndex - 120);
-	const prefix = text.slice(prefixStart, braceIndex);
-	if (/\bfunction\b/.test(prefix)) return true;
-
-	// Method body: `method(...) {` (but not `if (...) {`, `for (...) {`, etc.)
-	if (text[j] === ")") {
-		let depth = 0;
-		for (let p = j; p >= 0; p--) {
-			const c = text[p];
-			if (c === ")") depth++;
-			if (c === "(") {
-				depth--;
-				if (depth === 0) {
-					let q = p - 1;
-					while (q >= 0 && /\s/.test(text[q])) q--;
-
-					let start = q;
-					while (start >= 0 && isIdentChar(text[start])) start--;
-					const word = text.slice(start + 1, q + 1);
-
-					if (["if", "for", "while", "switch", "catch", "with"].includes(word)) {
-						return false;
-					}
-
-					return word.length > 0;
-				}
-			}
+function regexLiteralEnd(text: string, start: number): number | undefined {
+	let inClass = false;
+	for (let i = start + 1; i < text.length; i++) {
+		const char = text[i];
+		if (char === "\n" || char === "\r") return undefined;
+		if (char === "\\") {
+			const escaped = text[++i];
+			if (escaped === "\n" || escaped === "\r") return undefined;
+		} else if (char === "[") {
+			inClass = true;
+		} else if (char === "]") {
+			inClass = false;
+		} else if (char === "/" && !inClass) {
+			while (/[a-z]/i.test(text[i + 1] ?? "")) i++;
+			return i;
 		}
 	}
-
-	return false;
+	return undefined;
 }
 
 export function scanModuleScopeBrowserApis(
@@ -121,31 +117,20 @@ export function scanModuleScopeBrowserApis(
 	checks: ModuleScopeCheck[],
 ): Issue[] {
 	const issues: Issue[] = [];
-
-	/**
-	 * Modes:
-	 * - code
-	 * - line_comment
-	 * - block_comment
-	 * - single_quote
-	 * - double_quote
-	 * - template
-	 * - template_expr
-	 */
-	let mode:
-		| "code"
-		| "line_comment"
-		| "block_comment"
-		| "single_quote"
-		| "double_quote"
-		| "template"
-		| "template_expr" = "code";
-
-	const braceStack: boolean[] = [];
+	const braces: Brace[] = [];
+	const parentheses: Parenthesis[] = [];
 	let functionDepth = 0;
-
 	let boundaryIndex = 0;
-	let templateExprBraceBalance = 0;
+	let mode:
+		"code" | "line_comment" | "block_comment" | "single_quote" | "double_quote" | "template" =
+		"code";
+	let previous = "";
+	let beforePrevious = "";
+	let canStartRegex = true;
+	let closedParen: Parenthesis | undefined;
+	let functionHead: "function" | "function-declaration" | undefined;
+	let functionTypeParameters = 0;
+	let functionReturnType: typeof functionHead;
 
 	for (let i = 0; i < text.length; i++) {
 		const char = text[i];
@@ -167,77 +152,53 @@ export function scanModuleScopeBrowserApis(
 			continue;
 		}
 
-		if (mode === "single_quote") {
+		if (mode === "single_quote" || mode === "double_quote" || mode === "template") {
 			if (char === "\\") {
 				i++;
 				continue;
 			}
-
-			if (char === "'") mode = "code";
-			continue;
-		}
-
-		if (mode === "double_quote") {
-			if (char === "\\") {
-				i++;
-				continue;
-			}
-
-			if (char === '"') mode = "code";
-			continue;
-		}
-
-		if (mode === "template") {
-			if (char === "\\") {
-				i++;
-				continue;
-			}
-
-			if (char === "`") {
+			if (mode === "template" && char === "$" && next === "{") {
+				// The interpolation marker stays under any braces opened by its
+				// expression, including interpolations in nested templates.
+				braces.push("interpolation");
 				mode = "code";
-				continue;
-			}
-
-			if (char === "$" && next === "{") {
-				mode = "template_expr";
-				templateExprBraceBalance = 0;
+				previous = "${";
+				canStartRegex = true;
 				i++;
+			} else if (char === (mode === "single_quote" ? "'" : mode === "double_quote" ? '"' : "`")) {
+				mode = "code";
+				previous = "literal";
+				canStartRegex = false;
 			}
-
 			continue;
 		}
 
-		// mode: code | template_expr
+		if (/\s/.test(char)) continue;
 		if (char === "/" && next === "/") {
 			mode = "line_comment";
 			i++;
 			continue;
 		}
-
 		if (char === "/" && next === "*") {
 			mode = "block_comment";
 			i++;
 			continue;
 		}
-
-		if (char === "'") {
-			mode = "single_quote";
+		if (char === "/" && canStartRegex) {
+			const end = regexLiteralEnd(text, i);
+			if (end !== undefined) {
+				i = end;
+				previous = "literal";
+				canStartRegex = false;
+				continue;
+			}
+		}
+		if (char === "'" || char === '"' || char === "`") {
+			mode = char === "'" ? "single_quote" : char === '"' ? "double_quote" : "template";
 			continue;
 		}
 
-		if (char === '"') {
-			mode = "double_quote";
-			continue;
-		}
-
-		if (char === "`") {
-			mode = "template";
-			continue;
-		}
-
-		if (char === ";" && functionDepth === 0) {
-			boundaryIndex = i + 1;
-		}
+		if (char === ";" && functionDepth === 0) boundaryIndex = i + 1;
 
 		if (functionDepth === 0) {
 			for (const check of checks) {
@@ -262,33 +223,121 @@ export function scanModuleScopeBrowserApis(
 			}
 		}
 
-		if (mode === "template_expr") {
-			if (char === "{") {
-				templateExprBraceBalance++;
-				const isFunction = isFunctionBodyStart(text, i);
-				braceStack.push(isFunction);
-				if (isFunction) functionDepth++;
-			} else if (char === "}") {
-				if (templateExprBraceBalance === 0) {
-					mode = "template";
-				} else {
-					templateExprBraceBalance--;
-					const wasFunction = braceStack.pop();
-					if (wasFunction) functionDepth = Math.max(0, functionDepth - 1);
-				}
+		if (isIdentChar(char)) {
+			let end = i + 1;
+			while (end < text.length && isIdentChar(text[end])) end++;
+			const word = text.slice(i, end);
+			if (word === "function" && previous !== "." && functionTypeParameters === 0) {
+				const beforeFunction = previous === "async" ? beforePrevious : previous;
+				functionHead =
+					!beforeFunction || ["{", "}", ";", "export", "default"].includes(beforeFunction)
+						? "function-declaration"
+						: "function";
+			} else if (functionTypeParameters === 0 && previous !== "function" && previous !== "*") {
+				functionHead = undefined;
 			}
-
+			canStartRegex =
+				previous !== "." &&
+				(REGEX_PREFIX_KEYWORDS.has(word) || (word === "of" && parentheses.at(-1) === "for"));
+			beforePrevious = previous;
+			previous = word;
+			i = end - 1;
 			continue;
 		}
 
-		if (char === "{") {
-			const isFunction = isFunctionBodyStart(text, i);
-			braceStack.push(isFunction);
-			if (isFunction) functionDepth++;
-		} else if (char === "}") {
-			const wasFunction = braceStack.pop();
-			if (wasFunction) functionDepth = Math.max(0, functionDepth - 1);
+		if (functionHead && char === "<") functionTypeParameters++;
+		else if (functionTypeParameters > 0 && char === ">") functionTypeParameters--;
+		else if (functionTypeParameters === 0 && char !== "(" && char !== "*") functionHead = undefined;
+
+		switch (char) {
+			case "(":
+				if (functionHead && functionTypeParameters === 0) {
+					parentheses.push(functionHead);
+					functionHead = undefined;
+				} else if (previous === "for" || (previous === "await" && beforePrevious === "for")) {
+					parentheses.push("for");
+				} else if (CONTROL_KEYWORDS.has(previous)) {
+					parentheses.push("control");
+				} else {
+					parentheses.push(
+						isIdentChar(previous[0] ?? "") && !canStartRegex ? "method" : "expression",
+					);
+				}
+				canStartRegex = true;
+				break;
+			case ")":
+				closedParen = parentheses.pop();
+				canStartRegex = closedParen === "control" || closedParen === "for";
+				break;
+			case ":":
+				if (
+					previous === ")" &&
+					(closedParen === "function" || closedParen === "function-declaration")
+				) {
+					functionReturnType = closedParen;
+				}
+				canStartRegex = true;
+				break;
+			case "{": {
+				const functionBody = functionReturnType ?? (previous === ")" ? closedParen : undefined);
+				const isFunction =
+					previous === "=>" ||
+					functionBody === "function" ||
+					functionBody === "function-declaration" ||
+					functionBody === "method";
+				const isBlock =
+					previous === "" ||
+					previous === ";" ||
+					previous === "else" ||
+					previous === "try" ||
+					previous === "finally" ||
+					previous === "do" ||
+					previous === "catch" ||
+					(previous === ")" && (closedParen === "control" || closedParen === "for"));
+				braces.push(
+					functionBody === "function-declaration"
+						? functionBody
+						: isFunction
+							? "function"
+							: isBlock
+								? "block"
+								: "object",
+				);
+				if (isFunction) functionDepth++;
+				functionReturnType = undefined;
+				canStartRegex = true;
+				break;
+			}
+			case "}": {
+				const closed = braces.pop();
+				if (closed === "function" || closed === "function-declaration") functionDepth--;
+				if (closed === "interpolation") mode = "template";
+				canStartRegex = closed === "block" || closed === "function-declaration";
+				break;
+			}
+			case "=":
+				if (next === ">") {
+					previous = "=>";
+					canStartRegex = true;
+					i++;
+					continue;
+				}
+				canStartRegex = true;
+				break;
+			case "+":
+			case "-":
+				if (next === char) i++;
+				else canStartRegex = true;
+				break;
+			case ";":
+				functionReturnType = undefined;
+				canStartRegex = true;
+				break;
+			default:
+				canStartRegex = char !== "]" && char !== ".";
 		}
+		beforePrevious = previous;
+		previous = char;
 	}
 
 	return issues;

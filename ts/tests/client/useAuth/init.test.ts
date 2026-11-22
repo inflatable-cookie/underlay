@@ -5,6 +5,31 @@ import { createAuthStore } from "../../../src/client/useAuth";
 import { makeDeps, makeSession, makeSessionInfo } from "./fixtures";
 
 describe("client/useAuth init", () => {
+	it.each(["session", "401"])(
+		"ignores a stale init that returns %s after logout",
+		async (result) => {
+			const { commands, tokenStore } = makeDeps();
+			const session = Promise.withResolvers<ReturnType<typeof makeSessionInfo>>();
+			commands.session.mockReturnValueOnce(session.promise);
+			const auth = createAuthStore({ commands, tokenStore });
+
+			const initializing = auth.init();
+			await auth.logout();
+			if (result === "401") session.reject(new UnderlayHttpError(401, "Unauthorized"));
+			else session.resolve(makeSessionInfo("stale"));
+			await initializing;
+
+			expect(commands.refresh).not.toHaveBeenCalled();
+			expect(tokenStore.clear).toHaveBeenCalledOnce();
+			expect(get(auth.state)).toEqual({
+				status: "anonymous",
+				session: null,
+				loading: false,
+				error: null,
+			});
+		},
+	);
+
 	it("initializes as authenticated when session request succeeds", async () => {
 		const { commands, tokenStore } = makeDeps();
 		const session = makeSessionInfo("init");

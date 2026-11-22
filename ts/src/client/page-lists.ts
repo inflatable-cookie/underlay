@@ -5,6 +5,19 @@
  * This is intentionally separate from cursor/runtime pagination helpers.
  */
 
+import type { PagedListResponse } from "./envelopes";
+
+export type PageListWireResponse<T> = Omit<PagedListResponse<T>, "hasMore"> & { has_more: boolean };
+
+/** Convert a Rust `PageList<T>` response to the client pagination shape. */
+export function normalizePageListResponse<T>({
+	data,
+	total,
+	has_more,
+}: PageListWireResponse<T>): PagedListResponse<T> {
+	return { data, total, hasMore: has_more };
+}
+
 export interface PageListParams {
 	/** Page number (1-indexed). */
 	page?: number;

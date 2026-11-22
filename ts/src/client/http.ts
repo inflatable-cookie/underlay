@@ -82,6 +82,46 @@ export function isTransientRefreshError(err: unknown): boolean {
 	);
 }
 
+function requestAborted(): UnderlayHttpError {
+	return new UnderlayHttpError(0, "Request aborted", {
+		error: { code: "aborted", message: "Request aborted" },
+	});
+}
+
+function waitForRefresh(
+	refresh: Promise<RefreshResult>,
+	signal: AbortSignal | undefined,
+): Promise<RefreshResult> {
+	if (!signal) return refresh;
+
+	// A caller can stop waiting without aborting refresh for other requests.
+	return new Promise((resolve, reject) => {
+		const abort = () => {
+			signal.removeEventListener("abort", abort);
+			reject(requestAborted());
+		};
+		signal.addEventListener("abort", abort, { once: true });
+		void refresh.then(resolve, reject).finally(() => signal.removeEventListener("abort", abort));
+		if (signal.aborted) abort();
+	});
+}
+
+function waitForRetry(backoffMs: number, signal: AbortSignal | undefined): Promise<void> {
+	return new Promise((resolve, reject) => {
+		const abort = () => {
+			clearTimeout(timer);
+			signal?.removeEventListener("abort", abort);
+			reject(requestAborted());
+		};
+		const timer = setTimeout(() => {
+			signal?.removeEventListener("abort", abort);
+			resolve();
+		}, backoffMs);
+		signal?.addEventListener("abort", abort, { once: true });
+		if (signal?.aborted) abort();
+	});
+}
+
 export function createHttpClient(options: HttpClientOptions): HttpClient {
 	const fetchImpl = options.fetch ?? globalThis.fetch;
 	const timeoutMs = options.timeoutMs ?? 8000;
@@ -135,7 +175,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
 
 	async function rawRequest<T>(
 		req: HttpRequest,
-		opts?: { skipRetry?: boolean; acceptedStatuses?: number[] },
+		opts?: HttpRequestOptions,
 	): Promise<HttpResponse<T>> {
 		const url = new URL(req.path, options.baseUrl).toString();
 		const headers: Record<string, string> = {
@@ -153,12 +193,21 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
 
 		// Determine if this request is idempotent (can be retried)
 		const isIdempotent = req.method === "GET" || req.method === "DELETE";
-		const shouldRetry = isIdempotent && !opts?.skipRetry;
+		const callerSignal = opts?.signal;
 
 		let retries = 0;
 
 		while (true) {
+			if (callerSignal?.aborted) throw requestAborted();
+
 			const controller = typeof AbortController !== "undefined" ? new AbortController() : undefined;
+			let abortedByCaller = false;
+			const abort = () => {
+				if (controller?.signal.aborted) return;
+				abortedByCaller = true;
+				controller?.abort(callerSignal?.reason);
+			};
+			callerSignal?.addEventListener("abort", abort, { once: true });
 
 			const timeout =
 				controller != null ? setTimeout(() => controller.abort(), timeoutMs) : undefined;
@@ -172,7 +221,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
 					method: req.method,
 					headers,
 					body,
-					signal: controller?.signal,
+					signal: controller?.signal ?? callerSignal,
 					credentials,
 				});
 
@@ -203,7 +252,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
 					log(`Error response (${res.status}):`, envelope);
 
 					// Check if we should retry this error
-					const canRetry = shouldRetry && retryStatuses.has(res.status) && retries < maxRetries;
+					const canRetry = isIdempotent && retryStatuses.has(res.status) && retries < maxRetries;
 
 					if (canRetry) {
 						retryStatus = res.status;
@@ -258,6 +307,8 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
 					}
 				}
 			} catch (err) {
+				if (abortedByCaller) throw requestAborted();
+
 				// If it's an HTTP error (not network/timeout), don't retry - we already handled that above
 				if (err instanceof UnderlayHttpError) {
 					throw err;
@@ -278,6 +329,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
 				const message = err instanceof Error ? err.message : "Network error";
 				throw new UnderlayHttpError(0, message);
 			} finally {
+				callerSignal?.removeEventListener("abort", abort);
 				if (timeout != null) {
 					clearTimeout(timeout);
 				}
@@ -288,7 +340,7 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
 				log("Retrying due to status", retryStatus);
 				// Exponential backoff: 100ms, 200ms, 400ms, etc.
 				const backoffMs = Math.min(100 * Math.pow(2, retries - 1), 3000);
-				await new Promise((resolve) => setTimeout(resolve, backoffMs));
+				await waitForRetry(backoffMs, callerSignal);
 			}
 		}
 	}
@@ -384,6 +436,9 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
 		req: HttpRequest,
 		requestOptions?: HttpRequestOptions,
 	): Promise<HttpResponse<T>> {
+		const signal = requestOptions?.signal;
+		if (signal?.aborted) throw requestAborted();
+
 		const hasExplicitAuth =
 			hasHeader(req.headers ?? {}, "Authorization") ||
 			hasHeader(options.defaultHeaders ?? {}, "Authorization");
@@ -401,7 +456,12 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
 		} catch (err) {
 			if (!(err instanceof UnderlayHttpError)) throw err;
 
-			if (err.status !== 401 || hasExplicitAuth || !options.auth?.refresh) {
+			if (
+				err.status !== 401 ||
+				hasExplicitAuth ||
+				!options.auth?.refresh ||
+				!isBaseOrigin(req.path)
+			) {
 				throw err;
 			}
 
@@ -418,7 +478,8 @@ export function createHttpClient(options: HttpClientOptions): HttpClient {
 				}
 			}
 
-			const refreshed = await runRefreshOnce();
+			if (signal?.aborted) throw requestAborted();
+			const refreshed = await waitForRefresh(runRefreshOnce(), signal);
 
 			if (!refreshed.success) {
 				throw err;
