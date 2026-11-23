@@ -7,6 +7,8 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+## [0.11.1] - 2026-11-23
+
 ### Fixed
 - `tools/guardrails`: fixed a module-scope scanner regression introduced in `v0.11.0` where inline object type literals in function return annotations (such as `Promise<{ token: string; fetchFn: typeof fetch } | null>` or `{ credential: string; sessionId: string } | null`) prematurely closed `functionDepth`, causing function bodies to be scanned as module scope. Also treated direct `typeof <identifier>` operands and `typeof localStorage` / `typeof sessionStorage` checks as guarded SSR contexts.
 
