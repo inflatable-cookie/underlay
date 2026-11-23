@@ -67,7 +67,12 @@ function isGuardedContext(text: string, boundaryIndex: number, matchIndex: numbe
 
 	// Guardrails are intentionally strict: `if (browser)` is not considered a safe
 	// module-scope guard; prefer explicit `typeof` checks or `onMount()`.
-	return /typeof\s+(window|document|navigator|location|history)\b/.test(context);
+	return (
+		/\btypeof\s+$/.test(context) ||
+		/typeof\s+(window|document|navigator|location|history|localStorage|sessionStorage)\b/.test(
+			context,
+		)
+	);
 }
 
 const CONTROL_KEYWORDS = new Set(["if", "for", "while", "switch", "catch", "with"]);
@@ -89,7 +94,8 @@ const REGEX_PREFIX_KEYWORDS = new Set([
 
 type Parenthesis =
 	"control" | "for" | "function" | "function-declaration" | "method" | "expression";
-type Brace = "block" | "function" | "function-declaration" | "object" | "interpolation";
+type Brace = "block" | "function" | "function-declaration" | "object" | "interpolation" | "type";
+const RETURN_TYPE_OBJECT_PREFIXES = new Set([":", "|", "&", "<", "(", "[", ",", "=>", "?"]);
 
 function regexLiteralEnd(text: string, start: number): number | undefined {
 	let inClass = false;
@@ -131,6 +137,18 @@ export function scanModuleScopeBrowserApis(
 	let functionHead: "function" | "function-declaration" | undefined;
 	let functionTypeParameters = 0;
 	let functionReturnType: typeof functionHead;
+	let returnTypeAngleDepth = 0;
+	let returnTypeBraceDepth = 0;
+	let returnTypeParenDepth = 0;
+	let returnTypeBracketDepth = 0;
+
+	function resetReturnType(): void {
+		functionReturnType = undefined;
+		returnTypeAngleDepth = 0;
+		returnTypeBraceDepth = 0;
+		returnTypeParenDepth = 0;
+		returnTypeBracketDepth = 0;
+	}
 
 	for (let i = 0; i < text.length; i++) {
 		const char = text[i];
@@ -198,9 +216,9 @@ export function scanModuleScopeBrowserApis(
 			continue;
 		}
 
-		if (char === ";" && functionDepth === 0) boundaryIndex = i + 1;
+		if (char === ";" && functionDepth === 0 && !functionReturnType) boundaryIndex = i + 1;
 
-		if (functionDepth === 0) {
+		if (functionDepth === 0 && !functionReturnType) {
 			for (const check of checks) {
 				let matched = false;
 
@@ -249,8 +267,16 @@ export function scanModuleScopeBrowserApis(
 		else if (functionTypeParameters > 0 && char === ">") functionTypeParameters--;
 		else if (functionTypeParameters === 0 && char !== "(" && char !== "*") functionHead = undefined;
 
+		if (functionReturnType) {
+			if (char === "<") returnTypeAngleDepth++;
+			else if (char === ">" && returnTypeAngleDepth > 0) returnTypeAngleDepth--;
+			else if (char === "[") returnTypeBracketDepth++;
+			else if (char === "]" && returnTypeBracketDepth > 0) returnTypeBracketDepth--;
+		}
+
 		switch (char) {
 			case "(":
+				if (functionReturnType) returnTypeParenDepth++;
 				if (functionHead && functionTypeParameters === 0) {
 					parentheses.push(functionHead);
 					functionHead = undefined;
@@ -266,11 +292,13 @@ export function scanModuleScopeBrowserApis(
 				canStartRegex = true;
 				break;
 			case ")":
+				if (functionReturnType && returnTypeParenDepth > 0) returnTypeParenDepth--;
 				closedParen = parentheses.pop();
 				canStartRegex = closedParen === "control" || closedParen === "for";
 				break;
 			case ":":
 				if (
+					!functionReturnType &&
 					previous === ")" &&
 					(closedParen === "function" || closedParen === "function-declaration")
 				) {
@@ -279,6 +307,19 @@ export function scanModuleScopeBrowserApis(
 				canStartRegex = true;
 				break;
 			case "{": {
+				const inReturnTypeObject =
+					functionReturnType !== undefined &&
+					(returnTypeAngleDepth > 0 ||
+						returnTypeBraceDepth > 0 ||
+						returnTypeParenDepth > 0 ||
+						returnTypeBracketDepth > 0 ||
+						RETURN_TYPE_OBJECT_PREFIXES.has(previous));
+				if (inReturnTypeObject) {
+					braces.push("type");
+					returnTypeBraceDepth++;
+					canStartRegex = true;
+					break;
+				}
 				const functionBody = functionReturnType ?? (previous === ")" ? closedParen : undefined);
 				const isFunction =
 					previous === "=>" ||
@@ -304,12 +345,13 @@ export function scanModuleScopeBrowserApis(
 								: "object",
 				);
 				if (isFunction) functionDepth++;
-				functionReturnType = undefined;
+				resetReturnType();
 				canStartRegex = true;
 				break;
 			}
 			case "}": {
 				const closed = braces.pop();
+				if (closed === "type" && returnTypeBraceDepth > 0) returnTypeBraceDepth--;
 				if (closed === "function" || closed === "function-declaration") functionDepth--;
 				if (closed === "interpolation") mode = "template";
 				canStartRegex = closed === "block" || closed === "function-declaration";
@@ -330,7 +372,15 @@ export function scanModuleScopeBrowserApis(
 				else canStartRegex = true;
 				break;
 			case ";":
-				functionReturnType = undefined;
+				if (
+					functionReturnType &&
+					returnTypeBraceDepth === 0 &&
+					returnTypeAngleDepth === 0 &&
+					returnTypeParenDepth === 0 &&
+					returnTypeBracketDepth === 0
+				) {
+					resetReturnType();
+				}
 				canStartRegex = true;
 				break;
 			default:

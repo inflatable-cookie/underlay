@@ -338,6 +338,32 @@ describe("tools/guardrails", () => {
 		expect(issues.map(({ index }) => index)).toEqual([source.indexOf("window.innerHeight")]);
 	});
 
+	it("handles inline object type literals in function return types and typeof storage guards", () => {
+		const source = [
+			"async function session(): Promise<{ token: string; fetchFn: typeof fetch } | null> {",
+			"  return window.location ? { token: 'a', fetchFn: fetch } : null;",
+			"}",
+			"function readStoredCredential(): { credential: string; sessionId: string } | null {",
+			'  if (typeof sessionStorage === "undefined") return null;',
+			'  return sessionStorage.getItem("k") ? { credential: "a", sessionId: "b" } : null;',
+			"}",
+			"function pair(): { a: { nested: number }; b: string } {",
+			"  return { a: { nested: window.innerWidth }, b: document.title };",
+			"}",
+			"function makeFactory(): (x: number) => { y: string } {",
+			"  return () => ({ y: window.name });",
+			"}",
+			"function overloaded(x: string): { a: number };",
+			"const guardedSession = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('k') : null;",
+			"const guardedLocal = typeof localStorage !== 'undefined' ? localStorage.getItem('k') : null;",
+			"const leaked = window.innerHeight;",
+		].join("\n");
+
+		const issues = scanModuleScopeBrowserApis(source, 0, moduleScopeChecks);
+
+		expect(issues.map(({ index }) => index)).toEqual([source.indexOf("window.innerHeight")]);
+	});
+
 	it("skips regex literals while still scanning division and real browser API accesses", () => {
 		const source = [
 			String.raw`const pattern = /['"/\\]window.innerWidth\//gi;`,
