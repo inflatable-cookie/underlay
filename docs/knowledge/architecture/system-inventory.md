@@ -20,10 +20,11 @@ coverage, interface review, and later implementation assessment.
 
 Remaining pressure:
 
-- migration and testing drift is repaired across the four-consumer family;
-  fixed-schema whole-app suites remain app-owned
-- bootstrap/runtime/access drift was repaired and proved across the four exact
-  roots
+- migration and testing drift is repaired across the active three-consumer
+  family (`underlay-reference`, `compli-me`, `acowtancy`); fixed-schema
+  whole-app suites remain app-owned
+- bootstrap/runtime/access drift was repaired and proved across the active
+  consumer roots
 - collection route and hybrid-shell convergence (`116`, `117`, sweeps `029`/`030`)
   is still open
 - consumer drift prevention items in `070` still have proposed follow-through

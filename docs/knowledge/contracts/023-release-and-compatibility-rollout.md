@@ -46,11 +46,14 @@ Consumer fleet evidence:
 - `underlay-reference`
 - `acowtancy`
 - `compli-me`
-- `songsprout`
 
 Operator ruling, 2026-10-15: `contact-patch` is no longer an Underlay consumer.
 It receives no rollouts; its mentions in other contracts are historical
 evidence, not current fleet membership.
+
+Operator ruling, 2026-11-23: `songsprout` is retired (will be rebuilt from
+scratch). It receives no rollouts; its mentions in other contracts or
+changelogs are historical evidence, not current fleet membership.
 
 If these diverge, the contract plus the clearest modern rollout posture win.
 
