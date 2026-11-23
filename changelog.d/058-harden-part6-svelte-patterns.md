@@ -1,6 +1,0 @@
-### Fixed
-- Capture and tear down the standalone `$effect.root` subscription in `createLoadedReorderSession` (`ts/src/patterns/reorder-session.svelte.ts`) on `exit()` and `destroy()`, re-attaching cleanly on subsequent `enter()` calls while keeping `destroy()` exposed on the session.
-- Guard `useBatchActions().requestAction()` and `confirmPendingAction()` (`ts/src/patterns/batch-actions.svelte.ts`) while `executing` is true, remove only the executed IDs on success to preserve mid-flight selections, and guard against post-disposal state mutations.
-- Track a monotonic `submitGeneration` counter in `useValidatedForm` (`ts/src/patterns/validated-form.svelte.ts`) so `reset()` invalidates any in-flight `submit()` and prevents stale errors or `isSubmitting` updates from clobbering newer state.
-- Check caller-supplied `allowedTypes` before rejecting video files in `validateFile()` (`ts/src/patterns/blob-upload.ts`), preserving default video exclusion via `ALLOWED_MEDIA_TYPES` while permitting explicit opt-ins such as `['video/mp4']`.
-- Short-circuit `FormShell.svelte`'s `useEnhanced` `update` handler when `enhance` and `prepare` references are unchanged, eliminating listener teardown/re-attach churn across status and prop updates.

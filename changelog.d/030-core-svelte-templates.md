@@ -1,3 +1,0 @@
-- Entity lists keep search input responsive, refresh expired sessions when loading reorder items, and offer retries for list and filter configuration errors.
-- Detail pages preserve visited tabs across reordering and keep action confirmations open while work runs. Detail data tabs show loader errors and support retries.
-- Context action dialogs support form submission from the keyboard and associate field labels with their controls. Trash pages announce errors and status changes.

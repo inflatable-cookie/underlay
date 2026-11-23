@@ -1,1 +1,0 @@
-Pin the root Rust toolchain to 1.100.0 with rustfmt and clippy, sync release and package-map docs with the current gates, fleet, and feature flags, and fix the env-manifest check so a required key on a final line without a trailing newline is not skipped.
