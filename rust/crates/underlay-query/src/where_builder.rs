@@ -1,3 +1,4 @@
+use crate::field_mapping::is_safe_column_identifier;
 use crate::filter::FilterField;
 use std::collections::HashMap;
 
@@ -47,9 +48,14 @@ impl WhereBuilder {
 
     /// Add a filter condition
     ///
-    /// Returns true if the filter was added (field exists in map)
+    /// Returns true if the filter was added. Returns false when the field is
+    /// not in the map, or when its mapped column is not a plain SQL identifier
+    /// (`name` or `alias.name`). Invalid columns are never interpolated.
     pub fn add_filter(&mut self, filter: &FilterField, field_map: &HashMap<&str, &str>) -> bool {
         if let Some(column) = field_map.get(filter.field.as_str()) {
+            if !is_safe_column_identifier(column) {
+                return false;
+            }
             let condition = format!("{} {} ${}", column, filter.operator.sql(), self.param_index);
             self.conditions.push(condition);
             self.values.push(filter.value.clone());
@@ -129,5 +135,45 @@ impl WhereBuilder {
             let (clause, values) = self.build();
             (format!("WHERE {}", clause), values)
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::FilterOperator;
+
+    #[test]
+    fn add_filter_rejects_injected_column_without_adding_condition() {
+        let mut field_map = HashMap::new();
+        field_map.insert("title", "m.title");
+        field_map.insert("evil", "m.title; DROP TABLE users; --");
+        field_map.insert("quoted", "\"title\"");
+
+        let mut builder = WhereBuilder::new(1);
+        assert!(builder.add_filter(&FilterField::eq("title", "a"), &field_map));
+        assert!(!builder.add_filter(&FilterField::eq("evil", "b"), &field_map));
+        assert!(!builder.add_filter(&FilterField::eq("quoted", "c"), &field_map));
+
+        let (clause, values) = builder.build();
+        assert_eq!(clause, "m.title = $1");
+        assert_eq!(values, vec!["a"]);
+    }
+
+    #[test]
+    fn add_filter_accepts_plain_and_qualified_columns() {
+        let mut field_map = HashMap::new();
+        field_map.insert("weight", "weight");
+        field_map.insert("live", "m.is_live");
+
+        let mut builder = WhereBuilder::new(1);
+        assert!(builder.add_filter(
+            &FilterField::new("weight", FilterOperator::Gte, "10"),
+            &field_map
+        ));
+        assert!(builder.add_filter(&FilterField::eq("live", "true"), &field_map));
+
+        let (clause, _) = builder.build();
+        assert_eq!(clause, "weight >= $1 AND m.is_live = $2");
     }
 }

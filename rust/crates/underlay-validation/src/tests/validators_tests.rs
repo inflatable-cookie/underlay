@@ -4,9 +4,24 @@ use super::*;
 fn test_email() {
     assert!(email("user@example.com").is_ok());
     assert!(email("user.name+tag@example.co.uk").is_ok());
+    assert!(email("user@a-b.example.com").is_ok());
+    assert!(email("user@sub.example-site.io").is_ok());
     assert!(email("not-an-email").is_err());
     assert!(email("@example.com").is_err());
     assert!(email("user@").is_err());
+}
+
+#[test]
+fn test_email_rejects_malformed_domain_labels() {
+    assert!(email("user@..com").is_err());
+    assert!(email("user@example..com").is_err());
+    assert!(email("user@.example.com").is_err());
+    assert!(email("user@-example.com").is_err());
+    assert!(email("user@example-.com").is_err());
+    assert!(email("user@example.-com").is_err());
+    assert!(email("user@example.com-").is_err());
+    assert!(email("user@example.c").is_err());
+    assert!(email("user@example.c0m").is_err());
 }
 
 #[test]
@@ -66,6 +81,15 @@ fn test_non_negative() {
 fn test_pattern() {
     assert!(pattern("ABC123", r"^[A-Z]+\d+$", "Invalid").is_ok());
     assert!(pattern("abc123", r"^[A-Z]+\d+$", "Invalid").is_err());
+}
+
+#[test]
+fn test_pattern_invalid_regex_carries_structured_code() {
+    let err = pattern("anything", "(", "Invalid").expect_err("invalid regex should fail");
+    assert_eq!(err.code.as_deref(), Some("pattern.invalid_regex"));
+
+    let mismatch = pattern("abc", r"^\d+$", "Must be digits").expect_err("mismatch should fail");
+    assert_eq!(mismatch.code.as_deref(), Some("pattern.invalid"));
 }
 
 #[test]

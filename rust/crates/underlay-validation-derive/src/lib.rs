@@ -40,7 +40,8 @@ use derive::impl_validate;
 /// - `#[validate(email)]` - Validate as email
 /// - `#[validate(url)]` - Validate as URL
 /// - `#[validate(uuid)]` - Validate as UUID
-/// - `#[validate(required)]` - Non-empty string
+/// - `#[validate(required)]` - Non-empty string; for `Option<T>`, requires `Some(_)`
+///   and rejects blank text only when the payload is `String` or `str`
 /// - `#[validate(length(min = N, max = M))]` - String length bounds
 /// - `#[validate(range(min = N, max = M))]` - Numeric range bounds
 /// - `#[validate(pattern = "regex")]` - Custom regex

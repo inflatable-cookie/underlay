@@ -114,3 +114,50 @@ async fn run_rejects_incompatible_resume_checkpoint() {
 
     assert_eq!(counter_value(&fixture.source_calls), 0);
 }
+
+#[tokio::test]
+async fn resume_after_failed_verify_reruns_verification() {
+    let store = InMemoryRunStore::default();
+    let run = RunMetadata::new("plugin-v1", "schema-v1");
+    let ctx = MigrationContext::new(run.clone(), verified_policy());
+
+    // First run: every stage through Assets completes, Verify fails.
+    let failing = pipeline_fixture(false, true, false);
+    let err = failing
+        .orchestrator
+        .run(&ctx, &store, DecisionReusePolicy::Strict, "prompt-v1")
+        .await
+        .expect_err("first run should fail in verify stage");
+    assert!(matches!(
+        err,
+        MigrationError::StageFailure { ref stage, .. } if stage == "verify"
+    ));
+
+    // A failed Verify must not persist a completed checkpoint or snapshot.
+    let verify_snapshot = store
+        .read_stage_snapshot(run.run_id, StageName::Verify)
+        .await
+        .expect("read verify snapshot");
+    assert!(verify_snapshot.is_none());
+    let checkpoint = store
+        .latest_resume_checkpoint(run.run_id)
+        .await
+        .expect("read latest checkpoint")
+        .expect("earlier stages should be checkpointed");
+    assert_eq!(checkpoint.last_completed_stage, StageName::Assets);
+
+    // Resume with a passing plugin: Verify must re-run, not replay the failure.
+    let recovered = pipeline_fixture(false, false, false);
+    let report = recovered
+        .orchestrator
+        .run(&ctx, &store, DecisionReusePolicy::Strict, "prompt-v1")
+        .await
+        .expect("resumed run should re-run verify and succeed");
+
+    assert!(report.verify.passed);
+    assert_eq!(
+        report.resume_diagnostics.resumed_from_stage,
+        Some(StageName::Assets)
+    );
+    assert_eq!(counter_value(&recovered.source_calls), 0);
+}

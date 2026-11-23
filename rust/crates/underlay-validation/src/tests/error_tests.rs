@@ -106,3 +106,23 @@ fn test_add_field_preserves_multiple_errors_without_overwriting() {
     );
     assert_eq!(field_err.code.as_deref(), Some("email.invalid"));
 }
+
+#[test]
+fn test_add_field_empty_code_does_not_block_later_code() {
+    let mut err = ValidationError::new();
+    err.add_field("email", FieldError::with_code("First", ""));
+    err.add_field("email", FieldError::with_code("Second", "email.invalid"));
+
+    let field_err = err.get_field("email").expect("email error should exist");
+    assert_eq!(field_err.code.as_deref(), Some("email.invalid"));
+}
+
+#[test]
+fn test_add_field_keeps_first_non_empty_code() {
+    let mut err = ValidationError::new();
+    err.add_field("email", FieldError::with_code("First", "email.invalid"));
+    err.add_field("email", FieldError::with_code("Second", "length.min"));
+
+    let field_err = err.get_field("email").expect("email error should exist");
+    assert_eq!(field_err.code.as_deref(), Some("email.invalid"));
+}

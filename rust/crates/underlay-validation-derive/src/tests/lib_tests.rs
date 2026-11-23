@@ -116,3 +116,49 @@ fn derive_checks_none_when_option_field_has_required() {
     assert!(rendered.contains("validators::required(__underlay_val)"));
     assert!(rendered.contains("else{errors.add_field(\"name\""));
 }
+
+#[test]
+fn required_on_string_emits_blank_check() {
+    let input: syn::DeriveInput = parse_quote! {
+        struct Example {
+            #[validate(required)]
+            name: String,
+        }
+    };
+
+    let rendered = normalize(impl_validate(&input).expect("derive should succeed"));
+    assert!(rendered.contains("validators::required(&self.name)"));
+}
+
+#[test]
+fn required_on_option_string_emits_presence_and_blank_check() {
+    let input: syn::DeriveInput = parse_quote! {
+        struct Example {
+            #[validate(required)]
+            name: Option<String>,
+        }
+    };
+
+    let rendered = normalize(impl_validate(&input).expect("derive should succeed"));
+    assert!(rendered.contains("ifletsome(ref__underlay_val)=self.name"));
+    assert!(rendered.contains("validators::required(__underlay_val)"));
+    assert!(rendered.contains("\"required\""));
+}
+
+#[test]
+fn required_on_option_non_string_emits_presence_only() {
+    let input: syn::DeriveInput = parse_quote! {
+        struct Example {
+            #[validate(required)]
+            count: Option<i32>,
+            #[validate(required)]
+            id: Option<uuid::Uuid>,
+        }
+    };
+
+    let rendered = normalize(impl_validate(&input).expect("derive should succeed"));
+    assert!(rendered.contains("ifletsome(ref__underlay_val)=self.count"));
+    assert!(rendered.contains("ifletsome(ref__underlay_val)=self.id"));
+    assert!(!rendered.contains("validators::required("));
+    assert_eq!(rendered.matches("\"required\"").count(), 2);
+}

@@ -90,7 +90,10 @@ pub fn pattern(value: &str, pattern: &str, message: &str) -> Result<(), FieldErr
     match cached_pattern(pattern) {
         CachedPattern::Compiled(regex) if regex.is_match(value) => Ok(()),
         CachedPattern::Compiled(_) => Err(FieldError::with_code(message, "pattern.invalid")),
-        CachedPattern::Invalid => Err(FieldError::new("Invalid regex pattern")),
+        CachedPattern::Invalid => Err(FieldError::with_code(
+            "Invalid regex pattern",
+            "pattern.invalid_regex",
+        )),
     }
 }
 
