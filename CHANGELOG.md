@@ -7,87 +7,87 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
-### Breaking
+## [0.11.0] - 2026-11-23
 
+### Breaking
 - **Breaking (`0.11.0` cuts).** Session lifecycle management moved out of
   `underlay-auth-jwt` into `underlay-auth-session`, retired compatibility
   facades and overdue `g09` aliases were removed across Rust and TypeScript,
   and the zero-consumer `underlay-media-postgres` crate was dropped:
-  - `underlay-auth-session` / `underlay-auth-jwt`: `SessionManager`,
-    `SessionState`, `SessionStore`, and `SessionTokens` were removed from
-    `underlay-auth-jwt` (`session.rs` deleted) and replaced by
-    `underlay-auth-session` (`SessionService`, `SessionServiceConfig`,
-    `SessionRepository`, `AccountProvider`, `AccountState`, `AccountStatus`,
-    `SessionRecord`, `SessionFingerprint`, `Tokens`, `RefreshOutcome`).
-  - Removed Rust crates & features: `underlay-media-postgres` (apps own
-    `MediaRepository` and `MediaUsageRepository` implementations directly),
-    `underlay-nightfire` (import `nightfire` directly), and `underlay-http`
-    feature `embed` / module `underlay_http::embed` (`lookup_audioboom`,
-    `lookup_embed_metadata`, `lookup_metadata`, `EmbedMetaRequest`,
-    `EmbedMetaResponse`).
-  - Removed `underlay-email` dev-capture backend (`DevCaptureAdapter`,
-    `DevCaptureConfig`, `AdapterType::DevCapture`, `CapturedEmail`,
-    `EmailStore`, `InMemoryEmailStore`).
-  - Removed overdue `g09` aliases: `AuthError::InvalidToken` (use
-    `AuthError::TokenInvalid`), `underlay_db::pagination::PaginationParams`
-    (use `CursorPaginationParams`), `underlay_http::pagination::PaginationParams`
-    (use `PagePaginationParams`), and `SuggestionQuery::hint_order_sql` /
-    `SuggestionQuery::hint_array_sql`.
-  - Removed 14 pass-through `@inflatable-cookie/underlay/nightfire/*` shims
-    (`./nightfire`, `./nightfire/block-editor`, `./nightfire/block-ids`,
-    `./nightfire/block-registration`, `./nightfire/block-versions`,
-    `./nightfire/editor-registry`, `./nightfire/markdown`,
-    `./nightfire/media-locator`, `./nightfire/render-registry`,
-    `./nightfire/renderer`, `./nightfire/strategies`, `./nightfire/utils`,
-    `./nightfire/validation`, `./nightfire/validator-registry`); only
-    `./nightfire/editor` and `./nightfire/media` remain exported.
-  - Removed `./client/soft-delete` (`ts/src/client/soft-delete.ts`); import
-    `isRestoreBlockedResult` and restore blocker types from
-    `@inflatable-cookie/underlay/client/restore` (or
-    `@inflatable-cookie/underlay/client`).
-  - Removed syllabus-specific formatters `formatRomanRange` and
-    `formatOutcomeLabel` from `@inflatable-cookie/underlay/client/format`
-    (`toRomanNumerals` remains).
-  - Bumped Rust MSRV from `1.95` to `1.97.1` across all 35 workspace crates
-    (`rust-version.workspace = true`, `rust-toolchain.toml` pinned to `1.100.0`)
-    and repinned Nightfire to `v0.6.0` (`nightfire` Rust tag `v0.6.0`,
-    `@inflatable-cookie/nightfire` `>=0.6.0 <0.7`).
+- `underlay-auth-session` / `underlay-auth-jwt`: `SessionManager`,
+  `SessionState`, `SessionStore`, and `SessionTokens` were removed from
+  `underlay-auth-jwt` (`session.rs` deleted) and replaced by
+  `underlay-auth-session` (`SessionService`, `SessionServiceConfig`,
+  `SessionRepository`, `AccountProvider`, `AccountState`, `AccountStatus`,
+  `SessionRecord`, `SessionFingerprint`, `Tokens`, `RefreshOutcome`).
+- Removed Rust crates & features: `underlay-media-postgres` (apps own
+  `MediaRepository` and `MediaUsageRepository` implementations directly),
+  `underlay-nightfire` (import `nightfire` directly), and `underlay-http`
+  feature `embed` / module `underlay_http::embed` (`lookup_audioboom`,
+  `lookup_embed_metadata`, `lookup_metadata`, `EmbedMetaRequest`,
+  `EmbedMetaResponse`).
+- Removed `underlay-email` dev-capture backend (`DevCaptureAdapter`,
+  `DevCaptureConfig`, `AdapterType::DevCapture`, `CapturedEmail`,
+  `EmailStore`, `InMemoryEmailStore`).
+- Removed overdue `g09` aliases: `AuthError::InvalidToken` (use
+  `AuthError::TokenInvalid`), `underlay_db::pagination::PaginationParams`
+  (use `CursorPaginationParams`), `underlay_http::pagination::PaginationParams`
+  (use `PagePaginationParams`), and `SuggestionQuery::hint_order_sql` /
+  `SuggestionQuery::hint_array_sql`.
+- Removed 14 pass-through `@inflatable-cookie/underlay/nightfire/*` shims
+  (`./nightfire`, `./nightfire/block-editor`, `./nightfire/block-ids`,
+  `./nightfire/block-registration`, `./nightfire/block-versions`,
+  `./nightfire/editor-registry`, `./nightfire/markdown`,
+  `./nightfire/media-locator`, `./nightfire/render-registry`,
+  `./nightfire/renderer`, `./nightfire/strategies`, `./nightfire/utils`,
+  `./nightfire/validation`, `./nightfire/validator-registry`); only
+  `./nightfire/editor` and `./nightfire/media` remain exported.
+- Removed `./client/soft-delete` (`ts/src/client/soft-delete.ts`); import
+  `isRestoreBlockedResult` and restore blocker types from
+  `@inflatable-cookie/underlay/client/restore` (or
+  `@inflatable-cookie/underlay/client`).
+- Removed syllabus-specific formatters `formatRomanRange` and
+  `formatOutcomeLabel` from `@inflatable-cookie/underlay/client/format`
+  (`toRomanNumerals` remains).
+- Bumped Rust MSRV from `1.95` to `1.97.1` across all 35 workspace crates
+  (`rust-version.workspace = true`, `rust-toolchain.toml` pinned to `1.100.0`)
+  and repinned Nightfire to `v0.6.0` (`nightfire` Rust tag `v0.6.0`,
+  `@inflatable-cookie/nightfire` `>=0.6.0 <0.7`).
 - Impact class: `breaking`.
 - Affected consumers: all Rust and TypeScript consumers adopting `0.11.0`
   (`underlay-reference`, `acowtancy`, `compli-me`, `songsprout`).
 - Required actions:
-  - Pin the `v0.11.0` tag on every Underlay Rust and TypeScript declaration,
-    update Nightfire pins to `v0.6.0` / `>=0.6.0 <0.7`, ensure Rust toolchain
-    is `>= 1.97.1`, and regenerate `Cargo.lock` and `bun.lock`.
-  - Migrate JWT session lifecycle callers from `underlay_auth_jwt::{SessionManager, SessionState, SessionStore, SessionTokens}`
-    to `underlay_auth_session::{SessionService, SessionServiceConfig, SessionRepository, AccountProvider, ...}`.
-  - Replace `underlay-nightfire` with `nightfire` in `Cargo.toml` and replace
-    the 14 retired `@inflatable-cookie/underlay/nightfire/*` imports with
-    `@inflatable-cookie/nightfire/*`.
-  - Remove `underlay-media-postgres` and `underlay-http` `embed` feature
-    declarations and any `underlay-email` `DevCapture` usage.
-  - Replace `AuthError::InvalidToken` with `AuthError::TokenInvalid`,
-    `underlay_db::pagination::PaginationParams` with `CursorPaginationParams`,
-    `underlay_http::pagination::PaginationParams` with `PagePaginationParams`,
-    and remove `SuggestionQuery::hint_order_sql` / `hint_array_sql` callers.
-  - Replace `@inflatable-cookie/underlay/client/soft-delete` with
-    `@inflatable-cookie/underlay/client/restore`, and move any
-    `formatRomanRange` / `formatOutcomeLabel` callers into app-local helpers.
+- Pin the `v0.11.0` tag on every Underlay Rust and TypeScript declaration,
+  update Nightfire pins to `v0.6.0` / `>=0.6.0 <0.7`, ensure Rust toolchain
+  is `>= 1.97.1`, and regenerate `Cargo.lock` and `bun.lock`.
+- Migrate JWT session lifecycle callers from `underlay_auth_jwt::{SessionManager, SessionState, SessionStore, SessionTokens}`
+  to `underlay_auth_session::{SessionService, SessionServiceConfig, SessionRepository, AccountProvider, ...}`.
+- Replace `underlay-nightfire` with `nightfire` in `Cargo.toml` and replace
+  the 14 retired `@inflatable-cookie/underlay/nightfire/*` imports with
+  `@inflatable-cookie/nightfire/*`.
+- Remove `underlay-media-postgres` and `underlay-http` `embed` feature
+  declarations and any `underlay-email` `DevCapture` usage.
+- Replace `AuthError::InvalidToken` with `AuthError::TokenInvalid`,
+  `underlay_db::pagination::PaginationParams` with `CursorPaginationParams`,
+  `underlay_http::pagination::PaginationParams` with `PagePaginationParams`,
+  and remove `SuggestionQuery::hint_order_sql` / `hint_array_sql` callers.
+- Replace `@inflatable-cookie/underlay/client/soft-delete` with
+  `@inflatable-cookie/underlay/client/restore`, and move any
+  `formatRomanRange` / `formatOutcomeLabel` callers into app-local helpers.
 - Validation:
-  - Producer: `effigy qa`, `effigy rust:check`, `effigy rust:clippy`,
-    `effigy rust:test`.
-  - Consumer: `effigy validate` (or `cargo check --workspace --all-targets` and
-    `svelte-check` / unit tests) after repointing pins and imports.
+- Producer: `effigy qa`, `effigy rust:check`, `effigy rust:clippy`,
+  `effigy rust:test`.
+- Consumer: `effigy validate` (or `cargo check --workspace --all-targets` and
+  `svelte-check` / unit tests) after repointing pins and imports.
 - Deprecation/removal date: 2026-11-20 (removed in `0.11.0`; no overlapping
   deprecation window).
 - Rollback: return all Underlay pins to `v0.10.5`.
 - Reference docs:
-  - [contract 023](docs/knowledge/contracts/023-release-and-compatibility-rollout.md)
-  - [contract 122](docs/knowledge/contracts/122-rust-public-api-inventory.md)
-  - [contract 030](docs/knowledge/contracts/030-auth-and-session-systems.md)
+- [contract 023](docs/knowledge/contracts/023-release-and-compatibility-rollout.md)
+- [contract 122](docs/knowledge/contracts/122-rust-public-api-inventory.md)
+- [contract 030](docs/knowledge/contracts/030-auth-and-session-systems.md)
 
 ### Added
-
 - Added `.github/workflows/ci.yml` running `effigy qa`,
   `effigy check:consumer-conformance-fixtures`, and `cargo-deny`, and added an
   MSRV (`1.97.1`) job plus `--all-features` Clippy and `underlay-db` Postgres
@@ -98,27 +98,7 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 - Added automated Rust ↔ OpenAPI ↔ TypeScript `AuthError::code()` drift tests
   and `effigy fmt:rust:check` release gate.
 
-### Security
-
-- Hardened `underlay-http-client` (`ExternalHttpClient`) against IP-literal
-  and DNS-rebinding SSRF bypasses, disabled env proxies, capped/re-validated
-  redirects, and redacted `Debug` output.
-- Hardened `underlay-auth*`: fail-closed `RoleHierarchy::can_manage`, CAS
-  session rotation & reuse detection in `underlay-auth-session`,
-  `MAX_PASSWORD_BYTES` cap, OAuth empty-input/redirect checks, and pervasive
-  `Debug` redaction across tokens, keys, and credentials.
-- Hardened `underlay-blob` (`LocalAdapter` descriptor-pinned `openat`/`O_NOFOLLOW`
-  containment and atomic publication; S3 `x-amz-meta-*` signing and SDK error
-  redaction), `underlay-ai-runtime` (`Policy::none()` redirects and response
-  caps), and `underlay-db` (`describe_db_error` client-safe sanitization and
-  `underlay-query` SQL column identifier validation).
-- Hardened TypeScript client & Svelte auth/template boundaries: cross-origin
-  401 token-leak guard, `resolveRedirectTo` query/traversal sanitization,
-  `ForgotPasswordFlow` transport-failure surfacing without account enumeration,
-  and refreshed `Cargo.lock` transitive advisories (including `RUSTSEC-2026-0592`).
-
 ### Fixed
-
 - Fixed Rust reliability & concurrency hazards across `underlay-ratelimit`
   (`max=0` and bounded eviction), `underlay-http` (`SingleFlight` panic/cancel
   safety and `CoalescedErrorResponse` `ErrorDetail` preservation),
@@ -136,6 +116,24 @@ While Underlay is `0.x`, breaking changes raise the minor version.
   (`useEnhanced` listener stability), `EntityList` / `EntityListCard` /
   `EntityRelationField`, `AdminUserMenu`, `AdminDashboardPage`, `AdminNavList`,
   `PasswordRequirements`, `UserForm`, and `MediaEditor`.
+
+### Security
+- Hardened `underlay-http-client` (`ExternalHttpClient`) against IP-literal
+  and DNS-rebinding SSRF bypasses, disabled env proxies, capped/re-validated
+  redirects, and redacted `Debug` output.
+- Hardened `underlay-auth*`: fail-closed `RoleHierarchy::can_manage`, CAS
+  session rotation & reuse detection in `underlay-auth-session`,
+  `MAX_PASSWORD_BYTES` cap, OAuth empty-input/redirect checks, and pervasive
+  `Debug` redaction across tokens, keys, and credentials.
+- Hardened `underlay-blob` (`LocalAdapter` descriptor-pinned `openat`/`O_NOFOLLOW`
+  containment and atomic publication; S3 `x-amz-meta-*` signing and SDK error
+  redaction), `underlay-ai-runtime` (`Policy::none()` redirects and response
+  caps), and `underlay-db` (`describe_db_error` client-safe sanitization and
+  `underlay-query` SQL column identifier validation).
+- Hardened TypeScript client & Svelte auth/template boundaries: cross-origin
+  401 token-leak guard, `resolveRedirectTo` query/traversal sanitization,
+  `ForgotPasswordFlow` transport-failure surfacing without account enumeration,
+  and refreshed `Cargo.lock` transitive advisories (including `RUSTSEC-2026-0592`).
 
 ## [0.10.5] - 2026-10-15
 
