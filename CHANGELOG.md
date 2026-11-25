@@ -10,34 +10,40 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 ### Changed
 - `underlay-consumer-security`: the `row-enrichment-loop` check now reports each
   sequential row loop that awaits inside its body at its own file and line,
-  instead of once per file. Unannotated Rust detection and the existing source
-  exclusions are unchanged. A deliberate ordered loop, per-row external call or
-  isolated per-row transaction can keep the check enabled with an exact,
-  rule-scoped `// conformance: allow row-enrichment-loop: <reason>` line comment
-  immediately above the loop. The marker text is matched case-insensitively on
-  that exact rule name, requires a trimmed, non-empty same-line reason, and
-  covers one loop only: a second loop header on the same line stays reported.
-  The marker is itself a conformance failure when the reason is empty or missing
-  or when it does not annotate the next line's detected loop. Accepted sites are
-  reported with their path, loop line and reason even when the report also
-  contains failures. The literal `conformance: allow` text keeps its existing
-  meaning for the other checks (`per-row-reorder` per file, `build-env-read`
-  per line); a marker scoped to this rule no longer acts as a generic waiver
-  for either, even when its rule name is differently cased or its reason
-  quotes the broad phrase. Only the `row-enrichment-loop` marker gets this
-  scoped treatment.
-- Impact class: additive checker surface and reporting precision; no public
-  Rust or TypeScript API break. Unannotated loops that a file-level allowance
-  used to hide are now reported beside the allowed sites.
+  instead of once per file. The unannotated-Rust heuristic is unchanged. The
+  `underlay/`, `tests/` and `_tests.rs` exclusions now apply to each file's path
+  relative to the consumer root; `v0.11.1` matched them against the path printed
+  from the root argument, which excluded every file when an absolute consumer
+  root itself contained `/underlay/` or `/tests/`.
+- A deliberate ordered loop, per-row external call or isolated per-row
+  transaction can keep the check enabled with an exact, rule-scoped
+  `// conformance: allow row-enrichment-loop: <reason>` line comment immediately
+  above the loop. The marker text is matched case-insensitively on that exact
+  rule name, requires a trimmed, non-empty same-line reason, and covers one loop
+  only: a second loop header on the same line stays reported. The marker is
+  itself a conformance failure when the reason is empty or missing or when it
+  does not annotate the next line's detected loop. Accepted sites are reported
+  with their path, loop line and reason even when the report also contains
+  failures. The literal `conformance: allow` text keeps its existing meaning for
+  the other checks (`per-row-reorder` per file, `build-env-read` per line); a
+  marker scoped to this rule no longer acts as a generic waiver for either, even
+  when its rule name is differently cased or its reason quotes the broad phrase.
+  Only the `row-enrichment-loop` marker gets this scoped treatment.
+- Impact class: additive checker surface and reporting precision; no public Rust
+  or TypeScript API break. `v0.11.1` had no allowance path for this rule, so a
+  loop that was reported before stays reported unless its site opts in.
 - Affected consumers: `underlay-reference`, `compli-me`, `acowtancy`. The
   per-loop marker is opt-in adoption; keeping the current rule disabled or
   skipped is not the intended resolution.
 - Required actions:
-- Opt in where a loop is deliberately sequential: add the reasoned marker
-  above that loop and delete any file-level allowance that was only masking it.
-- On adoption, pin the release containing this change on every Underlay Rust
-  and TypeScript declaration in the consumer root and child packages, then
-  refresh the root `Cargo.lock` and `bun.lock` together.
+  - Opt in where a loop is deliberately sequential by adding the reasoned marker
+    above that loop. Do not delete broad `conformance: allow` waivers that
+    `per-row-reorder` or `build-env-read` still rely on: `v0.11.1` read no
+    allowance for this rule, so no existing file-level waiver was hiding a
+    row-enrichment-loop finding.
+  - On adoption, pin the release containing this change on every Underlay Rust
+    and TypeScript declaration in the consumer root and child packages, then
+    refresh the root `Cargo.lock` and `bun.lock` together.
 - Validation: producer `effigy check:consumer-conformance-fixtures` for both
   entry points and the fixture cases, and `effigy qa:docs` for the guide;
   consumer `effigy qa:security` after the pin and lock refresh.

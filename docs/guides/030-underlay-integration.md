@@ -201,7 +201,8 @@ or missing same-line reason, or a marker that is not immediately above a
 detected row loop (for example a stale marker above an unrelated statement or
 an in-memory loop), is itself a conformance failure. Accepted sites are
 reported with their path, loop line and reason, alongside any remaining
-failures.
+failures. The check skips `target`, and matches the `underlay/`, `tests/` and
+`_tests.rs` exclusions against each file's path relative to the consumer root.
 
 Only the `row-enrichment-loop` marker gets this scoped treatment. Every other
 check keeps its existing allowance shape and its exact broad text: the literal
