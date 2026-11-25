@@ -1227,7 +1227,9 @@ function analyzeBoundedQueriesFile(root: string, file: string): Finding[] {
 // rule-scoped, reasoned allowance on the line immediately above it.
 const ROW_IDENTIFIER = String.raw`[\p{L}\p{M}\p{N}\p{Pc}]+`;
 const ROW_LOOP_START = new RegExp(String.raw`for ${ROW_IDENTIFIER} in ${ROW_IDENTIFIER} \{`, "gu");
-const ROW_LOOP_AWAIT = /^[^}]{0,400}\.await/;
+// `[^}]` with the `u` flag counts code points, matching ripgrep's character
+// repeats; 812 code units is more than 400 code points plus `.await`.
+const ROW_LOOP_AWAIT = /^[^}]{0,400}\.await/u;
 const ROW_ENRICHMENT_MARKER = /^\s*\/\/+\s*conformance:\s*allow\s+row-enrichment-loop(?![\w-])/i;
 const ROW_ENRICHMENT_REASON = /^\s*:\s*(.*)$/;
 
@@ -1246,7 +1248,7 @@ function rowLoopSites(source: string): RowLoopSite[] {
 	const sites: RowLoopSite[] = [];
 	for (const match of source.matchAll(ROW_LOOP_START)) {
 		const bodyStart = match.index + match[0].length;
-		if (!ROW_LOOP_AWAIT.test(source.slice(bodyStart, bodyStart + 406))) continue;
+		if (!ROW_LOOP_AWAIT.test(source.slice(bodyStart, bodyStart + 812))) continue;
 		sites.push({ line: lineAt(source, match.index) });
 	}
 	return sites;

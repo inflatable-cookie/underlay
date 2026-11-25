@@ -271,6 +271,8 @@ EOF
 	cat > "$root/vite.config.ts" <<'EOF'
 const scoped = process.env.ENVIRONMENT; // conformance: allow ROW-ENRICHMENT-LOOP: the conformance: allow phrase here is prose, not a waiver.
 export const broad = process.env.ENVIRONMENT; // conformance: allow this build config reads the deployment environment deliberately.
+export const cased = process.env.ENVIRONMENT; // CONFORMANCE: ALLOW a differently cased marker is not the legacy text.
+export const spaced = process.env.ENVIRONMENT; // conformance:  allow a differently spaced marker is not the legacy text.
 EOF
 }
 
@@ -407,13 +409,20 @@ for bash_path in "${BASH_BINARIES[@]}"; do
 		printf '%s\n' "$UNSAFE_OUTPUT" >&2
 		exit 1
 	fi
-	if [[ "$(grep -Ec 'vite\.config\.ts:[0-9]+:' <<<"$UNSAFE_OUTPUT")" -ne 1 ]]; then
-		echo "a rule-scoped marker waived build-env-read, or a separate broad allowance stopped waiving under $bash_path" >&2
+	if [[ "$(grep -Ec 'vite\.config\.ts:[0-9]+:' <<<"$UNSAFE_OUTPUT")" -ne 3 ]]; then
+		echo "a rule-scoped, differently cased or differently spaced marker waived build-env-read under $bash_path" >&2
 		printf '%s\n' "$UNSAFE_OUTPUT" >&2
 		exit 1
 	fi
-	if ! grep -Eq 'vite\.config\.ts:1:const scoped' <<<"$UNSAFE_OUTPUT"; then
-		echo "the build-env-read finding was not the line carrying the rule-scoped marker under $bash_path" >&2
+	if ! grep -Eq 'vite\.config\.ts:1:const scoped' <<<"$UNSAFE_OUTPUT" ||
+		! grep -Eq 'vite\.config\.ts:3:export const cased' <<<"$UNSAFE_OUTPUT" ||
+		! grep -Eq 'vite\.config\.ts:4:export const spaced' <<<"$UNSAFE_OUTPUT"; then
+		echo "the scoped, differently cased and differently spaced build-config rows were not reported line-locally under $bash_path" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if grep -Eq 'vite\.config\.ts:2:' <<<"$UNSAFE_OUTPUT"; then
+		echo "the literal broad allowance line stopped waiving build-env-read under $bash_path" >&2
 		printf '%s\n' "$UNSAFE_OUTPUT" >&2
 		exit 1
 	fi

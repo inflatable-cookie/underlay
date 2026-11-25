@@ -194,18 +194,21 @@ for row in rows {
 }
 ```
 
-One marker covers exactly one loop, matched case-insensitively on the exact
-rule name `row-enrichment-loop`. Two loop headers that start on the same line
-are two sites: the marker covers the first and the second stays reported. A
-marker with an empty or missing same-line reason, or a marker that is not
-immediately above a detected row loop (for example a stale marker above an
-unrelated statement or an in-memory loop), is itself a conformance failure.
-Accepted sites are reported with their path, loop line and reason, alongside
-any remaining failures. The marker waives only this check: the broad
-`// conformance: allow` form keeps its existing per-file meaning, and a
-rule-scoped marker for another check does not become a general waiver. A
-scoped marker line is ignored when another check looks for the broad phrase,
-so a reason that quotes `conformance: allow` is prose, not an exemption.
+One marker covers exactly one loop, matched case-insensitively on that exact
+rule name. Two loop headers that start on the same line are two sites: the
+marker covers the first and the second stays reported. A marker with an empty
+or missing same-line reason, or a marker that is not immediately above a
+detected row loop (for example a stale marker above an unrelated statement or
+an in-memory loop), is itself a conformance failure. Accepted sites are
+reported with their path, loop line and reason, alongside any remaining
+failures.
+
+Only the `row-enrichment-loop` marker gets this scoped treatment. Every other
+check keeps its existing allowance shape and its exact broad text: the literal
+`// conformance: allow` waives `per-row-reorder` for a whole file and
+`build-env-read` on the line that carries it. A `row-enrichment-loop` marker
+never waives another check, even when the marker is differently cased or its
+reason quotes `conformance: allow`.
 
 ### Env-authority conformance
 

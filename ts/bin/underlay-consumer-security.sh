@@ -65,24 +65,26 @@ fail() {
   FAILURE_COUNT=$((FAILURE_COUNT + 1))
 }
 
-# A broad `conformance: allow` marker keeps its file-wide waiver meaning. A
-# marker scoped to the row-enrichment-loop rule waives only that rule, so the
-# broad and scoped phrases are matched case-insensitively the way the analyzer
-# recognizes the named marker, and a scoped marker owns its own phrase and its
-# reason: a reason that quotes the broad phrase is prose, not an exemption. A
-# separate broad allowance line still waives, and a rule-name prefix such as
-# `row-enrichment-loops` keeps the old broad meaning.
+# The legacy checks keep their existing waiver shapes and scopes: the broad
+# marker text is the same literal `conformance: allow` search as before
+# (case-sensitive, single space), `per-row-reorder` waives the whole file and
+# `build-env-read` waives only the matching line. Only the row-enrichment-loop
+# marker is treated specially: it owns its own phrase and its reason, so the
+# analyzer's named marker (case-insensitive rule name, exact rule boundary)
+# cannot waive another check even when it is differently cased or its reason
+# quotes the broad phrase. A literal broad marker before the scoped one still
+# waives, and a rule-name prefix such as `row-enrichment-loops` keeps the old
+# broad meaning.
 RULE_SCOPED_WAIVER_AWK='
 BEGIN {
-  conformance = "[Cc][Oo][Nn][Ff][Oo][Rr][Mm][Aa][Nn][Cc][Ee]:[[:space:]]*"
-  allow = "[Aa][Ll][Ll][Oo][Ww]"
-  rule = "[Rr][Oo][Ww]-[Ee][Nn][Rr][Ii][Cc][Hh][Mm][Ee][Nn][Tt]-[Ll][Oo][Oo][Pp]"
-  broad_pattern = conformance allow
-  scoped_pattern = conformance allow "[[:space:]]+" rule
+  broad_pattern = "conformance: allow"
+  scoped_pattern = \
+    "[Cc][Oo][Nn][Ff][Oo][Rr][Mm][Aa][Nn][Cc][Ee]:[[:space:]]*[Aa][Ll][Ll][Oo][Ww][[:space:]]+" \
+    "[Rr][Oo][Ww]-[Ee][Nn][Rr][Ii][Cc][Hh][Mm][Ee][Nn][Tt]-[Ll][Oo][Oo][Pp]"
 }
 function line_waives(line,   broad_start, scoped_end, next_char) {
-  if (!match(line, broad_pattern)) return 0
-  broad_start = RSTART
+  if (!index(line, broad_pattern)) return 0
+  broad_start = index(line, broad_pattern)
   if (!match(line, scoped_pattern)) return 1
   scoped_end = RSTART + RLENGTH
   next_char = substr(line, scoped_end, 1)

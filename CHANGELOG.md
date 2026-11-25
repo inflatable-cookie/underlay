@@ -20,10 +20,12 @@ While Underlay is `0.x`, breaking changes raise the minor version.
   The marker is itself a conformance failure when the reason is empty or missing
   or when it does not annotate the next line's detected loop. Accepted sites are
   reported with their path, loop line and reason even when the report also
-  contains failures. The broad `conformance: allow` form keeps its existing
-  per-file meaning; a marker scoped to this rule no longer acts as a generic
-  waiver for `per-row-reorder` or `build-env-read`, even when its reason quotes
-  the broad phrase.
+  contains failures. The literal `conformance: allow` text keeps its existing
+  meaning for the other checks (`per-row-reorder` per file, `build-env-read`
+  per line); a marker scoped to this rule no longer acts as a generic waiver
+  for either, even when its rule name is differently cased or its reason
+  quotes the broad phrase. Only the `row-enrichment-loop` marker gets this
+  scoped treatment.
 - Impact class: additive checker surface and reporting precision; no public
   Rust or TypeScript API break. Unannotated loops that a file-level allowance
   used to hide are now reported beside the allowed sites.
