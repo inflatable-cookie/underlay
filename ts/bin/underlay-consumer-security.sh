@@ -66,24 +66,42 @@ fail() {
 }
 
 # A broad `conformance: allow` marker keeps its file-wide waiver meaning. A
-# marker scoped to a named rule (the row-enrichment-loop allowance) waives only
-# that rule, so neutralize it before matching the broad text. The original line
-# is still what gets reported.
-drop_rule_scoped_only_waivers() {
-  awk '{
-    line = $0
-    gsub(/conformance:[[:space:]]*allow[[:space:]]+row-enrichment-loop/, "row-enrichment-allowance", line)
-    if (line !~ /conformance: allow/) print $0
-  }'
+# marker scoped to the row-enrichment-loop rule waives only that rule, so the
+# broad and scoped phrases are matched case-insensitively the way the analyzer
+# recognizes the named marker, and a scoped marker owns its own phrase and its
+# reason: a reason that quotes the broad phrase is prose, not an exemption. A
+# separate broad allowance line still waives, and a rule-name prefix such as
+# `row-enrichment-loops` keeps the old broad meaning.
+RULE_SCOPED_WAIVER_AWK='
+BEGIN {
+  conformance = "[Cc][Oo][Nn][Ff][Oo][Rr][Mm][Aa][Nn][Cc][Ee]:[[:space:]]*"
+  allow = "[Aa][Ll][Ll][Oo][Ww]"
+  rule = "[Rr][Oo][Ww]-[Ee][Nn][Rr][Ii][Cc][Hh][Mm][Ee][Nn][Tt]-[Ll][Oo][Oo][Pp]"
+  broad_pattern = conformance allow
+  scoped_pattern = conformance allow "[[:space:]]+" rule
+}
+function line_waives(line,   broad_start, scoped_end, next_char) {
+  if (!match(line, broad_pattern)) return 0
+  broad_start = RSTART
+  if (!match(line, scoped_pattern)) return 1
+  scoped_end = RSTART + RLENGTH
+  next_char = substr(line, scoped_end, 1)
+  if (next_char != "" && next_char ~ /[[:alnum:]_-]/) return 1
+  return broad_start < RSTART
+}
+'
+
+keep_unwaived_lines() {
+  awk "$RULE_SCOPED_WAIVER_AWK"'
+    { if (!line_waives($0)) print $0 }
+  '
 }
 
 file_has_broad_allowance() {
-  awk '{
-    line = $0
-    gsub(/conformance:[[:space:]]*allow[[:space:]]+row-enrichment-loop/, "row-enrichment-allowance", line)
-    if (line ~ /conformance: allow/) found = 1
-  }
-  END { exit found ? 0 : 1 }' "$1"
+  awk "$RULE_SCOPED_WAIVER_AWK"'
+    { if (line_waives($0)) found = 1 }
+    END { exit found ? 0 : 1 }
+  ' "$1"
 }
 
 # --------------------------------------------------------------------------
@@ -382,7 +400,7 @@ fi
 if ! skip "build-env-read"; then
   hits=$(rg -n "ENVIRONMENT" "$ROOT" \
     -g 'vite.config.*' -g 'svelte.config.*' -g '*generate-public-config*' \
-    -g '!node_modules' 2>/dev/null | drop_rule_scoped_only_waivers || true)
+    -g '!node_modules' 2>/dev/null | keep_unwaived_lines || true)
   if [[ -z "$hits" ]]; then
     pass "build-env-read"
   else

@@ -14,14 +14,16 @@ While Underlay is `0.x`, breaking changes raise the minor version.
   exclusions are unchanged. A deliberate ordered loop, per-row external call or
   isolated per-row transaction can keep the check enabled with an exact,
   rule-scoped `// conformance: allow row-enrichment-loop: <reason>` line comment
-  immediately above the loop. The marker requires a trimmed, non-empty
-  same-line reason, covers one loop only, and is itself a conformance failure
-  when the reason is empty or missing or when it does not annotate the next
-  line's detected loop. Accepted sites are reported with their path, loop line
-  and reason even when the report also contains failures. The broad
-  `conformance: allow` form keeps its existing per-file meaning; a marker
-  scoped to this rule no longer acts as a generic waiver for `per-row-reorder`
-  or `build-env-read`.
+  immediately above the loop. The marker text is matched case-insensitively on
+  that exact rule name, requires a trimmed, non-empty same-line reason, and
+  covers one loop only: a second loop header on the same line stays reported.
+  The marker is itself a conformance failure when the reason is empty or missing
+  or when it does not annotate the next line's detected loop. Accepted sites are
+  reported with their path, loop line and reason even when the report also
+  contains failures. The broad `conformance: allow` form keeps its existing
+  per-file meaning; a marker scoped to this rule no longer acts as a generic
+  waiver for `per-row-reorder` or `build-env-read`, even when its reason quotes
+  the broad phrase.
 - Impact class: additive checker surface and reporting precision; no public
   Rust or TypeScript API break. Unannotated loops that a file-level allowance
   used to hide are now reported beside the allowed sites.

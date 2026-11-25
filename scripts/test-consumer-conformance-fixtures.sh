@@ -89,6 +89,14 @@ pub async fn append_audit_rows(rows: &[AuditRow], pool: &PgPool) -> Result<()> {
     }
     Ok(())
 }
+
+pub async fn sync_manifest_rows(rows: &[ManifestRow], pool: &PgPool) -> Result<()> {
+    // conformance: allow ROW-ENRICHMENT-LOOP: manifest appends must keep arrival order.
+    for row in rows {
+        append_manifest_entry(pool, row).await?;
+    }
+    Ok(())
+}
 EOF
 }
 
@@ -245,6 +253,25 @@ pub async fn sync_ledger_then_enrich(rows: &[Row], pool: &PgPool) -> Result<()> 
     Ok(())
 }
 EOF
+	cat > "$root/src/rows_inline.rs" <<'EOF'
+pub async fn enrich_pairs(pairs: &[Pair], rows: &[Row], pool: &PgPool) -> Result<()> {
+    // conformance: allow row-enrichment-loop: the first loop on this line stays ordered.
+    for pair in pairs { for row in rows { store_pair(pool, pair, row).await?; } }
+    Ok(())
+}
+EOF
+	cat > "$root/src/rows_unicode.rs" <<'EOF'
+pub async fn enrich_unicode_rows(übers: &[Row], pool: &PgPool) -> Result<()> {
+    for über in übers {
+        store_detail(pool, über.id).await?;
+    }
+    Ok(())
+}
+EOF
+	cat > "$root/vite.config.ts" <<'EOF'
+const scoped = process.env.ENVIRONMENT; // conformance: allow ROW-ENRICHMENT-LOOP: the conformance: allow phrase here is prose, not a waiver.
+export const broad = process.env.ENVIRONMENT; // conformance: allow this build config reads the deployment environment deliberately.
+EOF
 }
 
 if ! tr '\n' ' ' < "$REPO_ROOT/package.json" | grep -Eq '"files"[[:space:]]*:[[:space:]]*\[[[:space:]]*"ts"[[:space:]]*\]'; then
@@ -328,6 +355,11 @@ for bash_path in "${BASH_BINARIES[@]}"; do
 		printf '%s\n' "$SAFE_OUTPUT" >&2
 		exit 1
 	fi
+	if ! grep -Eq 'ALLOW  row-enrichment-loop src/rows\.rs:[0-9]+: manifest appends must keep arrival order\.' <<<"$SAFE_OUTPUT"; then
+		echo "a case-insensitive row-enrichment marker was not accepted the way the analyzer recognizes it under $bash_path" >&2
+		printf '%s\n' "$SAFE_OUTPUT" >&2
+		exit 1
+	fi
 	if [[ "$(grep -Ec 'src/rows\.rs:[0-9]+: await inside a row loop' <<<"$SAFE_OUTPUT")" -ne 0 ]]; then
 		echo "a reasoned row-enrichment allowance did not cover its own loop under $bash_path" >&2
 		printf '%s\n' "$SAFE_OUTPUT" >&2
@@ -357,6 +389,31 @@ for bash_path in "${BASH_BINARIES[@]}"; do
 	fi
 	if ! grep -Eq 'src/rows\.rs:[0-9]+: row-enrichment-loop allowance does not annotate the next line' <<<"$UNSAFE_OUTPUT"; then
 		echo "a marker above a loop that would not be flagged was not a conformance failure under $bash_path" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if [[ "$(grep -Ec 'src/rows_inline\.rs:[0-9]+: await inside a row loop' <<<"$UNSAFE_OUTPUT")" -ne 1 ]]; then
+		echo "a second loop header on the same line was not left visible beside its allowance under $bash_path" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if [[ "$(grep -Ec 'ALLOW  row-enrichment-loop src/rows_inline\.rs:[0-9]+: the first loop on this line stays ordered\.' <<<"$UNSAFE_OUTPUT")" -ne 1 ]]; then
+		echo "one marker did not cover exactly one same-line loop under $bash_path" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if [[ "$(grep -Ec 'src/rows_unicode\.rs:[0-9]+: await inside a row loop' <<<"$UNSAFE_OUTPUT")" -ne 1 ]]; then
+		echo "a Unicode-identifier row loop was not reported after the heuristic moved off ripgrep under $bash_path" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if [[ "$(grep -Ec 'vite\.config\.ts:[0-9]+:' <<<"$UNSAFE_OUTPUT")" -ne 1 ]]; then
+		echo "a rule-scoped marker waived build-env-read, or a separate broad allowance stopped waiving under $bash_path" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if ! grep -Eq 'vite\.config\.ts:1:const scoped' <<<"$UNSAFE_OUTPUT"; then
+		echo "the build-env-read finding was not the line carrying the rule-scoped marker under $bash_path" >&2
 		printf '%s\n' "$UNSAFE_OUTPUT" >&2
 		exit 1
 	fi
