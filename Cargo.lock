@@ -5175,7 +5175,7 @@ checksum = "b6f5e870be6c3b371b77fe0ee0bafb859fa4964b4404c27de1d380043c4dda20"
 
 [[package]]
 name = "underlay-ai-runtime"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "async-trait",
  "reqwest 0.13.5",
@@ -5189,7 +5189,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-audit"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "chrono",
  "serde",
@@ -5205,7 +5205,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-auth"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "aes-gcm",
  "argon2",
@@ -5225,7 +5225,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-auth-email-totp"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "async-trait",
  "chrono",
@@ -5238,7 +5238,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-auth-jwt"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -5258,7 +5258,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-auth-oauth"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -5277,7 +5277,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-auth-password"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -5296,7 +5296,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-auth-session"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "async-trait",
  "chrono",
@@ -5311,7 +5311,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-auth-state-postgres"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "chrono",
  "serde",
@@ -5326,7 +5326,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-auth-totp"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "base32",
  "chrono",
@@ -5345,7 +5345,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-auth-webauthn"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "base64urlsafedata",
  "serde",
@@ -5361,7 +5361,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-aws"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "aws-config",
  "aws-credential-types",
@@ -5370,7 +5370,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-blob"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "async-trait",
  "aws-credential-types",
@@ -5395,7 +5395,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-config"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "serde",
  "thiserror 2.0.21",
@@ -5404,7 +5404,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-core"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "serde",
  "serde_json",
@@ -5413,7 +5413,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-db"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "base64 0.22.1",
  "chrono",
@@ -5432,7 +5432,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-devtools"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "base64 0.22.1",
  "chrono",
@@ -5452,7 +5452,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-email"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "async-trait",
  "aws-sdk-sesv2",
@@ -5469,7 +5469,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-events"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "async-trait",
  "chrono",
@@ -5480,7 +5480,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-http"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "axum",
  "chrono",
@@ -5507,7 +5507,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-http-client"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "reqwest 0.13.5",
  "thiserror 2.0.21",
@@ -5518,7 +5518,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-jobs"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "async-trait",
  "chrono",
@@ -5531,7 +5531,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-jobs-postgres"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "async-trait",
  "chrono",
@@ -5549,7 +5549,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-media"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "async-trait",
  "chrono",
@@ -5566,7 +5566,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-metrics"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "axum",
  "prometheus",
@@ -5576,7 +5576,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-migration-core"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "async-trait",
  "chrono",
@@ -5591,7 +5591,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-observability"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "http 1.5.0",
  "pin-project-lite",
@@ -5606,7 +5606,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-query"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "serde",
  "serde_json",
@@ -5614,7 +5614,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-ratelimit"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "async-trait",
  "dashmap",
@@ -5628,7 +5628,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-security-alerts"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "chrono",
  "serde",
@@ -5644,7 +5644,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-soft-delete"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "async-trait",
  "sqlx",
@@ -5653,7 +5653,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-suggestions"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "serde",
  "serde_urlencoded",
@@ -5661,7 +5661,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-testing"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "async-trait",
  "axum",
@@ -5680,7 +5680,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-validation"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "axum",
  "deunicode",
@@ -5700,7 +5700,7 @@ dependencies = [
 
 [[package]]
 name = "underlay-validation-derive"
-version = "0.11.1"
+version = "0.11.2"
 dependencies = [
  "proc-macro2",
  "quote",

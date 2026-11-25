@@ -7,6 +7,8 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+## [0.11.2] - 2026-11-25
+
 ### Changed
 - `underlay-consumer-security`: the `row-enrichment-loop` check now reports each
   sequential row loop that awaits inside its body at its own file and line,
