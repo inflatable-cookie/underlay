@@ -81,6 +81,23 @@ pub async fn list_legacy_projects(pool: &PgPool) -> Result<Vec<Project>> {
     Ok(rows)
 }
 EOF
+	cat > "$root/src/rows.rs" <<'EOF'
+pub async fn append_audit_rows(rows: &[AuditRow], pool: &PgPool) -> Result<()> {
+    // conformance: allow row-enrichment-loop: audit appends must keep arrival order.
+    for row in rows {
+        append_audit_entry(pool, row).await?;
+    }
+    Ok(())
+}
+
+pub async fn sync_manifest_rows(rows: &[ManifestRow], pool: &PgPool) -> Result<()> {
+    // conformance: allow ROW-ENRICHMENT-LOOP: manifest appends must keep arrival order.
+    for row in rows {
+        append_manifest_entry(pool, row).await?;
+    }
+    Ok(())
+}
+EOF
 }
 
 write_unsafe_fixture() {
@@ -191,6 +208,72 @@ pub async fn list_legacy_projects(pool: &PgPool) -> Result<Vec<Project>> {
     Ok(rows)
 }
 EOF
+	cat > "$root/src/rows.rs" <<'EOF'
+pub async fn enrich_rows(rows: &[Row], pool: &PgPool) -> Result<()> {
+    for row in rows {
+        let detail = fetch_detail(pool, row.id).await?;
+        store_detail(pool, detail).await?;
+    }
+    Ok(())
+}
+
+pub async fn sync_ledger(rows: &[Row], pool: &PgPool) -> Result<()> {
+    // conformance: allow row-enrichment-loop: ledger order is externally observable.
+    for row in rows {
+        append_ledger_entry(pool, row).await?;
+    }
+    Ok(())
+}
+
+pub async fn sync_ledger_unreasoned(rows: &[Row], pool: &PgPool) -> Result<()> {
+    // conformance: allow row-enrichment-loop:
+    for row in rows {
+        append_ledger_entry(pool, row).await?;
+    }
+    Ok(())
+}
+
+pub fn total_weight(rows: &[Row]) -> i64 {
+    let mut total = 0;
+    // conformance: allow row-enrichment-loop: stale marker above an in-memory loop.
+    for row in rows {
+        total += row.weight;
+    }
+    total
+}
+
+pub async fn sync_ledger_then_enrich(rows: &[Row], pool: &PgPool) -> Result<()> {
+    // conformance: allow row-enrichment-loop: ledger order is externally observable.
+    for row in rows {
+        append_ledger_entry(pool, row).await?;
+    }
+    for row in rows {
+        refresh_cache(pool, row.id).await?;
+    }
+    Ok(())
+}
+EOF
+	cat > "$root/src/rows_inline.rs" <<'EOF'
+pub async fn enrich_pairs(pairs: &[Pair], rows: &[Row], pool: &PgPool) -> Result<()> {
+    // conformance: allow row-enrichment-loop: the first loop on this line stays ordered.
+    for pair in pairs { for row in rows { store_pair(pool, pair, row).await?; } }
+    Ok(())
+}
+EOF
+	cat > "$root/src/rows_unicode.rs" <<'EOF'
+pub async fn enrich_unicode_rows(übers: &[Row], pool: &PgPool) -> Result<()> {
+    for über in übers {
+        store_detail(pool, über.id).await?;
+    }
+    Ok(())
+}
+EOF
+	cat > "$root/vite.config.ts" <<'EOF'
+const scoped = process.env.ENVIRONMENT; // conformance: allow ROW-ENRICHMENT-LOOP: the conformance: allow phrase here is prose, not a waiver.
+export const broad = process.env.ENVIRONMENT; // conformance: allow this build config reads the deployment environment deliberately.
+export const cased = process.env.ENVIRONMENT; // CONFORMANCE: ALLOW a differently cased marker is not the legacy text.
+export const spaced = process.env.ENVIRONMENT; // conformance:  allow a differently spaced marker is not the legacy text.
+EOF
 }
 
 if ! tr '\n' ' ' < "$REPO_ROOT/package.json" | grep -Eq '"files"[[:space:]]*:[[:space:]]*\[[[:space:]]*"ts"[[:space:]]*\]'; then
@@ -269,10 +352,77 @@ for bash_path in "${BASH_BINARIES[@]}"; do
 		printf '%s\n' "$SAFE_OUTPUT" >&2
 		exit 1
 	fi
+	if ! grep -Eq 'ALLOW  row-enrichment-loop src/rows\.rs:[0-9]+: audit appends must keep arrival order\.' <<<"$SAFE_OUTPUT"; then
+		echo "documented row-enrichment allowance was not reported with its path, line and reason under $bash_path" >&2
+		printf '%s\n' "$SAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if ! grep -Eq 'ALLOW  row-enrichment-loop src/rows\.rs:[0-9]+: manifest appends must keep arrival order\.' <<<"$SAFE_OUTPUT"; then
+		echo "a case-insensitive row-enrichment marker was not accepted the way the analyzer recognizes it under $bash_path" >&2
+		printf '%s\n' "$SAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if [[ "$(grep -Ec 'src/rows\.rs:[0-9]+: await inside a row loop' <<<"$SAFE_OUTPUT")" -ne 0 ]]; then
+		echo "a reasoned row-enrichment allowance did not cover its own loop under $bash_path" >&2
+		printf '%s\n' "$SAFE_OUTPUT" >&2
+		exit 1
+	fi
 
 	UNSAFE_OUTPUT="$(run_both_entry_points "$UNSAFE_ROOT" 1 "$bash_path")"
 	if ! grep -Eq 'src/routes/unsafe\.rs:.*mount must be inside a development-only gate' <<<"$UNSAFE_OUTPUT"; then
 		echo "unguarded cross-file OpenAPI mount was not reported precisely under $bash_path" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if [[ "$(grep -Ec 'src/rows\.rs:[0-9]+: await inside a row loop' <<<"$UNSAFE_OUTPUT")" -ne 2 ]]; then
+		echo "unannotated row loops were not reported once each beside an allowed loop under $bash_path" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if [[ "$(grep -Ec 'ALLOW  row-enrichment-loop src/rows\.rs:[0-9]+: ledger order is externally observable\.' <<<"$UNSAFE_OUTPUT")" -ne 2 ]]; then
+		echo "accepted row-enrichment sites were not reported with path, line and reason beside failures under $bash_path" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if ! grep -Eq 'src/rows\.rs:[0-9]+: row-enrichment-loop allowance needs a same-line reason' <<<"$UNSAFE_OUTPUT"; then
+		echo "an empty row-enrichment reason was not a conformance failure under $bash_path" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if ! grep -Eq 'src/rows\.rs:[0-9]+: row-enrichment-loop allowance does not annotate the next line' <<<"$UNSAFE_OUTPUT"; then
+		echo "a marker above a loop that would not be flagged was not a conformance failure under $bash_path" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if [[ "$(grep -Ec 'src/rows_inline\.rs:[0-9]+: await inside a row loop' <<<"$UNSAFE_OUTPUT")" -ne 1 ]]; then
+		echo "a second loop header on the same line was not left visible beside its allowance under $bash_path" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if [[ "$(grep -Ec 'ALLOW  row-enrichment-loop src/rows_inline\.rs:[0-9]+: the first loop on this line stays ordered\.' <<<"$UNSAFE_OUTPUT")" -ne 1 ]]; then
+		echo "one marker did not cover exactly one same-line loop under $bash_path" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if [[ "$(grep -Ec 'src/rows_unicode\.rs:[0-9]+: await inside a row loop' <<<"$UNSAFE_OUTPUT")" -ne 1 ]]; then
+		echo "a Unicode-identifier row loop was not reported after the heuristic moved off ripgrep under $bash_path" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if [[ "$(grep -Ec 'vite\.config\.ts:[0-9]+:' <<<"$UNSAFE_OUTPUT")" -ne 3 ]]; then
+		echo "a rule-scoped, differently cased or differently spaced marker waived build-env-read under $bash_path" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if ! grep -Eq 'vite\.config\.ts:1:const scoped' <<<"$UNSAFE_OUTPUT" ||
+		! grep -Eq 'vite\.config\.ts:3:export const cased' <<<"$UNSAFE_OUTPUT" ||
+		! grep -Eq 'vite\.config\.ts:4:export const spaced' <<<"$UNSAFE_OUTPUT"; then
+		echo "the scoped, differently cased and differently spaced build-config rows were not reported line-locally under $bash_path" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if grep -Eq 'vite\.config\.ts:2:' <<<"$UNSAFE_OUTPUT"; then
+		echo "the literal broad allowance line stopped waiving build-env-read under $bash_path" >&2
 		printf '%s\n' "$UNSAFE_OUTPUT" >&2
 		exit 1
 	fi

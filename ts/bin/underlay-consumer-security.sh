@@ -37,6 +37,8 @@ ANALYZER="$SCRIPT_DIR/../src/tools/consumer-security-analysis.ts"
 ROOT="${1:-.}"
 FAILURES=()
 PASSES=()
+ALLOWANCES=()
+ALLOWANCE_COUNT=0
 CHECKS_EXECUTED=0
 CHECKS_SKIPPED=0
 PASS_COUNT=0
@@ -61,6 +63,47 @@ pass() {
 fail() {
   FAILURES+=("$1: $2")
   FAILURE_COUNT=$((FAILURE_COUNT + 1))
+}
+
+# The legacy checks keep their existing waiver shapes and scopes: the broad
+# marker text is the same literal `conformance: allow` search as before
+# (case-sensitive, single space), `per-row-reorder` waives the whole file and
+# `build-env-read` waives only the matching line. Only the row-enrichment-loop
+# marker is treated specially: it owns its own phrase and its reason, so the
+# analyzer's named marker (case-insensitive rule name, exact rule boundary)
+# cannot waive another check even when it is differently cased or its reason
+# quotes the broad phrase. A literal broad marker before the scoped one still
+# waives, and a rule-name prefix such as `row-enrichment-loops` keeps the old
+# broad meaning.
+RULE_SCOPED_WAIVER_AWK='
+BEGIN {
+  broad_pattern = "conformance: allow"
+  scoped_pattern = \
+    "[Cc][Oo][Nn][Ff][Oo][Rr][Mm][Aa][Nn][Cc][Ee]:[[:space:]]*[Aa][Ll][Ll][Oo][Ww][[:space:]]+" \
+    "[Rr][Oo][Ww]-[Ee][Nn][Rr][Ii][Cc][Hh][Mm][Ee][Nn][Tt]-[Ll][Oo][Oo][Pp]"
+}
+function line_waives(line,   broad_start, scoped_end, next_char) {
+  if (!index(line, broad_pattern)) return 0
+  broad_start = index(line, broad_pattern)
+  if (!match(line, scoped_pattern)) return 1
+  scoped_end = RSTART + RLENGTH
+  next_char = substr(line, scoped_end, 1)
+  if (next_char != "" && next_char ~ /[[:alnum:]_-]/) return 1
+  return broad_start < RSTART
+}
+'
+
+keep_unwaived_lines() {
+  awk "$RULE_SCOPED_WAIVER_AWK"'
+    { if (!line_waives($0)) print $0 }
+  '
+}
+
+file_has_broad_allowance() {
+  awk "$RULE_SCOPED_WAIVER_AWK"'
+    { if (line_waives($0)) found = 1 }
+    END { exit found ? 0 : 1 }
+  ' "$1"
 }
 
 # --------------------------------------------------------------------------
@@ -269,7 +312,7 @@ if ! skip "per-row-reorder"; then
         rg -q "pool\.begin\(\)" "$f" 2>/dev/null || echo "$f"
       done \
     | while read -r f; do
-        rg -q "conformance: allow" "$f" 2>/dev/null || echo "$f"
+        file_has_broad_allowance "$f" 2>/dev/null || echo "$f"
       done | rg -v "/underlay/|/tests/" || true)
   if [[ -z "$hits" ]]; then
     pass "per-row-reorder"
@@ -280,20 +323,29 @@ fi
 
 # --------------------------------------------------------------------------
 # check-no-row-enrichment-loop: no per-item fetch loops (N+1)
+# Each detected loop is reported at its own file and line. A deliberate
+# sequential loop can carry a rule-scoped, reasoned
+# `// conformance: allow row-enrichment-loop: <reason>` line comment directly
+# above it. One marker covers one loop; an empty reason or a marker whose next
+# line is not a detected loop is itself a conformance failure.
 # --------------------------------------------------------------------------
 if ! skip "row-enrichment-loop"; then
-  hits=""
-  while IFS= read -r -d '' file; do
-    if rg -qU "for \w+ in \w+ \{[^}]{0,400}\.await" "$file" 2>/dev/null; then
-      hits+="$file"$'\n'
-    fi
-  done < <(rg -lU "for \w+ in \w+ \{" "$ROOT" --type rust -g '!target' 2>/dev/null \
-    | rg -v "/underlay/|/tests/|_tests\.rs" | tr '\n' '\0')
-  hits="${hits%$'\n'}"
-  if [[ -z "$hits" ]]; then
+  status=0
+  analysis=$(bun "$ANALYZER" row-enrichment-loop "$ROOT" 2>&1) || status=$?
+  allowed=$(printf '%s\n' "$analysis" | rg '^allowance ' | sed 's/^allowance //' || true)
+  findings=$(printf '%s\n' "$analysis" | rg -v '^allowance ' | rg -v '^$' || true)
+  if [[ $status -eq 0 ]]; then
     pass "row-enrichment-loop"
+  elif [[ $status -eq 1 ]]; then
+    fail "row-enrichment-loop" "await inside a row loop — possible N+1 (batch with ANY(\$1) or ?include=):\n$findings"
   else
-    fail "row-enrichment-loop" "await inside a row loop — possible N+1 (batch with ANY(\$1) or ?include=):\n$hits"
+    fail "row-enrichment-loop" "row-enrichment-loop analysis could not run (status $status):\n$analysis"
+  fi
+  if [[ -n "$allowed" ]]; then
+    while IFS= read -r allowance; do
+      ALLOWANCES+=("$allowance")
+      ALLOWANCE_COUNT=$((ALLOWANCE_COUNT + 1))
+    done <<<"$allowed"
   fi
 fi
 
@@ -350,7 +402,7 @@ fi
 if ! skip "build-env-read"; then
   hits=$(rg -n "ENVIRONMENT" "$ROOT" \
     -g 'vite.config.*' -g 'svelte.config.*' -g '*generate-public-config*' \
-    -g '!node_modules' 2>/dev/null | rg -v "conformance: allow" || true)
+    -g '!node_modules' 2>/dev/null | keep_unwaived_lines || true)
   if [[ -z "$hits" ]]; then
     pass "build-env-read"
   else
@@ -374,6 +426,12 @@ fi
 if [[ $PASS_COUNT -gt 0 ]]; then
   for p in "${PASSES[@]}"; do
     echo "  PASS  $p"
+  done
+fi
+
+if [[ $ALLOWANCE_COUNT -gt 0 ]]; then
+  for a in "${ALLOWANCES[@]}"; do
+    echo "  ALLOW  row-enrichment-loop $a"
   done
 fi
 

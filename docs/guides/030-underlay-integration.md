@@ -169,15 +169,47 @@ run = "bash ../underlay/scripts/check-consumer-conformance.sh ."
 The packaged and checkout entry points call the same checker. No consumer
 change is required to keep using the legacy path; switching to the released
 bin is an optional additive adoption. The checker reports bounded list reads,
-scoped migration allowances, and development-only OpenAPI mounts at the
-specific query or mount. A list/search query must use its own SQL `LIMIT` or
-`FETCH` clause, query-builder `.limit()`/`.take()`, or an explicit ID-set
-predicate such as `id = ANY($1)`. A whole-set migration read can use a reasoned
+scoped migration allowances, development-only OpenAPI mounts, and sequential
+row-enrichment loops at the specific query, mount or loop. A list/search query
+must use its own SQL `LIMIT` or `FETCH` clause, query-builder
+`.limit()`/`.take()`, or an explicit ID-set predicate such as `id = ANY($1)`.
+A whole-set migration read can use a reasoned
 `// conformance: allow bounded-queries: <reason>` comment immediately above
 that query statement. OpenAPI mounts must be inside a development environment
 branch, or inside an `include_docs` option whose in-repo call sites derive the
 option from the development environment or are themselves behind a development
 environment guard.
+
+An unannotated Rust loop of the form `for row in rows { ... .await }` is
+reported at its own file and line as a possible N+1. Batch the work with
+`ANY($1)` or `?include=` where the reads can be combined. An ordered write
+sequence, a per-row external call, or an isolated per-row transaction that has
+to stay sequential can keep the check enabled with a rule-scoped, reasoned
+comment on the line immediately above the loop:
+
+```rust
+// conformance: allow row-enrichment-loop: ledger appends must stay in arrival order.
+for row in rows {
+    append_ledger_entry(pool, row).await?;
+}
+```
+
+One marker covers exactly one loop, matched case-insensitively on that exact
+rule name. Two loop headers that start on the same line are two sites: the
+marker covers the first and the second stays reported. A marker with an empty
+or missing same-line reason, or a marker that is not immediately above a
+detected row loop (for example a stale marker above an unrelated statement or
+an in-memory loop), is itself a conformance failure. Accepted sites are
+reported with their path, loop line and reason, alongside any remaining
+failures. The check skips `target`, and matches the `underlay/`, `tests/` and
+`_tests.rs` exclusions against each file's path relative to the consumer root.
+
+Only the `row-enrichment-loop` marker gets this scoped treatment. Every other
+check keeps its existing allowance shape and its exact broad text: the literal
+`// conformance: allow` waives `per-row-reorder` for a whole file and
+`build-env-read` on the line that carries it. A `row-enrichment-loop` marker
+never waives another check, even when the marker is differently cased or its
+reason quotes `conformance: allow`.
 
 ### Env-authority conformance
 

@@ -37,6 +37,23 @@ interface Finding {
 	message: string;
 }
 
+interface Allowance {
+	path: string;
+	line: number;
+	reason: string;
+}
+
+interface RowLoopSite {
+	line: number;
+}
+
+type AnalysisRule = "openapi-gated" | "bounded-queries" | "row-enrichment-loop";
+
+interface AnalysisResult {
+	findings: Finding[];
+	allowances: Allowance[];
+}
+
 function rustFiles(root: string): string[] {
 	const result = spawnSync("rg", ["--files", "--type", "rust", "-g", "!target", "--null"], {
 		cwd: root,
@@ -1202,29 +1219,134 @@ function analyzeBoundedQueriesFile(root: string, file: string): Finding[] {
 	return findings;
 }
 
-function analyze(rootArgument: string, rule: "openapi-gated" | "bounded-queries"): Finding[] {
+// The row-enrichment-loop rule keeps the original unannotated-Rust ripgrep
+// heuristic: `for <ident> in <ident> {` with `.await` within 400 characters and
+// before the next `}`, where the identifiers keep ripgrep's Unicode `\w`
+// coverage. Every loop header is its own site so two headers on one line stay
+// separately visible, and a deliberate sequential loop can carry one
+// rule-scoped, reasoned allowance on the line immediately above it.
+const ROW_IDENTIFIER = String.raw`[\p{L}\p{M}\p{N}\p{Pc}]+`;
+const ROW_LOOP_START = new RegExp(String.raw`for ${ROW_IDENTIFIER} in ${ROW_IDENTIFIER} \{`, "gu");
+// `[^}]` with the `u` flag counts code points, matching ripgrep's character
+// repeats; 812 code units is more than 400 code points plus `.await`.
+const ROW_LOOP_AWAIT = /^[^}]{0,400}\.await/u;
+const ROW_ENRICHMENT_MARKER = /^\s*\/\/+\s*conformance:\s*allow\s+row-enrichment-loop(?![\w-])/i;
+const ROW_ENRICHMENT_REASON = /^\s*:\s*(.*)$/;
+
+const ROW_ENRICHMENT_FINDING =
+	"await inside a row loop — possible N+1 (batch with ANY($1) or ?include=, or annotate a deliberate sequential loop with a reasoned row-enrichment-loop allowance)";
+const ROW_ENRICHMENT_MISSING_REASON =
+	"row-enrichment-loop allowance needs a same-line reason after `conformance: allow row-enrichment-loop:`";
+const ROW_ENRICHMENT_UNUSED =
+	"row-enrichment-loop allowance does not annotate the next line's detected row loop; one marker covers one site";
+
+function rowEnrichmentExcluded(relative: string): boolean {
+	return /\/underlay\/|\/tests\/|_tests\.rs/.test(`/${relative}`);
+}
+
+function rowLoopSites(source: string): RowLoopSite[] {
+	const sites: RowLoopSite[] = [];
+	for (const match of source.matchAll(ROW_LOOP_START)) {
+		const bodyStart = match.index + match[0].length;
+		if (!ROW_LOOP_AWAIT.test(source.slice(bodyStart, bodyStart + 812))) continue;
+		sites.push({ line: lineAt(source, match.index) });
+	}
+	return sites;
+}
+
+function analyzeRowEnrichmentLoopFile(
+	root: string,
+	file: string,
+): { findings: Finding[]; allowances: Allowance[] } {
+	const relative = relativePath(root, path.resolve(root, file));
+	if (rowEnrichmentExcluded(relative)) return { findings: [], allowances: [] };
+
+	const source = readFileSync(path.join(root, file), "utf8");
+	const lines = source.split(/\r?\n/);
+	const sites = rowLoopSites(source);
+	const covered = new Set<number>();
+	const findings: Finding[] = [];
+	const allowances: Allowance[] = [];
+
+	for (let index = 0; index < lines.length; index += 1) {
+		const line = lines[index] ?? "";
+		const marker = ROW_ENRICHMENT_MARKER.exec(line);
+		if (!marker) continue;
+		const markerLine = index + 1;
+
+		// One marker consumes at most one site: the first uncovered loop header
+		// on the next line. Any further header on that line stays a finding.
+		let siteIndex = -1;
+		for (let cursor = 0; cursor < sites.length; cursor += 1) {
+			if (sites[cursor]!.line === markerLine + 1 && !covered.has(cursor)) {
+				siteIndex = cursor;
+				break;
+			}
+		}
+		if (siteIndex === -1) {
+			findings.push({ path: relative, line: markerLine, message: ROW_ENRICHMENT_UNUSED });
+			continue;
+		}
+		covered.add(siteIndex);
+
+		const reason = ROW_ENRICHMENT_REASON.exec(line.slice(marker[0].length))?.[1]?.trim() ?? "";
+		if (!reason) {
+			findings.push({ path: relative, line: markerLine, message: ROW_ENRICHMENT_MISSING_REASON });
+			continue;
+		}
+		allowances.push({ path: relative, line: sites[siteIndex]!.line, reason });
+	}
+
+	for (let cursor = 0; cursor < sites.length; cursor += 1) {
+		if (covered.has(cursor)) continue;
+		findings.push({ path: relative, line: sites[cursor]!.line, message: ROW_ENRICHMENT_FINDING });
+	}
+
+	return { findings, allowances };
+}
+
+function analyze(rootArgument: string, rule: AnalysisRule): AnalysisResult {
 	const root = path.resolve(rootArgument);
 	if (!statSync(root).isDirectory()) throw new Error(`not a directory: ${root}`);
 	const files = rustFiles(root);
+	if (rule === "row-enrichment-loop") {
+		const results = files.map((file) => analyzeRowEnrichmentLoopFile(root, file));
+		return {
+			findings: results
+				.flatMap((result) => result.findings)
+				.sort((left, right) => left.path.localeCompare(right.path) || left.line - right.line),
+			allowances: results
+				.flatMap((result) => result.allowances)
+				.sort((left, right) => left.path.localeCompare(right.path) || left.line - right.line),
+		};
+	}
 	const findings = rule === "openapi-gated"
 		? (() => {
 				const modules = files.map((file) => parseRustModule(root, file));
 				return modules.flatMap((module) => analyzeOpenApiModule(module, modules));
 			})()
 		: files.flatMap((file) => analyzeBoundedQueriesFile(root, file));
-	return findings.sort((left, right) => left.path.localeCompare(right.path) || left.line - right.line);
+	return {
+		findings: findings.sort((left, right) => left.path.localeCompare(right.path) || left.line - right.line),
+		allowances: [],
+	};
 }
 
 function main(): void {
 	const [, , rule, root = "."] = process.argv;
-	if (rule !== "openapi-gated" && rule !== "bounded-queries") {
-		console.error("usage: consumer-security-analysis.ts <openapi-gated|bounded-queries> [consumer-root]");
+	if (rule !== "openapi-gated" && rule !== "bounded-queries" && rule !== "row-enrichment-loop") {
+		console.error(
+			"usage: consumer-security-analysis.ts <openapi-gated|bounded-queries|row-enrichment-loop> [consumer-root]",
+		);
 		process.exitCode = 2;
 		return;
 	}
 
 	try {
-		const findings = analyze(root, rule);
+		const { findings, allowances } = analyze(root, rule);
+		for (const allowance of allowances) {
+			console.log(`allowance ${allowance.path}:${allowance.line}: ${allowance.reason}`);
+		}
 		for (const finding of findings) {
 			console.log(`${finding.path}:${finding.line}: ${finding.message}`);
 		}
