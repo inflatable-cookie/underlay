@@ -6,8 +6,7 @@ registry publication; the GitHub Release is the release-notes surface.
 Consumers pin the tag on every Underlay declaration, as
 [contract 023](023-release-and-compatibility-rollout.md) specifies.
 
-Releasing is an operator action: an agent prepares it only when the operator
-asks, and never pushes a tag on its own.
+Release preparation and publication each require operator authorization.
 
 ## Versioning
 
@@ -20,33 +19,41 @@ asks, and never pushes a tag on its own.
   `version-sync` gate.
 - Roadmap or plan numbering never decides a version.
 
-## Steps
+## Prepare
 
-1. Land every change for the release on `main`, with QA green.
-2. Add the `CHANGELOG.md` entry. A consumer-affecting release needs the
-   contract 023 upgrade block: impact class, exact consumer actions, any
-   deprecation window, validation commands, and a rollback tag.
-3. Check readiness: `effigy release status --check-gates`. It runs the seven
-   gates declared in `effigy.toml` under `[release.gates]`: `version-sync`
-   (`effigy check:release-version-sync`), `validate` (`effigy validate`),
-   `clippy` (`effigy rust:clippy`), `fmt-rust` (`effigy fmt:rust:check`),
-   `rust` (`effigy rust:check`), `rust-test` (`effigy rust:test`), and `docs`
-   (`effigy qa:docs`).
-4. Prepare: `effigy release prepare --plan` to review, then
-   `effigy release prepare`. This bumps the version and syncs `Cargo.lock` and
-   `package.json`. Those are the only `sync-files` in `effigy.toml`, so bump
-   `info.version` in `contracts/openapi/underlay.openapi.yaml` in the same
-   change, or the `version-sync` gate fails.
-5. **Check `Cargo.lock` before executing.** Accept only workspace-crate version
-   bumps. `v0.9.11` failed because the bump also moved a third-party crate
-   (`rsa`) to a version not on crates.io, and `v0.9.12` had to be cut to fix it.
-6. Execute: `effigy release execute`. This commits `release: vX.Y.Z` and
-   creates the tag.
-7. Push the commit and the tag.
-8. Publish the GitHub Release from the tag, with that version's
-   `CHANGELOG.md` section as the notes:
-   `gh release create vX.Y.Z --verify-tag --title "Underlay vX.Y.Z" --notes-file <section>`.
-   Every tag has a GitHub Release.
+Use Effigy 0.15 or newer. Its full release run publishes the tag. Underlay
+uses the read-only plan and standalone gates so the complete local commit can
+be reviewed before publication.
+
+1. Land the release changes and their `[Unreleased]` changelog entries on
+   `main` with QA green. Start on a clean local `main` matching `origin/main`.
+   For a consumer-affecting release, include the contract 023 upgrade block
+   with the impact class, exact consumer actions, any deprecation window,
+   validation commands, and rollback tag.
+2. Review `effigy release --plan` and confirm the proposed version against the
+   versioning rules above.
+3. Set all three version fields. Refresh `Cargo.lock` with
+   `oxide update --workspace --quiet`. Insert `## [X.Y.Z] - YYYY-MM-DD` below
+   `[Unreleased]` so the notes move under it with their formatting intact.
+4. Inspect the five-file diff. Only workspace-crate versions should change in
+   `Cargo.lock`. In `v0.9.11`, an unintended third-party `rsa` version made the
+   release unusable and required a new patch tag.
+5. Run `effigy release gates` on the prepared files. Every gate declared in
+   `[release.gates]` in [effigy.toml](../../../effigy.toml) must pass, including
+   the version-sync check across the manifests and OpenAPI contract.
+6. Commit the reviewed files as `release: vX.Y.Z`.
+
+## Publish
+
+After the operator authorizes publication, confirm local `main` is the release
+commit, its parent is still the remote `main` tip, and the tag is unused locally
+and remotely. Create the annotated tag with
+`git tag -a vX.Y.Z -m "Release vX.Y.Z"`. Push the commit and tag together with
+`git push --atomic origin main refs/tags/vX.Y.Z`.
+
+Publish the corresponding GitHub Release using the exact version section
+from the tagged changelog. Pass the section on standard input to
+`gh release create vX.Y.Z --verify-tag --title "Underlay vX.Y.Z" --notes-file -`.
 
 ## Verify
 
