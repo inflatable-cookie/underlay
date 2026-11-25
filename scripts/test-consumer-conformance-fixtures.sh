@@ -81,6 +81,15 @@ pub async fn list_legacy_projects(pool: &PgPool) -> Result<Vec<Project>> {
     Ok(rows)
 }
 EOF
+	cat > "$root/src/rows.rs" <<'EOF'
+pub async fn append_audit_rows(rows: &[AuditRow], pool: &PgPool) -> Result<()> {
+    // conformance: allow row-enrichment-loop: audit appends must keep arrival order.
+    for row in rows {
+        append_audit_entry(pool, row).await?;
+    }
+    Ok(())
+}
+EOF
 }
 
 write_unsafe_fixture() {
@@ -191,6 +200,51 @@ pub async fn list_legacy_projects(pool: &PgPool) -> Result<Vec<Project>> {
     Ok(rows)
 }
 EOF
+	cat > "$root/src/rows.rs" <<'EOF'
+pub async fn enrich_rows(rows: &[Row], pool: &PgPool) -> Result<()> {
+    for row in rows {
+        let detail = fetch_detail(pool, row.id).await?;
+        store_detail(pool, detail).await?;
+    }
+    Ok(())
+}
+
+pub async fn sync_ledger(rows: &[Row], pool: &PgPool) -> Result<()> {
+    // conformance: allow row-enrichment-loop: ledger order is externally observable.
+    for row in rows {
+        append_ledger_entry(pool, row).await?;
+    }
+    Ok(())
+}
+
+pub async fn sync_ledger_unreasoned(rows: &[Row], pool: &PgPool) -> Result<()> {
+    // conformance: allow row-enrichment-loop:
+    for row in rows {
+        append_ledger_entry(pool, row).await?;
+    }
+    Ok(())
+}
+
+pub fn total_weight(rows: &[Row]) -> i64 {
+    let mut total = 0;
+    // conformance: allow row-enrichment-loop: stale marker above an in-memory loop.
+    for row in rows {
+        total += row.weight;
+    }
+    total
+}
+
+pub async fn sync_ledger_then_enrich(rows: &[Row], pool: &PgPool) -> Result<()> {
+    // conformance: allow row-enrichment-loop: ledger order is externally observable.
+    for row in rows {
+        append_ledger_entry(pool, row).await?;
+    }
+    for row in rows {
+        refresh_cache(pool, row.id).await?;
+    }
+    Ok(())
+}
+EOF
 }
 
 if ! tr '\n' ' ' < "$REPO_ROOT/package.json" | grep -Eq '"files"[[:space:]]*:[[:space:]]*\[[[:space:]]*"ts"[[:space:]]*\]'; then
@@ -269,10 +323,40 @@ for bash_path in "${BASH_BINARIES[@]}"; do
 		printf '%s\n' "$SAFE_OUTPUT" >&2
 		exit 1
 	fi
+	if ! grep -Eq 'ALLOW  row-enrichment-loop src/rows\.rs:[0-9]+: audit appends must keep arrival order\.' <<<"$SAFE_OUTPUT"; then
+		echo "documented row-enrichment allowance was not reported with its path, line and reason under $bash_path" >&2
+		printf '%s\n' "$SAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if [[ "$(grep -Ec 'src/rows\.rs:[0-9]+: await inside a row loop' <<<"$SAFE_OUTPUT")" -ne 0 ]]; then
+		echo "a reasoned row-enrichment allowance did not cover its own loop under $bash_path" >&2
+		printf '%s\n' "$SAFE_OUTPUT" >&2
+		exit 1
+	fi
 
 	UNSAFE_OUTPUT="$(run_both_entry_points "$UNSAFE_ROOT" 1 "$bash_path")"
 	if ! grep -Eq 'src/routes/unsafe\.rs:.*mount must be inside a development-only gate' <<<"$UNSAFE_OUTPUT"; then
 		echo "unguarded cross-file OpenAPI mount was not reported precisely under $bash_path" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if [[ "$(grep -Ec 'src/rows\.rs:[0-9]+: await inside a row loop' <<<"$UNSAFE_OUTPUT")" -ne 2 ]]; then
+		echo "unannotated row loops were not reported once each beside an allowed loop under $bash_path" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if [[ "$(grep -Ec 'ALLOW  row-enrichment-loop src/rows\.rs:[0-9]+: ledger order is externally observable\.' <<<"$UNSAFE_OUTPUT")" -ne 2 ]]; then
+		echo "accepted row-enrichment sites were not reported with path, line and reason beside failures under $bash_path" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if ! grep -Eq 'src/rows\.rs:[0-9]+: row-enrichment-loop allowance needs a same-line reason' <<<"$UNSAFE_OUTPUT"; then
+		echo "an empty row-enrichment reason was not a conformance failure under $bash_path" >&2
+		printf '%s\n' "$UNSAFE_OUTPUT" >&2
+		exit 1
+	fi
+	if ! grep -Eq 'src/rows\.rs:[0-9]+: row-enrichment-loop allowance does not annotate the next line' <<<"$UNSAFE_OUTPUT"; then
+		echo "a marker above a loop that would not be flagged was not a conformance failure under $bash_path" >&2
 		printf '%s\n' "$UNSAFE_OUTPUT" >&2
 		exit 1
 	fi

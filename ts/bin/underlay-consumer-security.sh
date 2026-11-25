@@ -37,6 +37,8 @@ ANALYZER="$SCRIPT_DIR/../src/tools/consumer-security-analysis.ts"
 ROOT="${1:-.}"
 FAILURES=()
 PASSES=()
+ALLOWANCES=()
+ALLOWANCE_COUNT=0
 CHECKS_EXECUTED=0
 CHECKS_SKIPPED=0
 PASS_COUNT=0
@@ -61,6 +63,27 @@ pass() {
 fail() {
   FAILURES+=("$1: $2")
   FAILURE_COUNT=$((FAILURE_COUNT + 1))
+}
+
+# A broad `conformance: allow` marker keeps its file-wide waiver meaning. A
+# marker scoped to a named rule (the row-enrichment-loop allowance) waives only
+# that rule, so neutralize it before matching the broad text. The original line
+# is still what gets reported.
+drop_rule_scoped_only_waivers() {
+  awk '{
+    line = $0
+    gsub(/conformance:[[:space:]]*allow[[:space:]]+row-enrichment-loop/, "row-enrichment-allowance", line)
+    if (line !~ /conformance: allow/) print $0
+  }'
+}
+
+file_has_broad_allowance() {
+  awk '{
+    line = $0
+    gsub(/conformance:[[:space:]]*allow[[:space:]]+row-enrichment-loop/, "row-enrichment-allowance", line)
+    if (line ~ /conformance: allow/) found = 1
+  }
+  END { exit found ? 0 : 1 }' "$1"
 }
 
 # --------------------------------------------------------------------------
@@ -269,7 +292,7 @@ if ! skip "per-row-reorder"; then
         rg -q "pool\.begin\(\)" "$f" 2>/dev/null || echo "$f"
       done \
     | while read -r f; do
-        rg -q "conformance: allow" "$f" 2>/dev/null || echo "$f"
+        file_has_broad_allowance "$f" 2>/dev/null || echo "$f"
       done | rg -v "/underlay/|/tests/" || true)
   if [[ -z "$hits" ]]; then
     pass "per-row-reorder"
@@ -280,20 +303,29 @@ fi
 
 # --------------------------------------------------------------------------
 # check-no-row-enrichment-loop: no per-item fetch loops (N+1)
+# Each detected loop is reported at its own file and line. A deliberate
+# sequential loop can carry a rule-scoped, reasoned
+# `// conformance: allow row-enrichment-loop: <reason>` line comment directly
+# above it. One marker covers one loop; an empty reason or a marker whose next
+# line is not a detected loop is itself a conformance failure.
 # --------------------------------------------------------------------------
 if ! skip "row-enrichment-loop"; then
-  hits=""
-  while IFS= read -r -d '' file; do
-    if rg -qU "for \w+ in \w+ \{[^}]{0,400}\.await" "$file" 2>/dev/null; then
-      hits+="$file"$'\n'
-    fi
-  done < <(rg -lU "for \w+ in \w+ \{" "$ROOT" --type rust -g '!target' 2>/dev/null \
-    | rg -v "/underlay/|/tests/|_tests\.rs" | tr '\n' '\0')
-  hits="${hits%$'\n'}"
-  if [[ -z "$hits" ]]; then
+  status=0
+  analysis=$(bun "$ANALYZER" row-enrichment-loop "$ROOT" 2>&1) || status=$?
+  allowed=$(printf '%s\n' "$analysis" | rg '^allowance ' | sed 's/^allowance //' || true)
+  findings=$(printf '%s\n' "$analysis" | rg -v '^allowance ' | rg -v '^$' || true)
+  if [[ $status -eq 0 ]]; then
     pass "row-enrichment-loop"
+  elif [[ $status -eq 1 ]]; then
+    fail "row-enrichment-loop" "await inside a row loop — possible N+1 (batch with ANY(\$1) or ?include=):\n$findings"
   else
-    fail "row-enrichment-loop" "await inside a row loop — possible N+1 (batch with ANY(\$1) or ?include=):\n$hits"
+    fail "row-enrichment-loop" "row-enrichment-loop analysis could not run (status $status):\n$analysis"
+  fi
+  if [[ -n "$allowed" ]]; then
+    while IFS= read -r allowance; do
+      ALLOWANCES+=("$allowance")
+      ALLOWANCE_COUNT=$((ALLOWANCE_COUNT + 1))
+    done <<<"$allowed"
   fi
 fi
 
@@ -350,7 +382,7 @@ fi
 if ! skip "build-env-read"; then
   hits=$(rg -n "ENVIRONMENT" "$ROOT" \
     -g 'vite.config.*' -g 'svelte.config.*' -g '*generate-public-config*' \
-    -g '!node_modules' 2>/dev/null | rg -v "conformance: allow" || true)
+    -g '!node_modules' 2>/dev/null | drop_rule_scoped_only_waivers || true)
   if [[ -z "$hits" ]]; then
     pass "build-env-read"
   else
@@ -374,6 +406,12 @@ fi
 if [[ $PASS_COUNT -gt 0 ]]; then
   for p in "${PASSES[@]}"; do
     echo "  PASS  $p"
+  done
+fi
+
+if [[ $ALLOWANCE_COUNT -gt 0 ]]; then
+  for a in "${ALLOWANCES[@]}"; do
+    echo "  ALLOW  row-enrichment-loop $a"
   done
 fi
 

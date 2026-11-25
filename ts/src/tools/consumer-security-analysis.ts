@@ -37,6 +37,19 @@ interface Finding {
 	message: string;
 }
 
+interface Allowance {
+	path: string;
+	line: number;
+	reason: string;
+}
+
+type AnalysisRule = "openapi-gated" | "bounded-queries" | "row-enrichment-loop";
+
+interface AnalysisResult {
+	findings: Finding[];
+	allowances: Allowance[];
+}
+
 function rustFiles(root: string): string[] {
 	const result = spawnSync("rg", ["--files", "--type", "rust", "-g", "!target", "--null"], {
 		cwd: root,
@@ -54,20 +67,18 @@ function rustFiles(root: string): string[] {
 }
 
 function stringValue(source: string, start: number, end: number): string {
-	return source
-		.slice(start, end)
-		.replace(/\\([\\"'nrt0])/g, (_match, escaped: string) => {
-			const replacements: Record<string, string> = {
-				"\\": "\\",
-				'"': '"',
-				"'": "'",
-				n: "\n",
-				r: "\r",
-				t: "\t",
-				0: "\0",
-			};
-			return replacements[escaped] ?? escaped;
-		});
+	return source.slice(start, end).replace(/\\([\\"'nrt0])/g, (_match, escaped: string) => {
+		const replacements: Record<string, string> = {
+			"\\": "\\",
+			'"': '"',
+			"'": "'",
+			n: "\n",
+			r: "\r",
+			t: "\t",
+			0: "\0",
+		};
+		return replacements[escaped] ?? escaped;
+	});
 }
 
 function tokenizeRust(source: string): Token[] {
@@ -172,8 +183,9 @@ function tokenizeRust(source: string): Token[] {
 		}
 
 		const start = index;
-		const operator = ["::", "=>", "&&", "||", "==", "!=", "<=", ">=", "->", ".."]
-			.find((candidate) => source.startsWith(candidate, index));
+		const operator = ["::", "=>", "&&", "||", "==", "!=", "<=", ">=", "->", ".."].find(
+			(candidate) => source.startsWith(candidate, index),
+		);
 		if (operator) index += operator.length;
 		else index += 1;
 		const text = source.slice(start, index);
@@ -253,15 +265,15 @@ function lineAt(source: string, offset: number): number {
 type GateKind = "environment" | "docs";
 
 const DOCS_GATE_NAMES = new Set([
-		"include_docs",
-		"include_api_docs",
-		"with_docs",
-		"show_docs",
-		"enable_docs",
-		"docs_enabled",
-		"openapi_enabled",
-		"swagger_enabled",
-	]);
+	"include_docs",
+	"include_api_docs",
+	"with_docs",
+	"show_docs",
+	"enable_docs",
+	"docs_enabled",
+	"openapi_enabled",
+	"swagger_enabled",
+]);
 
 const ENVIRONMENT_GATE_NAMES = new Set(["is_development", "is_local", "is_dev"]);
 
@@ -275,17 +287,11 @@ function gateKindAtomic(condition: Token[], negated: boolean): GateKind | undefi
 		const token = condition[index]!;
 		let kind: GateKind | undefined;
 		let environmentVariant = false;
-		if (token.kind === "identifier" && ENVIRONMENT_GATE_NAMES.has(token.value)) kind = "environment";
+		if (token.kind === "identifier" && ENVIRONMENT_GATE_NAMES.has(token.value))
+			kind = "environment";
 		if (token.kind === "identifier" && DOCS_GATE_NAMES.has(token.value)) kind = "docs";
-		if (
-			token.value === "Local" ||
-			token.value === "Development" ||
-			token.value === "Dev"
-		) {
-			if (
-				condition[index - 1]?.value === "::" &&
-				condition[index - 2]?.value === "Environment"
-			) {
+		if (token.value === "Local" || token.value === "Development" || token.value === "Dev") {
+			if (condition[index - 1]?.value === "::" && condition[index - 2]?.value === "Environment") {
 				kind = "environment";
 				environmentVariant = true;
 			}
@@ -345,11 +351,14 @@ function splitCondition(condition: Token[], operator: "&&" | "||"): Token[][] {
 
 function gateKind(condition: Token[], negated: boolean): GateKind | undefined {
 	if (negated) {
-		const clauses = condition.reduce<Token[][]>((parts, token) => {
-			if (token.value === "&&" || token.value === "||") parts.push([]);
-			else parts[parts.length - 1]!.push(token);
-			return parts;
-		}, [[]]);
+		const clauses = condition.reduce<Token[][]>(
+			(parts, token) => {
+				if (token.value === "&&" || token.value === "||") parts.push([]);
+				else parts[parts.length - 1]!.push(token);
+				return parts;
+			},
+			[[]],
+		);
 		const kinds = clauses.map((clause) => gateKindAtomic(clause, true));
 		if (kinds.some((kind) => kind === undefined)) return undefined;
 		return kinds.includes("environment") ? "environment" : "docs";
@@ -416,7 +425,14 @@ function functionBodies(
 		const bodyEnd = braces.get(bodyOpen);
 		if (bodyEnd === undefined) continue;
 
-		const parameterTokens = splitTopLevel(tokens, paramsOpen + 1, paramsClose, braces, parens, brackets);
+		const parameterTokens = splitTopLevel(
+			tokens,
+			paramsOpen + 1,
+			paramsClose,
+			braces,
+			parens,
+			brackets,
+		);
 		const parameters = parameterTokens.flatMap((parameter) => {
 			const colon = parameter.findIndex((token) => token.value === ":");
 			if (colon < 0) return [];
@@ -428,19 +444,29 @@ function functionBodies(
 			start: bodyOpen,
 			end: bodyEnd,
 			parameters,
-			publicAsync: prior.some((token) => token.value === "pub") && prior.some((token) => token.value === "async"),
+			publicAsync:
+				prior.some((token) => token.value === "pub") &&
+				prior.some((token) => token.value === "async"),
 		});
 	}
 	return functions;
 }
 
-function enclosingFunction(functions: FunctionBody[], tokenIndex: number): FunctionBody | undefined {
+function enclosingFunction(
+	functions: FunctionBody[],
+	tokenIndex: number,
+): FunctionBody | undefined {
 	return functions
 		.filter((fn) => fn.start < tokenIndex && tokenIndex < fn.end)
 		.sort((left, right) => left.end - left.start - (right.end - right.start))[0];
 }
 
-function hasTopLevelReturn(tokens: Token[], bodyStart: number, bodyEnd: number, braces: Map<number, number>): boolean {
+function hasTopLevelReturn(
+	tokens: Token[],
+	bodyStart: number,
+	bodyEnd: number,
+	braces: Map<number, number>,
+): boolean {
 	for (let index = bodyStart + 1; index < bodyEnd; index += 1) {
 		if (tokens[index]!.value === "return") return true;
 		if (tokens[index]!.value === "{" && braces.has(index)) index = braces.get(index)!;
@@ -494,8 +520,11 @@ function parseRustModule(root: string, file: string): RustModule {
 function isOpenApiSourcePath(relative: string): boolean {
 	const segments = relative.split("/");
 	const file = segments.at(-1) ?? "";
-	return !segments.some((segment) => segment === "underlay" || segment === "test" || segment === "tests") &&
-		!file.endsWith("_test.rs");
+	return (
+		!segments.some(
+			(segment) => segment === "underlay" || segment === "test" || segment === "tests",
+		) && !file.endsWith("_test.rs")
+	);
 }
 
 function isEnvironmentGatedAt(module: RustModule, tokenIndex: number): boolean {
@@ -553,7 +582,14 @@ function callArguments(module: RustModule, callIndex: number): Token[][] | undef
 	const open = callIndex + 1;
 	const close = module.parens.get(open);
 	if (close === undefined) return undefined;
-	return splitTopLevel(module.tokens, open + 1, close, module.braces, module.parens, module.brackets);
+	return splitTopLevel(
+		module.tokens,
+		open + 1,
+		close,
+		module.braces,
+		module.parens,
+		module.brackets,
+	);
 }
 
 function localBindingExpression(
@@ -593,13 +629,14 @@ function localBindingExpression(
 		let end = equalsIndex + 1;
 		while (end < beforeIndex) {
 			const value = module.tokens[end]!.value;
-			const pairedEnd = value === "("
-				? module.parens.get(end)
-				: value === "["
-					? module.brackets.get(end)
-					: value === "{"
-						? module.braces.get(end)
-						: undefined;
+			const pairedEnd =
+				value === "("
+					? module.parens.get(end)
+					: value === "["
+						? module.brackets.get(end)
+						: value === "{"
+							? module.braces.get(end)
+							: undefined;
 			if (pairedEnd !== undefined && pairedEnd < beforeIndex) {
 				end = pairedEnd + 1;
 				continue;
@@ -632,7 +669,9 @@ function simpleIdentifier(expression: Token[]): string | undefined {
 	const identifiers = expression.filter((token) => token.kind === "identifier");
 	if (
 		identifiers.length !== 1 ||
-		expression.some((token) => token !== identifiers[0] && token.value !== "(" && token.value !== ")")
+		expression.some(
+			(token) => token !== identifiers[0] && token.value !== "(" && token.value !== ")",
+		)
 	) {
 		return undefined;
 	}
@@ -668,10 +707,7 @@ function argumentHasLocallyDerivedDocsFlag(
 		if (!DOCS_GATE_NAMES.has(token.value)) continue;
 		if (argument[index + 1]?.value === ":") {
 			const value = argument[index + 2];
-			if (
-				value?.kind === "identifier" &&
-				[",", "}"].includes(argument[index + 3]?.value ?? "}")
-			) {
+			if (value?.kind === "identifier" && [",", "}"].includes(argument[index + 3]?.value ?? "}")) {
 				names.add(value.value);
 			}
 		} else if ([",", "}"].includes(argument[index + 1]?.value ?? "}")) {
@@ -731,7 +767,8 @@ function localDocsFlagIsDevelopment(
 			if (module.tokens[index]!.value !== "let") continue;
 			let nameIndex = index + 1;
 			if (module.tokens[nameIndex]?.value === "mut") nameIndex += 1;
-			if (module.tokens[nameIndex]?.value !== flag || module.tokens[nameIndex + 1]?.value !== "=") continue;
+			if (module.tokens[nameIndex]?.value !== flag || module.tokens[nameIndex + 1]?.value !== "=")
+				continue;
 			let end = nameIndex + 2;
 			while (end < fn.end && module.tokens[end]!.value !== ";") end += 1;
 			if (gateKind(module.tokens.slice(nameIndex + 2, end), false) === "environment") return true;
@@ -773,7 +810,16 @@ function analyzeOpenApiModule(module: RustModule, modules: RustModule[]): Findin
 				guarded = true;
 				break;
 			}
-			if (gate === "docs" && docsGateIsDevelopment(module, enclosingFunction(module.functions, mount), condition, mount, modules)) {
+			if (
+				gate === "docs" &&
+				docsGateIsDevelopment(
+					module,
+					enclosingFunction(module.functions, mount),
+					condition,
+					mount,
+					modules,
+				)
+			) {
 				guarded = true;
 				break;
 			}
@@ -809,7 +855,9 @@ function analyzeOpenApiModule(module: RustModule, modules: RustModule[]): Findin
 
 				const lowerBound = Math.max(fn.start, mount - 14);
 				const prefix = module.tokens.slice(lowerBound, mount);
-				const thenIndex = prefix.findIndex((token) => token.value === "then" || token.value === "then_some");
+				const thenIndex = prefix.findIndex(
+					(token) => token.value === "then" || token.value === "then_some",
+				);
 				if (thenIndex !== -1) {
 					const condition = prefix.slice(0, thenIndex);
 					const gate = gateKind(condition, false);
@@ -870,9 +918,10 @@ function sqlCode(sql: string): string {
 			continue;
 		}
 
-		const dollarQuote = sql[index] === "$"
-			? /^\$[A-Za-z_][A-Za-z0-9_]*\$|^\$\$/.exec(sql.slice(index))?.[0]
-			: undefined;
+		const dollarQuote =
+			sql[index] === "$"
+				? /^\$[A-Za-z_][A-Za-z0-9_]*\$|^\$\$/.exec(sql.slice(index))?.[0]
+				: undefined;
 		if (dollarQuote) {
 			const start = index;
 			const close = sql.indexOf(dollarQuote, index + dollarQuote.length);
@@ -968,7 +1017,10 @@ function hasSqlLimit(sql: string): boolean {
 		) {
 			return true;
 		}
-		if (word.value === "FETCH" && /^\s*(?:FIRST|NEXT)\s+(?:\$\d+|\?|\d+)\s+ROWS?\s+ONLY\b/i.test(remainder)) {
+		if (
+			word.value === "FETCH" &&
+			/^\s*(?:FIRST|NEXT)\s+(?:\$\d+|\?|\d+)\s+ROWS?\s+ONLY\b/i.test(remainder)
+		) {
 			return true;
 		}
 	}
@@ -1075,13 +1127,14 @@ function moduleSqlConstants(
 		let end = equalsIndex + 1;
 		while (end < tokens.length) {
 			const value = tokens[end]!.value;
-			const pairedEnd = value === "("
-				? parens.get(end)
-				: value === "["
-					? brackets.get(end)
-					: value === "{"
-						? braces.get(end)
-						: undefined;
+			const pairedEnd =
+				value === "("
+					? parens.get(end)
+					: value === "["
+						? brackets.get(end)
+						: value === "{"
+							? braces.get(end)
+							: undefined;
 			if (pairedEnd !== undefined) {
 				end = pairedEnd + 1;
 				continue;
@@ -1155,11 +1208,12 @@ function analyzeBoundedQueriesFile(root: string, file: string): Finding[] {
 		if (!fn.publicAsync || !/^(?:list|search)_/.test(fn.name)) continue;
 		for (let index = fn.start + 1; index < fn.end; index += 1) {
 			const token = tokens[index]!;
-			const sql = token.kind === "string"
-				? token.value
-				: token.kind === "identifier"
-					? sqlConstants.get(token.value)
-					: undefined;
+			const sql =
+				token.kind === "string"
+					? token.value
+					: token.kind === "identifier"
+						? sqlConstants.get(token.value)
+						: undefined;
 			if (!sql || !startsWithSelect(sql)) continue;
 
 			let searchFrom = index + 1;
@@ -1202,29 +1256,123 @@ function analyzeBoundedQueriesFile(root: string, file: string): Finding[] {
 	return findings;
 }
 
-function analyze(rootArgument: string, rule: "openapi-gated" | "bounded-queries"): Finding[] {
+// The row-enrichment-loop rule keeps the original unannotated-Rust heuristic:
+// `for <name> in <name> {` with `.await` within 400 characters and before the
+// next `}`. Each qualifying loop is reported at its own line, and a deliberate
+// sequential loop can carry a rule-scoped, reasoned allowance on the line
+// immediately above it.
+const ROW_LOOP_START = /for \w+ in \w+ \{/g;
+const ROW_LOOP_AWAIT = /^[^}]{0,400}\.await/;
+const ROW_ENRICHMENT_MARKER = /^\s*\/\/+\s*conformance:\s*allow\s+row-enrichment-loop(?![\w-])/i;
+const ROW_ENRICHMENT_REASON = /^\s*:\s*(.*)$/;
+
+const ROW_ENRICHMENT_FINDING =
+	"await inside a row loop — possible N+1 (batch with ANY($1) or ?include=, or annotate a deliberate sequential loop with a reasoned row-enrichment-loop allowance)";
+const ROW_ENRICHMENT_MISSING_REASON =
+	"row-enrichment-loop allowance needs a same-line reason after `conformance: allow row-enrichment-loop:`";
+const ROW_ENRICHMENT_UNUSED =
+	"row-enrichment-loop allowance does not annotate the next line's detected row loop; one marker covers one site";
+
+function rowEnrichmentExcluded(relative: string): boolean {
+	return /\/underlay\/|\/tests\/|_tests\.rs/.test(`/${relative}`);
+}
+
+function rowLoopLines(source: string): number[] {
+	const lines = new Set<number>();
+	for (const match of source.matchAll(ROW_LOOP_START)) {
+		const bodyStart = match.index + match[0].length;
+		if (!ROW_LOOP_AWAIT.test(source.slice(bodyStart, bodyStart + 406))) continue;
+		lines.add(lineAt(source, match.index));
+	}
+	return [...lines].sort((left, right) => left - right);
+}
+
+function analyzeRowEnrichmentLoopFile(
+	root: string,
+	file: string,
+): { findings: Finding[]; allowances: Allowance[] } {
+	const relative = relativePath(root, path.resolve(root, file));
+	if (rowEnrichmentExcluded(relative)) return { findings: [], allowances: [] };
+
+	const source = readFileSync(path.join(root, file), "utf8");
+	const lines = source.split(/\r?\n/);
+	const loopLines = new Set(rowLoopLines(source));
+	const findings: Finding[] = [];
+	const allowances: Allowance[] = [];
+	const covered = new Set<number>();
+
+	for (let index = 0; index < lines.length; index += 1) {
+		const line = lines[index] ?? "";
+		const marker = ROW_ENRICHMENT_MARKER.exec(line);
+		if (!marker) continue;
+		const markerLine = index + 1;
+		const loopLine = markerLine + 1;
+		if (!loopLines.has(loopLine)) {
+			findings.push({ path: relative, line: markerLine, message: ROW_ENRICHMENT_UNUSED });
+			continue;
+		}
+		covered.add(loopLine);
+		const reason = ROW_ENRICHMENT_REASON.exec(line.slice(marker[0].length))?.[1]?.trim() ?? "";
+		if (!reason) {
+			findings.push({ path: relative, line: markerLine, message: ROW_ENRICHMENT_MISSING_REASON });
+			continue;
+		}
+		allowances.push({ path: relative, line: loopLine, reason });
+	}
+
+	for (const loopLine of loopLines) {
+		if (covered.has(loopLine)) continue;
+		findings.push({ path: relative, line: loopLine, message: ROW_ENRICHMENT_FINDING });
+	}
+
+	return { findings, allowances };
+}
+
+function analyze(rootArgument: string, rule: AnalysisRule): AnalysisResult {
 	const root = path.resolve(rootArgument);
 	if (!statSync(root).isDirectory()) throw new Error(`not a directory: ${root}`);
 	const files = rustFiles(root);
-	const findings = rule === "openapi-gated"
-		? (() => {
-				const modules = files.map((file) => parseRustModule(root, file));
-				return modules.flatMap((module) => analyzeOpenApiModule(module, modules));
-			})()
-		: files.flatMap((file) => analyzeBoundedQueriesFile(root, file));
-	return findings.sort((left, right) => left.path.localeCompare(right.path) || left.line - right.line);
+	if (rule === "row-enrichment-loop") {
+		const results = files.map((file) => analyzeRowEnrichmentLoopFile(root, file));
+		return {
+			findings: results
+				.flatMap((result) => result.findings)
+				.sort((left, right) => left.path.localeCompare(right.path) || left.line - right.line),
+			allowances: results
+				.flatMap((result) => result.allowances)
+				.sort((left, right) => left.path.localeCompare(right.path) || left.line - right.line),
+		};
+	}
+	const findings =
+		rule === "openapi-gated"
+			? (() => {
+					const modules = files.map((file) => parseRustModule(root, file));
+					return modules.flatMap((module) => analyzeOpenApiModule(module, modules));
+				})()
+			: files.flatMap((file) => analyzeBoundedQueriesFile(root, file));
+	return {
+		findings: findings.sort(
+			(left, right) => left.path.localeCompare(right.path) || left.line - right.line,
+		),
+		allowances: [],
+	};
 }
 
 function main(): void {
 	const [, , rule, root = "."] = process.argv;
-	if (rule !== "openapi-gated" && rule !== "bounded-queries") {
-		console.error("usage: consumer-security-analysis.ts <openapi-gated|bounded-queries> [consumer-root]");
+	if (rule !== "openapi-gated" && rule !== "bounded-queries" && rule !== "row-enrichment-loop") {
+		console.error(
+			"usage: consumer-security-analysis.ts <openapi-gated|bounded-queries|row-enrichment-loop> [consumer-root]",
+		);
 		process.exitCode = 2;
 		return;
 	}
 
 	try {
-		const findings = analyze(root, rule);
+		const { findings, allowances } = analyze(root, rule);
+		for (const allowance of allowances) {
+			console.log(`allowance ${allowance.path}:${allowance.line}: ${allowance.reason}`);
+		}
 		for (const finding of findings) {
 			console.log(`${finding.path}:${finding.line}: ${finding.message}`);
 		}
@@ -1235,4 +1383,5 @@ function main(): void {
 	}
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) main();
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href)
+	main();

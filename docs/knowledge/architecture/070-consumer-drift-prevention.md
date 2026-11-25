@@ -121,7 +121,11 @@ checkout. It verifies env fail-closed behavior, DB-error hygiene, per-mount
 OpenAPI development gates, seed gates (env AND local DB host), `{@html}`
 sanitization, no SVG regex blacklists, CSP at the serving layer, no tracked
 secrets, TOTP via `SecretCipher`, sessions via `underlay-auth-session`, role
-hierarchy guards, bounded list/search reads, and refresh via the crate.
+hierarchy guards, bounded list/search reads, sequential row-enrichment loops,
+and refresh via the crate. Bounded reads and deliberate sequential loops carry
+rule-scoped, reasoned allowances; see
+[security conformance](../../guides/030-underlay-integration.md#security-conformance)
+for the marker form and its unused-marker failure.
 Contact Patch, Compli Me, Acowtancy, and Songsprout retain their existing
 direct shell callers. Underlay Reference currently runs workspace-shape and
 env-authority checks only; those checks do not provide security coverage.
