@@ -175,7 +175,8 @@ async fn test_with_cleanup_zero_duration_does_not_busy_spin() {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn test_concurrent_churn_stays_bounded_under_max_keys() {
-    let backend = InMemoryBackend::new().with_max_keys(16);
+    let max_keys = 16;
+    let backend = InMemoryBackend::new().with_max_keys(max_keys);
     let config = RateLimitConfig::new(5, Duration::from_secs(60));
 
     let mut tasks = Vec::new();
@@ -186,10 +187,18 @@ async fn test_concurrent_churn_stays_bounded_under_max_keys() {
             for i in 0..40 {
                 let key = format!("w{worker}:k{i}");
                 let _ = backend.check_and_increment(&key, &config).await;
-                assert!(
-                    backend.len() <= 16,
-                    "tracked key count {} exceeded cap 16 under concurrency",
+                let tracked_keys = {
+                    // DashMap counts shards separately. Hold admission while
+                    // sampling so concurrent churn cannot skew the count.
+                    let _admission = backend
+                        .admission_lock
+                        .lock()
+                        .expect("rate limit admission lock poisoned");
                     backend.len()
+                };
+                assert!(
+                    tracked_keys <= max_keys,
+                    "tracked key count {tracked_keys} exceeded cap {max_keys} under concurrency"
                 );
             }
         }));
@@ -198,7 +207,7 @@ async fn test_concurrent_churn_stays_bounded_under_max_keys() {
     for task in tasks {
         task.await.expect("worker task should complete");
     }
-    assert!(backend.len() <= 16);
+    assert!(backend.len() <= max_keys);
 }
 
 #[tokio::test]
