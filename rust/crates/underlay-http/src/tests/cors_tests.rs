@@ -414,6 +414,72 @@ mod tests {
         assert!(header_names.contains(&"if-none-match"));
     }
 
+    #[tokio::test]
+    async fn admin_cors_layer_appends_request_headers_to_the_canonical_policy() {
+        use axum::{body::Body, routing::post, Router};
+        use http::{header, Method, Request};
+        use tower::ServiceExt;
+
+        let origin = "https://admin.example.test";
+        let preflight = |origin| {
+            Request::builder()
+                .method(Method::OPTIONS)
+                .uri("/write")
+                .header(header::ORIGIN, origin)
+                .header(header::ACCESS_CONTROL_REQUEST_METHOD, "POST")
+                .header(
+                    header::ACCESS_CONTROL_REQUEST_HEADERS,
+                    "content-type,x-csrf-token,idempotency-key",
+                )
+                .body(Body::empty())
+                .expect("preflight request should build")
+        };
+        let app = Router::new().route("/write", post(|| async { "ok" }));
+        let canonical = app
+            .clone()
+            .layer(crate::admin_cors_layer(
+                Environment::Prod,
+                vec![origin.into()],
+            ))
+            .oneshot(preflight(origin))
+            .await
+            .expect("canonical preflight should succeed");
+        let app = app.layer(crate::admin_cors_layer_with_headers(
+            Environment::Prod,
+            vec![origin.into()],
+            [HeaderName::from_static("idempotency-key")],
+        ));
+        let extended = app
+            .clone()
+            .oneshot(preflight(origin))
+            .await
+            .expect("extended preflight should succeed");
+
+        let headers = extended.headers();
+        assert_eq!(headers[header::ACCESS_CONTROL_ALLOW_ORIGIN], origin);
+        assert_eq!(headers[header::ACCESS_CONTROL_ALLOW_CREDENTIALS], "true");
+        assert_eq!(
+            headers[header::ACCESS_CONTROL_ALLOW_METHODS],
+            canonical.headers()[header::ACCESS_CONTROL_ALLOW_METHODS]
+        );
+        let canonical_headers = canonical.headers()[header::ACCESS_CONTROL_ALLOW_HEADERS]
+            .to_str()
+            .expect("canonical allowed headers should be valid");
+        assert_eq!(
+            headers[header::ACCESS_CONTROL_ALLOW_HEADERS],
+            format!("{canonical_headers},idempotency-key")
+        );
+
+        let denied = app
+            .oneshot(preflight("https://other.example.test"))
+            .await
+            .expect("disallowed origin preflight should produce a response");
+        assert!(denied
+            .headers()
+            .get(header::ACCESS_CONTROL_ALLOW_ORIGIN)
+            .is_none());
+    }
+
     #[test]
     fn admin_cors_config_uses_explicit_origins_when_present() {
         let config = crate::cors::admin_cors_config(

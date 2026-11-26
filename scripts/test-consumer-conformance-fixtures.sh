@@ -32,16 +32,20 @@ write_shared_fixture_files() {
   Content-Security-Policy: default-src 'self'
 */
 EOF
-	cat > "$root/src/common.rs" <<'EOF'
-fn configure_cors() {
-    admin_cors_layer();
-}
-EOF
 }
 
 write_safe_fixture() {
 	local root="$1"
 	write_shared_fixture_files "$root"
+	cat > "$root/src/common.rs" <<'EOF'
+fn configure_cors(environment: Environment, origins: Vec<String>) -> CorsLayer {
+    underlay_http::admin_cors_layer_with_headers(
+        environment,
+        origins,
+        [http::header::HeaderName::from_static("idempotency-key")],
+    )
+}
+EOF
 	mkdir -p "$root/src/routes"
 	cat > "$root/src/routes/safe.rs" <<'EOF'
 pub fn build_router_with_options(options: RouterOptions) -> Router {
@@ -103,6 +107,11 @@ EOF
 write_unsafe_fixture() {
 	local root="$1"
 	write_shared_fixture_files "$root"
+	cat > "$root/src/common.rs" <<'EOF'
+fn configure_cors() {
+    admin_cors_layer();
+}
+EOF
 	mkdir -p "$root/src/routes"
 	cat > "$root/src/routes/safe.rs" <<'EOF'
 pub fn build_router_with_options(options: RouterOptions) -> Router {

@@ -315,10 +315,27 @@ pub fn admin_cors_config(environment: Environment, explicit_origins: Vec<String>
 /// Panics on an invalid origin value, and on mirror-origin + credentials
 /// outside local dev (via [`cors_layer_for_env`]).
 pub fn admin_cors_layer(environment: Environment, explicit_origins: Vec<String>) -> CorsLayer {
-    cors_layer_for_env(
+    admin_cors_layer_with_headers(environment, explicit_origins, [])
+}
+
+/// Build the canonical admin CORS layer with additional allowed request headers.
+///
+/// The supplied headers are appended to the canonical list. Origin, method,
+/// and credential handling follow [`admin_cors_layer`].
+///
+/// # Panics
+/// Panics on an invalid origin value, and on mirror-origin + credentials
+/// outside local dev (via [`cors_layer_for_env`]).
+pub fn admin_cors_layer_with_headers(
+    environment: Environment,
+    explicit_origins: Vec<String>,
+    additional_headers: impl IntoIterator<Item = HeaderName>,
+) -> CorsLayer {
+    let config = additional_headers.into_iter().fold(
         admin_cors_config(environment, explicit_origins),
-        environment,
-    )
+        CorsConfig::with_header,
+    );
+    cors_layer_for_env(config, environment)
 }
 
 /// Parse an explicit CORS origin list from an environment variable:
