@@ -70,6 +70,18 @@ let cors = underlay_http::admin_cors_layer_from_env(env);
 let cors = underlay_http::admin_cors_layer(env, origins_from_config);
 ```
 
+Use the opt-in constructor to add request headers to the canonical policy.
+
+```rust
+let cors = underlay_http::admin_cors_layer_with_headers(
+    env,
+    origins_from_config,
+    [axum::http::HeaderName::from_static("idempotency-key")],
+);
+```
+
+The extra header applies to this layer. The helper satisfies `cors-canonical`.
+
 - Canonical headers: `x-api-version`, `x-csrf-token`, `x-auth-token-mode`,
   `if-match`, `if-none-match` + defaults; credentials on.
 - Mirror-origin only in `is_local_dev()`; explicit origins otherwise;
@@ -96,7 +108,7 @@ let cors = underlay_http::admin_cors_layer(env, origins_from_config);
    `ENVIRONMENT=effigy`; catalog discovery already ignores `config/`).
 2. Resolve env via `Environment::resolve` / `resolve_name`; delete any
    local env parsing.
-3. CORS via `admin_cors_layer(_from_env)`; delete any local builder.
+3. Use a shared admin CORS layer constructor in place of any local builder.
 4. Commit `config/effigy.toml` with the app's dev-stack constants;
    keep `local.toml` personal-only.
 5. Seed the shared dev credentials from `migrations_dev/`.

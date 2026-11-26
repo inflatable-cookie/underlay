@@ -102,7 +102,11 @@ env vars or writes its own host check again. Also kill the per-app
 `ENVIRONMENT` primary, legacy var deprecated fallback) and
 `admin_cors_layer` are the single owners; per-app `underlay_env()` /
 `build_cors_layer` clones are deleted in all six consumers and blocked by
-the `cors-canonical` conformance check. The dev identifier is `effigy`
+the `cors-canonical` conformance check. The shared
+`admin_cors_layer_with_headers` constructor appends app-specific request
+headers under the same origin, method, and credential policy. See the
+[admin CORS guide](../../guides/192-config-model.md#cors-admin-apis).
+The dev identifier is `effigy`
 (injected by the bundle env schema); committed `config/effigy.toml` holds
 shared dev-stack config with the overlay named from the same resolution.
 The `seed_guard` half already landed as `is_local_database_url` (item 1).

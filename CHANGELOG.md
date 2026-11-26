@@ -7,6 +7,19 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+### Added
+
+- `underlay-http` exposes `admin_cors_layer_with_headers` for admin APIs that
+  need additional allowed request headers. It appends typed headers and keeps
+  the shared origin, method, and credential policy. `cors-canonical` accepts
+  the helper.
+- Impact class is additive. Adoption is optional and has no deprecation window.
+- To adopt, pin all Underlay dependencies to this release, refresh the root
+  locks, and call the helper with the additional headers your browser sends.
+  Run `effigy qa:security` and verify a browser preflight from an allowed origin.
+  Roll back by returning all Underlay pins to `v0.11.2`.
+  [Admin CORS guide](docs/guides/192-config-model.md#cors-admin-apis)
+
 ## [0.11.2] - 2026-11-25
 
 ### Changed
