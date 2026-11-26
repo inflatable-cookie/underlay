@@ -7,6 +7,8 @@ While Underlay is `0.x`, breaking changes raise the minor version.
 
 ## [Unreleased]
 
+## [0.11.3] - 2026-11-26
+
 ### Added
 
 - `underlay-http` exposes `admin_cors_layer_with_headers` for admin APIs that
